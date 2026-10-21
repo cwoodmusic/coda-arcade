@@ -18,3 +18,5 @@
 #motiontoggle{font:11px monospace;color:#dbc2fa}.motion-paused .roomtop i{animation:none}
 
 #opengame{color:#a3e4ec;font:12px monospace;text-decoration:none;padding:9px;border:1px solid #5c5077;border-radius:3px}
+
+.sprite-directions{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}.sprite-directions button{font-size:11px;padding:9px}.sprite-directions .selected{background:#4e405e;color:#b5f1ed}
