@@ -78,7 +78,7 @@ async function openRequestedSong(){const id=new URLSearchParams(location.search)
 if(inEditor)editorUI();else addJukeboxUI();
 if(supported&&config?.enabled){
  try{const [app,authApi,databaseApi]=await Promise.all([import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'),import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js'),import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js')]);
- api={...authApi,...databaseApi};const firebaseApp=app.initializeApp(config.firebase,'song-cloud');auth=api.getAuth(firebaseApp);db=api.getDatabase(firebaseApp);await api.setPersistence(auth,api.browserLocalPersistence);ready=true;
+ api={...authApi,...databaseApi};const firebaseApp=app.initializeApp(config.firebase,'arcade-profiles');auth=api.getAuth(firebaseApp);db=api.getDatabase(firebaseApp);await api.setPersistence(auth,api.browserLocalPersistence);ready=true;
  api.onAuthStateChanged(auth,u=>{currentUser=u;if(inEditor){$('cloud-account').textContent=u?'Account: Signed in':'Account: Guest';$('save').disabled=!u;if(u)openRequestedSong();else message('Sign in to save to your jukebox.')}else if($('cloud-song-library'))renderLibrary()});
  }catch(e){message('Firebase connection failed: '+errorMessage(e))}
 }else if(inEditor){$('save').disabled=true;message('Publish on GitHub Pages to enable cloud saving.');}
