@@ -1,11 +1,28 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Coda Arcade — Connected World Preview</title><style>
-*{box-sizing:border-box}body{margin:0;background:#10101e;color:#e9def9;font:15px system-ui}header{padding:12px 20px;display:flex;align-items:center;gap:18px;justify-content:space-between;background:#211a37}a{color:#a6eff4}button{background:#392f58;color:white;border:1px solid #ba8fdf;border-radius:6px;padding:9px 12px;cursor:pointer}button:hover{background:#514073}#view{display:block;width:min(100vw,calc((100dvh - 110px) * 1.5));height:auto;aspect-ratio:3/2;margin:0 auto;image-rendering:pixelated;background:#10101e;touch-action:none}footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 16px;min-height:44px;background:#211a37;font-size:12px}#dialog{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);width:min(490px,90vw);padding:20px;background:#261d40;border:2px solid #d8a6f1;box-shadow:0 8px 50px #000b;display:none}#dialog strong{color:#f4c8fa}#dialog p{line-height:1.6}#dialog button{float:right}@media(max-width:650px){header{font-size:12px;padding:8px}#view{width:min(100vw,calc((100dvh - 110px) * 1536 / 1024));height:auto}}
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Coda Arcade — Real Sprite World Preview</title><style>
+*{box-sizing:border-box}body{margin:0;background:#10101e;color:#e9def9;font:15px system-ui}header{padding:12px 20px;display:flex;align-items:center;gap:18px;justify-content:space-between;background:#211a37}a{color:#a6eff4}button{background:#392f58;color:white;border:1px solid #ba8fdf;border-radius:6px;padding:9px 12px;cursor:pointer}button:hover{background:#514073}#view{display:block;width:min(100vw,calc((100dvh - 110px)*1.5));height:auto;aspect-ratio:3/2;margin:0 auto;image-rendering:pixelated;background:#090e21;touch-action:none}footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 16px;min-height:44px;background:#211a37;font-size:12px}#dialog{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);width:min(490px,90vw);padding:20px;background:#261d40;border:2px solid #d8a6f1;box-shadow:0 8px 50px #000b;display:none}#dialog strong{color:#f4c8fa}#dialog p{line-height:1.6}#dialog button{float:right}@media(max-width:650px){header{font-size:12px;padding:8px}#view{width:min(100vw,calc((100dvh - 110px) * 1536 / 1024));height:auto}}
 #gameoverlay{position:fixed;inset:0;z-index:100;background:#121327;display:flex;flex-direction:column}#gameoverlay[hidden]{display:none}.gamebar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#231a3c;border-bottom:2px solid #b583dc}.gamebar strong{color:#f0d7ff}#gameiframe{border:0;width:100%;flex:1;min-height:0;background:#111628}body.game-open{overflow:hidden}@media(max-width:650px){.gamebar{gap:6px}.gamebar strong{font-size:12px}.gamebar a{font-size:11px}}
 #panel{position:fixed;z-index:90;top:50%;left:50%;transform:translate(-50%,-50%);width:min(570px,94vw);max-height:84dvh;overflow:auto;padding:20px;background:#231c3b;border:2px solid #c69be9;box-shadow:0 0 0 100vmax #05030ab8,0 14px 55px #000c;border-radius:12px}#panel[hidden]{display:none}.panelHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.panelRow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0;padding:10px;border:1px solid #66517f;border-radius:7px}.panelRow small{display:block;opacity:.75}.formRow{display:grid;gap:5px;margin:10px 0}.formRow select,.formRow input{background:#17142c;color:#fff;border:1px solid #a08dbd;padding:9px;border-radius:5px;width:100%}.panelActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.muted{color:#c1b4d7;font-size:13px}.panelMsg{min-height:22px;color:#9fe9dc}body:has(#panel:not([hidden])) #view{filter:brightness(.65)}
 #pianoroom{position:fixed;inset:0;z-index:95;background:radial-gradient(ellipse at 50% 20%,#344962,#11172b 75%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#f5edff}#pianoroom[hidden]{display:none}#pianoroom .stage{border:9px solid #69567e;background:repeating-linear-gradient(90deg,#243349 0 32px,#28374d 32px 64px);width:min(650px,88vw);padding:30px;text-align:center;box-shadow:0 0 70px #b08ed255}#pianoroom .keys{display:flex;justify-content:center;margin:20px auto 0}#pianoroom .keys i{height:85px;width:27px;background:#eee9f3;border:2px solid #35324b;box-shadow:inset 0 -8px #aaa8bc}#pianoroom .keys i:nth-child(3n+2){background:#22223b;height:55px;width:18px;margin:0 -8px;z-index:1}#pianoroom h2{color:#9feaf2;letter-spacing:3px}#pianoroom button{font-size:16px}
-</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 5.9 · CONNECTED NEON ARCADE</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1536" height="1024" tabindex="0"></canvas><footer><span>WASD / arrows · Walk &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 5.9 · Connected rooms · WASD / tap to walk</span></footer><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><div id="pianoroom" hidden><div class="stage"><h2>♫ PIANO LAB ♫</h2><p>A quieter music space away from the arcade floor.</p><div class="keys"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p style="opacity:.7">Dedicated room preview — instruments and activities coming later.</p></div><button id="closepiano">← Return to Arcade</button></div><script>
+</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 6.2 · REAL SPRITE WORLD</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1536" height="1024" tabindex="0"></canvas><footer><span>WASD / arrows · Walk &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 5.9 · Connected rooms · WASD / tap to walk</span></footer><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><div id="pianoroom" hidden><div class="stage"><h2>♫ PIANO LAB ♫</h2><p>A quieter music space away from the arcade floor.</p><div class="keys"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p style="opacity:.7">Dedicated room preview — instruments and activities coming later.</p></div><button id="closepiano">← Return to Arcade</button></div><script>
 (()=>{'use strict';const c=document.querySelector('#view'),g=c.getContext('2d'),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}const W=1536,H=1024,ART_SCALE=1,keys=new Set();let player={x:1390,y:480},cam={x:0,y:0},dest=null,emote=0,near=null,last=0,clock=0;const rooms=[{id:'lounge',name:'LOUNGE',x:60,y:100,w:330,h:270},{id:'dance',name:'DANCE',x:45,y:620,w:580,h:325},{id:'arcade',name:'ARCADE',x:490,y:110,w:735,h:435}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:693,y:246,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:808,y:246,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:930,y:246,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1050,y:246,url:'song-machine/index.html'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
-const looks=[['#e5b48d','#ed8cbe','#171424','spiky'],['#85543b','#8ddde6','#e3c27d','long'],['#f4cba6','#c9a3f1','#402c4b','buns'],['#a56b48','#f4ae77','#1c172d','short'],['#f3c3a1','#b2f37b','#6c3159','bob'],['#704633','#a8b5fc','#eee6df','curly'],['#f0b79d','#ffd48c','#171424','ponytail']];const npc=[{name:'Ziggy',x:1390,y:480,mode:'enter',goal:0,wait:0,look:0},{name:'Nova',x:1390,y:480,mode:'enter',goal:1,wait:1.7,look:1},{name:'Byte',x:1390,y:480,mode:'enter',goal:2,wait:3.4,look:2},{name:'Mochi',x:1390,y:480,mode:'enter',goal:3,wait:5,look:3},{name:'Riff',x:1390,y:480,mode:'enter',goal:0,wait:7,look:4},{name:'Fizz',x:1390,y:480,mode:'enter',goal:1,wait:9,look:5},{name:'Dot',x:1390,y:480,mode:'enter',goal:2,wait:11,look:6}];const sofas=[{x:105,y:135,w:110,h:45},{x:240,y:135,w:110,h:45}];const seats=[{x:170,y:245},{x:300,y:245},{x:160,y:320},{x:340,y:320}];const spot=(p)=>p.mode==='cabinet'?{x:games[p.goal%4].x,y:355}:p.mode==='lounge'?seats[p.goal%4]:p.mode==='dance'?{x:175+(p.goal%4)*120,y:750+(p.goal%2)*70}:p.mode==='leave'?{x:1390,y:480}:{x:1390,y:480};const r=(x,y,w,h,color)=>{g.fillStyle=color;g.fillRect(Math.round(x),Math.round(y),w,h)};const t=(s,x,y,size=18,color='#e7e2ff')=>{g.fillStyle=color;g.font=`bold ${size}px monospace`;g.textAlign='center';g.fillText(s,x,y)};function sprite(x,y,look,walk=false,dance=false,scale=1){const [skin,shirt,hair,style]=look;g.save();g.translate(Math.round(x),Math.round(y));g.scale(scale,scale);const bob=dance?Math.sin(clock*8)*5:walk?Math.sin(clock*12)*2:0;r(-10,-38+bob,20,17,hair);if(style==='buns'){r(-15,-39+bob,6,7,hair);r(9,-39+bob,6,7,hair)}if(style==='long')r(-13,-30+bob,26,20,hair);r(-9,-32+bob,18,16,skin);r(-12,-16+bob,24,20,shirt);r(-16,-12+bob,4,13,skin);r(12,-12+bob,4,13,skin);r(-9,4+bob,7,11,'#695d99');r(2,4+bob,7,11,'#695d99');r(-10,14+bob,9,4,'#f8d56b');r(1,14+bob,9,4,'#f8d56b');r(-6,-24+bob,3,3,'#222033');r(4,-24+bob,3,3,'#222033');if(dance){const beat=Math.floor(clock*4+look[0].length)%4,up=beat%2===0;r(-18,-(up?29:13)+bob,5,up?16:11,skin);r(13,-(up?13:29)+bob,5,up?11:16,skin);r(-10+(up?-5:3),14+bob,9,5,'#f8d56b');r(1+(up?4:-4),14+bob,9,5,'#f8d56b')}g.restore()};function inside(x,y){
+const looks=[['#e5b48d','#ed8cbe','#171424','spiky'],['#85543b','#8ddde6','#e3c27d','long'],['#f4cba6','#c9a3f1','#402c4b','buns'],['#a56b48','#f4ae77','#1c172d','short'],['#f3c3a1','#b2f37b','#6c3159','bob'],['#704633','#a8b5fc','#eee6df','curly'],['#f0b79d','#ffd48c','#171424','ponytail']];const npc=[{name:'Ziggy',x:1390,y:480,mode:'enter',goal:0,wait:0,look:0},{name:'Nova',x:1390,y:480,mode:'enter',goal:1,wait:1.7,look:1},{name:'Byte',x:1390,y:480,mode:'enter',goal:2,wait:3.4,look:2},{name:'Mochi',x:1390,y:480,mode:'enter',goal:3,wait:5,look:3},{name:'Riff',x:1390,y:480,mode:'enter',goal:0,wait:7,look:4},{name:'Fizz',x:1390,y:480,mode:'enter',goal:1,wait:9,look:5},{name:'Dot',x:1390,y:480,mode:'enter',goal:2,wait:11,look:6}];const sofas=[{x:105,y:135,w:110,h:45},{x:240,y:135,w:110,h:45}];const seats=[{x:170,y:245},{x:300,y:245},{x:160,y:320},{x:340,y:320}];const spot=(p)=>p.mode==='cabinet'?{x:games[p.goal%4].x,y:355}:p.mode==='lounge'?seats[p.goal%4]:p.mode==='dance'?{x:175+(p.goal%4)*120,y:750+(p.goal%2)*70}:p.mode==='leave'?{x:1390,y:480}:{x:1390,y:480};const r=(x,y,w,h,color)=>{g.fillStyle=color;g.fillRect(Math.round(x),Math.round(y),w,h)};const t=(s,x,y,size=18,color='#e7e2ff')=>{g.fillStyle=color;g.font=`bold ${size}px monospace`;g.textAlign='center';g.fillText(s,x,y)};const gameAssets=new Image();gameAssets.src='coda_arcade_game_assets.png';
+const gameAssetIndex={"player_down_0":{"x":66,"y":61,"w":59,"h":69},"player_down_1":{"x":258,"y":61,"w":59,"h":69},"player_down_2":{"x":450,"y":61,"w":59,"h":69},"player_down_3":{"x":642,"y":61,"w":59,"h":69},"player_down_4":{"x":834,"y":61,"w":59,"h":69},"player_up_0":{"x":1026,"y":61,"w":59,"h":69},"player_up_1":{"x":1218,"y":61,"w":59,"h":69},"player_up_2":{"x":1410,"y":61,"w":59,"h":69},"player_up_3":{"x":1602,"y":61,"w":59,"h":69},"player_up_4":{"x":1794,"y":61,"w":59,"h":69},"player_left_0":{"x":1986,"y":61,"w":59,"h":69},"player_left_1":{"x":2178,"y":61,"w":59,"h":69},"player_left_2":{"x":66,"y":253,"w":59,"h":69},"player_left_3":{"x":258,"y":253,"w":59,"h":69},"player_left_4":{"x":450,"y":253,"w":59,"h":69},"player_right_0":{"x":642,"y":253,"w":59,"h":69},"player_right_1":{"x":834,"y":253,"w":59,"h":69},"player_right_2":{"x":1026,"y":253,"w":59,"h":69},"player_right_3":{"x":1218,"y":253,"w":59,"h":69},"player_right_4":{"x":1410,"y":253,"w":59,"h":69},"npc_0_down":{"x":1603,"y":253,"w":57,"h":70},"npc_0_up":{"x":1795,"y":253,"w":57,"h":70},"npc_0_left":{"x":1987,"y":253,"w":57,"h":70},"npc_0_right":{"x":2179,"y":253,"w":57,"h":70},"npc_1_down":{"x":67,"y":445,"w":57,"h":70},"npc_1_up":{"x":259,"y":445,"w":57,"h":70},"npc_1_left":{"x":451,"y":445,"w":57,"h":70},"npc_1_right":{"x":643,"y":445,"w":57,"h":70},"npc_2_down":{"x":835,"y":445,"w":57,"h":70},"npc_2_up":{"x":1027,"y":445,"w":57,"h":70},"npc_2_left":{"x":1219,"y":445,"w":57,"h":70},"npc_2_right":{"x":1411,"y":445,"w":57,"h":70},"npc_3_down":{"x":1603,"y":445,"w":57,"h":70},"npc_3_up":{"x":1795,"y":445,"w":57,"h":70},"npc_3_left":{"x":1987,"y":445,"w":57,"h":70},"npc_3_right":{"x":2179,"y":445,"w":57,"h":70},"npc_4_down":{"x":67,"y":637,"w":57,"h":70},"npc_4_up":{"x":259,"y":637,"w":57,"h":70},"npc_4_left":{"x":451,"y":637,"w":57,"h":70},"npc_4_right":{"x":643,"y":637,"w":57,"h":70},"npc_5_down":{"x":835,"y":637,"w":57,"h":70},"npc_5_up":{"x":1027,"y":637,"w":57,"h":70},"npc_5_left":{"x":1219,"y":637,"w":57,"h":70},"npc_5_right":{"x":1411,"y":637,"w":57,"h":70},"dancer_0_0":{"x":1602,"y":636,"w":60,"h":72},"dancer_1_0":{"x":1794,"y":636,"w":60,"h":72},"dancer_2_0":{"x":1986,"y":636,"w":60,"h":72},"dancer_0_1":{"x":2178,"y":636,"w":60,"h":72},"dancer_1_1":{"x":66,"y":828,"w":60,"h":72},"dancer_2_1":{"x":258,"y":828,"w":60,"h":72},"dancer_0_2":{"x":450,"y":828,"w":60,"h":72},"dancer_1_2":{"x":642,"y":828,"w":60,"h":72},"dancer_2_2":{"x":834,"y":828,"w":60,"h":72},"dancer_0_3":{"x":1026,"y":828,"w":60,"h":72},"dancer_1_3":{"x":1218,"y":828,"w":60,"h":72},"dancer_2_3":{"x":1410,"y":828,"w":60,"h":72},"dancer_0_4":{"x":1602,"y":828,"w":60,"h":72},"dancer_1_4":{"x":1794,"y":828,"w":60,"h":72},"dancer_2_4":{"x":1986,"y":828,"w":60,"h":72},"dancer_0_5":{"x":2178,"y":828,"w":60,"h":72},"dancer_1_5":{"x":66,"y":1020,"w":60,"h":72},"dancer_2_5":{"x":258,"y":1020,"w":60,"h":72},"plant_0":{"x":440,"y":994,"w":80,"h":123},"plant_1":{"x":639,"y":994,"w":66,"h":123},"plant_2":{"x":837,"y":994,"w":53,"h":123},"plant_3":{"x":1021,"y":994,"w":69,"h":123},"plant_4":{"x":1213,"y":994,"w":69,"h":123},"plant_5":{"x":1407,"y":994,"w":66,"h":123},"plant_6":{"x":1609,"y":994,"w":46,"h":123},"plant_7":{"x":1799,"y":994,"w":49,"h":123},"cabinet_0":{"x":1955,"y":977,"w":122,"h":157},"cabinet_1":{"x":2147,"y":977,"w":121,"h":157},"cabinet_2":{"x":35,"y":1169,"w":121,"h":157},"cabinet_3":{"x":229,"y":1169,"w":117,"h":157},"sofa_corner":{"x":410,"y":1192,"w":140,"h":111},"sofa_straight":{"x":584,"y":1192,"w":175,"h":112},"table":{"x":827,"y":1194,"w":73,"h":107},"stools":{"x":997,"y":1193,"w":117,"h":109},"bar":{"x":1156,"y":1193,"w":184,"h":110},"side_table":{"x":1382,"y":1189,"w":116,"h":118},"jukebox":{"x":1568,"y":1171,"w":128,"h":153},"dj_booth":{"x":1732,"y":1210,"w":184,"h":76},"sign_coda":{"x":1927,"y":1218,"w":178,"h":60},"sign_lounge":{"x":2143,"y":1214,"w":129,"h":68},"sign_piano":{"x":32,"y":1406,"w":127,"h":68},"sign_hall":{"x":196,"y":1395,"w":184,"h":89},"door_entrance":{"x":394,"y":1385,"w":171,"h":109},"door_piano":{"x":609,"y":1384,"w":125,"h":111},"door_portal":{"x":827,"y":1384,"w":74,"h":111},"stairs":{"x":1008,"y":1384,"w":96,"h":112},"floor_dark":{"x":1210,"y":1387,"w":76,"h":106},"floor_blue":{"x":1404,"y":1387,"w":72,"h":105},"floor_purple":{"x":1596,"y":1387,"w":72,"h":105},"floor_magenta":{"x":1788,"y":1387,"w":71,"h":106},"speaker":{"x":1979,"y":1384,"w":73,"h":112},"speaker_tall":{"x":2175,"y":1384,"w":66,"h":112},"disco":{"x":60,"y":1596,"w":71,"h":71},"light_blue":{"x":260,"y":1580,"w":56,"h":103},"light_orange":{"x":451,"y":1580,"w":57,"h":104},"neon_column":{"x":646,"y":1579,"w":52,"h":105},"wall":{"x":772,"y":1595,"w":184,"h":73},"dance_tile_0":{"x":1023,"y":1579,"w":66,"h":105},"dance_tile_1":{"x":1215,"y":1579,"w":66,"h":105},"dance_tile_2":{"x":1407,"y":1579,"w":66,"h":105},"dance_tile_3":{"x":1599,"y":1579,"w":66,"h":105},"dance_tile_4":{"x":1791,"y":1579,"w":66,"h":105},"dance_tile_5":{"x":1983,"y":1579,"w":66,"h":105},"dance_tile_6":{"x":2175,"y":1579,"w":66,"h":105}};
+let facing='down',movingPlayer=false;
+function asset(name,x,y,w,h,alpha=1){
+ const a=gameAssetIndex[name];if(!a||!gameAssets.complete||!gameAssets.naturalWidth)return;
+ g.save();g.globalAlpha=alpha;g.drawImage(gameAssets,a.x,a.y,a.w,a.h,Math.round(x-w/2),Math.round(y-h),w,h);g.restore();
+}
+function sprite(x,y,look,walk=false,dance=false,scale=1){
+ const i=Math.max(0,looks.indexOf(look)),f=Math.floor(clock*7)%5;
+ if(dance){
+  asset('dancer_'+(i%3)+'_'+(Math.floor(clock*5+i)%6),x,y,55*scale,66*scale);return;
+ }
+ const direction=look===playerLook?facing:'down';
+ const key=look===playerLook?'player_'+direction+'_'+(walk?f:0):'npc_'+(i%6)+'_down';
+ asset(key,x,y,55*scale,67*scale);
+}
+const playerLook=['#fff','#fff','#fff','player'];
+function inside(x,y){
  const rects=[
  [580,120,1215,475], // arcade
  [1170,120,1490,565], // entrance, piano and hall of fame
@@ -46,7 +63,7 @@ function go(p,dt){const aim=spot(p);const targetKey=p.mode+':'+p.goal;
  // Rebuild a valid route instead of bypassing the collision boundary.
  p.route=makeRoute(p,aim);return true;
 }
-function update(dt){clock+=dt;if(dialog.style.display==='block'||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;let dx=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),dy=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);if(dx||dy)dest=null;if(dest){dx=dest.x-player.x;dy=dest.y-player.y;if(Math.hypot(dx,dy)<9){dest=null;dx=dy=0}}const len=Math.hypot(dx,dy);if(len){const nx=player.x+dx/len*230*dt,ny=player.y+dy/len*230*dt;if(inside(nx,player.y))player.x=nx;if(inside(player.x,ny))player.y=ny}for(const p of npc){
+function update(dt){clock+=dt;if(dialog.style.display==='block'||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;let dx=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),dy=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);if(dx||dy)dest=null;if(dest){dx=dest.x-player.x;dy=dest.y-player.y;if(Math.hypot(dx,dy)<9){dest=null;dx=dy=0}}const len=Math.hypot(dx,dy);movingPlayer=!!len;if(len){facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');const nx=player.x+dx/len*230*dt,ny=player.y+dy/len*230*dt;if(inside(nx,player.y))player.x=nx;if(inside(player.x,ny))player.y=ny}for(const p of npc){
   if(p.hidden){p.wait-=dt;if(p.wait<=0){p.hidden=false;p.x=1390;p.y=480;p.mode='enter';p.routeKey='';p.arrived=false;p.wait=0.5;}continue;}
   // Arrival and dwell are separate: NPCs must reach the dance floor before dancing.
   if(p.wait>0){p.wait-=dt;continue;}
@@ -64,7 +81,7 @@ function update(dt){clock+=dt;if(dialog.style.display==='block'||!document.query
     p.arrived=true;
     p.wait=p.mode==='cabinet'?7+(p.look%3)*2:p.mode==='lounge'?9+(p.look%3)*2:12+(p.look%4)*2;
   }
-}near=null;let d=Infinity;for(const p of [...games.map((q,i)=>({...q,type:'game',index:i})),...npc.filter(q=>!q.hidden).map(q=>({...q,type:'npc'})),{name:'Pip · Avatar Boutique',x:515,y:403,type:'shop'},{name:'Jukebox',x:520,y:345,type:'jukebox'},{name:'Piano Lab',x:1285,y:180,type:'piano'}]){const dd=Math.hypot(p.x-player.x,p.y-player.y);if(dd<85&&dd<d){near=p;d=dd}}status.textContent=near?'E · '+(near.type==='game'?'Play ':near.type==='shop'?'Talk to ':'Chat with ')+near.name:'Explore · E to interact'}const gameoverlay=document.querySelector('#gameoverlay'),gameiframe=document.querySelector('#gameiframe');let gameOpen=false;
+}near=null;let d=Infinity;for(const p of [...games.map((q,i)=>({...q,type:'game',index:i})),...npc.filter(q=>!q.hidden).map(q=>({...q,type:'npc'})),{name:'Pip · Avatar Boutique',x:460,y:468,type:'shop'},{name:'Jukebox',x:520,y:410,type:'jukebox'},{name:'Piano Lab',x:1315,y:274,type:'piano'}]){const dd=Math.hypot(p.x-player.x,p.y-player.y);if(dd<85&&dd<d){near=p;d=dd}}status.textContent=near?'E · '+(near.type==='game'?'Play ':near.type==='shop'?'Talk to ':'Chat with ')+near.name:'Explore · E to interact'}const gameoverlay=document.querySelector('#gameoverlay'),gameiframe=document.querySelector('#gameiframe');let gameOpen=false;
 
 function openPiano(){keys.clear();dest=null;document.querySelector('#pianoroom').hidden=false;}
 function closePiano(){document.querySelector('#pianoroom').hidden=true;keys.clear();c.focus();}
@@ -138,68 +155,104 @@ function neonDecoration(){
 }
 function talk(){if(dialog.style.display==='block'){dialog.style.display='none';return}if(!near)return;if(near.type==='game'){openCabinet(near);return}if(near.type==='shop'){openBoutique();return}if(near.type==='jukebox'){openJukebox();return}if(near.type==='piano'){openPiano();return}document.querySelector('#who').textContent=near.name;document.querySelector('#words').textContent=near.type==='shop'?'Welcome to the Pixel Boutique! In the full arcade, I help you customize your avatar.':lines[Math.floor(Math.random()*lines.length)];dialog.style.display='block'}const worldArt=new Image();worldArt.src='arcade-world-art.png';
 function draw(){
- g.setTransform(1,0,0,1,0,0);g.fillStyle='#080a16';g.fillRect(0,0,c.width,c.height);
- // No stretch: native 1536x1024 image at 1:1 aspect ratio.
- if(worldArt.complete&&worldArt.naturalWidth)g.drawImage(worldArt,0,0,W,H);
- // Dance corridor: cut a wide illuminated side entrance through the right-side wall.
- // Use native-size tiles and neon threshold rather than another dead-end portal.
- for(let yy=708;yy<806;yy+=16)for(let xx=685;xx<773;xx+=16){
-   const odd=(Math.floor(xx/16)+Math.floor(yy/16))%2;
-   r(xx,yy,16,16,odd?'#172d53':'#23365f');
-   r(xx,yy,16,1,'#405c84');r(xx,yy,1,16,'#314d76');
+ g.setTransform(1,0,0,1,0,0);r(0,0,W,H,'#070b1a');
+ // A REAL RENDERED WORLD: independent tiles, props, characters and effects.
+ function room(x,y,w,h,color,trim){
+  g.save();g.shadowColor=trim;g.shadowBlur=19;r(x-8,y-8,w+16,h+16,trim);g.restore();
+  r(x-4,y-4,w+8,h+8,'#0e1531');r(x,y,w,h,color);
+  for(let yy=y+4;yy<y+h-8;yy+=32)for(let xx=x+4;xx<x+w-8;xx+=32){
+   const alt=((Math.floor(xx/32)+Math.floor(yy/32))%2);
+   r(xx,yy,30,30,alt?'#152443':'#1a2b4c');r(xx,yy,30,1,'#34517b');
+   if((xx+yy)%128===0)r(xx+13,yy+13,3,3,trim);
+  }
  }
- // Door jambs, neon edge, and arrows point directly into the dance room.
- r(682,700,5,108,'#d55dff');r(684,700,2,108,'#6ce9ff');
- r(766,700,5,108,'#d55dff');r(766,700,2,108,'#6ce9ff');
- r(690,702,74,4,'#ffa5f3');r(690,802,74,4,'#6ce9ff');
- g.save();g.globalCompositeOperation='screen';g.globalAlpha=.35;
- const doorGlow=g.createRadialGradient(725,755,4,725,755,95);
- doorGlow.addColorStop(0,'#cc8bff');doorGlow.addColorStop(1,'#cc8bff00');
- g.fillStyle=doorGlow;g.fillRect(630,660,190,190);g.restore();
- t('◀ DANCE',729,749,14,'#f7b6ff');
- // Open lounge connection, free of any blocking diagonal wall.
- for(let yy=182;yy<262;yy+=16)for(let xx=431;xx<500;xx+=16){
-   r(xx,yy,16,16,(Math.floor(xx/16)+Math.floor(yy/16))%2?'#1a2244':'#253357');
-   r(xx,yy,16,1,'#435b80');
+ // Distinct architectural footprint: no giant enclosing rectangle.
+ room(35,80,410,310,'#261733','#bc55d8'); // lounge
+ room(500,70,715,410,'#121e3b','#4d79e7'); // arcade
+ room(1205,100,290,450,'#152544','#5aafff'); // entrance / hall / piano
+ room(270,360,405,150,'#1d1c3c','#e66cdb'); // boutique passage
+ room(675,460,150,445,'#1b2144','#e769e8'); // dance corridor
+ room(40,525,670,415,'#191b3b','#b763f4'); // dance hall
+ // Open lounge threshold and clear corridor floor over room seams.
+ room(412,170,160,112,'#1b2344','#d36bff');
+ room(642,475,190,95,'#1b2344','#c56bff');
+ room(605,675,210,132,'#1c2447','#d56bff');
+ // Accent borders and luminous threshold strips.
+ for(const [x,y,w] of [[416,181,143],[650,505,167],[631,728,169],[290,385,320]]){
+  g.save();g.shadowBlur=14;g.shadowColor='#ff78ed';r(x,y,w,5,'#fc8beb');g.restore();
  }
- r(427,179,72,4,'#d979e7');r(427,260,72,4,'#69d5ed');
-
- cam.x=0;cam.y=0;
- g.save();
- // Live lighting overlays on top of the painted neon floor.
- const dancePalette=['#fc5bbd','#42e9ff','#ffe66d','#9a6bff','#69ffb4'];
- g.globalCompositeOperation='screen';
- for(let row=0;row<4;row++)for(let col=0;col<7;col++){
-  const xx=140+col*61,yy=761+row*43;
-  const beat=Math.sin(clock*4.1+row*.95+col*.72);
-  g.globalAlpha=.04+Math.max(0,beat)*.21;
-  r(xx,yy,53,38,dancePalette[(row*3+col)%dancePalette.length]);
+ // DJ stage + music club background.
+ r(90,554,555,123,'#15112e');
+ for(let k=0;k<24;k++){
+  let h=8+Math.abs(Math.sin(clock*3+k*.47))*48;
+  r(109+k*22,648-h,12,h,['#58e4ff','#e877f4','#8ef9ad'][k%3]);
  }
+ asset('dj_booth',367,710,365,162);
+ // Dance floor tiles, independent from environment.
+ for(let row=0;row<5;row++)for(let col=0;col<9;col++){
+  let frame=(row+col+Math.floor(clock*3))%7;
+  asset('dance_tile_'+frame,125+col*55,758+row*36,52,39);
+ }
+ // Ambient lights in the dance room, translucent and additive.
+ g.save();g.globalCompositeOperation='screen';
  for(let k=0;k<5;k++){
-  const x=310+Math.cos(clock*.6+k*1.256)*215,y=735+Math.sin(clock*.6+k*1.256)*115;
-  const grad=g.createRadialGradient(x,y,0,x,y,80);
-  grad.addColorStop(0,dancePalette[k]+'88');grad.addColorStop(1,dancePalette[k]+'00');
-  g.globalAlpha=.35;g.fillStyle=grad;g.fillRect(x-80,y-80,160,160);
+  let x=150+k*108+Math.sin(clock*.9+k)*36,y=755+Math.cos(clock*.7+k)*85;
+  const grad=g.createRadialGradient(x,y,3,x,y,116);
+  grad.addColorStop(0,['#38dfff66','#ef63e966','#a3ff7b66'][k%3]);grad.addColorStop(1,'#00000000');
+  g.fillStyle=grad;g.fillRect(x-116,y-116,232,232);
  }
- g.globalAlpha=1;g.globalCompositeOperation='source-over';
- // Pulsing DJ speaker cones and music notes; background already contains DJ and equipment.
- for(const sx of [185,450]){
-  const pulse=5+Math.sin(clock*9)*2.5;
-  g.strokeStyle='#8beaff';g.globalAlpha=.25+.18*Math.sin(clock*9);g.lineWidth=2;
-  g.beginPath();g.arc(sx,718,pulse+15,0,Math.PI*2);g.stroke();
+ g.restore();
+ // Lounge furniture. The middle and right edge stay open for walking.
+ asset('sofa_corner',155,240,220,135);asset('sofa_straight',316,227,200,105);
+ asset('table',237,323,103,90);
+ asset('bar',116,157,190,75);
+ // Four arcade machines are actual independent sprites.
+ games.forEach((q,i)=>asset('cabinet_'+i,q.x,q.y+45,109,155));
+ asset('sign_coda',859,125,375,90);
+ asset('speaker',574,272,78,124);asset('speaker_tall',1157,272,78,124);
+ // Disco ball / independent animated light rays.
+ asset('disco',860,213+Math.sin(clock*2)*2,84,84);
+ g.save();g.globalCompositeOperation='screen';
+ for(let i=0;i<5;i++){
+  const angle=clock*.65+i*1.256,ex=860+Math.cos(angle)*260,ey=205+Math.sin(angle)*120;
+  g.globalAlpha=.13;g.strokeStyle=['#64ddff','#fa77ed','#ffe183','#85ffb9','#c3a1ff'][i];g.lineWidth=10;
+  g.beginPath();g.moveTo(860,192);g.lineTo(ex,ey);g.stroke();
  }
- g.globalAlpha=1;
+ g.restore();
+ // Shop, jukebox, signs, entrances, independent decorations.
+ asset('jukebox',520,407,94,121);
+ asset('sign_lounge',242,117,202,65);
+ asset('sign_piano',1315,148,175,95);
+ asset('sign_hall',1421,271,135,100);
+ asset('door_piano',1315,262,120,115);
+ asset('door_entrance',1376,514,165,130);
+ asset('stairs',742,905,108,91);
+ asset('wall',487,509,350,65,.7);
+ // Boutique is a separate station with actual clothing shop props.
+ g.save();g.shadowBlur=15;g.shadowColor='#fa65df';r(350,370,206,62,'#582452');g.restore();
+ t('✦ AVATAR BOUTIQUE ✦',453,397,15,'#fff0ff');
+ asset('side_table',457,475,160,87);
+ // Plants are separate and movable, not painted into the world.
+ const plants=[[69,328,0],[394,326,1],[440,238,3],[591,390,5],[1176,395,7],
+ [1234,375,0],[1463,361,2],[82,735,6],[630,700,4],[95,921,0],
+ [609,924,5],[671,547,2],[804,554,1],[291,505,7],[385,505,4]];
+ for(const [x,y,i] of plants)asset('plant_'+i,x,y,60,84);
+ // NPCs are now sprite actors (not embedded in the floor artwork).
  for(const p of npc){
   if(p.hidden)continue;
   const dancing=p.mode==='dance'&&p.arrived;
-  sprite(p.x,p.y,looks[p.look],p.wait<=0,dancing,.72);
-  if(dancing)t(['♪','♫','★'][p.look%3],p.x+15,p.y-40+Math.sin(clock*3+p.look)*5,16,'#f4b6ea');
+  sprite(p.x,p.y,looks[p.look],p.wait<=0,dancing,.93);
+  if(dancing)t(['♪','♫','★'][p.look%3],p.x+17,p.y-62+Math.sin(clock*3+p.look)*5,16,'#f4b6ea');
  }
- g.save();g.globalCompositeOperation='screen';g.globalAlpha=.25;g.fillStyle='#6bdcff';g.beginPath();g.ellipse(player.x,player.y+8,21,7,0,0,Math.PI*2);g.fill();g.restore();
- sprite(player.x,player.y,[avatar.skin||'#d49a76',avatar.shirt||'#a7f66f',avatar.hair||'#463145',avatar.hairstyle||'short'],false,emote>clock,.95);
- t('▼ YOU',player.x,player.y-46,13,'#eaffac');
- if(near){const px=near.x,py=near.y-62;g.globalAlpha=.86;r(px-63,py-20,126,25,'#18152d');g.globalAlpha=1;t('E · '+(near.type==='game'?'PLAY':near.type==='piano'?'ENTER':'INTERACT'),px,py-3,11,'#c5fbfa')}
- g.restore();
+ // Player's directional walking frames.
+ g.save();g.globalCompositeOperation='screen';g.globalAlpha=.28;
+ g.fillStyle='#66d7ff';g.beginPath();g.ellipse(player.x,player.y+5,24,7,0,0,Math.PI*2);g.fill();g.restore();
+ sprite(player.x,player.y,playerLook,movingPlayer,emote>clock,1.06);
+ t('▼ YOU',player.x,player.y-74,13,'#eaffac');
+ if(near){
+  const px=near.x,py=near.y-73;g.globalAlpha=.91;r(px-67,py-22,134,26,'#1d1534');g.globalAlpha=1;
+  t('E · '+(near.type==='game'?'PLAY':near.type==='piano'?'ENTER':'INTERACT'),px,py-4,12,'#c5fbfa');
+ }
 }
 function frame(ms){const dt=Math.min(.05,(ms-last)/1000||0);last=ms;if(!gameOpen)update(dt);draw();requestAnimationFrame(frame)}window.addEventListener('keydown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k)){e.preventDefault();keys.add(k);if(k==='e'&&!e.repeat)talk();if(k==='q')emote=clock+2}});window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>keys.clear());c.addEventListener('pointerdown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const b=c.getBoundingClientRect();dest={x:cam.x+(e.clientX-b.left)*c.width/b.width/ART_SCALE,y:cam.y+(e.clientY-b.top)*c.height/b.height/ART_SCALE};c.focus()});document.querySelector('#close').onclick=()=>dialog.style.display='none';document.querySelector('#fs').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else c.requestFullscreen?.()};// Phase 4.2 account, boutique, and song library bridge (preview only).
 const panel=document.querySelector('#panel'),panelBody=document.querySelector('#panelBody'),panelTitle=document.querySelector('#panelTitle');
