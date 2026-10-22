@@ -3,7 +3,7 @@
 #gameoverlay{position:fixed;inset:0;z-index:100;background:#121327;display:flex;flex-direction:column}#gameoverlay[hidden]{display:none}.gamebar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#231a3c;border-bottom:2px solid #b583dc}.gamebar strong{color:#f0d7ff}#gameiframe{border:0;width:100%;flex:1;min-height:0;background:#111628}body.game-open{overflow:hidden}@media(max-width:650px){.gamebar{gap:6px}.gamebar strong{font-size:12px}.gamebar a{font-size:11px}}
 #panel{position:fixed;z-index:90;top:50%;left:50%;transform:translate(-50%,-50%);width:min(570px,94vw);max-height:84dvh;overflow:auto;padding:20px;background:#231c3b;border:2px solid #c69be9;box-shadow:0 0 0 100vmax #05030ab8,0 14px 55px #000c;border-radius:12px}#panel[hidden]{display:none}.panelHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.panelRow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0;padding:10px;border:1px solid #66517f;border-radius:7px}.panelRow small{display:block;opacity:.75}.formRow{display:grid;gap:5px;margin:10px 0}.formRow select,.formRow input{background:#17142c;color:#fff;border:1px solid #a08dbd;padding:9px;border-radius:5px;width:100%}.panelActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.muted{color:#c1b4d7;font-size:13px}.panelMsg{min-height:22px;color:#9fe9dc}body:has(#panel:not([hidden])) #view{filter:brightness(.65)}
 #pianoroom{position:fixed;inset:0;z-index:95;background:radial-gradient(ellipse at 50% 20%,#344962,#11172b 75%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#f5edff}#pianoroom[hidden]{display:none}#pianoroom .stage{border:9px solid #69567e;background:repeating-linear-gradient(90deg,#243349 0 32px,#28374d 32px 64px);width:min(650px,88vw);padding:30px;text-align:center;box-shadow:0 0 70px #b08ed255}#pianoroom .keys{display:flex;justify-content:center;margin:20px auto 0}#pianoroom .keys i{height:85px;width:27px;background:#eee9f3;border:2px solid #35324b;box-shadow:inset 0 -8px #aaa8bc}#pianoroom .keys i:nth-child(3n+2){background:#22223b;height:55px;width:18px;margin:0 -8px;z-index:1}#pianoroom h2{color:#9feaf2;letter-spacing:3px}#pianoroom button{font-size:16px}
-</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 7.3 · DEPTH & COLLISION</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1536" height="1024" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · C collision · L depth boxes · Shift-click edit · X export &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 7.3 · Depth-sorted world · C collision · L layers</span></footer><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><div id="pianoroom" hidden><div class="stage"><h2>♫ PIANO LAB ♫</h2><p>A quieter music space away from the arcade floor.</p><div class="keys"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p style="opacity:.7">Dedicated room preview — instruments and activities coming later.</p></div><button id="closepiano">← Return to Arcade</button></div><script>
+</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 7.4 · PRECISE DEPTH</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1536" height="1024" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · C collision · L objects · F foreground on/off · Shift-click edit · X export &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 7.4 · Object-only occlusion · C collision · L layers</span></footer><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><div id="pianoroom" hidden><div class="stage"><h2>♫ PIANO LAB ♫</h2><p>A quieter music space away from the arcade floor.</p><div class="keys"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p style="opacity:.7">Dedicated room preview — instruments and activities coming later.</p></div><button id="closepiano">← Return to Arcade</button></div><script>
 (()=>{'use strict';const c=document.querySelector('#view'),g=c.getContext('2d',{alpha:false}),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}const W=1536,H=1024,ART_SCALE=1,keys=new Set();let player={x:1173,y:365},cam={x:0,y:0},dest=null,emote=0,near=null,last=0,clock=0,walking=false,facing="down";const rooms=[{id:'lounge',name:'LOUNGE',x:60,y:100,w:330,h:270},{id:'dance',name:'DANCE',x:45,y:620,w:580,h:325},{id:'arcade',name:'ARCADE',x:490,y:110,w:735,h:435}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:694,y:279,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:810,y:279,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:927,y:279,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1047,y:279,url:'song-machine/index.html'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
 const looks=[['#e5b48d','#ed8cbe','#171424','spiky'],['#85543b','#8ddde6','#e3c27d','long'],['#f4cba6','#c9a3f1','#402c4b','buns'],['#a56b48','#f4ae77','#1c172d','short'],['#f3c3a1','#b2f37b','#6c3159','bob'],['#704633','#a8b5fc','#eee6df','curly'],['#f0b79d','#ffd48c','#171424','ponytail']];const npc=[{name:'Ziggy',x:1380,y:476,mode:'enter',goal:0,wait:0,look:0},{name:'Nova',x:1380,y:476,mode:'enter',goal:1,wait:1.7,look:1},{name:'Byte',x:1380,y:476,mode:'enter',goal:2,wait:3.4,look:2},{name:'Mochi',x:1380,y:476,mode:'enter',goal:3,wait:5,look:3},{name:'Riff',x:1380,y:476,mode:'enter',goal:0,wait:7,look:4},{name:'Fizz',x:1380,y:476,mode:'enter',goal:1,wait:9,look:5},{name:'Dot',x:1380,y:476,mode:'enter',goal:2,wait:11,look:6}];const sofas=[{x:105,y:135,w:110,h:45},{x:240,y:135,w:110,h:45}];const seats=[{x:125,y:260},{x:328,y:270},{x:146,y:312},{x:329,y:312}];const spot=(p)=>p.mode==='cabinet'?{x:games[p.goal%4].x,y:355}:p.mode==='lounge'?seats[p.goal%4]:p.mode==='dance'?{x:175+(p.goal%4)*120,y:750+(p.goal%2)*70}:p.mode==='leave'?{x:1380,y:476}:{x:1380,y:476};const r=(x,y,w,h,color)=>{g.fillStyle=color;g.fillRect(Math.round(x),Math.round(y),w,h)};const t=(s,x,y,size=18,color='#e7e2ff')=>{g.fillStyle=color;g.font=`bold ${size}px monospace`;g.textAlign='center';g.fillText(s,x,y)};function sprite(x,y,look,walk=false,dance=false,scale=1){const [skin,shirt,hair,style]=look;g.save();g.translate(Math.round(x),Math.round(y));g.scale(scale,scale);const bob=dance?Math.sin(clock*8)*5:walk?Math.sin(clock*12)*2:0;r(-10,-38+bob,20,17,hair);if(style==='buns'){r(-15,-39+bob,6,7,hair);r(9,-39+bob,6,7,hair)}if(style==='long')r(-13,-30+bob,26,20,hair);r(-9,-32+bob,18,16,skin);r(-12,-16+bob,24,20,shirt);r(-16,-12+bob,4,13,skin);r(12,-12+bob,4,13,skin);r(-9,4+bob,7,11,'#695d99');r(2,4+bob,7,11,'#695d99');r(-10,14+bob,9,4,'#f8d56b');r(1,14+bob,9,4,'#f8d56b');r(-6,-24+bob,3,3,'#222033');r(4,-24+bob,3,3,'#222033');if(dance){const beat=Math.floor(clock*4+look[0].length)%4,up=beat%2===0;r(-18,-(up?29:13)+bob,5,up?16:11,skin);r(13,-(up?13:29)+bob,5,up?11:16,skin);r(-10+(up?-5:3),14+bob,9,5,'#f8d56b');r(1+(up?4:-4),14+bob,9,5,'#f8d56b')}g.restore()};
 // Phase 7.1: world-coordinate collision, small foot hitboxes, and A* navigation.
@@ -27,20 +27,7 @@ const floorPolys=[
 ];
 // Solid collision uses only grounded footprints; props can tower above this footprint.
 // Better than boxing in entire sofas/speakers and accidentally blocking doorways.
-const obstacles=[
- [47,142,118,46],[160,184,221,48],[216,242,81,39],[65,270,49,31], // lounge furnishings
- [281,293,58,41],[316,300,63,43],  // lounge plant + ledge
- [537,207,71,31],[1111,202,73,35], // speaker bases
- [647,267,90,27],[763,271,92,26],[882,269,92,27],[1000,275,90,28], // cabinets
- [357,433,206,42],[468,337,95,22],[525,447,48,27], // boutique counter / shop plants
- [624,488,45,25],[1083,486,45,33], // main foreground plants
- [835,501,281,59], // main counter (stairs to the right remain free)
- [1244,192,78,37],[1393,273,119,40],[1343,467,126,36], // piano, hall, entry fittings
- [176,654,68,41],[442,666,71,38],[241,676,212,27], // nightclub DJ base / speakers
- [502,688,123,38],[44,694,63,39], // dance side furniture
- [668,776,44,25],[42,752,46,22], // decorative pots only
- [235,916,60,25],[396,914,60,25] // south stair rail edges
-];
+const obstacles=[[39,124,126,61],[123,153,267,77],[213,230,85,49],[50,278,66,42],[307,306,62,38],[541,195,66,49],[1113,194,70,50],[644,175,99,123],[759,175,102,124],[876,175,107,124],[990,175,114,128],[373,420,174,50],[520,441,53,26],[624,482,50,27],[1090,491,49,29],[836,484,301,80],[1356,148,150,149],[1301,331,153,60],[1250,204,70,30],[181,602,71,95],[452,602,65,95],[245,662,228,44],[516,685,134,43],[45,709,55,43],[669,758,47,37],[236,922,48,16],[401,923,46,16]];
 function pointInPoly(x,y,poly){
  let hit=false;
  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
@@ -132,7 +119,7 @@ function pathTo(sx,sy,tx,ty){
 }
 let collisionDebug=false,clickPath=[],lastTarget=null;
 const edits=new Map();
-try{for(const [i,v] of JSON.parse(localStorage.getItem('codaCollisionEditsV73')||'[]'))edits.set(i,v)}catch{}
+try{for(const [i,v] of JSON.parse(localStorage.getItem('codaCollisionEditsV74')||'[]'))edits.set(i,v)}catch{}
 for(const [i,v] of edits)if(i>=0&&i<navGrid.length)navGrid[i]=v;
 function exportCollision(){const blob=new Blob([JSON.stringify([...edits],null,2)],{type:'application/json'});
  const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='coda-collision-edits.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
@@ -146,7 +133,7 @@ function go(p,dt){const aim=spot(p);const targetKey=p.mode+':'+p.goal;
  const step=Math.min(65*dt,dist),nx=p.x+dx/dist*step,ny=p.y+dy/dist*step;
  if(inside(nx,ny)){p.x=nx;p.y=ny;return true}
  // Rebuild a valid route instead of bypassing the collision boundary.
- p.route=makeRoute(p,aim);return p.route.length>0;
+ p.route=makeRoute(p,aim);return p.route.length?true:null;
 }
 function update(dt){clock+=dt;if(dialog.style.display==='block'||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;let dx=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),dy=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);if(dx||dy){dest=null;clickPath=[];facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');}if(dest){
  if(!clickPath.length){dest=null;dx=dy=0}
@@ -155,7 +142,14 @@ function update(dt){clock+=dt;if(dialog.style.display==='block'||!document.query
   if(Math.hypot(dx,dy)<11){clickPath.shift();if(!clickPath.length){dest=null;dx=dy=0}}
   if(dx||dy)facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');
  }
-}const len=Math.hypot(dx,dy);walking=!!len;if(len){const nx=player.x+dx/len*230*dt,ny=player.y+dy/len*230*dt;if(inside(nx,player.y))player.x=nx;if(inside(player.x,ny))player.y=ny}for(const p of npc.slice(0,3)){
+}const len=Math.hypot(dx,dy);walking=!!len;if(len){const mx=dx/len*230*dt,my=dy/len*230*dt;
+ const steps=Math.max(1,Math.ceil(Math.hypot(mx,my)/3));
+ for(let k=0;k<steps;k++){
+  const nx=player.x+mx/steps,ny=player.y+my/steps;
+  if(inside(nx,player.y))player.x=nx;
+  if(inside(player.x,ny))player.y=ny;
+ }
+}for(const p of npc.slice(0,3)){
   if(p.hidden){p.wait-=dt;if(p.wait<=0){p.hidden=false;p.x=1380;p.y=476;p.mode='enter';p.routeKey='';p.arrived=false;p.wait=0.5;}continue;}
   // Arrival and dwell are separate: NPCs must reach the dance floor before dancing.
   if(p.wait>0){p.wait-=dt;continue;}
@@ -174,7 +168,7 @@ function update(dt){clock+=dt;if(dialog.style.display==='block'||!document.query
     p.arrived=true;
     p.wait=p.mode==='cabinet'?7+(p.look%3)*2:p.mode==='lounge'?9+(p.look%3)*2:12+(p.look%4)*2;
   }
-}near=null;let d=Infinity;for(const p of [...games.map((q,i)=>({...q,type:'game',index:i})),...npc.filter(q=>!q.hidden).map(q=>({...q,type:'npc'})),{name:'Pip · Avatar Boutique',x:480,y:405,type:'shop'},{name:'Jukebox',x:600,y:390,type:'jukebox'},{name:'Piano Lab',x:1280,y:166,type:'piano'}]){const dd=Math.hypot(p.x-player.x,p.y-player.y);if(dd<85&&dd<d){near=p;d=dd}}status.textContent=near?'E · '+(near.type==='game'?'Play ':near.type==='shop'?'Talk to ':'Chat with ')+near.name:'Explore · E to interact'}const gameoverlay=document.querySelector('#gameoverlay'),gameiframe=document.querySelector('#gameiframe');let gameOpen=false;
+}near=null;let d=Infinity;for(const p of [...games.map((q,i)=>({...q,type:'game',index:i})),...npc.filter(q=>!q.hidden).map(q=>({...q,type:'npc'})),{name:'Pip · Avatar Boutique',x:480,y:405,type:'shop'},{name:'Jukebox',x:600,y:390,type:'jukebox'},{name:'Piano Lab',x:1280,y:166,type:'piano'}]){const dd=Math.hypot(p.x-player.x,p.y-player.y);if(dd<85&&dd<d){near=p;d=dd}}status.textContent=near?'E · '+(near.type==='game'?'Play ':near.type==='shop'?'Talk to ':'Chat with ')+near.name:'Explore · E to interact · C collision · L layers · F toggle'}const gameoverlay=document.querySelector('#gameoverlay'),gameiframe=document.querySelector('#gameiframe');let gameOpen=false;
 
 function openPiano(){keys.clear();dest=null;document.querySelector('#pianoroom').hidden=false;}
 function closePiano(){document.querySelector('#pianoroom').hidden=true;keys.clear();c.focus();}
@@ -250,9 +244,9 @@ function talk(){if(dialog.style.display==='block'){dialog.style.display='none';r
 const actorsArt=new Image();actorsArt.src='coda_arcade_phase73_characters.png';
 const characterFrames={"hero_down_0":{"x":16,"y":5,"w":47,"h":69},"hero_down_1":{"x":97,"y":5,"w":45,"h":69},"hero_down_2":{"x":178,"y":5,"w":44,"h":69},"hero_down_3":{"x":259,"y":5,"w":42,"h":69},"hero_down_4":{"x":338,"y":5,"w":44,"h":69},"hero_up_0":{"x":416,"y":6,"w":47,"h":67},"hero_up_1":{"x":497,"y":6,"w":45,"h":67},"hero_up_2":{"x":578,"y":6,"w":44,"h":67},"hero_up_3":{"x":658,"y":6,"w":43,"h":67},"hero_up_4":{"x":739,"y":6,"w":42,"h":67},"hero_left_0":{"x":816,"y":5,"w":47,"h":69},"hero_left_1":{"x":896,"y":5,"w":47,"h":69},"hero_left_2":{"x":16,"y":85,"w":47,"h":69},"hero_left_3":{"x":96,"y":85,"w":47,"h":69},"hero_left_4":{"x":176,"y":85,"w":47,"h":69},"hero_right_0":{"x":256,"y":85,"w":47,"h":69},"hero_right_1":{"x":336,"y":85,"w":47,"h":69},"hero_right_2":{"x":416,"y":85,"w":47,"h":69},"hero_right_3":{"x":496,"y":85,"w":47,"h":69},"hero_right_4":{"x":576,"y":85,"w":47,"h":69},"pink_down_0":{"x":652,"y":84,"w":55,"h":71},"pink_up_0":{"x":735,"y":86,"w":50,"h":67},"pink_left_0":{"x":812,"y":86,"w":55,"h":67},"pink_right_0":{"x":892,"y":84,"w":55,"h":71},"blue_down_0":{"x":12,"y":164,"w":55,"h":71},"blue_up_0":{"x":94,"y":166,"w":52,"h":67},"blue_left_0":{"x":172,"y":166,"w":55,"h":67},"blue_right_0":{"x":252,"y":164,"w":55,"h":71},"brown_down_0":{"x":334,"y":164,"w":51,"h":71},"brown_up_0":{"x":412,"y":164,"w":55,"h":71},"brown_left_0":{"x":492,"y":164,"w":55,"h":71},"brown_right_0":{"x":572,"y":164,"w":55,"h":71},"hat_down_0":{"x":657,"y":164,"w":46,"h":71},"hat_up_0":{"x":732,"y":166,"w":55,"h":67},"hat_left_0":{"x":812,"y":166,"w":55,"h":67},"hat_right_0":{"x":892,"y":164,"w":55,"h":71},"green_down_0":{"x":12,"y":244,"w":55,"h":71},"green_up_0":{"x":92,"y":246,"w":55,"h":67},"green_left_0":{"x":172,"y":246,"w":55,"h":67},"green_right_0":{"x":252,"y":244,"w":55,"h":71},"orange_down_0":{"x":334,"y":244,"w":52,"h":71},"orange_up_0":{"x":412,"y":246,"w":55,"h":67},"orange_left_0":{"x":492,"y":246,"w":55,"h":67},"orange_right_0":{"x":572,"y":244,"w":55,"h":71}};
 const actorsArtReady=()=>actorsArt.complete&&actorsArt.naturalWidth;
-const foregroundArt=new Image();foregroundArt.src='coda_arcade_phase73_foreground.png';
-const foregroundParts=[{"name":"lounge_bar","y":190,"bounds":[17,79,152,117],"poly":[[17,79],[167,81],[168,193],[28,195]]},{"name":"lounge_couch","y":236,"bounds":[121,144,273,93],"poly":[[121,148],[176,144],[211,153],[258,144],[363,148],[393,168],[393,221],[368,236],[350,234],[333,206],[183,218],[155,236],[125,216]]},{"name":"lounge_table","y":277,"bounds":[206,208,100,70],"poly":[[206,225],[235,209],[269,208],[302,227],[305,258],[276,277],[233,269],[209,250]]},{"name":"lounge_small_table","y":314,"bounds":[55,285,60,41],"poly":[[55,287],[111,285],[114,310],[93,325],[61,320]]},{"name":"lounge_palm","y":339,"bounds":[299,247,69,99],"poly":[[299,282],[317,253],[342,247],[358,262],[366,298],[367,321],[359,345],[324,343],[300,327]]},{"name":"left_speaker","y":245,"bounds":[538,104,88,139],"poly":[[539,104],[623,105],[625,241],[538,242]]},{"name":"right_speaker","y":245,"bounds":[1108,101,89,141],"poly":[[1108,101],[1196,103],[1196,241],[1110,241]]},{"name":"cab_pitch","y":291,"bounds":[635,159,114,134],"poly":[[635,159],[748,160],[748,292],[635,292]]},{"name":"cab_triad","y":293,"bounds":[753,158,111,137],"poly":[[753,159],[863,158],[863,294],[753,294]]},{"name":"cab_rhythm","y":294,"bounds":[876,158,111,138],"poly":[[876,158],[986,158],[986,295],[876,295]]},{"name":"cab_song","y":298,"bounds":[991,157,116,144],"poly":[[991,158],[1106,157],[1106,300],[991,300]]},{"name":"boutique_palm","y":462,"bounds":[522,363,54,100],"poly":[[522,374],[540,363],[569,368],[575,400],[567,444],[557,462],[526,457]]},{"name":"boutique_counter","y":474,"bounds":[365,356,183,119],"poly":[[374,367],[412,356],[534,368],[547,412],[547,463],[522,471],[380,474],[365,458]]},{"name":"boutique_wall","y":509,"bounds":[258,373,404,159],"poly":[[265,373],[317,387],[347,406],[347,460],[402,482],[569,485],[617,482],[661,501],[658,531],[258,530]]},{"name":"main_palm_left","y":507,"bounds":[607,421,71,88],"poly":[[611,430],[644,421],[677,441],[673,479],[665,505],[626,508],[607,481]]},{"name":"main_counter","y":563,"bounds":[822,436,320,127],"poly":[[826,436],[856,444],[1115,442],[1141,462],[1138,553],[1117,562],[846,562],[822,529]]},{"name":"main_palm_right","y":521,"bounds":[1080,421,67,101],"poly":[[1080,421],[1108,425],[1134,435],[1146,473],[1139,521],[1110,518],[1083,484]]},{"name":"piano_door","y":213,"bounds":[1199,0,177,211],"poly":[[1202,2],[1370,0],[1375,206],[1199,210]]},{"name":"hall_fame","y":333,"bounds":[1374,132,162,202],"poly":[[1380,132],[1533,137],[1535,333],[1374,327]]},{"name":"entrance","y":560,"bounds":[1278,324,225,243],"poly":[[1286,326],[1486,324],[1501,385],[1502,563],[1278,566]]},{"name":"dance_speaker_left","y":690,"bounds":[181,554,75,139],"poly":[[181,556],[255,554],[255,692],[182,692]]},{"name":"dance_speaker_right","y":692,"bounds":[447,555,73,141],"poly":[[447,555],[519,556],[519,695],[447,695]]},{"name":"dj_counter","y":699,"bounds":[230,622,248,83],"poly":[[235,622],[473,622],[477,695],[451,704],[246,703],[230,686]]},{"name":"dance_right_couch","y":737,"bounds":[510,602,149,134],"poly":[[510,611],[613,602],[656,632],[658,709],[608,735],[523,728]]},{"name":"dance_palm_right","y":789,"bounds":[665,690,58,102],"poly":[[665,702],[689,690],[712,699],[722,729],[714,782],[691,791],[666,769]]},{"name":"dance_palm_left","y":772,"bounds":[35,678,63,98],"poly":[[36,681],[58,678],[86,690],[97,728],[92,766],[52,775],[35,748]]},{"name":"dance_bottom_palm","y":939,"bounds":[430,849,71,95],"poly":[[430,856],[459,849],[496,868],[500,901],[481,938],[443,943],[430,914]]}];
-let depthDebug=false;
+const foregroundArt=new Image();foregroundArt.src='coda_arcade_phase74_foreground.png';
+const foregroundParts=[{"name":"lounge_couch","y":233,"bounds":[122,148,268,85],"poly":[[122,156],[139,148],[179,148],[203,157],[255,148],[348,148],[377,154],[389,169],[389,208],[369,218],[354,232],[339,230],[333,210],[278,208],[225,214],[177,219],[160,232],[145,221],[123,215]]},{"name":"lounge_table","y":273,"bounds":[215,210,83,61],"poly":[[215,231],[221,220],[240,211],[261,210],[287,223],[297,239],[293,255],[277,270],[239,269],[222,260]]},{"name":"lounge_side_table","y":324,"bounds":[58,284,55,38],"poly":[[58,294],[77,284],[100,286],[112,299],[108,313],[92,321],[68,318]]},{"name":"boutique_counter","y":470,"bounds":[378,419,167,51],"poly":[[385,424],[398,419],[531,420],[544,432],[544,460],[526,469],[387,469],[378,454]]},{"name":"boutique_palm","y":463,"bounds":[521,361,60,103],"poly":[[521,389],[527,378],[548,361],[567,374],[580,392],[566,412],[575,429],[561,460],[536,463],[522,443]]},{"name":"main_palm_left","y":505,"bounds":[624,428,51,75],"poly":[[624,448],[632,432],[648,428],[672,447],[674,464],[662,482],[658,501],[636,502],[628,481]]},{"name":"main_counter","y":561,"bounds":[825,449,308,112],"poly":[[840,465],[854,449],[901,449],[1081,451],[1121,460],[1131,478],[1132,546],[1114,560],[848,559],[825,527]]},{"name":"main_palm_right","y":519,"bounds":[1080,426,66,95],"poly":[[1084,442],[1092,428],[1113,426],[1141,442],[1145,463],[1135,477],[1138,511],[1121,520],[1091,516],[1080,486]]},{"name":"dance_speaker_left","y":690,"bounds":[220,595,33,94],"poly":[[220,597],[250,595],[252,681],[247,688],[220,688]]},{"name":"dance_speaker_right","y":692,"bounds":[449,592,68,100],"poly":[[449,597],[510,592],[516,681],[510,691],[452,691]]},{"name":"dance_dj_counter","y":701,"bounds":[236,644,234,53],"poly":[[242,652],[264,644],[441,644],[469,652],[469,688],[451,696],[252,696],[236,681]]},{"name":"dance_right_couch","y":735,"bounds":[536,620,111,110],"poly":[[536,652],[547,630],[553,622],[602,620],[627,634],[646,645],[645,710],[616,729],[558,728],[537,706]]},{"name":"dance_palm_left","y":772,"bounds":[35,677,64,95],"poly":[[35,713],[42,691],[66,677],[92,695],[98,719],[94,747],[83,771],[54,770],[36,743]]},{"name":"dance_palm_right","y":791,"bounds":[662,686,58,104],"poly":[[662,726],[672,702],[690,686],[715,704],[719,730],[713,768],[702,789],[680,787],[663,768]]},{"name":"dance_bottom_palm","y":940,"bounds":[428,850,77,92],"poly":[[432,886],[441,861],[467,850],[497,873],[504,896],[491,934],[477,941],[446,937],[428,918]]}];
+let depthDebug=false,foregroundEnabled=true;
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -284,26 +278,30 @@ function draw(){
   gr.addColorStop(0,palette[k]+'44');gr.addColorStop(1,palette[k]+'00');
   g.globalAlpha=.17;g.fillStyle=gr;g.fillRect(x-115,y-115,230,230);
  }g.restore();
- // These foreground patches are actual cutouts of the approved art, not rectangles.
- // Draw each object at its floor contact Y; actors naturally pass in FRONT or BEHIND it.
- const scene=[];
- for(const part of foregroundParts)scene.push({y:part.y,type:'foreground',part});
+ // Rendering rule: original floor/art stays at the very bottom. Characters
+ // are Y-sorted against one another, and only tightly isolated *solid object*
+ // pixels may cover them. No wall / door / floor patches exist in this atlas.
+ const liveActors=[];
  for(const p of npc.slice(0,2))if(!p.hidden){
-  const kind=['pink','blue','orange','brown','green','hat'][p.look%6];
-  const dancing=p.mode==='dance'&&p.arrived;
-  scene.push({y:p.y,type:'npc',p,kind,dancing});
+  liveActors.push({type:'npc',y:p.y,x:p.x,p});
  }
- scene.push({y:player.y,type:'player'});
+ liveActors.push({type:'player',y:player.y,x:player.x});
+ const scene=[...liveActors];
+ for(const part of foregroundParts)scene.push({type:'foreground',y:part.y,part});
  scene.sort((a,b)=>a.y-b.y||(a.type==='foreground'?1:-1));
  for(const item of scene){
-  if(item.type==='foreground')drawForeground(item.part);
-  else if(item.type==='player'){
+  if(item.type==='foreground'){
+   if(foregroundEnabled)drawForeground(item.part);
+   continue;
+  }
+  if(item.type==='player'){
    g.save();g.globalCompositeOperation='screen';g.globalAlpha=.22;
    g.fillStyle='#7aefff';g.beginPath();g.ellipse(player.x,player.y+2,17,5,0,0,Math.PI*2);g.fill();g.restore();
    drawActor('hero_'+facing+'_'+(walking?Math.floor(clock*8)%5:0),player.x,player.y,39,53,emote>clock?-Math.abs(Math.sin(clock*9)*3):0);
   }else{
-   const p=item.p,kind=item.kind,frame=p.wait<=0?Math.floor(clock*4)%2:0;
-   drawActor(kind+'_down_0',p.x,p.y,39,52,item.dancing?Math.sin(clock*7+p.look)*4:0);
+   const p=item.p,dancing=p.mode==='dance'&&p.arrived;
+   const kind=['pink','blue','orange','brown','green','hat'][p.look%6];
+   drawActor(kind+'_down_0',p.x,p.y,39,52,dancing?Math.sin(clock*7+p.look)*4:0);
   }
  }
  // Don't draw extra characters or arrows from the baked-in artwork.
@@ -321,7 +319,10 @@ function draw(){
  }
  if(depthDebug){
   g.save();g.lineWidth=2;g.strokeStyle='#fff09e';g.font='13px monospace';
-  for(const part of foregroundParts){const [x,y,w,h]=part.bounds;g.strokeRect(x,y,w,h);g.fillStyle='#fffbd0';g.fillText(part.name,x,y-3)}
+  for(const part of foregroundParts){const [x,y,w,h]=part.bounds;
+    g.beginPath();part.poly.forEach(([px,py],i)=>i?g.lineTo(px,py):g.moveTo(px,py));g.closePath();g.stroke();
+    g.fillStyle='#fffbd0';g.fillText(part.name,x,y-3);
+   }
   g.restore();
  }
  if(near){g.globalAlpha=.91;r(near.x-62,near.y-93,124,25,'#18132e');g.globalAlpha=1;
@@ -332,14 +333,14 @@ function frame(ms){const dt=Math.min(.05,(ms-last)/1000||0);last=ms;
  console.error('Arcade frame error:',err);
  g.setTransform(1,0,0,1,0,0);g.fillStyle='#10142b';g.fillRect(0,0,W,H);
  g.fillStyle='#ffb9e5';g.font='bold 25px monospace';g.fillText('Arcade error: '+err.message,55,110);
- }requestAnimationFrame(frame)}window.addEventListener('keydown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const k=e.key.toLowerCase();if(k==='c'&&!e.repeat){collisionDebug=!collisionDebug;return;}if(k==='l'&&!e.repeat){depthDebug=!depthDebug;return;}if(k==='x'&&collisionDebug&&!e.repeat){exportCollision();return;}if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k)){e.preventDefault();keys.add(k);if(k==='e'&&!e.repeat)talk();if(k==='q')emote=clock+2}});window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>keys.clear());c.addEventListener('pointerdown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const b=c.getBoundingClientRect();
+ }requestAnimationFrame(frame)}window.addEventListener('keydown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const k=e.key.toLowerCase();if(k==='c'&&!e.repeat){collisionDebug=!collisionDebug;return;}if(k==='l'&&!e.repeat){depthDebug=!depthDebug;return;}if(k==='f'&&!e.repeat){foregroundEnabled=!foregroundEnabled;return;}if(k==='x'&&collisionDebug&&!e.repeat){exportCollision();return;}if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k)){e.preventDefault();keys.add(k);if(k==='e'&&!e.repeat)talk();if(k==='q')emote=clock+2}});window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>keys.clear());c.addEventListener('pointerdown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const b=c.getBoundingClientRect();
  if(collisionDebug&&e.shiftKey){
   const xx=(e.clientX-b.left)*c.width/b.width,yy=(e.clientY-b.top)*c.height/b.height;
   const gx=Math.floor(xx/COLLISION_CELL),gy=Math.floor(yy/COLLISION_CELL);
   if(gx>=0&&gy>=0&&gx<GRID_W&&gy<GRID_H){
    const id=navIndex(gx,gy),val=navGrid[id]?0:1;
    navGrid[id]=val;edits.set(id,val);
-   localStorage.setItem('codaCollisionEditsV73',JSON.stringify([...edits]));
+   localStorage.setItem('codaCollisionEditsV74',JSON.stringify([...edits]));
   }return;
  }
  dest={x:cam.x+(e.clientX-b.left)*c.width/b.width/ART_SCALE,y:cam.y+(e.clientY-b.top)*c.height/b.height/ART_SCALE};
