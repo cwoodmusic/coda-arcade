@@ -8,7 +8,7 @@ const neonPeople=[
 ];
 const neonDancers=[{name:'Riff',x:320,y:380,color:'#e5a8ff'},{name:'Fizz',x:670,y:390,color:'#95e6e2'},{name:'Dot',x:505,y:460,color:'#ffd48c'}];
 let neonChatCount=0;
-function neonClosest(){const people=currentRoom==='lounge'?neonPeople:currentRoom==='dance'?neonDancers:[];return people.find(p=>{const a=npcScene(p);return a.room===currentRoom&&Math.hypot(pos.x-a.x,pos.y-a.y)<90})||null}
+function neonClosest(){const people=currentRoom==='lounge'?neonPeople:currentRoom==='dance'?neonDancers:currentRoom==='arcade'?[...neonPeople,...neonDancers]:[];return people.find(p=>{const a=npcScene(p);return a.room===currentRoom&&Math.hypot(pos.x-a.x,pos.y-a.y)<90})||null}
 function neonPrompt(){const p=neonClosest();if(p)return p.shop?'E · Talk to Pip / Customize':'E · Talk to '+p.name;if(currentRoom==='lounge')return 'Explore the lounge';if(currentRoom==='dance')return 'Dance with Q';return ''}
 function neonStatus(){const p=neonClosest();if(p)return 'Press E to talk to '+p.name;if(currentRoom==='lounge')return 'Social Lounge · Chat with visitors or visit Pip';if(currentRoom==='dance')return 'Dance Floor · Press Q to emote';return ''}
 function neonInteract(){if(currentRoom==='arcade'){
@@ -46,18 +46,64 @@ const npcLooks={
  Dot:{skin:'#a56b48',hair:'#d4e2f8',shirt:'#ffd48c',hairstyle:'curly',outfit:'overalls',shoes:'neon',accessory:'starclip',walked:0}
 };
 const npcBase={};for(const p of [...neonPeople,...neonDancers])npcBase[p.name]={x:p.x,y:p.y};
-// Timed loops include room visits, idle periods and short dance emotes.
-function npcScene(p){if(p.shop)return {room:'lounge',x:500,y:253,emote:false};
- const t=animationTime/1000;const n=[...neonPeople,...neonDancers].findIndex(v=>v.name===p.name);
- const period=65+n*7,cycle=((t+n*13)%period)/period;
- const room=cycle<.20?'arcade':cycle<.60?(neonDancers.includes(p)?'dance':'lounge'):cycle<.84?'dance':'arcade';
- const base=npcBase[p.name];let x,y;
- if(room==='arcade'){const u=(cycle<.2?cycle/.2:(cycle-.84)/.16);x=175+((n*97+u*590)%650);y=390+Math.sin(u*6+n)*90+Math.sin(t*.65+n)*14;}
- else if(room==='lounge'){x=base.x+Math.sin(t*.34+n)*55;y=base.y+Math.sin(t*.29+n)*34;}
- else{x=270+((n*113)%440)+Math.sin(t*.7+n)*38;y=350+Math.cos(t*.53+n)*55;}
- return {room,x,y,emote:room==='dance'||Math.sin(t*.32+n*2.2)>.82};
+// Editable NPC schedules. Each visitor enters from the main exit, visits a cabinet,
+// then a lounge seat or dance spot, and finally leaves through the same exit.
+// Schedules are staggered so the room does not empty or fill all at once.
+const npcCabinets=[205,395,605,795];
+const npcSeats=[{x:165,y:348},{x:830,y:348},{x:170,y:355},{x:824,y:355}];
+const npcDanceSpots=[{x:290,y:350},{x:450,y:425},{x:610,y:345},{x:750,y:430}];
+const npcDialogue=[
+  'This place is pretty cool!', 'I could stay here all day.',
+  'Did you see that?', 'What a night!', 'I love this place.',
+  'Haha, seriously?', 'No way!', 'See you around!'
+];
+function npcLerp(a,b,t){return a+(b-a)*Math.max(0,Math.min(1,t))}
+function npcScene(p){
+ if(p.shop)return {room:'lounge',x:500,y:253,emote:false,activity:'shop'};
+ const n=[...neonPeople,...neonDancers].findIndex(v=>v.name===p.name);
+ const duration=96, t=((animationTime/1000+n*17)%duration+duration)%duration;
+ const cabinet=npcCabinets[n%4], seat=npcSeats[n%4], dance=npcDanceSpots[n%4];
+ const visitingDance=neonDancers.includes(p)||n%3===0;
+ const activityRoom=visitingDance?'dance':'lounge';
+ const point=(room,x,y,activity,emote=false)=>({room,x,y,activity,emote});
+ // Main exit is (500,705); cabinet visitors stop below the cabinet controls.
+ if(t<9)return point('arcade',npcLerp(500,cabinet,t/9),npcLerp(735,290,t/9),'arriving');
+ if(t<29)return point('arcade',cabinet+Math.sin(t*.4+n)*3,290,'playing');
+ if(t<37)return point('arcade',npcLerp(cabinet,visitingDance?650:220,(t-29)/8),npcLerp(290,705,(t-29)/8),'walking');
+ // Cross-room travel: disappear at the arcade doorway, appear at the room entrance.
+ if(t<44){const q=(t-37)/7;return point(activityRoom,npcLerp(500,visitingDance?dance.x:seat.x,q),npcLerp(535,visitingDance?dance.y:seat.y,q),'walking');}
+ if(t<70){
+  if(visitingDance)return point('dance',dance.x+Math.sin(t*.9+n)*7,dance.y+Math.cos(t*.8+n)*4,'dancing',true);
+  return point('lounge',seat.x,seat.y+8,'sitting');
+ }
+ if(t<77){const q=(t-70)/7;return point(activityRoom,npcLerp(visitingDance?dance.x:seat.x,500,q),npcLerp(visitingDance?dance.y:seat.y+8,535,q),'walking');}
+ if(t<84)return point('arcade',npcLerp(visitingDance?650:220,500,(t-77)/7),npcLerp(705,645,(t-77)/7),'walking');
+ return point('arcade',500,npcLerp(645,755,(t-84)/12),'leaving');
 }
-function neonDrawVisitors(room){for(const p of [...neonPeople,...neonDancers]){const scene=npcScene(p);if(scene.room!==room)continue;const profile=npcLooks[p.name];profile.walked=animationTime/120;person(scene.x,scene.y,1,ctx,0,'down',true,animationTime/150,profile,scene.emote);text(p.name.toUpperCase(),scene.x,scene.y+27,10,'#e7d9f3');if(room===currentRoom&&neonClosest()===p)text('E · TALK',scene.x,scene.y-57,10,'#fff4a9');}}
+function npcSpeech(p,scene){
+ if(scene.activity!=='sitting')return;
+ const n=[...neonPeople,...neonDancers].findIndex(v=>v.name===p.name);
+ const t=animationTime/1000+n*3;
+ if(Math.floor(t/6)%3===2)return;
+ const msg=npcDialogue[(Math.floor(t/12)+n)%npcDialogue.length];
+ const w=Math.min(188,Math.max(112,msg.length*6+18));
+ const x=Math.max(w/2+8,Math.min(1000-w/2-8,scene.x));
+ ctx.save();ctx.globalAlpha=.94;rect(x-w/2,scene.y-100,w,34,'#f2e8f6');rect(scene.x-4,scene.y-66,8,7,'#f2e8f6');
+ text(msg,x,scene.y-79,10,'#30223f');ctx.restore();
+}
+function neonDrawVisitors(room){
+ for(const p of [...neonPeople,...neonDancers]){
+  const scene=npcScene(p);if(scene.room!==room)continue;
+  const profile=npcLooks[p.name];profile.walked=animationTime/120;
+  const seated=scene.activity==='sitting';
+  if(seated){ctx.save();ctx.translate(scene.x,scene.y);ctx.scale(1,.77);ctx.translate(-scene.x,-scene.y)}
+  person(scene.x,scene.y,1,ctx,0,'down',scene.activity==='walking'||scene.activity==='arriving'||scene.activity==='leaving',animationTime/150,profile,scene.emote);
+  if(seated)ctx.restore();
+  text(p.name.toUpperCase(),scene.x,scene.y+27,10,'#e7d9f3');
+  npcSpeech(p,scene);
+  if(room===currentRoom&&Math.hypot(pos.x-scene.x,pos.y-scene.y)<78)text('E · TALK',scene.x,scene.y-56,10,'#fff4a9');
+ }
+}
 function neonNPC(p,t){const scene=npcScene(p);if(scene.room!==currentRoom)return;const profile=npcLooks[p.name];profile.walked=animationTime/120;person(scene.x,scene.y,1,ctx,0,'down',true,animationTime/150,profile,scene.emote);text(p.name.toUpperCase(),scene.x,scene.y+27,10,'#e7d9f3');if(neonClosest()===p)text('E · TALK',scene.x,scene.y-57,10,'#fff4a9')}
 function drawNeonRoom(){if(currentRoom==='arcade'){
  // The main room retains all four cabinets and the disco ball; portals lead to larger dedicated areas.
@@ -72,12 +118,12 @@ function drawNeonRoom(){if(currentRoom==='arcade'){
  for(const x of [105,770]){rect(x,335,125,55,'#523b72');rect(x+8,338,109,22,'#a17bc1');rect(x+8,372,109,9,'#28223f')}
  rect(745,170,150,100,'#24213a');rect(753,179,134,80,'#493c60');text('SNACKS',820,195,13,'#ffce92');for(let i=0;i<4;i++)rect(767+i*29,215,19,28,['#e899b7','#9bdccf','#ffcf84','#a3b6e7'][i]);
  rect(110,170,130,80,'#3a3858');rect(120,181,110,62,'#1a2035');text('ARCADE',175,203,12,'#a6e4f0');text('LOUNGE',175,224,12,'#d9b4f4');
- for(const p of neonPeople)neonNPC(p,neonPeople.indexOf(p));
+ neonDrawVisitors('lounge');
  }else if(currentRoom==='dance'){
  neonFloor('THE NEON DANCE FLOOR');text('MOVE · GROOVE · PRESS Q TO DANCE',500,83,12,'#b8d6ee');
  const cols=['#39c5d8','#d16bc8','#8b7de7','#e6b46f'];for(let r=0;r<9;r++)for(let j=0;j<17;j++){const v=reducedMotion.matches?.35:.28+.28*(.5+.5*Math.sin(animationTime/400+r*.9+j*.6));ctx.save();ctx.globalAlpha=v;rect(118+j*45,142+r*44,41,40,cols[(r+j)%4]);ctx.restore()}
  rect(498,88,4,60,'#8793a8');for(let yy=-19;yy<20;yy+=5)for(let xx=-19;xx<20;xx+=5)if(xx*xx+yy*yy<370)rect(500+xx,153+yy,4,4,(xx+yy+Math.floor(animationTime/250))%3?'#a9e4ef':'#f9c4ee');
- for(const p of neonDancers)neonNPC(p,neonDancers.indexOf(p));
+ neonDrawVisitors('dance');
  }
  rect(420,560,160,40,'#433350');rect(426,566,148,28,'#1a2238');text('← MAIN ARCADE',500,585,12,'#f8d2ee');
  paintAvatarTrail();person(pos.x,pos.y,1,ctx,jumpHeight,avatarMotion.facing,avatarMotion.walking,avatarMotion.phase);text(data.name.toUpperCase().slice(0,18),pos.x,pos.y+28,10,'#f0e7cb');text('▼ YOU',pos.x,pos.y-52,10,'#d7efa9');return true}
