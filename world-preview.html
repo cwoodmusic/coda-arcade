@@ -2,16 +2,10 @@
 *{box-sizing:border-box}body{margin:0;background:#10101e;color:#e9def9;font:15px system-ui}header{padding:12px 20px;display:flex;align-items:center;gap:18px;justify-content:space-between;background:#211a37}a{color:#a6eff4}button{background:#392f58;color:white;border:1px solid #ba8fdf;border-radius:6px;padding:9px 12px;cursor:pointer}button:hover{background:#514073}#view{display:block;width:100%;height:calc(100dvh - 110px);min-height:360px;image-rendering:pixelated;background:#171a2e;touch-action:none}footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 16px;min-height:44px;background:#211a37;font-size:12px}#dialog{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);width:min(490px,90vw);padding:20px;background:#261d40;border:2px solid #d8a6f1;box-shadow:0 8px 50px #000b;display:none}#dialog strong{color:#f4c8fa}#dialog p{line-height:1.6}#dialog button{float:right}@media(max-width:650px){header{font-size:12px;padding:8px}#view{height:calc(100dvh - 110px)}}
 #gameoverlay{position:fixed;inset:0;z-index:100;background:#121327;display:flex;flex-direction:column}#gameoverlay[hidden]{display:none}.gamebar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#231a3c;border-bottom:2px solid #b583dc}.gamebar strong{color:#f0d7ff}#gameiframe{border:0;width:100%;flex:1;min-height:0;background:#111628}body.game-open{overflow:hidden}@media(max-width:650px){.gamebar{gap:6px}.gamebar strong{font-size:12px}.gamebar a{font-size:11px}}
 #panel{position:fixed;z-index:90;top:50%;left:50%;transform:translate(-50%,-50%);width:min(570px,94vw);max-height:84dvh;overflow:auto;padding:20px;background:#231c3b;border:2px solid #c69be9;box-shadow:0 0 0 100vmax #05030ab8,0 14px 55px #000c;border-radius:12px}#panel[hidden]{display:none}.panelHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.panelRow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0;padding:10px;border:1px solid #66517f;border-radius:7px}.panelRow small{display:block;opacity:.75}.formRow{display:grid;gap:5px;margin:10px 0}.formRow select,.formRow input{background:#17142c;color:#fff;border:1px solid #a08dbd;padding:9px;border-radius:5px;width:100%}.panelActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.muted{color:#c1b4d7;font-size:13px}.panelMsg{min-height:22px;color:#9fe9dc}body:has(#panel:not([hidden])) #view{filter:brightness(.65)}
-</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 5 · DETAILED NEON ART PASS</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1100" height="720" tabindex="0"></canvas><footer><span>WASD / arrows · Walk &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 5 · Neon art preview</span></footer><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><script>
-(()=>{'use strict';const c=document.querySelector('#view'),g=c.getContext('2d'),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}const W=2450,H=1730,keys=new Set();let player={x:1750,y:1480},cam={x:0,y:0},dest=null,emote=0,near=null,last=0,clock=0;const rooms=[{id:'piano',name:'PIANO LAB',x:80,y:100,w:730,h:430,color:'#293b52'},{id:'lounge',name:'SOCIAL LOUNGE',x:80,y:565,w:730,h:450,color:'#43324f'},{id:'dance',name:'DANCE FLOOR',x:80,y:1050,w:730,h:520,color:'#44324d'},{id:'arcade',name:'MAIN ARCADE',x:870,y:100,w:1490,h:1470,color:'#26364e'}];const bridges=[{x:775,y:320,w:130,h:100},{x:775,y:745,w:130,h:100},{x:775,y:1280,w:130,h:100}];const doors=[{x:800,y:370},{x:800,y:790},{x:800,y:1330}];const games=[{name:'Pitch Race',x:1100,y:265,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:1400,y:265,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:1710,y:265,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:2020,y:265,url:'song-machine/index.html'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
-const looks=[['#e5b48d','#ed8cbe','#171424','spiky'],['#85543b','#8ddde6','#e3c27d','long'],['#f4cba6','#c9a3f1','#402c4b','buns'],['#a56b48','#f4ae77','#1c172d','short'],['#f3c3a1','#b2f37b','#6c3159','bob'],['#704633','#a8b5fc','#eee6df','curly'],['#f0b79d','#ffd48c','#171424','ponytail']];const npc=[{name:'Ziggy',x:1800,y:1480,mode:'enter',goal:0,wait:0,look:0},{name:'Nova',x:1830,y:1480,mode:'enter',goal:1,wait:1.7,look:1},{name:'Byte',x:1840,y:1480,mode:'enter',goal:2,wait:3.4,look:2},{name:'Mochi',x:1850,y:1480,mode:'enter',goal:3,wait:5,look:3},{name:'Riff',x:1850,y:1480,mode:'enter',goal:0,wait:7,look:4},{name:'Fizz',x:1850,y:1480,mode:'enter',goal:1,wait:9,look:5},{name:'Dot',x:1850,y:1480,mode:'enter',goal:2,wait:11,look:6}];const sofas=[{x:160,y:690,w:160,h:48},{x:490,y:690,w:160,h:48},{x:170,y:875,w:160,h:48},{x:480,y:875,w:160,h:48}];const seats=[{x:210,y:750},{x:540,y:750},{x:220,y:935},{x:530,y:935}];const spot=(p)=>p.mode==='cabinet'?{x:games[p.goal%4].x,y:365}:p.mode==='lounge'?seats[p.goal%4]:p.mode==='dance'?{x:210+(p.goal%4)*140,y:1240+(p.goal%2)*170}:p.mode==='leave'?{x:1800,y:1540}:{x:1800,y:1480};const r=(x,y,w,h,color)=>{g.fillStyle=color;g.fillRect(Math.round(x),Math.round(y),w,h)};const t=(s,x,y,size=18,color='#e7e2ff')=>{g.fillStyle=color;g.font=`bold ${size}px monospace`;g.textAlign='center';g.fillText(s,x,y)};function sprite(x,y,look,walk=false,dance=false,scale=1){const [skin,shirt,hair,style]=look;g.save();g.translate(Math.round(x),Math.round(y));g.scale(scale,scale);const bob=dance?Math.sin(clock*8)*5:walk?Math.sin(clock*12)*2:0;r(-10,-38+bob,20,17,hair);if(style==='buns'){r(-15,-39+bob,6,7,hair);r(9,-39+bob,6,7,hair)}if(style==='long')r(-13,-30+bob,26,20,hair);r(-9,-32+bob,18,16,skin);r(-12,-16+bob,24,20,shirt);r(-16,-12+bob,4,13,skin);r(12,-12+bob,4,13,skin);r(-9,4+bob,7,11,'#695d99');r(2,4+bob,7,11,'#695d99');r(-10,14+bob,9,4,'#f8d56b');r(1,14+bob,9,4,'#f8d56b');r(-6,-24+bob,3,3,'#222033');r(4,-24+bob,3,3,'#222033');if(dance){const beat=Math.floor(clock*4+look[0].length)%4,up=beat%2===0;r(-18,-(up?29:13)+bob,5,up?16:11,skin);r(13,-(up?13:29)+bob,5,up?11:16,skin);r(-10+(up?-5:3),14+bob,9,5,'#f8d56b');r(1+(up?4:-4),14+bob,9,5,'#f8d56b')}g.restore()};function inside(x,y){return rooms.some(a=>x>=a.x+22&&x<=a.x+a.w-22&&y>=a.y+22&&y<=a.y+a.h-22)||bridges.some(a=>x>=a.x&&x<=a.x+a.w&&y>=a.y&&y<=a.y+a.h)}// NPCs navigate through room entrances using waypoints, never teleport through walls.
-const routePoints={piano:[{x:955,y:370},{x:840,y:370},{x:755,y:370}],lounge:[{x:955,y:795},{x:840,y:795},{x:755,y:795}],dance:[{x:955,y:1330},{x:840,y:1330},{x:755,y:1330}]};
-function area(x,y){if(x<775)return y<540?'piano':y<1030?'lounge':'dance';return 'arcade'}
-function makeRoute(p,aim){const from=area(p.x,p.y),to=area(aim.x,aim.y),route=[];
-  if(from!==to){if(from!=='arcade')route.push(...routePoints[from].slice().reverse());if(to!=='arcade')route.push(...routePoints[to]);}
-  route.push(aim);return route;
-}
-function go(p,dt){const aim=spot(p);const targetKey=p.mode+':'+p.goal;
+</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 5.1 · OPEN FLOOR</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1100" height="720" tabindex="0"></canvas><footer><span>WASD / arrows · Walk &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 5 · Neon art preview</span></footer><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><script>
+(()=>{'use strict';const c=document.querySelector('#view'),g=c.getContext('2d'),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}const W=1740,H=1120,keys=new Set();let player={x:1470,y:965},cam={x:0,y:0},dest=null,emote=0,near=null,last=0,clock=0;const rooms=[{id:'lounge',name:'SOCIAL LOUNGE',x:75,y:80,w:455,h:385,color:'#43324f'},{id:'dance',name:'DANCE FLOOR',x:75,y:505,w:455,h:425,color:'#44324d'},{id:'arcade',name:'MAIN ARCADE',x:570,y:80,w:1080,h:620,color:'#26364e'},{id:'piano',name:'PIANO LAB',x:575,y:745,w:455,h:190,color:'#293b52'}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:710,y:265,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:950,y:265,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:1190,y:265,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1430,y:265,url:'song-machine/index.html'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
+const looks=[['#e5b48d','#ed8cbe','#171424','spiky'],['#85543b','#8ddde6','#e3c27d','long'],['#f4cba6','#c9a3f1','#402c4b','buns'],['#a56b48','#f4ae77','#1c172d','short'],['#f3c3a1','#b2f37b','#6c3159','bob'],['#704633','#a8b5fc','#eee6df','curly'],['#f0b79d','#ffd48c','#171424','ponytail']];const npc=[{name:'Ziggy',x:1470,y:965,mode:'enter',goal:0,wait:0,look:0},{name:'Nova',x:1470,y:965,mode:'enter',goal:1,wait:1.7,look:1},{name:'Byte',x:1470,y:965,mode:'enter',goal:2,wait:3.4,look:2},{name:'Mochi',x:1470,y:965,mode:'enter',goal:3,wait:5,look:3},{name:'Riff',x:1470,y:965,mode:'enter',goal:0,wait:7,look:4},{name:'Fizz',x:1470,y:965,mode:'enter',goal:1,wait:9,look:5},{name:'Dot',x:1470,y:965,mode:'enter',goal:2,wait:11,look:6}];const sofas=[{x:115,y:185,w:135,h:45},{x:315,y:185,w:135,h:45},{x:115,y:355,w:135,h:45},{x:315,y:355,w:135,h:45}];const seats=[{x:180,y:255},{x:380,y:255},{x:180,y:425},{x:380,y:425}];const spot=(p)=>p.mode==='cabinet'?{x:games[p.goal%4].x,y:370}:p.mode==='lounge'?seats[p.goal%4]:p.mode==='dance'?{x:160+(p.goal%4)*85,y:635+(p.goal%2)*125}:p.mode==='leave'?{x:1470,y:995}:{x:1470,y:965};const r=(x,y,w,h,color)=>{g.fillStyle=color;g.fillRect(Math.round(x),Math.round(y),w,h)};const t=(s,x,y,size=18,color='#e7e2ff')=>{g.fillStyle=color;g.font=`bold ${size}px monospace`;g.textAlign='center';g.fillText(s,x,y)};function sprite(x,y,look,walk=false,dance=false,scale=1){const [skin,shirt,hair,style]=look;g.save();g.translate(Math.round(x),Math.round(y));g.scale(scale,scale);const bob=dance?Math.sin(clock*8)*5:walk?Math.sin(clock*12)*2:0;r(-10,-38+bob,20,17,hair);if(style==='buns'){r(-15,-39+bob,6,7,hair);r(9,-39+bob,6,7,hair)}if(style==='long')r(-13,-30+bob,26,20,hair);r(-9,-32+bob,18,16,skin);r(-12,-16+bob,24,20,shirt);r(-16,-12+bob,4,13,skin);r(12,-12+bob,4,13,skin);r(-9,4+bob,7,11,'#695d99');r(2,4+bob,7,11,'#695d99');r(-10,14+bob,9,4,'#f8d56b');r(1,14+bob,9,4,'#f8d56b');r(-6,-24+bob,3,3,'#222033');r(4,-24+bob,3,3,'#222033');if(dance){const beat=Math.floor(clock*4+look[0].length)%4,up=beat%2===0;r(-18,-(up?29:13)+bob,5,up?16:11,skin);r(13,-(up?13:29)+bob,5,up?11:16,skin);r(-10+(up?-5:3),14+bob,9,5,'#f8d56b');r(1+(up?4:-4),14+bob,9,5,'#f8d56b')}g.restore()};function inside(x,y){return x>=48&&x<=W-48&&y>=48&&y<=H-48}// NPCs navigate through room entrances using waypoints, never teleport through walls.
+function makeRoute(p,aim){return [aim]}function go(p,dt){const aim=spot(p);const targetKey=p.mode+':'+p.goal;
  if(p.routeKey!==targetKey){p.routeKey=targetKey;p.route=makeRoute(p,aim)}
  if(!p.route||!p.route.length)return false;
  let target=p.route[0],dx=target.x-p.x,dy=target.y-p.y,dist=Math.hypot(dx,dy);
@@ -22,7 +16,7 @@ function go(p,dt){const aim=spot(p);const targetKey=p.mode+':'+p.goal;
  p.route=makeRoute(p,aim);return true;
 }
 function update(dt){clock+=dt;if(dialog.style.display==='block'||!document.querySelector('#panel').hidden)return;let dx=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),dy=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);if(dx||dy)dest=null;if(dest){dx=dest.x-player.x;dy=dest.y-player.y;if(Math.hypot(dx,dy)<9){dest=null;dx=dy=0}}const len=Math.hypot(dx,dy);if(len){const nx=player.x+dx/len*230*dt,ny=player.y+dy/len*230*dt;if(inside(nx,player.y))player.x=nx;if(inside(player.x,ny))player.y=ny}for(const p of npc){
-  if(p.hidden){p.wait-=dt;if(p.wait<=0){p.hidden=false;p.x=1800;p.y=1540;p.mode='enter';p.routeKey='';p.arrived=false;p.wait=0.5;}continue;}
+  if(p.hidden){p.wait-=dt;if(p.wait<=0){p.hidden=false;p.x=1470;p.y=995;p.mode='enter';p.routeKey='';p.arrived=false;p.wait=0.5;}continue;}
   // Arrival and dwell are separate: NPCs must reach the dance floor before dancing.
   if(p.wait>0){p.wait-=dt;continue;}
   if(p.arrived){
@@ -39,7 +33,7 @@ function update(dt){clock+=dt;if(dialog.style.display==='block'||!document.query
     p.arrived=true;
     p.wait=p.mode==='cabinet'?7+(p.look%3)*2:p.mode==='lounge'?9+(p.look%3)*2:12+(p.look%4)*2;
   }
-}near=null;let d=Infinity;for(const p of [...games.map((q,i)=>({...q,type:'game',index:i})),...npc.filter(q=>!q.hidden).map(q=>({...q,type:'npc'})),{name:'Pip · Avatar Boutique',x:360,y:640,type:'shop'},{name:'Jukebox',x:2200,y:1040,type:'jukebox'}]){const dd=Math.hypot(p.x-player.x,p.y-player.y);if(dd<85&&dd<d){near=p;d=dd}}status.textContent=near?'E · '+(near.type==='game'?'Play ':near.type==='shop'?'Talk to ':'Chat with ')+near.name:'Explore · E to interact'}const gameoverlay=document.querySelector('#gameoverlay'),gameiframe=document.querySelector('#gameiframe');let gameOpen=false;
+}near=null;let d=Infinity;for(const p of [...games.map((q,i)=>({...q,type:'game',index:i})),...npc.filter(q=>!q.hidden).map(q=>({...q,type:'npc'})),{name:'Pip · Avatar Boutique',x:375,y:135,type:'shop'},{name:'Jukebox',x:1510,y:600,type:'jukebox'}]){const dd=Math.hypot(p.x-player.x,p.y-player.y);if(dd<85&&dd<d){near=p;d=dd}}status.textContent=near?'E · '+(near.type==='game'?'Play ':near.type==='shop'?'Talk to ':'Chat with ')+near.name:'Explore · E to interact'}const gameoverlay=document.querySelector('#gameoverlay'),gameiframe=document.querySelector('#gameiframe');let gameOpen=false;
 function openCabinet(game){stopSong();
   if(!game||!game.url)return;
   keys.clear();dest=null;dialog.style.display='none';
@@ -61,10 +55,9 @@ function neonRoom(a){
  const [base,accent,glow]=palette[a.id];r(a.x-12,a.y-12,a.w+24,a.h+24,'#0a1428');r(a.x-7,a.y-7,a.w+14,a.h+14,glow);r(a.x,a.y,a.w,a.h,base);
  g.save();g.beginPath();g.rect(a.x,a.y,a.w,a.h);g.clip();
  // Global tile origin prevents misaligned seams between rooms.
- for(let x=Math.floor(a.x/16)*16;x<a.x+a.w;x+=16)for(let y=Math.floor(a.y/16)*16;y<a.y+a.h;y+=16){
-  const alt=((Math.floor(x/16)+Math.floor(y/16))&1);
-  r(x+1,y+1,14,14,alt?accent:base);
-  if(((x/16+y/16)%5+5)%5===0)r(x+3,y+3,2,2,glow+'66');
+ for(let x=Math.floor(a.x/48)*48;x<a.x+a.w;x+=48)for(let y=Math.floor(a.y/48)*48;y<a.y+a.h;y+=48){
+  const alt=((Math.floor(x/48)+Math.floor(y/48))&1);r(x+2,y+2,44,44,alt?accent:base);
+  r(x+4,y+4,2,2,glow+'55');
  }
  g.restore();
  r(a.x+14,a.y+12,a.w-28,5,glow);r(a.x+14,a.y+a.h-17,a.w-28,4,accent);
@@ -89,73 +82,59 @@ function neonDecoration(){
  r(270,788,320,60,'#4d315b');r(283,799,294,38,'#613e70');
  for(const [x,y] of [[125,642],[718,650],[125,970],[720,968]]){r(x-13,y+10,26,24,'#865779');r(x-18,y-13,36,30,'#3eaa88');r(x-8,y-28,16,28,'#77d3a5')}
  // Dance floor: coherent 48px grid aligned with the world.
- for(let x=144;x<746;x+=24)for(let y=1150;y<1540;y+=24){
-  const k=(Math.floor(x/24)+Math.floor(y/24)+Math.floor(clock*2))%6;
-  r(x+1,y+1,22,22,['#b44ca0','#3e9cbd','#895acb','#49a99c','#df85bb','#527bc3'][k]);
-  r(x+3,y+3,18,2,'#ffffff44');r(x+3,y+19,18,2,'#17132966');
- }
- 
- // Suspended mirror-ball with moving pixel reflections.
- const cx=445,cy=1193;
- neonLine(cx,1057,cx,1151,'#9db7c9',3);
- g.save();g.translate(cx,cy);
- r(-31,-35,62,68,'#101a31');
- for(let yy=-30;yy<=28;yy+=9)for(let xx=-27;xx<=27;xx+=9){
-  if(xx*xx+yy*yy>900)continue;
-  const phase=Math.floor(clock*5+xx/9+yy/9)%5;
-  r(xx,yy,7,7,['#e9f7ff','#83d9e9','#b4a4ee','#e8a8da','#a3f2df'][Math.abs(phase)]);
- }
- g.restore();
- for(let j=0;j<18;j++){
-  const ang=j*Math.PI*2/18+clock*.38,rr=115+(j%3)*42;
-  r(cx+Math.cos(ang)*rr,cy+Math.sin(ang)*rr,4,4,['#e4a1ef','#87e5fa','#fff1a2'][j%3]);
- }
- // Pixel spotlights and speaker stacks.
- for(const [lx,ly] of [[165,1160],[705,1160],[165,1510],[705,1510]]){
-  r(lx-19,ly-19,38,38,'#10172c');r(lx-13,ly-13,26,26,'#513c73');
-  r(lx-7,ly-7,14,14,Math.sin(clock*3+lx)>0?'#f98bd8':'#7debf3');
- }
- for(const [sx,sy] of [[178,1210],[702,1210]]){r(sx-19,sy,38,100,'#111628');for(const oy of [22,68]){r(sx-13,sy+oy-15,26,28,'#596183');r(sx-7,sy+oy-9,14,16,'#171e37')}}
+ for(let x=144;x<746;x+=48)for(let y=1150;y<1540;y+=48){const k=(Math.floor(x/48)+Math.floor(y/48))%4;r(x+2,y+2,44,44,['#794d9c','#2c728c','#ae4d85','#395d9b'][k]);r(x+5,y+5,38,3,'#ffffff22')}
  t('DANCE • DANCE • DANCE',445,1125,18,'#ffd0f0');
- // Lounge: small lamps, café tables and soft neon strips.
- for(const [lx,ly] of [[320,800],[590,800],[340,970],[590,970]]){
-  r(lx-14,ly-8,28,15,'#201a32');r(lx-11,ly-11,22,6,'#e3b88b');
-  r(lx-2,ly+7,4,16,'#aa7ca9');
- }
- for(const [lx,ly] of [[195,620],[670,620],[195,1000],[670,1000]]){
-  r(lx-3,ly-30,6,36,'#f5d5a6');r(lx-16,ly-33,32,10,'#e8a7db');
-  r(lx-22,ly-36,44,3,'#ffcdf2');
- }
- for(let x=160;x<705;x+=32){r(x,602,22,3,'#d28ae0');r(x,1030,22,3,'#7fcae7')}
- // Piano room: framed music posters and stage footlights.
- for(const [px,py] of [[165,115],[550,115]]){
-  r(px-29,py-30,58,74,'#0d1d2d');r(px-25,py-26,50,66,'#7193b0');
-  for(let j=0;j<5;j++)r(px-20,py-15+j*9,40,1,'#c7f0f5');
-  t('♫',px,py+16,30,'#f7c2ee');
- }
- for(let x=180;x<630;x+=32){r(x,405,12,5,Math.sin(clock*2+x)>0?'#b2f2ff':'#618cb5')}
  // Arcade: lit wall panels and breathing room for visitors.
  for(let x=1010;x<2240;x+=180){r(x,490,140,8,'#4c7d94');r(x+8,490,38,8,'#a5eff1')}
  for(const [x,y] of [[1020,640],[2250,640],[1020,1370],[2250,1370]]){r(x-20,y-24,40,48,'#244b54');r(x-12,y-45,24,40,'#5ebd9c')}
- // Ceiling neon strips, signs, small floor inlays and glowing arcade stools.
- for(let x=1015;x<2250;x+=72){
-  r(x,195,46,3,'#79dfe9');r(x+6,202,34,2,'#e993db');
-  r(x,1320,42,3,'#aa8df3');
- }
- for(const q of games){
-  const xx=q.x,yy=q.y;
-  r(xx-23,yy+62,46,9,'#1c2238');r(xx-18,yy+55,36,8,'#865f9d');
-  r(xx-4,yy+71,8,17,'#4e6e83');
-  for(let j=0;j<6;j++)r(xx-45+j*17,yy+94,9,3,j%2?'#4e9cc2':'#a97bcd');
- }
- for(const [lx,ly] of [[1050,800],[2250,800],[1050,1150],[2250,1150]]){
-  r(lx-23,ly-48,46,94,'#11192b');r(lx-17,ly-40,34,78,'#384c71');
-  r(lx-11,ly-31,22,12,'#e2a2e5');r(lx-11,ly-9,22,12,'#7dd6ed');
-  r(lx-11,ly+13,22,12,'#f0d48e');
- }
  r(1450,760,350,130,'#203950');r(1462,772,326,106,'#2c5165');t('✦ CODA ARCADE ✦',1625,838,27,'#b4f8ff');
 }
-function talk(){if(dialog.style.display==='block'){dialog.style.display='none';return}if(!near)return;if(near.type==='game'){openCabinet(near);return}if(near.type==='shop'){openBoutique();return}if(near.type==='jukebox'){openJukebox();return}document.querySelector('#who').textContent=near.name;document.querySelector('#words').textContent=near.type==='shop'?'Welcome to the Pixel Boutique! In the full arcade, I help you customize your avatar.':lines[Math.floor(Math.random()*lines.length)];dialog.style.display='block'}function draw(){g.setTransform(1,0,0,1,0,0);r(0,0,c.width,c.height,'#111323');cam.x=Math.max(0,Math.min(W-c.width,player.x-c.width/2));cam.y=Math.max(0,Math.min(H-c.height,player.y-c.height/2));g.save();g.translate(-Math.round(cam.x),-Math.round(cam.y));for(const a of rooms)neonRoom(a);for(const a of bridges){r(a.x,a.y,a.w,a.h,'#172b3d');r(a.x+5,a.y+5,a.w-10,a.h-10,'#304f62');for(let x=a.x+8;x<a.x+a.w-8;x+=24)r(x,a.y+9,2,a.h-18,'#4e718755')}for(const d of doors){t('⇄',d.x+40,d.y+12,27,'#ffe49b');t('OPEN',d.x+40,d.y+37,13,'#ffe49b')}neonDecoration();games.forEach(neonCabinet);for(const sofa of sofas)neonSofa(sofa);r(2140,978,120,126,'#14263d');r(2150,990,100,100,'#7a5298');r(2158,998,84,84,'#262044');t('♫',2200,1055,42,'#8df2e7');t('JUKEBOX',2200,970,17,'#f2c7ff');r(260,560,200,70,'#211a35');r(265,570,190,55,'#bd8b8a');r(272,576,176,11,'#f6d6a0');t('PIXEL BOUTIQUE',360,606,15,'#30203b');sprite(360,650,['#d49a76','#ffe28a','#463145','bob']);for(const p of npc){
+function talk(){if(dialog.style.display==='block'){dialog.style.display='none';return}if(!near)return;if(near.type==='game'){openCabinet(near);return}if(near.type==='shop'){openBoutique();return}if(near.type==='jukebox'){openJukebox();return}document.querySelector('#who').textContent=near.name;document.querySelector('#words').textContent=near.type==='shop'?'Welcome to the Pixel Boutique! In the full arcade, I help you customize your avatar.':lines[Math.floor(Math.random()*lines.length)];dialog.style.display='block'}function draw(){g.setTransform(1,0,0,1,0,0);r(0,0,c.width,c.height,'#111323');cam.x=Math.max(0,Math.min(W-c.width,player.x-c.width/2));cam.y=Math.max(0,Math.min(H-c.height,player.y-c.height/2));g.save();g.translate(-Math.round(cam.x),-Math.round(cam.y));
+ // Single continuous open-plan floor; room colors are rugs/zones, not walls.
+ r(24,24,W-48,H-48,'#0c1829');r(38,38,W-76,H-76,'#1a293d');
+ for(let x=40;x<W-40;x+=20)for(let y=40;y<H-40;y+=20){
+   r(x+1,y+1,18,18,((x+y)/20)%2?'#1d3046':'#22354c');
+   if((x+y)%100===0)r(x+4,y+4,2,2,'#4c6985');
+ }
+ for(const a of rooms){
+   const colors={lounge:['#42304d','#8e6ba6'],dance:['#3b254d','#c378c9'],arcade:['#203b50','#5ccbe3'],piano:['#284457','#84bfd6']};
+   const [floor,edge]=colors[a.id];r(a.x,a.y,a.w,a.h,floor);
+   for(let x=a.x+4;x<a.x+a.w-4;x+=20)for(let y=a.y+4;y<a.y+a.h-4;y+=20)r(x,y,17,17,(Math.floor(x/20)+Math.floor(y/20))%2?floor:edge+'38');
+   r(a.x,a.y,a.w,4,edge);r(a.x,a.y,4,a.h,edge);
+   t(a.name,a.x+a.w/2,a.y+35,19,'#f6ecff');
+ }
+ // Open walkways between the zones; no collision walls or doors.
+ for(let x=100;x<530;x+=30)r(x,480,19,3,'#bc8be866');
+ for(let y=120;y<890;y+=30)r(548,y,3,17,'#80d5ed66');
+ // Lounge details and boutique.
+ for(const sofa of sofas)neonSofa(sofa);
+ r(278,91,196,47,'#211a35');r(283,96,186,36,'#bc8baf');t('PIXEL BOUTIQUE',375,121,14,'#24182f');
+ sprite(375,156,['#d49a76','#ffe28a','#463145','bob']);
+ for(const [x,y] of [[105,120],[480,430]]){r(x-12,y+6,24,22,'#8c637a');r(x-17,y-15,34,26,'#3b9d7e');r(x-7,y-27,14,22,'#76d7a7')}
+ for(const [x,y] of [[270,280],[270,425]]){r(x-24,y-10,48,20,'#32243e');r(x-18,y-7,36,13,'#c8a5bc')}
+ // Animated compact disco with suspended mirror ball.
+ for(let x=115;x<485;x+=24)for(let y=570;y<890;y+=24){
+   const k=(Math.floor(x/24)+Math.floor(y/24)+Math.floor(clock*2))%5;
+   r(x+1,y+1,22,22,['#b04f9c','#438fba','#8559c6','#3e9c91','#d48cb8'][k]);r(x+3,y+3,18,2,'#ffffff44');
+ }
+ const bx=300,by=608;
+ neonLine(bx,524,bx,569,'#b4d9ed',3);
+ for(let yy=-25;yy<=25;yy+=8)for(let xx=-25;xx<=25;xx+=8){if(xx*xx+yy*yy<720)r(bx+xx,by+yy,6,6,['#eaf7ff','#a6e7f0','#d8a9ee'][(Math.abs(xx+yy)+Math.floor(clock*5))%3])}
+ for(let i=0;i<14;i++){let a=i*Math.PI/7+clock*.4;r(bx+Math.cos(a)*125,by+Math.sin(a)*125,5,5,['#f4b2e6','#8cf0f4','#fff1a4'][i%3])}
+ for(const [x,y] of [[105,560],[500,560],[105,850],[500,850]]){r(x-16,y-17,32,40,'#11192a');r(x-11,y-12,22,22,'#58618a');r(x-7,y-8,14,14,Math.sin(clock*4+x)>0?'#ff8edb':'#76e4ef')}
+ // Arcade cabinets and neon furniture.
+ games.forEach(neonCabinet);
+ for(let x=610;x<1580;x+=76){r(x,130,48,4,'#8beaf2');r(x+8,136,30,2,'#f49fd8')}
+ for(const q of games){r(q.x-21,q.y+67,42,10,'#654879');r(q.x-5,q.y+76,10,22,'#4d6b85')}
+ r(1450,526,115,112,'#16263b');r(1457,535,101,93,'#8655a5');r(1465,543,85,77,'#2c2348');t('♫',1508,589,39,'#a0fff0');t('JUKEBOX',1508,519,16,'#f2c7ff');
+ // Piano zone: grand piano and piano-key detail.
+ r(625,804,292,92,'#131727');r(637,813,265,63,'#34334f');
+ for(let i=0;i<13;i++){r(643+i*19,836,17,38,'#f4eee8');if(i%3!==2)r(655+i*19,836,9,21,'#141625')}
+ t('♪ PLAY SOMETHING ♪',810,786,15,'#c4edfa');
+ t('✦ CODA ARCADE ✦',1120,476,28,'#b4f8ff');
+ // Entrance on the lower right, aligned with the reference drawing.
+ r(1350,1031,260,19,'#dca0ee');r(1370,1037,220,7,'#83dce9');t('WELCOME IN',1480,1020,17,'#f4d9ff');
+ for(const p of npc){
  if(p.hidden)continue;
  const seated=p.mode==='lounge'&&p.arrived;
  const dancing=p.mode==='dance'&&p.arrived;
