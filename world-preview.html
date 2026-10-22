@@ -64,13 +64,25 @@ function neonRoom(a){
  t(a.name,a.x+a.w/2,a.y+56,29,'#f4ecff');
  neonLine(a.x+30,a.y+70,a.x+a.w-30,a.y+70,glow,3);
 }
-function neonCabinet(q,i){const x=q.x,y=q.y;const neon=['#64f5ff','#ff92da','#b7fa75','#ffce7b'][i];
- r(x-69,y-67,138,116,'#0a1226');r(x-64,y-65,128,107,neon);r(x-59,y-59,118,98,'#25213f');
- r(x-52,y-52,104,62,'#080f25');r(x-47,y-47,94,52,'#255b7d');
- r(x-42,y-42,84,42,'#12324f');
- const pulse=Math.floor(clock*2+i)%3;r(x-35+pulse*9,y-34,15,7,neon);r(x+8,y-22,24,5,'#bceefa');
- r(x-55,y+13,110,26,'#433058');r(x-26,y+20,12,5,neon);r(x+17,y+19,7,7,'#f8cf7c');
- t(q.name.toUpperCase(),x,y-88,15,'#f9e7ff');
+function neonCabinet(q,i){
+ const x=q.x,y=q.y,colors=['#43d9ee','#f472bf','#b874f2','#f4cf83'],color=colors[i%4];
+ // Port of the original arcade's cabinet proportions, illuminated marquee and control panel.
+ r(x-48,y-61,96,111,'#111827');r(x-43,y-68,86,17,color);
+ r(x-39,y-64,78,9,'#273043');
+ for(let n=0;n<7;n++)r(x-36+n*11,y-64,4,4,Math.sin(clock*2.2+n*.8+i)>0?color:'#55516b');
+ r(x-43,y-47,86,55,'#565268');r(x-38,y-43,76,45,'#14202c');
+ g.save();g.beginPath();g.rect(x-38,y-43,76,45);g.clip();
+ if(i===0){for(let j=0;j<5;j++)r(x-34,y-34+j*8,69,1,'#526b86');
+   for(let n=0;n<5;n++){const nx=x-33+((n*21+70-clock*30)%105+105)%105-15,ny=y-28+[0,10,5,15,5][n];r(nx,ny,5,3,color);r(nx+4,ny-11,2,13,color)}}
+ if(i===1){for(let j=0;j<3;j++){let w=Math.max(3,Math.round(18*Math.abs(Math.cos(clock*2+j))));r(x-25+j*24-w/2,y-30,w,27,j%2?'#649ab4':'#ae7da7');t('♫',x-25+j*24,y-10,15,'#eee5c1')}}
+ if(i===2){for(let j=0;j<8;j++){let h=5+Math.round((.5+.5*Math.sin(clock*4-j*.85))*24);r(x-30+j*8,y-4-h,5,h,color);r(x-30+j*8,y-6-h,5,2,'#f2f7d3')}}
+ if(i===3){for(let row=0;row<4;row++)for(let col=0;col<9;col++)r(x-30+col*7,y-37+row*9,6,7,(col+row*3+Math.floor(clock*2))%7<3?['#ffad6b','#f4d468','#9de4bd','#8fbcff'][row]:'#27394c')}
+ g.restore();
+ r(x-48,y+8,96,19,'#777084');r(x-43,y+8,86,3,color);
+ r(x-22,y+6,10,6,color);r(x-19,y+11,4,9,'#202335');
+ r(x+17,y+14,8,6,'#cf8693');r(x+30,y+14,8,6,'#cf8693');
+ r(x-39,y+28,78,21,'#181c2a');r(x-32,y+47,64,9,'#0b1325');
+ t(q.name.toUpperCase(),x,y-85,14,color);
 }
 function neonSofa(s){r(s.x-5,s.y-5,s.w+10,s.h+12,'#201a34');r(s.x,s.y,s.w,s.h,'#9e67a5');r(s.x+9,s.y+6,s.w-18,s.h-19,'#d08dca');r(s.x+8,s.y+s.h-10,s.w-16,8,'#60406e');r(s.x+8,s.y+8,9,26,'#f1b4e3');r(s.x+s.w-17,s.y+8,9,26,'#f1b4e3')}
 function neonDecoration(){
@@ -122,6 +134,32 @@ function talk(){if(dialog.style.display==='block'){dialog.style.display='none';r
  for(let yy=-25;yy<=25;yy+=8)for(let xx=-25;xx<=25;xx+=8){if(xx*xx+yy*yy<720)r(bx+xx,by+yy,6,6,['#eaf7ff','#a6e7f0','#d8a9ee'][(Math.abs(xx+yy)+Math.floor(clock*5))%3])}
  for(let i=0;i<14;i++){let a=i*Math.PI/7+clock*.4;r(bx+Math.cos(a)*125,by+Math.sin(a)*125,5,5,['#f4b2e6','#8cf0f4','#fff1a4'][i%3])}
  for(const [x,y] of [[105,560],[500,560],[105,850],[500,850]]){r(x-16,y-17,32,40,'#11192a');r(x-11,y-12,22,22,'#58618a');r(x-7,y-8,14,14,Math.sin(clock*4+x)>0?'#ff8edb':'#76e4ef')}
+ // Original arcade lighting language: moving disco beams and mirror reflections.
+ g.save();g.globalCompositeOperation='screen';
+ for(let i=0;i<5;i++){
+  const angle=clock*.38+i*Math.PI*2/5;
+  g.globalAlpha=.07;g.fillStyle=['#75dbff','#ed8ddc','#a5a1ff','#f4d590','#8ce4c5'][i];
+  g.beginPath();g.moveTo(300,608);g.lineTo(300+Math.cos(angle)*230-18,608+Math.sin(angle)*180);
+  g.lineTo(300+Math.cos(angle)*230+18,608+Math.sin(angle)*180+12);g.closePath();g.fill();
+ }
+ for(let n=0;n<55;n++){
+  const ring=50+(n%6)*32,angle=n*2.399+clock*.55;
+  g.globalAlpha=.25+.18*Math.sin(clock*1.4+n);
+  r(300+Math.cos(angle)*ring,715+Math.sin(angle)*ring*.8,5+n%3*2,4+n%2,['#80cfff','#f79bd7','#dacbff','#f5df91','#95dfb4'][n%5]);
+ }
+ g.restore();
+ // Music posters, detailed speakers, and animated light bars inspired by the original.
+ for(const [px,py,symbol,color] of [[650,160,'♫','#f187d0'],[1560,160,'♬','#6ad9ef'],[160,155,'♫','#f187d0']]){
+  r(px-17,py-33,34,72,'#101828');r(px-13,py-29,26,64,'#322745');t(symbol,px,py+2,25,color);t('LIVE',px,py+27,8,color);
+ }
+ for(const [sx,sy] of [[620,400],[1580,400],[120,800],[480,800]]){
+  r(sx-24,sy-62,48,124,'#111321');r(sx-20,sy-58,40,116,'#4b385e');
+  for(const oy of [-27,26]){
+   r(sx-17,sy+oy-17,34,34,'#60516f');r(sx-13,sy+oy-13,26,26,'#29283e');
+   r(sx-8,sy+oy-8,16,16,'#74518e');r(sx-4,sy+oy-4,8,8,'#bf87d4');
+  }
+  for(let j=0;j<7;j++)r(sx+21,sy+49-j*12,4,7,j<3+2*Math.sin(clock*3)?'#78d9d5':'#363345');
+ }
  // Arcade cabinets and neon furniture.
  games.forEach(neonCabinet);
  for(let x=610;x<1580;x+=76){r(x,130,48,4,'#8beaf2');r(x+8,136,30,2,'#f49fd8')}
