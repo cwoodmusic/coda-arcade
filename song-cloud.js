@@ -32,14 +32,14 @@ async function saveSong(){
 function addJukeboxUI(){
  const original=jukebox.open;
  jukebox.open=()=>{original();renderLibrary()};
- const launch=$('songmachine-launch');if(launch)launch.onclick=()=>window.open('song-machine/index.html','_blank','noopener');
+ const launch=$('songmachine-launch');if(launch)launch.onclick=()=>window.codaOpenSongMachine?window.codaOpenSongMachine():window.open('song-machine/index.html','_self');
 }
 async function renderLibrary(){
  const modal=$('modalbody');if(!modal)return;
  const section=document.createElement('section');section.id='cloud-song-library';
  section.innerHTML='<h3>♫ My Songs</h3><p id="cloud-songs-status" class="cloud-song-message"></p><div id="cloud-song-list"></div><button id="cloud-compose" type="button">♫ Create a Song</button>';
  modal.append(section);
- $('cloud-compose').onclick=()=>window.open('song-machine/index.html','_blank','noopener');
+ $('cloud-compose').onclick=()=>window.codaOpenSongMachine?window.codaOpenSongMachine():window.open('song-machine/index.html','_self');
  if(!ready){message('Sign in and cloud songs are available on the published GitHub Pages arcade.');return}
  if(!currentUser){message('Sign in with your arcade account to see your songs.');const b=document.createElement('button');b.textContent='Sign in with Google';b.onclick=signIn;section.append(b);return}
  message('Loading your songs…');
@@ -52,7 +52,7 @@ async function renderLibrary(){
  const row=document.createElement('div');row.className='cloud-song-row';const title=document.createElement('strong');title.textContent=song.title;
  const info=document.createElement('small');info.textContent=song.composition.meter+' · '+song.composition.bpm+' BPM';
  const play=document.createElement('button');play.textContent='▶ Play';play.onclick=()=>playComposition(song.composition,song.title);
- const edit=document.createElement('button');edit.textContent='✎ Edit';edit.onclick=()=>window.open('song-machine/index.html?song='+encodeURIComponent(id),'_blank','noopener');
+ const edit=document.createElement('button');edit.textContent='✎ Edit';edit.onclick=()=>window.codaOpenSongMachine?window.codaOpenSongMachine(id):window.open('song-machine/index.html?song='+encodeURIComponent(id),'_self');
  const del=document.createElement('button');del.textContent='Delete';del.onclick=async()=>{if(!confirm('Delete “'+song.title+'” from your jukebox?'))return;try{stopComposition();await api.remove(api.ref(db,'songLibrary/'+uid+'/'+id));renderLibrary()}catch(e){message(errorMessage(e))}};
  row.append(title,info,play,edit,del);list.append(row);
  }
