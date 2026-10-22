@@ -12,7 +12,7 @@ function neonClosest(){const people=currentRoom==='lounge'?neonPeople:currentRoo
 function neonPrompt(){const p=neonClosest();if(p)return p.shop?'E · Talk to Pip / Customize':'E · Talk to '+p.name;if(currentRoom==='lounge')return 'Explore the lounge';if(currentRoom==='dance')return 'Dance with Q';return ''}
 function neonStatus(){const p=neonClosest();if(p)return 'Press E to talk to '+p.name;if(currentRoom==='lounge')return 'Social Lounge · Chat with visitors or visit Pip';if(currentRoom==='dance')return 'Dance Floor · Press Q to emote';return ''}
 function neonInteract(){if(currentRoom==='arcade'){
- if(Math.hypot(pos.x-185,pos.y-300)<75){enterRoom('lounge');return true}
+ if(Math.hypot(pos.x-220,pos.y-470)<75){enterRoom('lounge');return true}
  if(Math.hypot(pos.x-500,pos.y-565)<70){enterRoom('dance');return true}
  return false;
  }
@@ -23,7 +23,7 @@ function neonInteract(){if(currentRoom==='arcade'){
  const line=p.lines? p.lines[neonChatCount++%p.lines.length] : 'Great moves! The floor is yours!';show('<p class="eyebrow">ARCADE CHAT</p><h2>'+p.name+'</h2><p>'+line+'</p><button id="neonbye">See you around!</button>');$('neonbye').onclick=()=>modal.close();return true;
  }return false}
 function neonClick(x,y){if(currentRoom==='arcade'){
- if(Math.hypot(x-185,y-300)<65){enterRoom('lounge');return true}
+ if(Math.hypot(x-220,y-470)<65){enterRoom('lounge');return true}
  if(Math.hypot(x-500,y-565)<65){enterRoom('dance');return true}
  return false;
  }if(currentRoom==='lounge'||currentRoom==='dance'){
