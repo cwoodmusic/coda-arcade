@@ -20,3 +20,5 @@
 #opengame{color:#a3e4ec;font:12px monospace;text-decoration:none;padding:9px;border:1px solid #5c5077;border-radius:3px}
 
 .sprite-directions{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}.sprite-directions button{font-size:11px;padding:9px}.sprite-directions .selected{background:#4e405e;color:#b5f1ed}
+
+.songmachine-launch{margin:16px 0;padding:16px 24px;background:#263959;color:#9cf7f1;border:2px solid #68cbd2;border-radius:10px;font-weight:bold;cursor:pointer}.songmachine-launch:hover{background:#355477}.cloud-song-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px;border-bottom:1px solid #445}.cloud-song-row strong{flex:1;min-width:130px}.cloud-song-row button{padding:7px 10px}.cloud-song-message{margin:8px 0;color:#b8f5e9}
