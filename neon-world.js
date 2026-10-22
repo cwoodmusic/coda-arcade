@@ -12,8 +12,8 @@ function neonClosest(){const people=currentRoom==='lounge'?neonPeople:currentRoo
 function neonPrompt(){const p=neonClosest();if(p)return p.shop?'E · Talk to Pip / Customize':'E · Talk to '+p.name;if(currentRoom==='lounge')return 'Explore the lounge';if(currentRoom==='dance')return 'Dance with Q';return ''}
 function neonStatus(){const p=neonClosest();if(p)return 'Press E to talk to '+p.name;if(currentRoom==='lounge')return 'Social Lounge · Chat with visitors or visit Pip';if(currentRoom==='dance')return 'Dance Floor · Press Q to emote';return ''}
 function neonInteract(){if(currentRoom==='arcade'){
- if(Math.hypot(pos.x-220,pos.y-530)<75){enterRoom('lounge');return true}
- if(Math.hypot(pos.x-500,pos.y-565)<70){enterRoom('dance');return true}
+ if(Math.hypot(pos.x-220,pos.y-705)<75){enterRoom('lounge');return true}
+ if(Math.hypot(pos.x-650,pos.y-705)<70){enterRoom('dance');return true}
  return false;
  }
  if(currentRoom==='lounge'||currentRoom==='dance'){
@@ -23,8 +23,8 @@ function neonInteract(){if(currentRoom==='arcade'){
  const line=p.lines? p.lines[neonChatCount++%p.lines.length] : 'Great moves! The floor is yours!';show('<p class="eyebrow">ARCADE CHAT</p><h2>'+p.name+'</h2><p>'+line+'</p><button id="neonbye">See you around!</button>');$('neonbye').onclick=()=>modal.close();return true;
  }return false}
 function neonClick(x,y){if(currentRoom==='arcade'){
- if(Math.hypot(x-220,y-530)<65){enterRoom('lounge');return true}
- if(Math.hypot(x-500,y-565)<65){enterRoom('dance');return true}
+ if(Math.hypot(x-220,y-705)<65){enterRoom('lounge');return true}
+ if(Math.hypot(x-650,y-705)<65){enterRoom('dance');return true}
  return false;
  }if(currentRoom==='lounge'||currentRoom==='dance'){
  if(y>535&&Math.abs(x-500)<95){enterRoom('arcade');return true}
@@ -32,7 +32,7 @@ function neonClick(x,y){if(currentRoom==='arcade'){
  if(p){target={x:p.x,y:Math.min(565,p.y+57)};return true}
  target={x:Math.max(70,Math.min(930,x)),y:Math.max(155,Math.min(565,y))};return true;
  }return false}
-function neonFloor(name){rect(0,0,1000,640,'#12152b');for(let y=88;y<605;y+=32)for(let x=35;x<965;x+=32){rect(x,y,31,31,((x+y)/32)%2?'#242440':'#2c2a4a');rect(x,y,31,1,'#40375d')}rect(18,15,964,75,'#49395f');rect(20,16,960,6,'#e79cda');rect(18,90,18,515,'#5d4b73');rect(964,90,18,515,'#5d4b73');rect(18,605,964,18,'#8b6d98');text(name,500,61,26,'#f6b9ea')}
+function neonFloor(name){rect(0,0,1000,800,'#12152b');for(let y=88;y<605;y+=32)for(let x=35;x<965;x+=32){rect(x,y,31,31,((x+y)/32)%2?'#242440':'#2c2a4a');rect(x,y,31,1,'#40375d')}rect(18,15,964,75,'#49395f');rect(20,16,960,6,'#e79cda');rect(18,90,18,515,'#5d4b73');rect(964,90,18,515,'#5d4b73');rect(18,605,18,160,'#5d4b73');rect(964,605,18,160,'#5d4b73');for(let y=605;y<770;y+=32)for(let x=35;x<965;x+=32){rect(x,y,31,31,'#242440');rect(x,y,31,1,'#40375d')}rect(18,765,964,18,'#8b6d98');text(name,500,61,26,'#f6b9ea')}
 function neonNPC(p,t){const bob=reducedMotion.matches?0:Math.sin(animationTime/420+t)*2;ctx.save();ctx.globalAlpha=.3;rect(p.x-16,p.y+8,32,6,'#050715');ctx.restore();rect(p.x-10,p.y-31+bob,20,18,p.color);rect(p.x-12,p.y-13+bob,24,21,p.color);rect(p.x-11,p.y-35+bob,22,7,'#39283e');rect(p.x-6,p.y-26+bob,4,4,'#26304c');rect(p.x+4,p.y-26+bob,4,4,'#26304c');rect(p.x-10,p.y+8+bob,8,12,'#24273d');rect(p.x+2,p.y+8+bob,8,12,'#24273d');text(p.name.toUpperCase(),p.x,p.y+33,11,'#e7d9f3');if(neonClosest()===p){text('E · TALK',p.x,p.y-52,11,'#fff4a9')}}
 function drawNeonRoom(){if(currentRoom==='arcade'){
  // The main room retains all four cabinets and the disco ball; portals lead to larger dedicated areas.
