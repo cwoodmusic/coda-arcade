@@ -8,10 +8,11 @@ const neonPeople=[
 ];
 const neonDancers=[{name:'Riff',x:320,y:380,color:'#e5a8ff'},{name:'Fizz',x:670,y:390,color:'#95e6e2'},{name:'Dot',x:505,y:460,color:'#ffd48c'}];
 let neonChatCount=0;
-function neonClosest(){const people=currentRoom==='lounge'?neonPeople:currentRoom==='dance'?neonDancers:[];return people.find(p=>Math.hypot(pos.x-p.x,pos.y-p.y)<90)||null}
+function neonClosest(){const people=currentRoom==='lounge'?neonPeople:currentRoom==='dance'?neonDancers:[];return people.find(p=>{const a=npcScene(p);return a.room===currentRoom&&Math.hypot(pos.x-a.x,pos.y-a.y)<90})||null}
 function neonPrompt(){const p=neonClosest();if(p)return p.shop?'E · Talk to Pip / Customize':'E · Talk to '+p.name;if(currentRoom==='lounge')return 'Explore the lounge';if(currentRoom==='dance')return 'Dance with Q';return ''}
 function neonStatus(){const p=neonClosest();if(p)return 'Press E to talk to '+p.name;if(currentRoom==='lounge')return 'Social Lounge · Chat with visitors or visit Pip';if(currentRoom==='dance')return 'Dance Floor · Press Q to emote';return ''}
 function neonInteract(){if(currentRoom==='arcade'){
+ const visitor=[...neonPeople,...neonDancers].find(p=>{const a=npcScene(p);return a.room==='arcade'&&Math.hypot(pos.x-a.x,pos.y-a.y)<65});if(visitor){const line=visitor.lines?visitor.lines[neonChatCount++%visitor.lines.length]:'Nice moves!';show('<p class="eyebrow">ARCADE CHAT</p><h2>'+visitor.name+'</h2><p>'+line+'</p><button id="neonbye">See you around!</button>');$('neonbye').onclick=()=>modal.close();return true;}
  if(Math.hypot(pos.x-220,pos.y-705)<75){enterRoom('lounge');return true}
  if(Math.hypot(pos.x-650,pos.y-705)<70){enterRoom('dance');return true}
  return false;
@@ -28,12 +29,36 @@ function neonClick(x,y){if(currentRoom==='arcade'){
  return false;
  }if(currentRoom==='lounge'||currentRoom==='dance'){
  if(y>535&&Math.abs(x-500)<95){enterRoom('arcade');return true}
- const p=(currentRoom==='lounge'?neonPeople:neonDancers).find(p=>Math.hypot(x-p.x,y-p.y)<60);
- if(p){target={x:p.x,y:Math.min(565,p.y+57)};return true}
+ const p=(currentRoom==='lounge'?neonPeople:neonDancers).find(p=>Math.hypot(x-npcScene(p).x,y-npcScene(p).y)<60&&npcScene(p).room===currentRoom);
+ if(p){target={x:npcScene(p).x,y:Math.min(565,npcScene(p).y+57)};return true}
  target={x:Math.max(70,Math.min(930,x)),y:Math.max(155,Math.min(565,y))};return true;
  }return false}
 function neonFloor(name){rect(0,0,1000,800,'#12152b');for(let y=88;y<605;y+=32)for(let x=35;x<965;x+=32){rect(x,y,31,31,((x+y)/32)%2?'#242440':'#2c2a4a');rect(x,y,31,1,'#40375d')}rect(18,15,964,75,'#49395f');rect(20,16,960,6,'#e79cda');rect(18,90,18,515,'#5d4b73');rect(964,90,18,515,'#5d4b73');rect(18,605,18,160,'#5d4b73');rect(964,605,18,160,'#5d4b73');for(let y=605;y<770;y+=32)for(let x=35;x<965;x+=32){rect(x,y,31,31,'#242440');rect(x,y,31,1,'#40375d')}rect(18,765,964,18,'#8b6d98');text(name,500,61,26,'#f6b9ea')}
-function neonNPC(p,t){const bob=reducedMotion.matches?0:Math.sin(animationTime/420+t)*2;ctx.save();ctx.globalAlpha=.3;rect(p.x-16,p.y+8,32,6,'#050715');ctx.restore();rect(p.x-10,p.y-31+bob,20,18,p.color);rect(p.x-12,p.y-13+bob,24,21,p.color);rect(p.x-11,p.y-35+bob,22,7,'#39283e');rect(p.x-6,p.y-26+bob,4,4,'#26304c');rect(p.x+4,p.y-26+bob,4,4,'#26304c');rect(p.x-10,p.y+8+bob,8,12,'#24273d');rect(p.x+2,p.y+8+bob,8,12,'#24273d');text(p.name.toUpperCase(),p.x,p.y+33,11,'#e7d9f3');if(neonClosest()===p){text('E · TALK',p.x,p.y-52,11,'#fff4a9')}}
+// NPCs use the SAME pixel avatar renderer as the player, including showcase unlockables.
+const npcLooks={
+ Ziggy:{skin:'#d49a76',hair:'#171424',shirt:'#ffb46f',hairstyle:'spiky',outfit:'shorts',shoes:'gold',accessory:'partyglasses',walked:0},
+ Nova:{skin:'#704633',hair:'#d4e2f8',shirt:'#69e0ff',hairstyle:'long',outfit:'dress',shoes:'neon',accessory:'starclip',walked:0},
+ Byte:{skin:'#f4ccb0',hair:'#463145',shirt:'#bda1ff',hairstyle:'curly',outfit:'overalls',shoes:'hightops',accessory:'headphones',walked:0},
+ Mochi:{skin:'#a56b48',hair:'#f3d875',shirt:'#ffa6c7',hairstyle:'buns',outfit:'pants',shoes:'boots',accessory:'bow',walked:0},
+ Pip:{skin:'#d49a76',hair:'#463145',shirt:'#ffe28a',hairstyle:'bob',outfit:'overalls',shoes:'gold',accessory:'bowtie',walked:0},
+ Riff:{skin:'#704633',hair:'#171424',shirt:'#e5a8ff',hairstyle:'ponytail',outfit:'dress',shoes:'neon',accessory:'cape',walked:0},
+ Fizz:{skin:'#f4ccb0',hair:'#f3d875',shirt:'#95e6e2',hairstyle:'spiky',outfit:'shorts',shoes:'gold',accessory:'cap',walked:0},
+ Dot:{skin:'#a56b48',hair:'#d4e2f8',shirt:'#ffd48c',hairstyle:'curly',outfit:'overalls',shoes:'neon',accessory:'starclip',walked:0}
+};
+const npcBase={};for(const p of [...neonPeople,...neonDancers])npcBase[p.name]={x:p.x,y:p.y};
+// Timed loops include room visits, idle periods and short dance emotes.
+function npcScene(p){if(p.shop)return {room:'lounge',x:500,y:253,emote:false};
+ const t=animationTime/1000;const n=[...neonPeople,...neonDancers].findIndex(v=>v.name===p.name);
+ const period=65+n*7,cycle=((t+n*13)%period)/period;
+ const room=cycle<.20?'arcade':cycle<.60?(neonDancers.includes(p)?'dance':'lounge'):cycle<.84?'dance':'arcade';
+ const base=npcBase[p.name];let x,y;
+ if(room==='arcade'){const u=(cycle<.2?cycle/.2:(cycle-.84)/.16);x=175+((n*97+u*590)%650);y=390+Math.sin(u*6+n)*90+Math.sin(t*.65+n)*14;}
+ else if(room==='lounge'){x=base.x+Math.sin(t*.34+n)*55;y=base.y+Math.sin(t*.29+n)*34;}
+ else{x=270+((n*113)%440)+Math.sin(t*.7+n)*38;y=350+Math.cos(t*.53+n)*55;}
+ return {room,x,y,emote:room==='dance'||Math.sin(t*.32+n*2.2)>.82};
+}
+function neonDrawVisitors(room){for(const p of [...neonPeople,...neonDancers]){const scene=npcScene(p);if(scene.room!==room)continue;const profile=npcLooks[p.name];profile.walked=animationTime/120;person(scene.x,scene.y,1,ctx,0,'down',true,animationTime/150,profile,scene.emote);text(p.name.toUpperCase(),scene.x,scene.y+27,10,'#e7d9f3');if(room===currentRoom&&neonClosest()===p)text('E · TALK',scene.x,scene.y-57,10,'#fff4a9');}}
+function neonNPC(p,t){const scene=npcScene(p);if(scene.room!==currentRoom)return;const profile=npcLooks[p.name];profile.walked=animationTime/120;person(scene.x,scene.y,1,ctx,0,'down',true,animationTime/150,profile,scene.emote);text(p.name.toUpperCase(),scene.x,scene.y+27,10,'#e7d9f3');if(neonClosest()===p)text('E · TALK',scene.x,scene.y-57,10,'#fff4a9')}
 function drawNeonRoom(){if(currentRoom==='arcade'){
  // The main room retains all four cabinets and the disco ball; portals lead to larger dedicated areas.
  return false;

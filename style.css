@@ -22,3 +22,9 @@
 .sprite-directions{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}.sprite-directions button{font-size:11px;padding:9px}.sprite-directions .selected{background:#4e405e;color:#b5f1ed}
 
 .songmachine-launch{margin:16px 0;padding:16px 24px;background:#263959;color:#9cf7f1;border:2px solid #68cbd2;border-radius:10px;font-weight:bold;cursor:pointer}.songmachine-launch:hover{background:#355477}.cloud-song-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px;border-bottom:1px solid #445}.cloud-song-row strong{flex:1;min-width:130px}.cloud-song-row button{padding:7px 10px}.cloud-song-message{margin:8px 0;color:#b8f5e9}
+
+/* Fullscreen arcade: maximize play area without stretching the 1000×800 art. */
+.arcade:fullscreen{display:flex;flex-direction:column;width:100vw;height:100vh;border:0;border-radius:0;background:#151b29}
+.arcade:fullscreen .roomtop,.arcade:fullscreen .roomfoot{flex:0 0 auto}
+.arcade:fullscreen canvas{width:auto;height:auto;max-width:100%;max-height:calc(100vh - 115px);aspect-ratio:5/4;object-fit:contain;align-self:center;flex:1 1 auto}
+.arcade:fullscreen .roomfoot{overflow-x:auto;white-space:nowrap}
