@@ -1,12 +1,24 @@
 <!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Coda Arcade — Connected World Preview</title><style>
-*{box-sizing:border-box}body{margin:0;background:#10101e;color:#e9def9;font:15px system-ui}header{padding:12px 20px;display:flex;align-items:center;gap:18px;justify-content:space-between;background:#211a37}a{color:#a6eff4}button{background:#392f58;color:white;border:1px solid #ba8fdf;border-radius:6px;padding:9px 12px;cursor:pointer}button:hover{background:#514073}#view{display:block;width:min(100vw,calc((100dvh - 110px) * 1100 / 720));height:auto;aspect-ratio:1100/720;margin:0 auto;image-rendering:pixelated;background:#171a2e;touch-action:none}footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 16px;min-height:44px;background:#211a37;font-size:12px}#dialog{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);width:min(490px,90vw);padding:20px;background:#261d40;border:2px solid #d8a6f1;box-shadow:0 8px 50px #000b;display:none}#dialog strong{color:#f4c8fa}#dialog p{line-height:1.6}#dialog button{float:right}@media(max-width:650px){header{font-size:12px;padding:8px}#view{width:min(100vw,calc((100dvh - 110px) * 1100 / 720));height:auto}}
+*{box-sizing:border-box}body{margin:0;background:#10101e;color:#e9def9;font:15px system-ui}header{padding:12px 20px;display:flex;align-items:center;gap:18px;justify-content:space-between;background:#211a37}a{color:#a6eff4}button{background:#392f58;color:white;border:1px solid #ba8fdf;border-radius:6px;padding:9px 12px;cursor:pointer}button:hover{background:#514073}#view{display:block;width:min(100vw,calc((100dvh - 110px) * 1.5));height:auto;aspect-ratio:3/2;margin:0 auto;image-rendering:pixelated;background:#10101e;touch-action:none}footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 16px;min-height:44px;background:#211a37;font-size:12px}#dialog{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);width:min(490px,90vw);padding:20px;background:#261d40;border:2px solid #d8a6f1;box-shadow:0 8px 50px #000b;display:none}#dialog strong{color:#f4c8fa}#dialog p{line-height:1.6}#dialog button{float:right}@media(max-width:650px){header{font-size:12px;padding:8px}#view{width:min(100vw,calc((100dvh - 110px) * 1536 / 1024));height:auto}}
 #gameoverlay{position:fixed;inset:0;z-index:100;background:#121327;display:flex;flex-direction:column}#gameoverlay[hidden]{display:none}.gamebar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#231a3c;border-bottom:2px solid #b583dc}.gamebar strong{color:#f0d7ff}#gameiframe{border:0;width:100%;flex:1;min-height:0;background:#111628}body.game-open{overflow:hidden}@media(max-width:650px){.gamebar{gap:6px}.gamebar strong{font-size:12px}.gamebar a{font-size:11px}}
 #panel{position:fixed;z-index:90;top:50%;left:50%;transform:translate(-50%,-50%);width:min(570px,94vw);max-height:84dvh;overflow:auto;padding:20px;background:#231c3b;border:2px solid #c69be9;box-shadow:0 0 0 100vmax #05030ab8,0 14px 55px #000c;border-radius:12px}#panel[hidden]{display:none}.panelHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.panelRow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0;padding:10px;border:1px solid #66517f;border-radius:7px}.panelRow small{display:block;opacity:.75}.formRow{display:grid;gap:5px;margin:10px 0}.formRow select,.formRow input{background:#17142c;color:#fff;border:1px solid #a08dbd;padding:9px;border-radius:5px;width:100%}.panelActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.muted{color:#c1b4d7;font-size:13px}.panelMsg{min-height:22px;color:#9fe9dc}body:has(#panel:not([hidden])) #view{filter:brightness(.65)}
 #pianoroom{position:fixed;inset:0;z-index:95;background:radial-gradient(ellipse at 50% 20%,#344962,#11172b 75%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#f5edff}#pianoroom[hidden]{display:none}#pianoroom .stage{border:9px solid #69567e;background:repeating-linear-gradient(90deg,#243349 0 32px,#28374d 32px 64px);width:min(650px,88vw);padding:30px;text-align:center;box-shadow:0 0 70px #b08ed255}#pianoroom .keys{display:flex;justify-content:center;margin:20px auto 0}#pianoroom .keys i{height:85px;width:27px;background:#eee9f3;border:2px solid #35324b;box-shadow:inset 0 -8px #aaa8bc}#pianoroom .keys i:nth-child(3n+2){background:#22223b;height:55px;width:18px;margin:0 -8px;z-index:1}#pianoroom h2{color:#9feaf2;letter-spacing:3px}#pianoroom button{font-size:16px}
-</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 5.7 · ASPECT RATIO + PIANO DOOR</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1100" height="720" tabindex="0"></canvas><footer><span>WASD / arrows · Walk &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 5.7 · Square pixels and piano doorway</span></footer><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><div id="pianoroom" hidden><div class="stage"><h2>♫ PIANO LAB ♫</h2><p>A quieter music space away from the arcade floor.</p><div class="keys"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p style="opacity:.7">Dedicated room preview — instruments and activities coming later.</p></div><button id="closepiano">← Return to Arcade</button></div><script>
-(()=>{'use strict';const c=document.querySelector('#view'),g=c.getContext('2d'),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}const W=1240,H=1010,ART_SCALE=1,keys=new Set();let player={x:1065,y:925},cam={x:0,y:0},dest=null,emote=0,near=null,last=0,clock=0;const rooms=[{id:'lounge',name:'SOCIAL LOUNGE',x:60,y:80,w:340,h:340,color:'#43324f'},{id:'dance',name:'DANCE FLOOR',x:60,y:460,w:340,h:340,color:'#44324d'},{id:'arcade',name:'MAIN ARCADE',x:430,y:80,w:760,h:760,color:'#26364e'}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:515,y:260,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:715,y:260,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:915,y:260,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1115,y:260,url:'song-machine/index.html'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
-const looks=[['#e5b48d','#ed8cbe','#171424','spiky'],['#85543b','#8ddde6','#e3c27d','long'],['#f4cba6','#c9a3f1','#402c4b','buns'],['#a56b48','#f4ae77','#1c172d','short'],['#f3c3a1','#b2f37b','#6c3159','bob'],['#704633','#a8b5fc','#eee6df','curly'],['#f0b79d','#ffd48c','#171424','ponytail']];const npc=[{name:'Ziggy',x:1065,y:925,mode:'enter',goal:0,wait:0,look:0},{name:'Nova',x:1065,y:925,mode:'enter',goal:1,wait:1.7,look:1},{name:'Byte',x:1065,y:925,mode:'enter',goal:2,wait:3.4,look:2},{name:'Mochi',x:1065,y:925,mode:'enter',goal:3,wait:5,look:3},{name:'Riff',x:1065,y:925,mode:'enter',goal:0,wait:7,look:4},{name:'Fizz',x:1065,y:925,mode:'enter',goal:1,wait:9,look:5},{name:'Dot',x:1065,y:925,mode:'enter',goal:2,wait:11,look:6}];const sofas=[{x:80,y:185,w:115,h:45},{x:240,y:185,w:115,h:45},{x:80,y:320,w:115,h:45},{x:240,y:320,w:115,h:45}];const seats=[{x:135,y:255},{x:290,y:255},{x:135,y:385},{x:290,y:385}];const spot=(p)=>p.mode==='cabinet'?{x:games[p.goal%4].x,y:370}:p.mode==='lounge'?seats[p.goal%4]:p.mode==='dance'?{x:130+(p.goal%3)*95,y:560+(p.goal%2)*105}:p.mode==='leave'?{x:1065,y:945}:{x:1065,y:925};const r=(x,y,w,h,color)=>{g.fillStyle=color;g.fillRect(Math.round(x),Math.round(y),w,h)};const t=(s,x,y,size=18,color='#e7e2ff')=>{g.fillStyle=color;g.font=`bold ${size}px monospace`;g.textAlign='center';g.fillText(s,x,y)};function sprite(x,y,look,walk=false,dance=false,scale=1){const [skin,shirt,hair,style]=look;g.save();g.translate(Math.round(x),Math.round(y));g.scale(scale,scale);const bob=dance?Math.sin(clock*8)*5:walk?Math.sin(clock*12)*2:0;r(-10,-38+bob,20,17,hair);if(style==='buns'){r(-15,-39+bob,6,7,hair);r(9,-39+bob,6,7,hair)}if(style==='long')r(-13,-30+bob,26,20,hair);r(-9,-32+bob,18,16,skin);r(-12,-16+bob,24,20,shirt);r(-16,-12+bob,4,13,skin);r(12,-12+bob,4,13,skin);r(-9,4+bob,7,11,'#695d99');r(2,4+bob,7,11,'#695d99');r(-10,14+bob,9,4,'#f8d56b');r(1,14+bob,9,4,'#f8d56b');r(-6,-24+bob,3,3,'#222033');r(4,-24+bob,3,3,'#222033');if(dance){const beat=Math.floor(clock*4+look[0].length)%4,up=beat%2===0;r(-18,-(up?29:13)+bob,5,up?16:11,skin);r(13,-(up?13:29)+bob,5,up?11:16,skin);r(-10+(up?-5:3),14+bob,9,5,'#f8d56b');r(1+(up?4:-4),14+bob,9,5,'#f8d56b')}g.restore()};function inside(x,y){return x>=48&&x<=W-48&&y>=48&&y<=H-48}// NPCs navigate through room entrances using waypoints, never teleport through walls.
-function makeRoute(p,aim){return [aim]}function go(p,dt){const aim=spot(p);const targetKey=p.mode+':'+p.goal;
+</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 5.8 · NEON NIGHTCLUB WORLD</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1536" height="1024" tabindex="0"></canvas><footer><span>WASD / arrows · Walk &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 5.8 · Connected dance corridor · WASD / tap to walk</span></footer><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><div id="pianoroom" hidden><div class="stage"><h2>♫ PIANO LAB ♫</h2><p>A quieter music space away from the arcade floor.</p><div class="keys"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p style="opacity:.7">Dedicated room preview — instruments and activities coming later.</p></div><button id="closepiano">← Return to Arcade</button></div><script>
+(()=>{'use strict';const c=document.querySelector('#view'),g=c.getContext('2d'),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}const W=1536,H=1024,ART_SCALE=1,keys=new Set();let player={x:1340,y:505},cam={x:0,y:0},dest=null,emote=0,near=null,last=0,clock=0;const rooms=[{id:'lounge',name:'LOUNGE',x:60,y:100,w:330,h:270},{id:'dance',name:'DANCE',x:45,y:620,w:580,h:325},{id:'arcade',name:'ARCADE',x:490,y:110,w:735,h:435}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:645,y:280,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:765,y:280,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:910,y:280,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1040,y:280,url:'song-machine/index.html'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
+const looks=[['#e5b48d','#ed8cbe','#171424','spiky'],['#85543b','#8ddde6','#e3c27d','long'],['#f4cba6','#c9a3f1','#402c4b','buns'],['#a56b48','#f4ae77','#1c172d','short'],['#f3c3a1','#b2f37b','#6c3159','bob'],['#704633','#a8b5fc','#eee6df','curly'],['#f0b79d','#ffd48c','#171424','ponytail']];const npc=[{name:'Ziggy',x:1340,y:505,mode:'enter',goal:0,wait:0,look:0},{name:'Nova',x:1340,y:505,mode:'enter',goal:1,wait:1.7,look:1},{name:'Byte',x:1340,y:505,mode:'enter',goal:2,wait:3.4,look:2},{name:'Mochi',x:1340,y:505,mode:'enter',goal:3,wait:5,look:3},{name:'Riff',x:1340,y:505,mode:'enter',goal:0,wait:7,look:4},{name:'Fizz',x:1340,y:505,mode:'enter',goal:1,wait:9,look:5},{name:'Dot',x:1340,y:505,mode:'enter',goal:2,wait:11,look:6}];const sofas=[{x:110,y:175,w:110,h:45},{x:230,y:175,w:110,h:45}];const seats=[{x:165,y:235},{x:275,y:235},{x:155,y:310},{x:290,y:310}];const spot=(p)=>p.mode==='cabinet'?{x:games[p.goal%4].x,y:355}:p.mode==='lounge'?seats[p.goal%4]:p.mode==='dance'?{x:160+(p.goal%4)*110,y:780+(p.goal%2)*65}:p.mode==='leave'?{x:1340,y:505}:{x:1340,y:505};const r=(x,y,w,h,color)=>{g.fillStyle=color;g.fillRect(Math.round(x),Math.round(y),w,h)};const t=(s,x,y,size=18,color='#e7e2ff')=>{g.fillStyle=color;g.font=`bold ${size}px monospace`;g.textAlign='center';g.fillText(s,x,y)};function sprite(x,y,look,walk=false,dance=false,scale=1){const [skin,shirt,hair,style]=look;g.save();g.translate(Math.round(x),Math.round(y));g.scale(scale,scale);const bob=dance?Math.sin(clock*8)*5:walk?Math.sin(clock*12)*2:0;r(-10,-38+bob,20,17,hair);if(style==='buns'){r(-15,-39+bob,6,7,hair);r(9,-39+bob,6,7,hair)}if(style==='long')r(-13,-30+bob,26,20,hair);r(-9,-32+bob,18,16,skin);r(-12,-16+bob,24,20,shirt);r(-16,-12+bob,4,13,skin);r(12,-12+bob,4,13,skin);r(-9,4+bob,7,11,'#695d99');r(2,4+bob,7,11,'#695d99');r(-10,14+bob,9,4,'#f8d56b');r(1,14+bob,9,4,'#f8d56b');r(-6,-24+bob,3,3,'#222033');r(4,-24+bob,3,3,'#222033');if(dance){const beat=Math.floor(clock*4+look[0].length)%4,up=beat%2===0;r(-18,-(up?29:13)+bob,5,up?16:11,skin);r(13,-(up?13:29)+bob,5,up?11:16,skin);r(-10+(up?-5:3),14+bob,9,5,'#f8d56b');r(1+(up?4:-4),14+bob,9,5,'#f8d56b')}g.restore()};function inside(x,y){
+ // Walkable room masks, including a continuous accessible L-shaped dance corridor.
+ const rects=[[510,140,1200,515],[1210,135,1450,565],[100,110,385,365],[360,175,550,435],
+ [120,385,285,615],[175,520,635,640],[45,615,625,965],[1140,360,1470,610]];
+ return rects.some(([x1,y1,x2,y2])=>x>=x1&&x<=x2&&y>=y1&&y<=y2);
+}// NPCs navigate through room entrances using waypoints, never teleport through walls.
+function makeRoute(p,aim){
+ // Dance visitors travel through the actual L-shaped corridor, never across a wall.
+ if(p.mode==='dance')return [{x:575,y:440},{x:465,y:440},{x:465,y:555},{x:245,y:555},{x:245,y:665},aim];
+ if(p.mode==='lounge')return [{x:550,y:380},{x:450,y:360},aim];
+ if(p.mode==='cabinet'&&p.x<500)return [{x:245,y:555},{x:465,y:555},{x:465,y:440},{x:575,y:440},aim];
+ if(p.mode==='leave'&&p.x<650)return [{x:245,y:665},{x:245,y:555},{x:465,y:555},{x:465,y:440},{x:575,y:440},{x:1180,y:440},aim];
+ return [aim];
+}function go(p,dt){const aim=spot(p);const targetKey=p.mode+':'+p.goal;
  if(p.routeKey!==targetKey){p.routeKey=targetKey;p.route=makeRoute(p,aim)}
  if(!p.route||!p.route.length)return false;
  let target=p.route[0],dx=target.x-p.x,dy=target.y-p.y,dist=Math.hypot(dx,dy);
@@ -17,7 +29,7 @@ function makeRoute(p,aim){return [aim]}function go(p,dt){const aim=spot(p);const
  p.route=makeRoute(p,aim);return true;
 }
 function update(dt){clock+=dt;if(dialog.style.display==='block'||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;let dx=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),dy=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);if(dx||dy)dest=null;if(dest){dx=dest.x-player.x;dy=dest.y-player.y;if(Math.hypot(dx,dy)<9){dest=null;dx=dy=0}}const len=Math.hypot(dx,dy);if(len){const nx=player.x+dx/len*230*dt,ny=player.y+dy/len*230*dt;if(inside(nx,player.y))player.x=nx;if(inside(player.x,ny))player.y=ny}for(const p of npc){
-  if(p.hidden){p.wait-=dt;if(p.wait<=0){p.hidden=false;p.x=1065;p.y=945;p.mode='enter';p.routeKey='';p.arrived=false;p.wait=0.5;}continue;}
+  if(p.hidden){p.wait-=dt;if(p.wait<=0){p.hidden=false;p.x=1340;p.y=505;p.mode='enter';p.routeKey='';p.arrived=false;p.wait=0.5;}continue;}
   // Arrival and dwell are separate: NPCs must reach the dance floor before dancing.
   if(p.wait>0){p.wait-=dt;continue;}
   if(p.arrived){
@@ -34,7 +46,7 @@ function update(dt){clock+=dt;if(dialog.style.display==='block'||!document.query
     p.arrived=true;
     p.wait=p.mode==='cabinet'?7+(p.look%3)*2:p.mode==='lounge'?9+(p.look%3)*2:12+(p.look%4)*2;
   }
-}near=null;let d=Infinity;for(const p of [...games.map((q,i)=>({...q,type:'game',index:i})),...npc.filter(q=>!q.hidden).map(q=>({...q,type:'npc'})),{name:'Pip · Avatar Boutique',x:265,y:175,type:'shop'},{name:'Jukebox',x:1130,y:735,type:'jukebox'},{name:'Piano Lab',x:849,y:200,type:'piano'}]){const dd=Math.hypot(p.x-player.x,p.y-player.y);if(dd<85&&dd<d){near=p;d=dd}}status.textContent=near?'E · '+(near.type==='game'?'Play ':near.type==='shop'?'Talk to ':'Chat with ')+near.name:'Explore · E to interact'}const gameoverlay=document.querySelector('#gameoverlay'),gameiframe=document.querySelector('#gameiframe');let gameOpen=false;
+}near=null;let d=Infinity;for(const p of [...games.map((q,i)=>({...q,type:'game',index:i})),...npc.filter(q=>!q.hidden).map(q=>({...q,type:'npc'})),{name:'Pip · Avatar Boutique',x:425,y:350,type:'shop'},{name:'Jukebox',x:425,y:350,type:'jukebox'},{name:'Piano Lab',x:1270,y:185,type:'piano'}]){const dd=Math.hypot(p.x-player.x,p.y-player.y);if(dd<85&&dd<d){near=p;d=dd}}status.textContent=near?'E · '+(near.type==='game'?'Play ':near.type==='shop'?'Talk to ':'Chat with ')+near.name:'Explore · E to interact'}const gameoverlay=document.querySelector('#gameoverlay'),gameiframe=document.querySelector('#gameiframe');let gameOpen=false;
 
 function openPiano(){keys.clear();dest=null;document.querySelector('#pianoroom').hidden=false;}
 function closePiano(){document.querySelector('#pianoroom').hidden=true;keys.clear();c.focus();}
@@ -106,104 +118,47 @@ function neonDecoration(){
  for(const [x,y] of [[1020,640],[2250,640],[1020,1370],[2250,1370]]){r(x-20,y-24,40,48,'#244b54');r(x-12,y-45,24,40,'#5ebd9c')}
  r(1450,760,350,130,'#203950');r(1462,772,326,106,'#2c5165');t('✦ CODA ARCADE ✦',1625,838,27,'#b4f8ff');
 }
-function talk(){if(dialog.style.display==='block'){dialog.style.display='none';return}if(!near)return;if(near.type==='game'){openCabinet(near);return}if(near.type==='shop'){openBoutique();return}if(near.type==='jukebox'){openJukebox();return}if(near.type==='piano'){openPiano();return}document.querySelector('#who').textContent=near.name;document.querySelector('#words').textContent=near.type==='shop'?'Welcome to the Pixel Boutique! In the full arcade, I help you customize your avatar.':lines[Math.floor(Math.random()*lines.length)];dialog.style.display='block'}function draw(){
- g.setTransform(1,0,0,1,0,0);r(0,0,c.width,c.height,'#111323');
- cam.x=Math.max(0,Math.min(W-c.width/ART_SCALE,player.x-c.width/(2*ART_SCALE)));
- cam.y=Math.max(0,Math.min(H-c.height/ART_SCALE,player.y-c.height/(2*ART_SCALE)));
- g.save();g.scale(ART_SCALE,ART_SCALE);g.translate(-Math.round(cam.x),-Math.round(cam.y));
- // Consistent 32px original-scale floor grid; no horizontal or vertical distortion.
- r(24,24,W-48,H-48,'#111724');
- for(let y=40;y<H-35;y+=32)for(let x=40;x<W-35;x+=32){
-  r(x,y,32,32,((x-40)/32+(y-40)/32)%2?'#20263e':'#242b45');
-  r(x,y,32,1,'#34485d');r(x,y,1,32,'#34485d');
+function talk(){if(dialog.style.display==='block'){dialog.style.display='none';return}if(!near)return;if(near.type==='game'){openCabinet(near);return}if(near.type==='shop'){openBoutique();return}if(near.type==='jukebox'){openJukebox();return}if(near.type==='piano'){openPiano();return}document.querySelector('#who').textContent=near.name;document.querySelector('#words').textContent=near.type==='shop'?'Welcome to the Pixel Boutique! In the full arcade, I help you customize your avatar.':lines[Math.floor(Math.random()*lines.length)];dialog.style.display='block'}const worldArt=new Image();worldArt.src='arcade-world-art.png';
+function draw(){
+ g.setTransform(1,0,0,1,0,0);g.fillStyle='#080a16';g.fillRect(0,0,c.width,c.height);
+ // No stretch: native 1536x1024 image at 1:1 aspect ratio.
+ if(worldArt.complete&&worldArt.naturalWidth)g.drawImage(worldArt,0,0,W,H);
+ cam.x=0;cam.y=0;
+ g.save();
+ // Live lighting overlays on top of the painted neon floor.
+ const dancePalette=['#fc5bbd','#42e9ff','#ffe66d','#9a6bff','#69ffb4'];
+ g.globalCompositeOperation='screen';
+ for(let row=0;row<4;row++)for(let col=0;col<7;col++){
+  const xx=140+col*61,yy=761+row*43;
+  const beat=Math.sin(clock*4.1+row*.95+col*.72);
+  g.globalAlpha=.04+Math.max(0,beat)*.21;
+  r(xx,yy,53,38,dancePalette[(row*3+col)%dancePalette.length]);
  }
- r(24,24,W-48,12,'#79718e');r(24,36,W-48,8,'#443f62');
- r(24,44,12,H-72,'#45415f');r(W-36,44,12,H-72,'#45415f');
- r(24,H-36,W-48,12,'#79718e');r(37,48,3,H-92,'#46b6cc');r(W-40,48,3,H-92,'#b671e1');
- // Main arcade: 900 x 800, near-original room proportions, not a horizontal strip.
- r(430,80,760,760,'#20263e');r(430,80,900,7,'#79718e');
- for(let y=90;y<835;y+=32)for(let x=436;x<1185;x+=32){
-  r(x,y,30,30,((x+y)/32)%2?'#20263e':'#242b45');r(x,y,30,1,'#34485d');
+ for(let k=0;k<5;k++){
+  const x=310+Math.cos(clock*.6+k*1.256)*215,y=735+Math.sin(clock*.6+k*1.256)*115;
+  const grad=g.createRadialGradient(x,y,0,x,y,80);
+  grad.addColorStop(0,dancePalette[k]+'88');grad.addColorStop(1,dancePalette[k]+'00');
+  g.globalAlpha=.35;g.fillStyle=grad;g.fillRect(x-80,y-80,160,160);
  }
- r(443,94,734,49,'#443f62');r(560,100,495,35,'#182334');
- t('THE CODA ARCADE',807,125,23,'#f4b9ec');
- for(let n=0;n<30;n++){let lit=Math.sin(clock*2.6-n*.55)>.05;r(568+n*15,103,5,4,lit?'#ffe9a1':'#6d6072');r(568+n*15,130,5,4,lit?'#d2e9a6':'#57616a')}
- t('FREE PLAY',1110,125,12,'#dce6a4');
- games.forEach((q,i)=>neonCabinet(q,i));
- games.forEach((q,i)=>{r(q.x-54,q.y+99,108,27,'#202d40');t('0'+(i+1)+' / PLAY',q.x,q.y+116,10,'#8396a7')});
- // Original-size square dance floor in main room, with disco ball above.
- const colors=['#43d9ee','#b874f2','#f472bf','#677fe5'];
- r(550,410,535,340,'#101427');r(556,416,523,328,'#b65df7');r(562,422,511,316,'#15182d');
- for(let row=0;row<5;row++)for(let col=0;col<10;col++){
-  let wave=.5+.5*Math.sin(clock*1.9+col*.65+row*.85);
-  g.save();g.globalAlpha=.2+wave*.3;r(568+col*50,428+row*51,46,47,colors[(col+row)%4]);g.restore();
-  r(572+col*50,432+row*51,4,3,'#7180a6');
+ g.globalAlpha=1;g.globalCompositeOperation='source-over';
+ // Pulsing DJ speaker cones and music notes; background already contains DJ and equipment.
+ for(const sx of [185,450]){
+  const pulse=5+Math.sin(clock*9)*2.5;
+  g.strokeStyle='#8beaff';g.globalAlpha=.25+.18*Math.sin(clock*9);g.lineWidth=2;
+  g.beginPath();g.arc(sx,718,pulse+15,0,Math.PI*2);g.stroke();
  }
- const bx=820,by=387;
- r(bx-1,146,2,240,'#8893a5');
- g.save();g.globalCompositeOperation='screen';
- for(let beam=0;beam<5;beam++){
-  const angle=clock*.38+beam*1.256,ex=bx+Math.cos(angle)*310,ey=by+125+Math.sin(angle)*140;
-  g.globalAlpha=.065;g.fillStyle=['#75dbff','#ed8ddc','#a5a1ff','#f4d590','#8ce4c5'][beam];
-  g.beginPath();g.moveTo(bx,by);g.lineTo(ex-24,ey);g.lineTo(ex+24,ey+15);g.closePath();g.fill();
+ g.globalAlpha=1;
+ for(const p of npc){
+  if(p.hidden)continue;
+  const dancing=p.mode==='dance'&&p.arrived;
+  sprite(p.x,p.y,looks[p.look],p.wait<=0,dancing,.72);
+  if(dancing)t(['♪','♫','★'][p.look%3],p.x+15,p.y-40+Math.sin(clock*3+p.look)*5,16,'#f4b6ea');
  }
- for(let n=0;n<45;n++){
-  const ring=70+(n%6)*28,angle=n*2.399+clock*.55;
-  g.globalAlpha=.28+.2*(.5+.5*Math.sin(clock*1.4+n));
-  r(bx+Math.cos(angle)*ring*1.3,by+105+Math.sin(angle)*ring*.66,5,5,['#80cfff','#f79bd7','#dacbff','#f5df91','#95dfb4'][n%5]);
- }
+ sprite(player.x,player.y,[avatar.skin||'#d49a76',avatar.shirt||'#a7f66f',avatar.hair||'#463145',avatar.hairstyle||'short'],false,emote>clock,.78);
+ t('▼ YOU',player.x,player.y-46,13,'#eaffac');
+ if(near){const px=near.x,py=near.y-62;g.globalAlpha=.86;r(px-63,py-20,126,25,'#18152d');g.globalAlpha=1;t('E · '+(near.type==='game'?'PLAY':near.type==='piano'?'ENTER':'INTERACT'),px,py-3,11,'#c5fbfa')}
  g.restore();
- // Transparent silhouette, clipped to a circle: no black bounding box.
- g.save();g.beginPath();g.arc(bx,by,27,0,Math.PI*2);g.clip();
- for(let yy=-27;yy<=27;yy+=5)for(let xx=-27;xx<=27;xx+=5){
-  const light=.5+.5*Math.sin(xx*.21+yy*.14+clock*1.5);
-  r(bx+xx,by+yy,5,5,light>.88?'#fff7da':light>.62?'#c7e7ed':light>.35?'#8eacc4':'#536581');
- }
- g.restore();
- t('FIND YOUR FREQUENCY',820,740,10,'#dfc6f3');
- // Compact lounge, connected via a wide open walkway.
- r(60,80,340,340,'#31273f');r(60,80,340,5,'#a677b9');
- t('SOCIAL LOUNGE',230,114,16,'#e5b4ed');
- for(const sofa of sofas)neonSofa(sofa);
- for(const [x,y] of [[215,267],[215,416]]){r(x-20,y-10,40,20,'#121728');r(x-16,y-6,32,12,'#ad76c1')}
- r(188,121,169,43,'#182335');r(193,126,159,33,'#be93ac');t('PIXEL BOUTIQUE',273,149,11,'#211e32');
- for(const [x,y] of [[86,150],[370,405]]){r(x-13,y+6,26,20,'#68506f');r(x-18,y-15,36,28,'#347f69');r(x-7,y-29,14,18,'#75c79e')}
- // Dedicated dance area, original 42px tile size.
- r(60,460,340,340,'#29213e');r(60,460,340,5,'#b65df7');t('DANCE FLOOR',230,495,17,'#f2c1e6');
- r(82,522,295,264,'#101427');r(88,528,283,252,'#b65df7');r(93,533,273,242,'#15182d');
- for(let row=0;row<5;row++)for(let col=0;col<6;col++){
-  const wave=.5+.5*Math.sin(clock*1.9+col*.65+row*.85);
-  g.save();g.globalAlpha=.2+wave*.3;r(99+col*44,540+row*45,40,41,colors[(col+row)%4]);g.restore();
- }
- // Piano Lab is a wall-mounted neon doorway above the main arcade, not a floor portal.
- // Sign and frame share the arcade's original 32px pixel scale.
- r(771,82,156,17,'#111727');r(777,89,144,31,'#503967');
- r(783,95,132,19,'#161b2e');t('♫ PIANO LAB ♫',849,110,12,'#a9f4ee');
- r(795,122,108,76,'#100f22');r(801,126,96,70,'#765a91');
- r(809,132,80,61,'#161e34');
- for(let i=0;i<7;i++){r(813+i*10,175,9,15,'#eae5f1');if(i%3!==2)r(820+i*10,175,5,8,'#292338')}
- r(809,133,80,4,'#d6a8f2');r(809,139,4,36,'#6dd6e8');r(885,139,4,36,'#6dd6e8');
- r(818,150,62,13,'#3b3257');t('PRESS E',849,160,10,'#c8f8f3');
- // Jukebox and entrance in the lower right.
- r(1087,684,86,106,'#0e1324');r(1091,679,78,107,'#5a3b78');r(1097,674,66,10,'#ed91d5');r(1097,686,66,95,'#1b2139');
- t('JUKEBOX',1130,705,10,'#9fe8ee');
- for(let bar=0;bar<7;bar++){const h=4+Math.abs(Math.sin(clock*5+bar))*15;r(1107+bar*7,738-h,4,h,['#88e5ed','#ec9bda','#d5b1fb'][bar%3])}
- r(990,946,190,34,'#243a45');t('ENTRANCE',1085,968,13,'#a6e6e8');
-for(const p of npc){
- if(p.hidden)continue;
- const seated=p.mode==='lounge'&&p.arrived;
- const dancing=p.mode==='dance'&&p.arrived;
- const sway=dancing?Math.sin(clock*(4+p.look%3)+p.look)*8:0;
- g.save();g.translate(sway,0);
- if(seated){r(p.x-15,p.y+1,30,7,'#28253d');sprite(p.x,p.y-10,looks[p.look],false,false,.82);r(p.x-12,p.y+2,10,9,'#695d99');r(p.x+2,p.y+2,10,9,'#695d99');}
- else sprite(p.x,p.y,looks[p.look],p.wait<=0,dancing);
- g.restore();
- if(seated&&Math.sin(clock*.85+p.look*1.7)>.6){
- const bubble=lines[(Math.floor(clock/5)+p.look)%lines.length];const bx=p.x,by=p.y-83;
- r(bx-110,by-20,220,30,'#f5e6fc');r(bx-4,by+10,8,7,'#f5e6fc');t(bubble,bx,by,12,'#29223a');
- }
- if(dancing){t(['♪','♫','★'][p.look%3],p.x+22,p.y-40+Math.sin(clock*3+p.look)*6,20,'#f4b6ea');}
-} r(1700,1530,200,28,'#38596b');t('MAIN ENTRANCE / EXIT',1800,1523,14,'#f2e6a4');sprite(player.x,player.y,[avatar.skin||'#d49a76',avatar.shirt||'#a7f66f',avatar.hair||'#463145',avatar.hairstyle||'short'],false,emote>clock);t('▼ YOU',player.x,player.y-52,14,'#eaffac');g.restore();r(12,12,232,65,'#18162edc');t('WORLD MAP · FOLLOW CAMERA',128,37,13,'#bdebf3');t(`${Math.round(player.x)}, ${Math.round(player.y)}`,128,61,12,'#f2d8ff')}
+}
 function frame(ms){const dt=Math.min(.05,(ms-last)/1000||0);last=ms;if(!gameOpen)update(dt);draw();requestAnimationFrame(frame)}window.addEventListener('keydown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k)){e.preventDefault();keys.add(k);if(k==='e'&&!e.repeat)talk();if(k==='q')emote=clock+2}});window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>keys.clear());c.addEventListener('pointerdown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const b=c.getBoundingClientRect();dest={x:cam.x+(e.clientX-b.left)*c.width/b.width/ART_SCALE,y:cam.y+(e.clientY-b.top)*c.height/b.height/ART_SCALE};c.focus()});document.querySelector('#close').onclick=()=>dialog.style.display='none';document.querySelector('#fs').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else c.requestFullscreen?.()};// Phase 4.2 account, boutique, and song library bridge (preview only).
 const panel=document.querySelector('#panel'),panelBody=document.querySelector('#panelBody'),panelTitle=document.querySelector('#panelTitle');
 let firebaseApi=null,cloudAuth=null,cloudDb=null,cloudUser=null,profileReady=false,authMessage='Connecting…',songRecords={},songPlayer=null;
