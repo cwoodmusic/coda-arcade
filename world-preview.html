@@ -13,7 +13,7 @@
 #cameraTools button:hover{background:#514073}
 #cameraTools #zoomReset{min-width:58px;font-size:12px;font-weight:650;color:#a8f3f2;border-radius:4px}
 #cameraTools button:focus-visible{outline:2px solid #a6eff4;outline-offset:1px}
-</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 10.0 · CLUB FLOOR PULSE + DISCO RAYS</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · Wheel / + / − Zoom · 0 Reset · C collision · L layer outlines · Shift+L EDIT layers · F foreground on/off · Shift-click collision edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 10.0 · club floor pulse · disco rays · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
+</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 10.1 · CLUB AMBIENCE + DISCO SYNC</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · Wheel / + / − Zoom · 0 Reset · C collision · L layer outlines · Shift+L EDIT layers · F foreground on/off · Shift-click collision edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 10.1 · room pulse · centered disco rays · speaker notes · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
   <div class="editorbanner"><b>✎ FOREGROUND EDITOR</b><button id="editClose" type="button">✕</button></div>
   <div class="mini">Paint with pixels from the existing arcade artwork. Erase removes unwanted foreground coverage; the floor stays unchanged.</div>
   <div class="editorline"><button type="button" id="editPaint" class="current">🖌 Paint</button><button type="button" id="editErase">⌫ Erase</button></div>
@@ -595,7 +595,7 @@ function drawEditorOverlay(){if(!layerState.active||layerState.preview)return;
  if(layerState.hover){const [x,y]=layerState.hover,n=layerState.size,half=Math.floor(n/2);g.save();g.lineWidth=2;g.strokeStyle=layerState.tool==='paint'?'#64ffe0':'#ffcc64';g.strokeRect(x-half-.5,y-half-.5,n+1,n+1);g.restore()}
 }
 
-window.CODA_BUILD="10.0-club-pulse-disco-rays";
+window.CODA_BUILD="10.1-world-preview-room-pulse-notes";
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -726,152 +726,160 @@ effectsButton.onclick=()=>{fxMode=fxChoice[(fxChoice.indexOf(fxMode)+1)%fxChoice
 updateAudioButton();updateFxButton();
 
 // A vertical spotlight sweep remains on the dance floor, not on characters.
+// The dance tiles keep their baked-in appearance. Only footsteps leave a small
+// temporary shimmer; no more beat-wide checkerboard flashes.
 function danceFloorLight(beat){
- const playing=beat.on,mode=fxMode;
- const speed=playing?1.7:.48;
  updateDanceStepBursts();
+ if(!danceStepBursts.length)return;
  g.save();g.globalCompositeOperation='screen';
- g.beginPath();g.moveTo(171,653);g.lineTo(632,653);g.lineTo(692,813);g.lineTo(118,813);g.closePath();g.clip();
- for(let row=0;row<5;row++)for(let col=0;col<10;col++){
-  const cx=130+col*55,cy=652+row*39;
-  const wave=pulse(clock*speed+col*.28+row*.39,3.1);
-  const checker=(row+col)%3;
-  let power=playing?(.085+wave*.15+thump(beat)*.085):(.018+wave*.055);
-  for(const burst of danceStepBursts){
-   if(burst.col!==col||burst.row!==row)continue;
-   const age=clock-burst.t;
-   if(age<0||age>1.2)continue;
-   const kick=(1-age/1.2)*burst.e;
-   power += .18*kick + .11*Math.max(0,1-age/.45)*burst.e;
-  }
-  g.globalAlpha=Math.min(.6,power);g.fillStyle=ambientPalette[(col+row*2+checker)%ambientPalette.length];
-  g.fillRect(cx+2,cy+2,50,34);
-  if(playing&&mode==='full'&&wave>.82){g.globalAlpha=.14;g.fillStyle='#ffffff';g.fillRect(cx+18,cy+15,5,5);}
- }
- // Bright step accents appear when player/NPC feet land on tiles.
+ g.beginPath();g.moveTo(171,653);g.lineTo(632,653);
+ g.lineTo(692,813);g.lineTo(118,813);g.closePath();g.clip();
  for(const burst of danceStepBursts){
   const age=clock-burst.t;
   if(age<0||age>1.2)continue;
-  const fade=(1-age/1.2),flash=Math.max(0,1-age/.25);
-  const cx=130+burst.col*55,cy=652+burst.row*39;
-  g.globalAlpha=.11*fade*burst.e;
-  g.fillStyle='#ffffff'; g.fillRect(cx+6,cy+6,42,26);
-  g.globalAlpha=.22*flash*burst.e;
-  g.fillStyle=ambientPalette[(burst.col+burst.row)%ambientPalette.length];
-  g.fillRect(cx+2,cy+2,50,34);
-  if(fxMode==='full'&&flash>.05){
-   g.globalAlpha=.26*flash; g.fillStyle='#ffffff';
-   g.fillRect(cx+23,cy+16,4,4);
+  const fade=(1-age/1.2)*burst.e;
+  const cx=DANCE_TILE.x0+burst.col*DANCE_TILE.w;
+  const cy=DANCE_TILE.y0+burst.row*DANCE_TILE.h;
+  g.globalAlpha=.045*fade;g.fillStyle=ambientPalette[(burst.col+burst.row)%ambientPalette.length];
+  g.fillRect(cx+5,cy+6,43,27);
+  if(fxMode==='full'&&age<.25){
+   g.globalAlpha=.12*(1-age/.25)*fade;g.fillStyle='#e7ffff';
+   g.fillRect(cx+24,cy+16,3,3);
   }
  }
  g.restore();
- if(playing&&mode==='full'){
-  for(let n=0;n<9;n++){
-   const cx=157+(n*61+13)%510,cy=677+(n*47)%130;
-   bloom(cx,cy,24,ambientPalette[n%5],(.05+thump(beat)*.035));
+}
+
+// Precise centers of the disco-ball sprites painted into the original world art.
+// All highlights, rotating facets, and projected beams use THESE shared anchors.
+const DISCO_BALLS=[
+ {x:866,y:125,r:25,spin:.55,seed:0,beams:[
+  {color:'#66dcff',len:238,spread:18,alpha:.105},
+  {color:'#ff63ef',len:214,spread:16,alpha:.099},
+  {color:'#fff7bd',len:178,spread:12,alpha:.075}]},
+ {x:390,y:539,r:27,spin:.82,seed:3,club:true,beams:[
+  {color:'#36c8ff',len:465,spread:24,alpha:.105},
+  {color:'#e360ff',len:360,spread:20,alpha:.090},
+  {color:'#fff4c1',len:286,spread:16,alpha:.068}]}
+];
+
+// 24 tiny in-memory pixel-art sprite frames per disco ball. These are genuine
+// animated assets, generated at runtime so there are no extra PNG files to lose.
+// Moving longitude facets simulate a rotating mirrored sphere, not spinning a
+// flat image or making detached highlights orbit around it.
+const DISCO_FRAMES=24;
+const discoAtlas=new Map();
+function buildDiscoFrames(radius,seed){
+ const size=radius*2+6,frames=[];
+ for(let frame=0;frame<DISCO_FRAMES;frame++){
+  const tile=document.createElement('canvas');tile.width=tile.height=size;
+  const a=tile.getContext('2d');a.imageSmoothingEnabled=false;
+  const x0=size/2,y0=size/2,r=radius-1;
+  a.save();a.beginPath();a.arc(x0,y0,r,0,Math.PI*2);a.clip();
+  a.fillStyle='#171344';a.fillRect(0,0,size,size);
+  const palette=['#ebf8ff','#9beeff','#6dd1ff','#af9ff9','#f9d2ff','#d9e4ff','#6188da','#a58afa'];
+  const count=9,offset=frame*Math.PI*2/DISCO_FRAMES;
+  // Draw facet bands from the front hemisphere of a round reflective globe.
+  for(let row=-5;row<=5;row++){
+   const yMid=row*4.7;
+   const yTop=yMid-2.2,yBot=yMid+2.2;
+   if(Math.abs(yMid)>r-1)continue;
+   const latitude=Math.asin(Math.max(-.98,Math.min(.98,yMid/r)));
+   const rowScale=Math.cos(latitude);
+   for(let col=-count;col<count;col++){
+    const ang0=(col-.5)*Math.PI/count+offset;
+    const ang1=(col+.5)*Math.PI/count+offset;
+    const front0=Math.asin(Math.sin(ang0));
+    const front1=Math.asin(Math.sin(ang1));
+    // One front-facing band for each longitude. Perspective narrows edge cells.
+    if(Math.cos(ang0)<-.10||Math.cos(ang1)<-.10)continue;
+    const sx0=Math.sin(front0)*r*rowScale;
+    const sx1=Math.sin(front1)*r*rowScale;
+    if(sx1<=sx0+1)continue;
+    const idx=((col*13+row*7+seed*5)%palette.length+palette.length)%palette.length;
+    const bright=.64+.31*Math.max(0,Math.cos((ang0+ang1)/2))+.06*Math.sin(row+seed);
+    a.globalAlpha=Math.min(.95,bright);
+    a.fillStyle=palette[idx];
+    a.fillRect(Math.floor(x0+sx0+1),Math.floor(y0+yTop),Math.max(1,Math.ceil(sx1-sx0-1.6)),Math.max(2,Math.ceil(yBot-yTop-1)));
+   }
+  }
+  // Smooth hemisphere shading retains the round 3-D silhouette and pixel rim.
+  const shade=a.createRadialGradient(x0-r*.28,y0-r*.32,r*.08,x0,y0,r*1.25);
+  shade.addColorStop(0,'rgba(255,255,255,.19)');
+  shade.addColorStop(.55,'rgba(55,46,165,.05)');
+  shade.addColorStop(1,'rgba(5,7,44,.60)');
+  a.globalAlpha=1;a.fillStyle=shade;a.fillRect(0,0,size,size);
+  a.restore();
+  a.strokeStyle='#6c82fd';a.lineWidth=2;a.beginPath();a.arc(x0,y0,r-.7,0,Math.PI*2);a.stroke();
+  // Fixed ceiling mount keeps the sphere attached while the tiles turn.
+  a.fillStyle='#d8d9ff';a.fillRect(Math.round(x0)-3,Math.round(y0-r)-3,6,3);
+  frames.push(tile);
+ }
+ return frames;
+}
+function spinningDiscoBall(ball,beat){
+ if(!effectsOn())return;
+ const {x,y,r,seed}=ball;
+ const t=clock*(beat.on?2.30:.78)*ball.spin+seed;
+ const size=r*2+6;
+ const key=r+':'+seed;
+ if(!discoAtlas.has(key))discoAtlas.set(key,buildDiscoFrames(r,seed));
+ const frames=discoAtlas.get(key);
+ const f=Math.floor((((t/(Math.PI*2))%1+1)%1)*DISCO_FRAMES)%DISCO_FRAMES;
+ // Show the rotating facet asset over the exact original globe (not its rays).
+ g.save();g.globalAlpha=fxMode==='full'?.88:.73;
+ g.drawImage(frames[f],Math.round(x-size/2),Math.round(y-size/2));g.restore();
+ bloom(x,y,r*1.7,'#7bdcff',.054+(beat.on?.035:0)+thump(beat)*.022);
+ if(fxMode==='full'){
+  // Restrained rotating pinprick highlights stay ON the spherical surface.
+  for(let j=0;j<2;j++){
+   const a=t*1.8+j*Math.PI;
+   const px=x+Math.cos(a)*r*.55,py=y+Math.sin(a)*r*.45;
+   g.save();g.globalCompositeOperation='screen';g.globalAlpha=.38;
+   g.fillStyle='#ffffff';g.fillRect(Math.round(px)-1,Math.round(py)-1,3,3);g.restore();
   }
  }
 }
-function spinningDiscoBall(x,y,r,beat,seed=0){
+function discoReflections(beat){
  if(!effectsOn())return;
- const t=clock*(beat.on?2.85:.95)+seed;
- const quality=fxMode==='full';
- bloom(x,y,r*2.1,'#51dcff',beat.on?.20+thump(beat)*.07:.085);
- g.save();g.beginPath();g.arc(x,y,r-2,0,Math.PI*2);g.clip();
- g.globalCompositeOperation='screen';
- // Sweeping facet highlights over the still-existing pixel-ball artwork.
- const cells=quality?8:5;
- for(let v=0;v<cells;v++)for(let h=0;h<cells;h++){
-  const yy=y-r+(v+.5)*2*r/cells;
-  const xx=x-r+(h+.5)*2*r/cells+Math.sin(t+(v*.47))*(r*.14);
-  const active=pulse(t+h*.77+v*.35,1.45);
-  if(active>.57){g.globalAlpha=(active-.57)*(.28+(beat.on?.19:0));g.fillStyle=(h+v)%3===0?'#fff6ff':'#85e9ff';g.fillRect(Math.round(xx),Math.round(yy),Math.ceil(r*2/cells*.72),Math.max(2,Math.round(r*2/cells*.48)));}
- }
- g.restore();
- if(quality){
-  const b=beat.on?.1:.045;
-  for(let i=0;i<4;i++){
-   const a=t*.7+i*Math.PI*.5;
-   const tx=x+Math.cos(a)*r*1.45,ty=y+Math.sin(a)*r*.95;
-   bloom(tx,ty,12,ambientPalette[(i+seed)%5|0],b);
+ const active=beat.on?1:.46;
+ for(const ball of DISCO_BALLS){
+  const {x,y,spin}=ball;
+  g.save();g.globalCompositeOperation='screen';
+  // The club rays stop at the nightclub walls, rather than shining through them.
+  if(ball.club)clubRoomClip();
+  const spinBase=clock*(beat.on?1.8:.67)*spin;
+  const count=fxMode==='full'?7:4;
+  for(let i=0;i<count;i++)for(const ray of ball.beams){
+   const angle=spinBase+i*Math.PI*2/count+(ray.color==='#fff4c1'?.08:0);
+   const dx=Math.cos(angle),dy=Math.sin(angle),nx=-dy,ny=dx;
+   const len=ray.len*(.94+.06*Math.sin(clock*.95+i));
+   const ex=x+dx*len,ey=y+dy*len,spread=ray.spread;
+   // Both projected cones begin at the center of the sphere. The rotating
+   // sprite is drawn afterward and masks their tiny center join.
+   g.beginPath();g.moveTo(x,y);
+   g.lineTo(ex+nx*spread,ey+ny*spread);
+   g.lineTo(ex-nx*spread,ey-ny*spread);g.closePath();
+   const fog=g.createLinearGradient(x,y,ex,ey);
+   fog.addColorStop(0,'rgba(255,255,255,0)');
+   fog.addColorStop(.08,ray.color+'65');
+   fog.addColorStop(.42,ray.color+'32');
+   fog.addColorStop(1,ray.color+'00');
+   g.globalAlpha=ray.alpha*active*(.8+.2*thump(beat));g.fillStyle=fog;g.fill();
+   g.beginPath();g.moveTo(x,y);
+   g.lineTo(ex+nx*spread*.19,ey+ny*spread*.19);
+   g.lineTo(ex-nx*spread*.19,ey-ny*spread*.19);g.closePath();
+   const core=g.createLinearGradient(x,y,ex,ey);
+   core.addColorStop(0,'rgba(255,255,255,0)');
+   core.addColorStop(.07,'rgba(255,255,255,.45)');
+   core.addColorStop(.42,ray.color+'45');
+   core.addColorStop(1,ray.color+'00');
+   g.globalAlpha=ray.alpha*.82*active;g.fillStyle=core;g.fill();
   }
+  g.restore();
  }
 }
 
-function discoReflections(beat){
- if(!effectsOn())return;
- g.save();
- g.globalCompositeOperation='screen';
- const active=beat.on?1:.35;
- const ballSets=[
-  {cx:866,cy:125,spin:.55,beams:[{color:'#66dcff',len:238,spread:18,alpha:.095},{color:'#ff63ef',len:214,spread:16,alpha:.088},{color:'#fff7bd',len:178,spread:12,alpha:.06}]},
-  {cx:390,cy:538,spin:.82,beams:[{color:'#36c8ff',len:465,spread:24,alpha:.11},{color:'#e360ff',len:360,spread:20,alpha:.095},{color:'#fff4c1',len:286,spread:16,alpha:.07}]}
- ];
- for(const set of ballSets){
-  const spinBase=clock*(beat.on?2.05:.72)*set.spin;
-  const beamCount=fxMode==='full'?7:4;
-  for(let i=0;i<beamCount;i++)for(const beam of set.beams){
-   const ang=spinBase+i*(Math.PI*2/beamCount)+(i%2?0.16:-0.11);
-   const spread=beam.spread+(beat.on?7:0);
-   const len=beam.len*(.9+.13*Math.sin(clock*1.7+i));
-   const dx=Math.cos(ang),dy=Math.sin(ang);
-   const px=-dy,py=dx;
-   const sx=set.cx+dx*9,sy=set.cy+dy*9;
-   const ex=set.cx+dx*len,ey=set.cy+dy*len;
-   // outer feather
-   g.beginPath();
-   g.moveTo(sx+px*spread*1.25,sy+py*spread*1.25);
-   g.lineTo(ex+px*(spread*.34),ey+py*(spread*.34));
-   g.lineTo(ex-px*(spread*.34),ey-py*(spread*.34));
-   g.lineTo(sx-px*spread*1.25,sy-py*spread*1.25);
-   g.closePath();
-   const outer=g.createLinearGradient(set.cx,set.cy,ex,ey);
-   outer.addColorStop(0,beam.color+'00');
-   outer.addColorStop(.09,beam.color+'30');
-   outer.addColorStop(.45,beam.color+'18');
-   outer.addColorStop(1,beam.color+'00');
-   g.fillStyle=outer;
-   g.globalAlpha=(beam.alpha*.95+(beat.on?.04:0))*active;
-   g.fill();
-   // inner brighter cone
-   g.beginPath();
-   g.moveTo(sx+px*spread*.55,sy+py*spread*.55);
-   g.lineTo(ex+px*(spread*.12),ey+py*(spread*.12));
-   g.lineTo(ex-px*(spread*.12),ey-py*(spread*.12));
-   g.lineTo(sx-px*spread*.55,sy-py*spread*.55);
-   g.closePath();
-   const inner=g.createLinearGradient(set.cx,set.cy,ex,ey);
-   inner.addColorStop(0,'rgba(255,255,255,0.00)');
-   inner.addColorStop(.08,'rgba(255,255,255,0.34)');
-   inner.addColorStop(.18,beam.color+'55');
-   inner.addColorStop(.55,beam.color+'12');
-   inner.addColorStop(1,'rgba(255,255,255,0.00)');
-   g.fillStyle=inner;
-   g.globalAlpha=(beam.alpha*.82+(beat.on?.055:0))*active;
-   g.fill();
-   // hot beam core for the ray-traced look
-   g.beginPath();
-   g.moveTo(sx,sy);
-   g.lineTo(ex,ey);
-   g.lineWidth=Math.max(1.6,spread*.085);
-   const core=g.createLinearGradient(sx,sy,ex,ey);
-   core.addColorStop(0,'rgba(255,255,255,0.0)');
-   core.addColorStop(.08,'rgba(255,255,255,0.50)');
-   core.addColorStop(.22,beam.color+'aa');
-   core.addColorStop(.68,beam.color+'14');
-   core.addColorStop(1,'rgba(255,255,255,0.0)');
-   g.strokeStyle=core;
-   g.globalAlpha=(.6+.35*thump(beat))*active;
-   g.stroke();
-  }
-  for(let j=0;j<8;j++){
-   const sparkA=spinBase*1.9+j*.785;
-   const sparkR=42+10*Math.sin(clock*2.4+j);
-   bloom(set.cx+Math.cos(sparkA)*sparkR,set.cy+Math.sin(sparkA)*sparkR*.72,10,ambientPalette[(j*2)%ambientPalette.length],(.04+(beat.on?.035:0))*active);
-  }
- }
- g.restore();
-}
 function animatedCabinets(beat){
  const t=clock*(beat.on?3.6:1.65);
  const cabinets=[
@@ -913,36 +921,64 @@ function animatedCabinets(beat){
   if(fxMode==='full')bloom(box.x+box.w/2,box.y-7,39,box.c,.04+.042*pulse(clock+box.kind,1.4));
  }
 }
+// Tiny vector-pixel music notes travel OUT of speaker cabinets on each beat.
+// They animate quietly even with sound off, so the world preview feels alive.
+const SPEAKER_SETS=[
+ {x:285,ys:[581,613],r:10,dir:1,color:'#7feeff'},
+ {x:496,ys:[582,613],r:10,dir:-1,color:'#e58bff'},
+ {x:611,ys:[153,190],r:11,dir:1,color:'#8ff8ff'},
+ {x:1174,ys:[150,189],r:11,dir:-1,color:'#ff9de7'}
+];
+function pixelMusicNote(x,y,scale,double,color){
+ g.save();g.translate(Math.round(x),Math.round(y));g.scale(scale,scale);
+ g.shadowColor=color;g.shadowBlur=4;g.fillStyle=color;
+ // 8th-note head and stem: deliberately chunky pixel-art silhouettes.
+ g.fillRect(0,8,6,4);g.fillRect(1,7,5,2);
+ g.fillRect(5,-2,2,11);g.fillRect(7,-2,3,2);
+ if(double){
+  g.fillRect(12,6,6,4);g.fillRect(13,5,5,2);g.fillRect(17,-4,2,11);
+  g.fillRect(6,-4,13,2);g.fillRect(6,-1,13,2);
+ }else{
+  g.fillRect(9,0,3,2);g.fillRect(10,2,2,3);g.fillRect(9,5,2,2);
+ }
+ g.restore();
+}
 function speakerLife(beat){
- // Stronger reactive thump with expanding shock-rings and a hotter cone flash.
- if(!beat.on)return;
- const bass=thump(beat),pop=.25+.75*bass;
- // Slightly right-shifted to sit on the woofer centers rather than left of them.
- const speakers=[
-  {x:285,ys:[581,613],r:10},{x:496,ys:[582,613],r:10},
-  {x:611,ys:[153,190],r:11},{x:1174,ys:[150,189],r:11}
- ];
- for(const sp of speakers){
+ const bass=beat.on?thump(beat):(.18+.12*pulse(clock,3.1));
+ const run=beat.on?beat.beat:clock*.75;
+ for(let i=0;i<SPEAKER_SETS.length;i++){
+  const sp=SPEAKER_SETS[i];
+  // Woofer rings stay concentric with the actual circles in the source art.
   for(const cy of sp.ys){
-   g.save();
-   g.globalCompositeOperation='screen';
-   for(let ring=0;ring<3;ring++){
-    const rr=sp.r+2+bass*(5+ring*4)+ring*4;
+   g.save();g.globalCompositeOperation='screen';
+   for(let ring=0;ring<2;ring++){
+    const rr=sp.r+3+bass*(3+ring*4)+ring*3;
     g.beginPath();g.arc(sp.x,cy,rr,0,Math.PI*2);
-    g.lineWidth=Math.max(1,2.4-ring*.45+bass*1.5);
-    g.strokeStyle=ring===0?'#b8f1ff':ring===1?'#7be4ff':'#8f6dff';
-    g.globalAlpha=(.22-ring*.055)*bass*pop;
+    g.lineWidth=1.4-ring*.25+bass*.6;
+    g.strokeStyle=ring===0?'#b8f1ff':sp.color;
+    g.globalAlpha=(beat.on?.16:.07)*(1-ring*.38)*bass;
     g.stroke();
    }
-   g.beginPath();g.arc(sp.x,cy,sp.r+.8+bass*2.6,0,Math.PI*2);
-   g.fillStyle='#dffbff';
-   g.globalAlpha=.05+.15*bass;
-   g.fill();
    g.restore();
-   if(bass>.08)bloom(sp.x,cy,sp.r*(4.2+bass*1.8),'#5f9fff',.11*bass);
+  }
+  // Notes launch from the INNER side of each cabinet, like sound radiating
+  // toward dancers. Staggered age produces a gentle stream rather than a cloud.
+  const count=fxMode==='full'?4:2;
+  for(let n=0;n<count;n++){
+   const life=((run*.72-n*.54-i*.17+2000)%2.15)/2.15;
+   const peak=Math.pow(Math.sin(Math.PI*life),.8);
+   if(peak<.09)continue;
+   const offX=sp.dir*(15+life*38);
+   const px=sp.x+offX+Math.sin(life*6+i+n)*2;
+   const py=sp.ys[0]-9-life*38+(n%2)*9+Math.sin(life*8+n)*3;
+   const alpha=peak*(beat.on?.93:.55)*(fxMode==='full'?1:.75);
+   g.save();g.globalCompositeOperation='screen';g.globalAlpha=alpha;
+   pixelMusicNote(px,py,n%3===0?1.04:.88,n%3===2,sp.color);
+   g.restore();
   }
  }
 }
+
 function neonSigns(beat){
  const activity=beat.on?1.18:1;
  const signs=[
@@ -1024,7 +1060,7 @@ function nightclubColorwash(beat){
  }
  // A gentle beat-timed environmental lift, with no full-screen flashes.
  if(beat.on){
-  g.fillStyle=clubHsl(baseHue+75,.026*thump(beat)*power);
+  g.fillStyle=clubHsl(baseHue+75,.008*thump(beat)*power);
   g.fillRect(45,470,790,380);
  }
  g.restore();
@@ -1098,7 +1134,7 @@ function flickerSelectedNeon(){
 // =======================================================================
 
 
-// ===== PHASE 9.5: TWINKLING FLOOR LIGHTS + STEP TILES + LAMP PULSE =====
+// ===== PHASE 10.1: WHOLE ROOM AMBIENCE + SUBTLE STEP SPARKS =====
 const OPEN_FLOOR_TWINKLES=[
  [834,338,0],[903,359,1],[980,346,0],[1058,371,1],[1138,349,0],[1218,370,1],[1303,353,0],[1385,370,1],
  [870,430,1],[947,448,0],[1027,429,1],[1108,454,0],[1189,432,1],[1272,454,0],[1354,430,1],[1435,454,0],
@@ -1149,46 +1185,25 @@ function updateDanceStepBursts(){
  danceStepBursts=danceStepBursts.filter(b=>clock-b.t<1.2);
 }
 
-function clubFloorPulse(beat){
+// PHASE 10.1: one low-amplitude heartbeat envelopes the *whole nightclub*.
+// No separately pulsing tiles, floor zones, or sweeping floor stripes.
+function clubRoomHeartbeat(beat,aboveActors=false){
  if(!effectsOn())return;
- const activity=(beat.on?1:.55)*(fxMode==='full'?1:.62);
- const bass=thump(beat);
- g.save();
- g.globalCompositeOperation='screen';
- for(let i=0;i<CLUB_FLOOR_REGIONS.length;i++){
-  const region=CLUB_FLOOR_REGIONS[i], [bx,by,bw,bh]=region.bounds;
-  g.save();
-  clipPolygon(region.points);
-  // broad breathing floor wash
-  const hue=clock*(beat.on?18:7)+region.phase*90;
-  const base=g.createLinearGradient(bx,by,bx+bw,by+bh);
-  base.addColorStop(0,clubHsl(hue+10,.03*activity+.018*bass));
-  base.addColorStop(.5,clubHsl(hue+125,.055*activity+.028*bass));
-  base.addColorStop(1,clubHsl(hue+250,.04*activity+.02*bass));
-  g.fillStyle=base;
-  g.fillRect(bx,by,bw,bh);
-  // moving luminous bands make the whole floor feel like it's pulsing alive
-  const bandCount=fxMode==='full'?4:2;
-  for(let band=0; band<bandCount; band++){
-   const travel=(pulse(clock*(beat.on?1.35:.48)+region.phase+band*.6,1)*1.15-.08);
-   const center=bx+bw*travel;
-   const radius=Math.max(80,bw*(.17+.04*band));
-   const glow=g.createRadialGradient(center,by+bh*.55,0,center,by+bh*.55,radius);
-   glow.addColorStop(0,clubHsl(hue+band*44,.075*activity+.05*bass));
-   glow.addColorStop(.45,clubHsl(hue+band*44+18,.03*activity+.015*bass));
-   glow.addColorStop(1,clubHsl(hue+band*44+36,0));
-   g.fillStyle=glow;
-   g.fillRect(bx,by,bw,bh);
-  }
-  // downbeat shimmer
-  if(beat.on){
-   g.fillStyle=`rgba(255,255,255,${(0.012+0.03*bass).toFixed(3)})`;
-   g.fillRect(bx,by,bw,bh);
-  }
-  g.restore();
- }
+ const bass=beat.on?thump(beat):(.14+.10*pulse(clock*.65,1));
+ const breath=.5+.5*Math.sin(clock*(beat.on?.85:.30));
+ const level=(fxMode==='full'?1:.50)*(aboveActors?.45:1);
+ const alpha=(.008+.014*breath+.027*bass)*level;
+ const hue=clock*(beat.on?8:3);
+ g.save();clubRoomClip();g.globalCompositeOperation='screen';
+ // Warm indirect bounce off the booth, furniture, dancers, walls and ceiling.
+ const wash=g.createRadialGradient(393,625,90,396,647,525);
+ wash.addColorStop(0,clubHsl(292+hue,alpha));
+ wash.addColorStop(.50,clubHsl(211+hue,alpha*.78));
+ wash.addColorStop(1,clubHsl(326+hue,alpha*.28));
+ g.fillStyle=wash;g.fillRect(42,469,795,394);
  g.restore();
 }
+
 function openFloorTwinkles(beat){
  if(!effectsOn())return;
  const activity=beat.on?1:.6;
@@ -1232,16 +1247,15 @@ function renderArcadeAtmosphere(){
  const beat=beatInfo();
  flickerSelectedNeon();
  nightclubColorwash(beat);
- clubFloorPulse(beat);
+ clubRoomHeartbeat(beat);
  openFloorTwinkles(beat);
  danceFloorLight(beat);
  gradientFloodlights(beat);
- if(fxMode==='full')discoReflections(beat);
+ discoReflections(beat);
  pulseWarmLamps(beat);
  neonSigns(beat);
  animatedCabinets(beat);
- spinningDiscoBall(866,125,25,beat,0);
- spinningDiscoBall(390,539,28,beat,3);
+ for(const ball of DISCO_BALLS)spinningDiscoBall(ball,beat);
  speakerLife(beat);
 }
 // =======================================================================
@@ -1300,6 +1314,7 @@ function draw(){
   veil.addColorStop(.50,clubHsl(clock*12+145,strength*1.2));
   veil.addColorStop(1,clubHsl(clock*12+265,strength));
   g.fillStyle=veil;g.fillRect(40,460,795,400);g.restore();
+  clubRoomHeartbeat(b,true);
  }
  // Don't draw extra characters or arrows from the baked-in artwork.
  g.save();g.shadowColor='#030814';g.shadowBlur=5;
