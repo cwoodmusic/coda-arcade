@@ -4,9 +4,10 @@
 #panel{position:fixed;z-index:90;top:50%;left:50%;transform:translate(-50%,-50%);width:min(570px,94vw);max-height:84dvh;overflow:auto;padding:20px;background:#231c3b;border:2px solid #c69be9;box-shadow:0 0 0 100vmax #05030ab8,0 14px 55px #000c;border-radius:12px}#panel[hidden]{display:none}.panelHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.panelRow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0;padding:10px;border:1px solid #66517f;border-radius:7px}.panelRow small{display:block;opacity:.75}.formRow{display:grid;gap:5px;margin:10px 0}.formRow select,.formRow input{background:#17142c;color:#fff;border:1px solid #a08dbd;padding:9px;border-radius:5px;width:100%}.panelActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.muted{color:#c1b4d7;font-size:13px}.panelMsg{min-height:22px;color:#9fe9dc}body:has(#panel:not([hidden])) #view{filter:brightness(.65)}
 #pianoroom{position:fixed;inset:0;z-index:95;background:radial-gradient(ellipse at 50% 20%,#344962,#11172b 75%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#f5edff}#pianoroom[hidden]{display:none}#pianoroom .stage{border:9px solid #69567e;background:repeating-linear-gradient(90deg,#243349 0 32px,#28374d 32px 64px);width:min(650px,88vw);padding:30px;text-align:center;box-shadow:0 0 70px #b08ed255}#pianoroom .keys{display:flex;justify-content:center;margin:20px auto 0}#pianoroom .keys i{height:85px;width:27px;background:#eee9f3;border:2px solid #35324b;box-shadow:inset 0 -8px #aaa8bc}#pianoroom .keys i:nth-child(3n+2){background:#22223b;height:55px;width:18px;margin:0 -8px;z-index:1}#pianoroom h2{color:#9feaf2;letter-spacing:3px}#pianoroom button{font-size:16px}
 
+#musicBtn[aria-pressed="true"]{background:#1c5b5d;border-color:#64e9cf;color:#ddfff4;box-shadow:0 0 10px #40f4c02f}#fxBtn{border-color:#80bbef}header span{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end}header span button{padding:7px 10px}@media(max-width:650px){header{align-items:flex-start;flex-direction:column}header span{justify-content:flex-start}}
 #layerEditor{position:fixed;right:14px;top:174px;z-index:60;width:min(292px,calc(100vw - 24px));background:#17152aef;border:1px solid #72f5c8;box-shadow:0 10px 32px #000b,0 0 20px #2fecb228;border-radius:12px;padding:13px;color:#f0eaff;max-height:calc(100dvh - 190px);overflow-y:auto;font-size:13px;backdrop-filter:blur(7px)}
 #layerEditor[hidden]{display:none}#layerEditor button,#layerEditor select{font:inherit;min-height:31px;padding:5px 7px}#layerEditor .editorline{display:flex;gap:7px;align-items:center;margin:8px 0}#layerEditor .editorline>*{flex:1;min-width:0}#layerEditor label{display:block;font-weight:600}#layerEditor .mini{font-size:11px;opacity:.76;line-height:1.45;margin:6px 0}#layerEditor .current{border-color:#4dfac0;background:#175d52}#layerEditor .editorbanner{display:flex;align-items:center;justify-content:space-between;color:#a8fff0;margin-bottom:9px}#layerEditor input[type=range]{width:100%}#layerEditor .editnotice{min-height:24px;font-size:11px;color:#aeffd9;margin-top:10px;overflow-wrap:anywhere}#view.layer-editing{cursor:crosshair;touch-action:none}#editorToggle{border-color:#63dcae}#layerEditor .editorline button:disabled{opacity:.4;cursor:not-allowed}
-</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 9.1 · PUBLISHED FOREGROUND FIXES</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · C collision · L layer outlines · Shift+L EDIT layers · F foreground on/off · Shift-click collision edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 9.1 · published layer fixes · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
+</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 9.2 · NEON NIGHTS IN MOTION</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · C collision · L layer outlines · Shift+L EDIT layers · F foreground on/off · Shift-click collision edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 9.2 · animated neon nights · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
   <div class="editorbanner"><b>✎ FOREGROUND EDITOR</b><button id="editClose" type="button">✕</button></div>
   <div class="mini">Paint with pixels from the existing arcade artwork. Erase removes unwanted foreground coverage; the floor stays unchanged.</div>
   <div class="editorline"><button type="button" id="editPaint" class="current">🖌 Paint</button><button type="button" id="editErase">⌫ Erase</button></div>
@@ -300,7 +301,7 @@ function update(dt){clock+=dt;if(layerState.active&&!layerState.preview)return;i
 function openPiano(){keys.clear();dest=null;document.querySelector('#pianoroom').hidden=false;}
 function closePiano(){document.querySelector('#pianoroom').hidden=true;keys.clear();c.focus();}
 document.querySelector('#closepiano').addEventListener('click',closePiano);
-function openCabinet(game){stopSong();
+function openCabinet(game){stopSong();stopAmbientMusic();
   if(!game||!game.url)return;
   keys.clear();dest=null;dialog.style.display='none';
   document.querySelector('#activegame').textContent=game.name;
@@ -386,7 +387,7 @@ const greenMaskCache=new Map();
 // The world image remains untouched; these edits affect foreground masks only.
 const layerEditorUI=document.querySelector('#layerEditor');
 const layerState={active:false,tool:'paint',size:4,offset:0,preview:false,maskView:false,zoom:'fit',actions:[],redo:[],drawing:null,hover:null,dirty:true,renderParts:new Map(),patches:[],erasedCanvas:null,owner:null};
-// Published foreground corrections from the user’s exported editor JSON.
+// Published foreground corrections from the user\u2019s exported editor JSON.
 // Kept separate from later local edits: all visitors receive these by default.
 const PUBLISHED_LAYER_STROKES=[{"tool":"erase","size":4,"points":[[830,681],[830,682],[830,684],[830,686],[829,691],[828,691],[828,692],[826,692],[823,698],[822,698],[822,697],[822,696],[822,694],[822,693],[822,692],[822,691],[822,690],[822,689],[822,688],[822,685],[822,681],[822,679],[822,677],[822,679],[821,682],[821,685],[821,686],[821,685],[821,684],[821,682],[821,681],[821,680],[821,679],[821,677],[821,676]],"depth":774},{"tool":"erase","size":8,"points":[[826,684],[826,685],[826,686],[826,689],[826,690],[825,690],[825,691],[825,692],[825,693],[824,693],[823,693],[822,693],[822,692],[821,692],[820,690],[819,689],[819,688],[819,686],[819,685],[819,684],[819,683],[819,682],[819,681],[819,680],[819,676],[819,675],[817,676],[816,677],[813,680],[812,681],[811,683],[811,684],[811,685],[811,686],[811,689],[811,690],[811,691],[811,692],[811,694],[812,694],[814,696],[815,697],[815,698]],"depth":774},{"tool":"paint","size":8,"points":[[405,214],[405,213],[406,212],[406,209],[407,208],[407,207],[408,206],[408,205],[409,205],[411,204],[413,204],[414,204],[415,204],[416,204],[416,208],[416,209],[415,209],[415,208],[414,208],[414,207],[413,207],[413,206],[413,205],[413,204],[413,202],[413,199],[413,198],[413,197],[413,194],[413,193],[413,190],[413,189],[413,188],[412,188],[412,187],[412,186],[412,185],[412,183],[412,181],[412,179],[412,177],[412,176],[412,173],[412,172],[412,173],[412,176],[413,176],[413,174],[413,173],[414,173],[413,173],[411,173],[409,173],[408,173],[406,173],[405,173],[404,172],[403,170],[401,169],[401,168],[403,171],[403,172],[404,172],[404,177],[404,178],[404,179],[404,180],[404,182],[404,183],[404,186],[404,187],[405,188],[406,189],[406,190],[406,191],[406,193],[406,194],[406,195],[406,196],[406,197]],"depth":239},{"tool":"paint","size":8,"points":[[1175,558],[1175,556],[1175,555],[1175,554],[1175,552],[1175,547],[1175,545],[1175,544],[1175,543]],"depth":584},{"tool":"erase","size":8,"points":[[1175,556],[1175,555],[1175,552],[1173,550],[1173,549],[1173,547],[1173,546],[1173,545],[1173,543],[1173,542],[1173,541],[1173,540],[1173,538],[1173,537],[1173,536],[1173,535],[1173,534],[1171,532],[1171,530],[1169,529],[1167,529],[1167,528],[1167,527],[1164,526],[1163,524],[1163,523],[1163,521],[1163,519],[1163,518],[1164,517],[1166,516],[1166,515],[1166,514],[1166,512],[1166,511],[1166,509],[1166,508],[1167,507],[1167,506],[1167,504],[1168,504],[1169,503],[1169,502],[1170,502],[1170,501]],"depth":584}];
 const LAYER_STORAGE='codaForegroundEditsV2';
@@ -537,7 +538,7 @@ function drawEditorOverlay(){if(!layerState.active||layerState.preview)return;
  if(layerState.hover){const [x,y]=layerState.hover,n=layerState.size,half=Math.floor(n/2);g.save();g.lineWidth=2;g.strokeStyle=layerState.tool==='paint'?'#64ffe0':'#ffcc64';g.strokeRect(x-half-.5,y-half-.5,n+1,n+1);g.restore()}
 }
 
-window.CODA_BUILD="9.1-published-layer-fixes";
+window.CODA_BUILD="9.2-neon-nights-motion";
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -559,6 +560,262 @@ function drawForeground(part){
  if(modified)g.drawImage(modified,x,y,w,h);
  else g.drawImage(foregroundArt,sx,sy,sw,sh,x,y,w,h);
 }
+
+// =================== PHASE 9.2: NEON LIGHTING & MUSIC ===================
+// Only visual compositing and optional, user-initiated sound. No world geometry,
+// collision maps, published brush strokes, or character atlas is modified.
+const musicButton=document.querySelector('#musicBtn');
+const effectsButton=document.querySelector('#fxBtn');
+const fxChoice=['full','lite','off'];
+const reduceMotion=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+let fxMode=reduceMotion?'lite':'full';
+try{const saved=localStorage.getItem('codaArcadeFXV1');if(fxChoice.includes(saved))fxMode=saved}catch{}
+const musicEngine={ctx:null,gain:null,noise:null,active:false,bpm:110,step:0,next:0,start:0};
+let jukeboxVisual=null;
+const ambientPalette=['#fb50c8','#41e4ff','#f6cf5a','#ab77ff','#59ffad'];
+const glows=new Map();
+function effectsOn(){return fxMode!=='off'}
+function bloomSprite(color){
+ let canvas=glows.get(color);if(canvas)return canvas;
+ canvas=document.createElement('canvas');canvas.width=128;canvas.height=128;
+ const ct=canvas.getContext('2d'),gg=ct.createRadialGradient(64,64,0,64,64,64);
+ gg.addColorStop(0,color);gg.addColorStop(.20,color+'b0');gg.addColorStop(.53,color+'35');gg.addColorStop(1,color+'00');
+ ct.fillStyle=gg;ct.fillRect(0,0,128,128);glows.set(color,canvas);return canvas;
+}
+function bloom(x,y,r,color,alpha){
+ if(alpha<=0)return;
+ g.save();g.globalCompositeOperation='screen';g.globalAlpha=Math.min(.6,alpha);
+ g.drawImage(bloomSprite(color),Math.round(x-r),Math.round(y-r),Math.round(r*2),Math.round(r*2));g.restore();
+}
+function pulse(t,speed=1){return .5+.5*Math.sin(t*speed)}
+function beatInfo(){
+ let ctx=null,start=0,bpm=110;
+ if(jukeboxVisual&&jukeboxVisual.ctx.state==='running'){
+  ctx=jukeboxVisual.ctx;start=jukeboxVisual.start;bpm=jukeboxVisual.bpm;
+ }else if(musicEngine.active&&musicEngine.ctx?.state==='running'){
+  ctx=musicEngine.ctx;start=musicEngine.start;bpm=musicEngine.bpm;
+ }
+ if(ctx){const beat=Math.max(0,(ctx.currentTime-start)*bpm/60);return {on:true,beat,phase:beat-Math.floor(beat),bpm};}
+ return {on:false,beat:clock*.46,phase:(clock*.46)%1,bpm:110};
+}
+function thump(beat){return beat.on?Math.exp(-beat.phase*7.5):0}
+function updateAudioButton(){
+ const on=musicEngine.active;
+ musicButton.textContent=on?'♫ Music: On':'♫ Music: Off';musicButton.setAttribute('aria-pressed',String(on));
+ musicButton.title=on?'Stop original arcade background beat':'Play original arcade background beat';
+}
+function updateFxButton(){effectsButton.textContent='✧ FX: '+fxMode[0].toUpperCase()+fxMode.slice(1)}
+function stopAmbientMusic(){
+ const ctx=musicEngine.ctx;musicEngine.active=false;musicEngine.ctx=null;musicEngine.gain=null;
+ musicEngine.noise=null;musicEngine.next=0;
+ if(ctx)try{ctx.close().catch(()=>{})}catch{}
+ updateAudioButton();
+}
+function ambientTone(f,t,d,level,type='sine',endFreq){
+ const ctx=musicEngine.ctx;if(!ctx||!musicEngine.gain)return;
+ const o=ctx.createOscillator(),v=ctx.createGain();o.type=type;
+ o.frequency.setValueAtTime(f,t);
+ if(endFreq)o.frequency.exponentialRampToValueAtTime(Math.max(25,endFreq),t+d);
+ v.gain.setValueAtTime(.0001,t);v.gain.exponentialRampToValueAtTime(Math.max(.0002,level),t+.006);
+ v.gain.exponentialRampToValueAtTime(.0001,t+d);
+ o.connect(v).connect(musicEngine.gain);o.start(t);o.stop(t+d+.02);
+}
+function ambientNoise(t,d,level){
+ const ctx=musicEngine.ctx;if(!ctx||!musicEngine.gain||!musicEngine.noise)return;
+ const n=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),v=ctx.createGain();
+ n.buffer=musicEngine.noise;filter.type='highpass';filter.frequency.value=4200;
+ v.gain.setValueAtTime(level,t);v.gain.exponentialRampToValueAtTime(.0001,t+d);
+ n.connect(filter).connect(v).connect(musicEngine.gain);n.start(t);n.stop(t+d+.01);
+}
+function audioStep(i,t){
+ const six=i%16,step=60/musicEngine.bpm/4;
+ if(six===0||six===8)ambientTone(125,t,.16,.8,'sine',43);
+ if(six===4||six===12){ambientNoise(t,.13,.27);ambientTone(195,t,.075,.16,'triangle',115)}
+ if(six%2===0)ambientNoise(t,.040,six%4===0?.085:.048);
+ if([0,6,8,14].includes(six)){
+  const semitone=[0,0,7,5][Math.floor(i/16)%4];
+  const offset=six===6?7:six===14?12:0;
+  ambientTone(55*2**((semitone+offset)/12),t,step*2.0,.32,'triangle');
+ }
+ if(six===0||six===8){const notes=six===0?[220,261.63,329.63]:[196,246.94,293.66];
+  for(const f of notes)ambientTone(f,t,step*7,.045,'sine');
+ }
+}
+function tickAmbientMusic(){
+ const m=musicEngine;if(!m.active||!m.ctx||m.ctx.state!=='running')return;
+ const now=m.ctx.currentTime;
+ // Look ahead scheduling tied to AudioContext time, not frame rate.
+ let safety=0;while(m.next<now+.14&&safety++<16){audioStep(m.step++,m.next);m.next+=60/m.bpm/4;}
+ if(m.next<now-.3)m.next=now;
+}
+async function startAmbientMusic(){
+ if(musicEngine.active)return;
+ if(songPlayer)stopSong();
+ const A=window.AudioContext||window.webkitAudioContext;
+ if(!A){musicButton.textContent='Audio unavailable';return;}
+ try{
+  const ctx=new A();await ctx.resume();
+  const gain=ctx.createGain();gain.gain.value=.105;gain.connect(ctx.destination);
+  const noise=ctx.createBuffer(1,Math.floor(ctx.sampleRate*.25),ctx.sampleRate),data=noise.getChannelData(0);
+  for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*.42;
+  Object.assign(musicEngine,{ctx,gain,noise,active:true,step:0,start:ctx.currentTime+.055,next:ctx.currentTime+.055});
+  updateAudioButton();tickAmbientMusic();
+ }catch(e){console.warn('Arcade ambient music unavailable',e);stopAmbientMusic();}
+}
+musicButton.onclick=()=>musicEngine.active?stopAmbientMusic():startAmbientMusic();
+effectsButton.onclick=()=>{fxMode=fxChoice[(fxChoice.indexOf(fxMode)+1)%fxChoice.length];try{localStorage.setItem('codaArcadeFXV1',fxMode)}catch{}updateFxButton();};
+updateAudioButton();updateFxButton();
+
+// A vertical spotlight sweep remains on the dance floor, not on characters.
+function danceFloorLight(beat){
+ const playing=beat.on,mode=fxMode;
+ const speed=playing?1.7:.48;
+ g.save();g.globalCompositeOperation='screen';
+ g.beginPath();g.moveTo(171,653);g.lineTo(632,653);g.lineTo(692,813);g.lineTo(118,813);g.closePath();g.clip();
+ for(let row=0;row<5;row++)for(let col=0;col<10;col++){
+  const cx=130+col*55,cy=652+row*39;
+  const wave=pulse(clock*speed+col*.28+row*.39,3.1);
+  const checker=(row+col)%3;
+  const power=playing?(.085+wave*.15+thump(beat)*.085):(.018+wave*.055);
+  g.globalAlpha=power;g.fillStyle=ambientPalette[(col+row*2+checker)%ambientPalette.length];
+  g.fillRect(cx+2,cy+2,50,34);
+  if(playing&&mode==='full'&&wave>.82){g.globalAlpha=.14;g.fillStyle='#ffffff';g.fillRect(cx+18,cy+15,5,5);}
+ }
+ g.restore();
+ if(playing&&mode==='full'){
+  for(let n=0;n<9;n++){
+   const cx=157+(n*61+13)%510,cy=677+(n*47)%130;
+   bloom(cx,cy,24,ambientPalette[n%5],(.05+thump(beat)*.035));
+  }
+ }
+}
+function spinningDiscoBall(x,y,r,beat,seed=0){
+ if(!effectsOn())return;
+ const t=clock*(beat.on?2.15:.75)+seed;
+ const quality=fxMode==='full';
+ bloom(x,y,r*2.1,'#51dcff',beat.on?.20+thump(beat)*.07:.085);
+ g.save();g.beginPath();g.arc(x,y,r-2,0,Math.PI*2);g.clip();
+ g.globalCompositeOperation='screen';
+ // Sweeping facet highlights over the still-existing pixel-ball artwork.
+ const cells=quality?8:5;
+ for(let v=0;v<cells;v++)for(let h=0;h<cells;h++){
+  const yy=y-r+(v+.5)*2*r/cells;
+  const xx=x-r+(h+.5)*2*r/cells+Math.sin(t+(v*.47))*(r*.14);
+  const active=pulse(t+h*.77+v*.35,1.45);
+  if(active>.57){g.globalAlpha=(active-.57)*(.28+(beat.on?.19:0));g.fillStyle=(h+v)%3===0?'#fff6ff':'#85e9ff';g.fillRect(Math.round(xx),Math.round(yy),Math.ceil(r*2/cells*.72),Math.max(2,Math.round(r*2/cells*.48)));}
+ }
+ g.restore();
+ if(quality){
+  const b=beat.on?.1:.045;
+  for(let i=0;i<4;i++){
+   const a=t*.7+i*Math.PI*.5;
+   const tx=x+Math.cos(a)*r*1.45,ty=y+Math.sin(a)*r*.95;
+   bloom(tx,ty,12,ambientPalette[(i+seed)%5|0],b);
+  }
+ }
+}
+function discoReflections(beat){
+ if(fxMode!=='full')return;
+ g.save();g.globalCompositeOperation='screen';
+ const active=beat.on?.075:.023;
+ const lights=[['#36c8ff',388,538,460],['#e360ff',388,538,355]];
+ for(const [color,cx,cy,length] of lights){
+  for(let k=0;k<3;k++){
+   const a=-.4+Math.sin(clock*(beat.on?.65:.20)+k*2.1)*.43;
+   const destX=cx+Math.sin(a+k*.6)*length*.55,destY=cy+length*.47;
+   g.beginPath();g.moveTo(cx,cy+10);
+   g.lineTo(destX-18,destY);g.lineTo(destX+18,destY);g.closePath();
+   g.fillStyle=color;g.globalAlpha=active;g.fill();
+  }
+ }
+ g.restore();
+}
+function animatedCabinets(beat){
+ const t=clock*(beat.on?3.6:1.65);
+ const cabinets=[
+  {x:696,y:207,w:52,h:45,c:'#44d8ff',kind:0},
+  {x:802,y:208,w:59,h:44,c:'#fb54f4',kind:1},
+  {x:916,y:208,w:59,h:44,c:'#b2ff39',kind:2},
+  {x:1033,y:205,w:63,h:42,c:'#ffa83f',kind:3}
+ ];
+ for(const box of cabinets){
+  g.save();g.beginPath();g.rect(box.x+2,box.y+3,box.w-4,box.h-7);g.clip();
+  g.globalCompositeOperation='screen';
+  const frame=Math.floor(t*1.25)%16;
+  if(box.kind===0){
+   for(let k=0;k<4;k++){
+    const xx=box.x+(k*19+Math.floor(t*8))%(box.w+12);
+    const yy=box.y+12+(k*9)%24;
+    g.fillStyle=box.c;g.globalAlpha=.18+.25*pulse(t+k,2);
+    g.fillRect(xx,yy,6,3);g.fillRect(xx+4,yy-6,2,9);
+   }
+  }else if(box.kind===1){
+   for(let k=0;k<5;k++){
+    const h=5+Math.floor((.5+.5*Math.sin(t*.9+k*1.2))*21);
+    g.globalAlpha=.24;g.fillStyle=k%2?'#64d7ff':'#ff6be7';g.fillRect(box.x+7+k*10,box.y+box.h-6-h,6,h);
+   }
+  }else if(box.kind===2){
+   for(let k=0;k<8;k++){
+    const h=3+Math.floor((.5+.5*Math.sin(t*1.1+k*.73))*27);
+    g.globalAlpha=.28;g.fillStyle=k%3?'#cbff47':'#71fa83';g.fillRect(box.x+5+k*6,box.y+box.h-5-h,4,h);
+   }
+  }else{
+   for(let k=0;k<8;k++){
+    g.fillStyle=ambientPalette[(k+frame)%5];g.globalAlpha=.35;
+    g.fillRect(box.x+6+k*6,box.y+13+((k+Math.floor(t))%3)*7,4,4);
+   }
+  }
+  const sheen=box.x+(Math.floor(t*6)%(box.w+12))-10;
+  g.globalAlpha=.055;g.fillStyle='#ffffff';g.fillRect(sheen,box.y+2,3,box.h-4);
+  g.restore();
+  if(fxMode==='full')bloom(box.x+box.w/2,box.y-7,39,box.c,.04+.042*pulse(clock+box.kind,1.4));
+ }
+}
+function speakerLife(beat){
+ // Cones throb in sync to whichever audio source is active. No music = no thump.
+ if(!beat.on)return;
+ const bass=thump(beat),pop=.2+.8*bass;
+ const speakers=[
+  {x:280,ys:[580,612],r:10},{x:491,ys:[581,612],r:10},
+  {x:607,ys:[153,190],r:11},{x:1170,ys:[150,189],r:11}
+ ];
+ for(const sp of speakers){
+  for(const cy of sp.ys){
+   g.save();g.globalCompositeOperation='screen';
+   g.beginPath();g.arc(sp.x,cy,sp.r+2.4*bass,0,Math.PI*2);
+   g.lineWidth=1.5+1.2*bass;g.strokeStyle='#7be4ff';g.globalAlpha=.05+.19*bass;g.stroke();g.restore();
+   if(fxMode==='full'&&bass>.15)bloom(sp.x,cy,sp.r*3.7,'#5f9fff',.07*bass);
+  }
+ }
+}
+function neonSigns(beat){
+ const activity=beat.on?1.18:1;
+ const signs=[
+  [270,66,102,'#ff43e0'],[819,55,178,'#f25dff'],[1277,46,94,'#37a3ff'],
+  [1438,161,89,'#ffb54b'],[522,342,74,'#ff5ac9'],[1459,792,74,'#ff3dec'],
+  [605,120,66,'#d13cff'],[650,119,54,'#48e6fc'],[1202,481,55,'#a65aff']
+ ];
+ for(let i=0;i<signs.length;i++){
+  const [x,y,r,c]=signs[i];
+  bloom(x,y,r,c,activity*(.045+.023*pulse(clock+i,1.05)+thump(beat)*.018));
+ }
+ if(fxMode==='full'){
+  for(const [x,y,color] of [[85,98,'#ffae54'],[455,134,'#ffb556'],[587,80,'#ffc15d'],[1128,82,'#ffb25f'],[806,506,'#ffb65b'],[178,500,'#ffa8ee']])bloom(x,y,39,color,.085+.026*pulse(clock+x*.1,1.5));
+ }
+}
+function renderArcadeAtmosphere(){
+ if(!effectsOn())return;
+ const beat=beatInfo();
+ danceFloorLight(beat);
+ if(fxMode==='full')discoReflections(beat);
+ neonSigns(beat);
+ animatedCabinets(beat);
+ spinningDiscoBall(866,125,25,beat,0);
+ spinningDiscoBall(390,539,28,beat,3);
+ speakerLife(beat);
+}
+// =======================================================================
+
 function draw(){
  g.setTransform(1,0,0,1,0,0);g.fillStyle='#050716';g.fillRect(0,0,W,H);
  if(!worldArt.complete||!worldArt.naturalWidth){t('Loading the neon arcade…',W/2,H/2,24,'#9ff9ff');return;}
@@ -567,19 +824,9 @@ function draw(){
  g.drawImage(worldArt,0,0,W,H);cam.x=0;cam.y=0;
  // Removed obsolete doorway overlay, revealing the clean original corridor art.
  // The open doorway is already composited into the relocated entrance artwork.
- // Beat-synced dance tiles and softly moving club lighting over the existing art.
- g.save();g.globalCompositeOperation='screen';
- const palette=['#fa6ac5','#50dfff','#f7dd78','#a77bff','#76ffc3'];
- for(let row=0;row<4;row++)for(let col=0;col<9;col++){
-  const x=168+col*55,y=668+row*42,beat=Math.max(0,Math.sin(clock*3.4+col*.65+row*.91));
-  g.globalAlpha=.02+beat*.085;g.fillStyle=palette[(row+col)%5];g.fillRect(x,y,48,42);
- }
- for(let k=0;k<4;k++){
-  const x=370+Math.cos(clock*.6+k*1.57)*180,y=685+Math.sin(clock*.6+k*1.57)*65;
-  const gr=g.createRadialGradient(x,y,0,x,y,115);
-  gr.addColorStop(0,palette[k]+'44');gr.addColorStop(1,palette[k]+'00');
-  g.globalAlpha=.17;g.fillStyle=gr;g.fillRect(x-115,y-115,230,230);
- }g.restore();
+ // Visual effects are deliberately under actors, isolated foreground objects,
+ // and published player mask edits. They never affect collision or object depth.
+ renderArcadeAtmosphere();
  // Original floor remains beneath actors. Above them render only isolated
  // object silhouettes (plus precise facades for structural walls/door frames).
  const liveActors=[];
@@ -656,6 +903,7 @@ function draw(){
 }
 window.CodaArcadeQA=Object.freeze({
   build:window.CODA_BUILD,
+  atmosphere:()=>({quality:fxMode,musicOn:musicEngine.active,jukeboxOn:!!jukeboxVisual,beat:beatInfo().beat,glowsCached:glows.size}),
   fixLocations:()=>({loungeNorthwestTable:[100,286],clearConnector:[680,455],walkBehindWall:[520,510],wallBase:[520,553]}),
   walkable:(x,y)=>inside(x,y),
   physical:(x,y)=>passablePoint(x,y),
@@ -673,6 +921,7 @@ window.CodaArcadeQA=Object.freeze({
   menu:()=>({gameOpen,game:gameoverlay.hidden,panelOpen:!document.querySelector('#panel').hidden,pianoOpen:!document.querySelector('#pianoroom').hidden})
 });
 function frame(ms){const dt=Math.min(.05,(ms-last)/1000||0);last=ms;
+ tickAmbientMusic();
  try{if(!gameOpen)update(dt);draw()}catch(err){
  console.error('Arcade frame error:',err);
  g.setTransform(1,0,0,1,0,0);g.fillStyle='#10142b';g.fillRect(0,0,W,H);
@@ -730,9 +979,9 @@ function openAccount(){openPanel('Arcade Passport');const p=document.createEleme
 async function syncProfile(){if(!cloudUser||!profileReady||!firebaseApi)return;try{await firebaseApi.set(firebaseApi.ref(cloudDb,'arcadeProfiles/'+cloudUser.uid),{profile:avatar,updatedAt:firebaseApi.serverTimestamp(),schemaVersion:1})}catch(e){authMessage='Could not save profile: '+e.message}}
 async function loadProfile(user){profileReady=false;try{const snap=await firebaseApi.get(firebaseApi.ref(cloudDb,'arcadeProfiles/'+user.uid));if(!cloudUser||cloudUser.uid!==user.uid)return;const remote=snap.val()?.profile;if(remote&&typeof remote==='object'){avatar={...avatar,...remote};localStorage.setItem('musicArcadeV1',JSON.stringify(avatar))}profileReady=true;authMessage='Signed in · '+(remote?'Saved profile loaded':'New profile ready');if(!remote)await syncProfile()}catch(e){authMessage='Profile unavailable: '+e.message}}
 async function initCloud(){if(!config?.enabled||!config?.firebase){authMessage='Firebase account settings unavailable.';return}try{const [app,auth,database]=await Promise.all([import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'),import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js'),import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js')]);firebaseApi={...auth,...database};const instance=app.initializeApp(config.firebase,'arcade-connected-preview');cloudAuth=auth.getAuth(instance);cloudDb=database.getDatabase(instance);await auth.setPersistence(cloudAuth,auth.browserLocalPersistence);auth.onAuthStateChanged(cloudAuth,async user=>{cloudUser=user;profileReady=false;document.querySelector('#accountBtn').textContent=user?'◉ Account':'◉ Guest';authMessage=user?'Loading your arcade profile…':'Guest mode';if(user)await loadProfile(user)})}catch(e){authMessage='Cloud connection failed: '+e.message}}
-function stopSong(){if(songPlayer){songPlayer.stop();songPlayer=null}}
+function stopSong(){if(songPlayer){songPlayer.stop();songPlayer=null}jukeboxVisual=null;}
 function steps(m){const [a,b]=m.split('/').map(Number);return a*16/b}
-function playSong(song){stopSong();const C=window.AudioContext||window.webkitAudioContext;if(!C){msg('Audio not supported.');return}const ctx=new C(),oscillators=[];let stopped=false;const beat=60/song.bpm/4,start=ctx.currentTime+.07;function note(p,t,d,sound,volume){const o=ctx.createOscillator(),v=ctx.createGain();o.type=['square','triangle','triangle','sine','sawtooth','sawtooth','sine','triangle','square','sawtooth'][sound]||'triangle';o.frequency.value=440*2**((p-69)/12)*(sound===3?2:1);v.gain.setValueAtTime(.0001,t);v.gain.exponentialRampToValueAtTime(Math.max(.0002,(volume||.6)*.14),t+.008);v.gain.exponentialRampToValueAtTime(.0001,t+Math.max(.045,d));o.connect(v).connect(ctx.destination);o.start(t);o.stop(t+Math.max(.045,d)+.01);oscillators.push(o)}
+function playSong(song){stopAmbientMusic();stopSong();const C=window.AudioContext||window.webkitAudioContext;if(!C){msg('Audio not supported.');return}const ctx=new C(),oscillators=[];let stopped=false;const beat=60/song.bpm/4,start=ctx.currentTime+.07;jukeboxVisual={ctx,start,bpm:song.bpm};function note(p,t,d,sound,volume){const o=ctx.createOscillator(),v=ctx.createGain();o.type=['square','triangle','triangle','sine','sawtooth','sawtooth','sine','triangle','square','sawtooth'][sound]||'triangle';o.frequency.value=440*2**((p-69)/12)*(sound===3?2:1);v.gain.setValueAtTime(.0001,t);v.gain.exponentialRampToValueAtTime(Math.max(.0002,(volume||.6)*.14),t+.008);v.gain.exponentialRampToValueAtTime(.0001,t+Math.max(.045,d));o.connect(v).connect(ctx.destination);o.start(t);o.stop(t+Math.max(.045,d)+.01);oscillators.push(o)}
  for(const tr of song.tracks||[]){if(tr.mute)continue;for(const n of tr.notes||[])if(n.t<song.bars*steps(song.meter))note(n.p,start+n.t*beat,n.d*beat*.94,tr.sound,tr.volume)}for(let i=0;i<3;i++){const tr=song.drums?.[i];if(!tr||tr.mute)continue;for(const n of tr.notes||[])if(n.t<song.bars*steps(song.meter))note(i===0?45:i===1?57:88,start+n.t*beat,.12,i===0?3:1,tr.volume)}songPlayer={stop(){if(stopped)return;stopped=true;for(const o of oscillators)try{o.stop()}catch{}ctx.close().catch(()=>{})}};msg('Now playing your composition.');setTimeout(()=>{if(songPlayer&&!stopped){stopSong();msg('Playback finished.')}},(song.bars*steps(song.meter)*beat+.2)*1000)}
 async function openJukebox(){openPanel('♫ Jukebox · Your Songs');addAction('■ Stop playback',stopSong);const m=document.createElement('p');m.className='panelMsg';m.textContent='Loading saved compositions…';panelBody.append(m);if(!cloudUser||!profileReady){m.textContent='Sign in with Google to see your saved Song Machine compositions.';return}try{const snap=await firebaseApi.get(firebaseApi.ref(cloudDb,'songLibrary/'+cloudUser.uid));songRecords=snap.val()||{};const songs=Object.entries(songRecords).sort((a,b)=>(b[1].updatedAt||0)-(a[1].updatedAt||0));m.textContent=songs.length?songs.length+' saved composition(s)':'No saved compositions yet. Visit Song Machine to create one.';for(const [id,record] of songs){if(!record.composition)continue;const row=document.createElement('div');row.className='panelRow';const info=document.createElement('div');const strong=document.createElement('strong');strong.textContent=record.title||'Untitled';info.append(strong);const small=document.createElement('small');small.textContent=(record.composition.bpm||110)+' BPM';info.append(small);row.append(info);const play=document.createElement('button');play.textContent='▶ Play';play.onclick=()=>playSong(record.composition);row.append(play);const edit=document.createElement('button');edit.textContent='Edit ↗';edit.onclick=()=>{stopSong();closePanel();openCabinet({...games[3],url:'song-machine/index.html?song='+encodeURIComponent(id)})};row.append(edit);panelBody.append(row)}}catch(e){m.textContent='Could not load saved songs: '+e.message}}
 document.querySelector('#accountBtn').onclick=openAccount;document.querySelector('#jukeboxBtn').onclick=openJukebox;initCloud();
