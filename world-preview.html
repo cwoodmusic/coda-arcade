@@ -7,7 +7,7 @@
 #musicBtn[aria-pressed="true"]{background:#1c5b5d;border-color:#64e9cf;color:#ddfff4;box-shadow:0 0 10px #40f4c02f}#fxBtn{border-color:#80bbef}header span{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end}header span button{padding:7px 10px}@media(max-width:650px){header{align-items:flex-start;flex-direction:column}header span{justify-content:flex-start}}
 #layerEditor{position:fixed;right:14px;top:174px;z-index:60;width:min(292px,calc(100vw - 24px));background:#17152aef;border:1px solid #72f5c8;box-shadow:0 10px 32px #000b,0 0 20px #2fecb228;border-radius:12px;padding:13px;color:#f0eaff;max-height:calc(100dvh - 190px);overflow-y:auto;font-size:13px;backdrop-filter:blur(7px)}
 #layerEditor[hidden]{display:none}#layerEditor button,#layerEditor select{font:inherit;min-height:31px;padding:5px 7px}#layerEditor .editorline{display:flex;gap:7px;align-items:center;margin:8px 0}#layerEditor .editorline>*{flex:1;min-width:0}#layerEditor label{display:block;font-weight:600}#layerEditor .mini{font-size:11px;opacity:.76;line-height:1.45;margin:6px 0}#layerEditor .current{border-color:#4dfac0;background:#175d52}#layerEditor .editorbanner{display:flex;align-items:center;justify-content:space-between;color:#a8fff0;margin-bottom:9px}#layerEditor input[type=range]{width:100%}#layerEditor .editnotice{min-height:24px;font-size:11px;color:#aeffd9;margin-top:10px;overflow-wrap:anywhere}#view.layer-editing{cursor:crosshair;touch-action:none}#editorToggle{border-color:#63dcae}#layerEditor .editorline button:disabled{opacity:.4;cursor:not-allowed}
-</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 9.3 · DISCO BEAM BOOST</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · C collision · L layer outlines · Shift+L EDIT layers · F foreground on/off · Shift-click collision edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 9.3 · disco beams + speaker boost · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
+</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 9.4 · COLORWAVE CLUB LIGHTS</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · C collision · L layer outlines · Shift+L EDIT layers · F foreground on/off · Shift-click collision edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 9.4 · colorwave + sign flicker · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
   <div class="editorbanner"><b>✎ FOREGROUND EDITOR</b><button id="editClose" type="button">✕</button></div>
   <div class="mini">Paint with pixels from the existing arcade artwork. Erase removes unwanted foreground coverage; the floor stays unchanged.</div>
   <div class="editorline"><button type="button" id="editPaint" class="current">🖌 Paint</button><button type="button" id="editErase">⌫ Erase</button></div>
@@ -538,7 +538,7 @@ function drawEditorOverlay(){if(!layerState.active||layerState.preview)return;
  if(layerState.hover){const [x,y]=layerState.hover,n=layerState.size,half=Math.floor(n/2);g.save();g.lineWidth=2;g.strokeStyle=layerState.tool==='paint'?'#64ffe0':'#ffcc64';g.strokeRect(x-half-.5,y-half-.5,n+1,n+1);g.restore()}
 }
 
-window.CODA_BUILD="9.2-neon-nights-motion";
+window.CODA_BUILD="9.4-colorwave-club-lights";
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -561,7 +561,7 @@ function drawForeground(part){
  else g.drawImage(foregroundArt,sx,sy,sw,sh,x,y,w,h);
 }
 
-// =================== PHASE 9.2: NEON LIGHTING & MUSIC ===================
+// =================== PHASE 9.4: NEON LIGHTING & MUSIC ===================
 // Only visual compositing and optional, user-initiated sound. No world geometry,
 // collision maps, published brush strokes, or character atlas is modified.
 const musicButton=document.querySelector('#musicBtn');
@@ -831,16 +831,144 @@ function neonSigns(beat){
  ];
  for(let i=0;i<signs.length;i++){
   const [x,y,r,c]=signs[i];
-  bloom(x,y,r,c,activity*(.045+.023*pulse(clock+i,1.05)+thump(beat)*.018));
+  const flickerIdx=FLICKER_SIGNS.findIndex(sign=>Math.hypot(sign.cx-x,sign.cy-y)<45);
+  const flicker=flickerIdx>=0?neonFlickerPower(flickerIdx):1;
+  bloom(x,y,r,c,activity*(.045+.023*pulse(clock+i,1.05)+thump(beat)*.018)*flicker);
  }
  if(fxMode==='full'){
   for(const [x,y,color] of [[85,98,'#ffae54'],[455,134,'#ffb556'],[587,80,'#ffc15d'],[1128,82,'#ffb25f'],[806,506,'#ffb65b'],[178,500,'#ffa8ee']])bloom(x,y,39,color,.085+.026*pulse(clock+x*.1,1.5));
  }
 }
+// ===== PHASE 9.4: COLORWAVE FLOODLIGHTS + CLUB AMBIENCE + NEON FLICKER =====
+// A synchronized hue cycle with spatial offsets makes the hanging lights form a
+// smooth traveling rainbow. No gameplay geometry, sprite art, or masks change.
+const CLUB_FLOODS=[
+ {x:229,y:513,dx:148,dy:675,spread:68,phase:0},
+ {x:276,y:517,dx:289,dy:722,spread:70,phase:.77},
+ {x:336,y:507,dx:407,dy:690,spread:65,phase:1.54},
+ {x:508,y:544,dx:530,dy:719,spread:75,phase:2.31},
+ {x:574,y:543,dx:662,dy:699,spread:77,phase:3.08}
+];
+const FLICKER_SIGNS=[
+ {name:'Lounge',x:206,y:42,w:108,h:48,period:16.9,offset:3.4,color:'#ff4cf8',cx:261,cy:66},
+ {name:'Boutique',x:472,y:326,w:139,h:33,period:22.7,offset:8.2,color:'#fa56ed',cx:543,cy:342},
+ {name:'Dance',x:341,y:620,w:93,h:39,period:14.3,offset:5.8,color:'#f454ec',cx:388,cy:642},
+ {name:'Arcade',x:667,y:28,w:356,h:67,period:25.6,offset:13.7,color:'#fa61e8',cx:841,cy:57},
+ {name:'Piano Lab',x:1207,y:16,w:126,h:68,period:19.8,offset:10.1,color:'#389aff',cx:1275,cy:48},
+ {name:'Hall of Fame',x:1397,y:144,w:143,h:35,period:27.3,offset:17.5,color:'#ffb657',cx:1470,cy:158},
+ {name:'Entrance',x:1400,y:758,w:107,h:44,period:21.4,offset:7.2,color:'#ff43df',cx:1456,cy:776}
+];
+function clubHue(rad){return (rad%360+360)%360}
+function clubHsl(h,a){return `hsla(${clubHue(h).toFixed(1)},100%,64%,${Math.max(0,Math.min(1,a)).toFixed(3)})`}
+function clubRoomClip(){
+ g.beginPath();g.moveTo(55,475);g.lineTo(650,475);g.lineTo(737,495);
+ g.lineTo(802,559);g.lineTo(814,805);g.lineTo(725,846);
+ g.lineTo(91,846);g.lineTo(49,791);g.lineTo(49,527);g.closePath();g.clip();
+}
+function nightclubColorwash(beat){
+ if(!effectsOn())return;
+ const baseHue=clock*(beat.on?17:6.5),power=(fxMode==='full'?1:.46)*(beat.on?1:.8);
+ g.save();clubRoomClip();g.globalCompositeOperation='screen';
+ // Broad wash touches the DJ stage, sofas, lights, and whole dance room.
+ const background=g.createLinearGradient(65,475,790,810);
+ background.addColorStop(0,clubHsl(baseHue+8,.079*power));
+ background.addColorStop(.48,clubHsl(baseHue+115,.113*power));
+ background.addColorStop(1,clubHsl(baseHue+240,.091*power));
+ g.fillStyle=background;g.fillRect(40,468,800,402);
+ // Two drifting colored haze pools make the whole room breathe instead of
+ // applying a flat rectangle to the artwork.
+ for(let k=0;k<2;k++){
+  const px=310+k*215+Math.sin(clock*(beat.on?.34:.13)+k*2)*128;
+  const py=648+Math.cos(clock*.28+k*2)*64;
+  const rr=250+k*40;
+  const fade=g.createRadialGradient(px,py,0,px,py,rr);
+  fade.addColorStop(0,clubHsl(baseHue+k*135,.15*power));
+  fade.addColorStop(.53,clubHsl(baseHue+k*135+20,.06*power));
+  fade.addColorStop(1,clubHsl(baseHue+k*135+35,0));
+  g.fillStyle=fade;g.fillRect(px-rr,py-rr,rr*2,rr*2);
+ }
+ // A gentle beat-timed environmental lift, with no full-screen flashes.
+ if(beat.on){
+  g.fillStyle=clubHsl(baseHue+75,.026*thump(beat)*power);
+  g.fillRect(45,470,790,380);
+ }
+ g.restore();
+}
+function gradientFloodlights(beat){
+ if(!effectsOn())return;
+ const strength=(fxMode==='full'?1:.46)*(beat.on?1:.63);
+ const baseHue=clock*(beat.on?31:10);
+ g.save();clubRoomClip();g.globalCompositeOperation='screen';
+ for(let i=0;i<CLUB_FLOODS.length;i++){
+  const lamp=CLUB_FLOODS[i];
+  const hue=baseHue+i*54; // rainbow gradient across the row of fixtures
+  const sway=Math.sin(clock*(beat.on?.85:.31)+lamp.phase)*28;
+  const tx=lamp.dx+sway,ty=lamp.dy+Math.cos(clock*.4+i)*14;
+  // Recolored cones start at the actual hanging fixtures and progressively
+  // fade down over existing painted beams, never covering collision debug.
+  const cone=g.createLinearGradient(lamp.x,lamp.y,tx,ty);
+  cone.addColorStop(0,clubHsl(hue,.33*strength));
+  cone.addColorStop(.40,clubHsl(hue+16,.24*strength));
+  cone.addColorStop(.82,clubHsl(hue+30,.12*strength));
+  cone.addColorStop(1,clubHsl(hue+40,0));
+  g.fillStyle=cone;
+  g.beginPath();g.moveTo(lamp.x-8,lamp.y+5);g.lineTo(lamp.x+8,lamp.y+5);
+  g.lineTo(tx+lamp.spread,ty);g.lineTo(tx-lamp.spread,ty);g.closePath();g.fill();
+  // Colored footprint on the furniture/floor directly beneath the beam.
+  const footprint=g.createRadialGradient(tx,ty,0,tx,ty,lamp.spread*1.4);
+  footprint.addColorStop(0,clubHsl(hue+15,.22*strength));
+  footprint.addColorStop(.65,clubHsl(hue+30,.07*strength));
+  footprint.addColorStop(1,clubHsl(hue+45,0));
+  g.fillStyle=footprint;
+  g.fillRect(tx-lamp.spread*1.4,ty-lamp.spread*1.4,lamp.spread*2.8,lamp.spread*2.8);
+ }
+ g.restore();
+ // Bloom at the lamps gives a smooth transition between color changes.
+ if(fxMode==='full')for(let i=0;i<CLUB_FLOODS.length;i++){
+  const f=CLUB_FLOODS[i];
+  const hue=baseHue+i*54;
+  g.save();g.globalCompositeOperation='screen';
+  const halo=g.createRadialGradient(f.x,f.y,1,f.x,f.y,29);
+  halo.addColorStop(0,clubHsl(hue,.36*strength));
+  halo.addColorStop(.35,clubHsl(hue,.17*strength));
+  halo.addColorStop(1,clubHsl(hue,0));
+  g.fillStyle=halo;g.fillRect(f.x-29,f.y-29,58,58);g.restore();
+ }
+}
+function neonFlickerPower(idx){
+ if(!effectsOn())return 1;
+ const sign=FLICKER_SIGNS[idx];
+ const f=(clock+sign.offset)%sign.period;
+ // Two short, staggered electrical dips per occasional event, never a strobe.
+ if(f<.085)return .38;
+ if(f>=.14&&f<.20)return .58;
+ if(f>=.27&&f<.32)return .82;
+ return 1;
+}
+function flickerSelectedNeon(){
+ if(!effectsOn())return;
+ for(let i=0;i<FLICKER_SIGNS.length;i++){
+  const sign=FLICKER_SIGNS[i],brightness=neonFlickerPower(i);
+  if(brightness>=1)continue;
+  g.save();
+  g.beginPath();g.rect(sign.x,sign.y,sign.w,sign.h);g.clip();
+  // Dim the ARTWORK itself for a believable electrical flicker rather than
+  // only reducing the glow while the bright sign remains painted on the map.
+  g.globalAlpha=.9;
+  g.filter=`brightness(${(brightness*.94).toFixed(3)})`;
+  g.drawImage(worldArt,sign.x,sign.y,sign.w,sign.h,sign.x,sign.y,sign.w,sign.h);
+  g.restore();
+ }
+}
+// =======================================================================
+
 function renderArcadeAtmosphere(){
  if(!effectsOn())return;
  const beat=beatInfo();
+ flickerSelectedNeon();
+ nightclubColorwash(beat);
  danceFloorLight(beat);
+ gradientFloodlights(beat);
  if(fxMode==='full')discoReflections(beat);
  neonSigns(beat);
  animatedCabinets(beat);
@@ -858,8 +986,8 @@ function draw(){
  g.drawImage(worldArt,0,0,W,H);cam.x=0;cam.y=0;
  // Removed obsolete doorway overlay, revealing the clean original corridor art.
  // The open doorway is already composited into the relocated entrance artwork.
- // Visual effects are deliberately under actors, isolated foreground objects,
- // and published player mask edits. They never affect collision or object depth.
+ // Primary lighting is rendered beneath actors and isolated foreground objects.
+ // A faint post-process club wash adds atmosphere without changing object depth.
  renderArcadeAtmosphere();
  // Original floor remains beneath actors. Above them render only isolated
  // object silhouettes (plus precise facades for structural walls/door frames).
@@ -887,6 +1015,17 @@ function draw(){
    const kind=['pink','blue','orange','brown','green','hat'][p.look%6];
    drawActor(kind+'_down_0',p.x,p.y,39,52,dancing?Math.sin(clock*7+p.look)*4:0);
   }
+ }
+ // Soft club color haze touches characters too, without changing occlusion order.
+ // Skip it while editing or inspecting collision/foreground masks.
+ if(effectsOn()&&!collisionDebug&&!depthDebug&&!layerState.active){
+  const b=beatInfo(),strength=(fxMode==='full'?.032:.014)*(b.on?1:.63);
+  g.save();clubRoomClip();g.globalCompositeOperation='screen';
+  const veil=g.createLinearGradient(40,470,795,820);
+  veil.addColorStop(0,clubHsl(clock*12+25,strength));
+  veil.addColorStop(.50,clubHsl(clock*12+145,strength*1.2));
+  veil.addColorStop(1,clubHsl(clock*12+265,strength));
+  g.fillStyle=veil;g.fillRect(40,460,795,400);g.restore();
  }
  // Don't draw extra characters or arrows from the baked-in artwork.
  g.save();g.shadowColor='#030814';g.shadowBlur=5;
