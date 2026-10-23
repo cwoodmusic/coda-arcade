@@ -7,7 +7,7 @@
 #musicBtn[aria-pressed="true"]{background:#1c5b5d;border-color:#64e9cf;color:#ddfff4;box-shadow:0 0 10px #40f4c02f}#fxBtn{border-color:#80bbef}header span{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end}header span button{padding:7px 10px}@media(max-width:650px){header{align-items:flex-start;flex-direction:column}header span{justify-content:flex-start}}
 #layerEditor{position:fixed;right:14px;top:174px;z-index:60;width:min(292px,calc(100vw - 24px));background:#17152aef;border:1px solid #72f5c8;box-shadow:0 10px 32px #000b,0 0 20px #2fecb228;border-radius:12px;padding:13px;color:#f0eaff;max-height:calc(100dvh - 190px);overflow-y:auto;font-size:13px;backdrop-filter:blur(7px)}
 #layerEditor[hidden]{display:none}#layerEditor button,#layerEditor select{font:inherit;min-height:31px;padding:5px 7px}#layerEditor .editorline{display:flex;gap:7px;align-items:center;margin:8px 0}#layerEditor .editorline>*{flex:1;min-width:0}#layerEditor label{display:block;font-weight:600}#layerEditor .mini{font-size:11px;opacity:.76;line-height:1.45;margin:6px 0}#layerEditor .current{border-color:#4dfac0;background:#175d52}#layerEditor .editorbanner{display:flex;align-items:center;justify-content:space-between;color:#a8fff0;margin-bottom:9px}#layerEditor input[type=range]{width:100%}#layerEditor .editnotice{min-height:24px;font-size:11px;color:#aeffd9;margin-top:10px;overflow-wrap:anywhere}#view.layer-editing{cursor:crosshair;touch-action:none}#editorToggle{border-color:#63dcae}#layerEditor .editorline button:disabled{opacity:.4;cursor:not-allowed}
-</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 9.6 · PUBLISHED LAYER REFINEMENTS</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · C collision · L layer outlines · Shift+L EDIT layers · F foreground on/off · Shift-click collision edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 9.6 · published layers + twinkle lights · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
+</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 9.7 · ANIMATION HOTFIX</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · C collision · L layer outlines · Shift+L EDIT layers · F foreground on/off · Shift-click collision edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 9.7 · repaired lighting + controls · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
   <div class="editorbanner"><b>✎ FOREGROUND EDITOR</b><button id="editClose" type="button">✕</button></div>
   <div class="mini">Paint with pixels from the existing arcade artwork. Erase removes unwanted foreground coverage; the floor stays unchanged.</div>
   <div class="editorline"><button type="button" id="editPaint" class="current">🖌 Paint</button><button type="button" id="editErase">⌫ Erase</button></div>
@@ -540,7 +540,7 @@ function drawEditorOverlay(){if(!layerState.active||layerState.preview)return;
  if(layerState.hover){const [x,y]=layerState.hover,n=layerState.size,half=Math.floor(n/2);g.save();g.lineWidth=2;g.strokeStyle=layerState.tool==='paint'?'#64ffe0':'#ffcc64';g.strokeRect(x-half-.5,y-half-.5,n+1,n+1);g.restore()}
 }
 
-window.CODA_BUILD="9.4-colorwave-club-lights";
+window.CODA_BUILD="9.7-lighting-hotfix";
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -578,11 +578,13 @@ const ambientPalette=['#fb50c8','#41e4ff','#f6cf5a','#ab77ff','#59ffad'];
 const glows=new Map();
 function effectsOn(){return fxMode!=='off'}
 function bloomSprite(color){
- let canvas=glows.get(color);if(canvas)return canvas;
+ // Gradients require valid CSS colors; do not concatenate alpha bytes to HSL strings.
+ const base=/^#[0-9a-f]{6}$/i.test(color)?color:'#80c9ff';
+ let canvas=glows.get(base);if(canvas)return canvas;
  canvas=document.createElement('canvas');canvas.width=128;canvas.height=128;
  const ct=canvas.getContext('2d'),gg=ct.createRadialGradient(64,64,0,64,64,64);
- gg.addColorStop(0,color);gg.addColorStop(.20,color+'b0');gg.addColorStop(.53,color+'35');gg.addColorStop(1,color+'00');
- ct.fillStyle=gg;ct.fillRect(0,0,128,128);glows.set(color,canvas);return canvas;
+ gg.addColorStop(0,base);gg.addColorStop(.20,base+'b0');gg.addColorStop(.53,base+'35');gg.addColorStop(1,base+'00');
+ ct.fillStyle=gg;ct.fillRect(0,0,128,128);glows.set(base,canvas);return canvas;
 }
 function bloom(x,y,r,color,alpha){
  if(alpha<=0)return;
@@ -1054,10 +1056,13 @@ function openFloorTwinkles(beat){
   const hueBase=phaseKind?202:330; // blue and red-magenta families
   const hue=hueBase+(phaseKind?22*Math.sin(clock*.7+i):16*Math.sin(clock*.8+i*.4));
   const alpha=(phaseKind?.12:.11)*activity + tw*(phaseKind?.26:.24)*activity;
+  g.globalAlpha=1; // Reset after the previous pixel's white spark.
   g.fillStyle=`hsla(${hue.toFixed(1)},100%,68%,${alpha.toFixed(3)})`;
   const sz=4+(tw>.72?1:0);
   g.fillRect(Math.round(x-sz/2),Math.round(y-sz/2),sz,sz);
-  if(tw>.36)bloom(x,y,11+tw*13,`hsl(${hue.toFixed(1)},100%,70%)`,(.035+tw*.07)*activity);
+  // Bloom cache only accepts hex colors. HSL is used above for the tiny color-shifting pixel;
+  // use two stable HEX neon glow sprites instead of invalid CSS gradient color strings.
+  if(tw>.36)bloom(x,y,11+tw*13,phaseKind?'#4faaff':'#ff4aa2',(.035+tw*.07)*activity);
   if(tw>.82){
    g.globalAlpha=.24*activity; g.fillStyle='#ffffff';
    g.fillRect(x-1,y-1,2,2);
@@ -1094,7 +1099,10 @@ function renderArcadeAtmosphere(){
 // =======================================================================
 
 function draw(){
- g.setTransform(1,0,0,1,0,0);g.fillStyle='#050716';g.fillRect(0,0,W,H);
+ // A bad FX frame must not leave a stale clip/opacity/compositing state behind.
+ if(typeof g.reset==='function')g.reset();
+ g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.globalCompositeOperation='source-over';g.filter='none';
+ g.fillStyle='#050716';g.fillRect(0,0,W,H);
  if(!worldArt.complete||!worldArt.naturalWidth){t('Loading the neon arcade…',W/2,H/2,24,'#9ff9ff');return;}
  g.imageSmoothingEnabled=false;
  rebuildLayerEdits();
@@ -1212,7 +1220,9 @@ function frame(ms){const dt=Math.min(.05,(ms-last)/1000||0);last=ms;
  tickAmbientMusic();
  try{if(!gameOpen)update(dt);draw()}catch(err){
  console.error('Arcade frame error:',err);
- g.setTransform(1,0,0,1,0,0);g.fillStyle='#10142b';g.fillRect(0,0,W,H);
+ if(typeof g.reset==='function')g.reset();
+ g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.globalCompositeOperation='source-over';
+ g.fillStyle='#10142b';g.fillRect(0,0,W,H);
  g.fillStyle='#ffb9e5';g.font='bold 25px monospace';g.fillText('Arcade error: '+err.message,55,110);
  }requestAnimationFrame(frame)}window.addEventListener('keydown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const k=e.key.toLowerCase();if(k==='l'&&e.shiftKey&&!e.repeat){e.preventDefault();toggleLayerEditor();return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='z'&&!e.repeat){e.preventDefault();editorEl(e.shiftKey?'editRedo':'editUndo').click();return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='y'&&!e.repeat){e.preventDefault();editorEl('editRedo').click();return;}if(layerState.active&&k==='escape'&&!e.repeat){e.preventDefault();toggleLayerEditor(false);return;}if(layerState.active&&!layerState.preview){if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k))e.preventDefault();return;}if(k==='c'&&!e.repeat){collisionDebug=!collisionDebug;return;}if(k==='l'&&!e.repeat){depthDebug=!depthDebug;return;}if(k==='f'&&!e.repeat){foregroundEnabled=!foregroundEnabled;return;}if(k==='x'&&collisionDebug&&!e.repeat){exportCollision();return;}if(k==='r'&&e.shiftKey&&collisionDebug&&!e.repeat){localStorage.removeItem('codaCollisionEditsV891');window.location.reload();return;}if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k)){e.preventDefault();keys.add(k);if(k==='e'&&!e.repeat)talk();if(k==='q')emote=clock+2}});window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>keys.clear());c.addEventListener('pointerdown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const b=c.getBoundingClientRect();
  if(editorPointerDown(e))return;
