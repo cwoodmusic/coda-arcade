@@ -7,7 +7,7 @@
 #musicBtn[aria-pressed="true"]{background:#1c5b5d;border-color:#64e9cf;color:#ddfff4;box-shadow:0 0 10px #40f4c02f}#fxBtn{border-color:#80bbef}header span{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end}header span button{padding:7px 10px}@media(max-width:650px){header{align-items:flex-start;flex-direction:column}header span{justify-content:flex-start}}
 #layerEditor{position:fixed;right:14px;top:174px;z-index:60;width:min(292px,calc(100vw - 24px));background:#17152aef;border:1px solid #72f5c8;box-shadow:0 10px 32px #000b,0 0 20px #2fecb228;border-radius:12px;padding:13px;color:#f0eaff;max-height:calc(100dvh - 190px);overflow-y:auto;font-size:13px;backdrop-filter:blur(7px)}
 #layerEditor[hidden]{display:none}#layerEditor button,#layerEditor select{font:inherit;min-height:31px;padding:5px 7px}#layerEditor .editorline{display:flex;gap:7px;align-items:center;margin:8px 0}#layerEditor .editorline>*{flex:1;min-width:0}#layerEditor label{display:block;font-weight:600}#layerEditor .mini{font-size:11px;opacity:.76;line-height:1.45;margin:6px 0}#layerEditor .current{border-color:#4dfac0;background:#175d52}#layerEditor .editorbanner{display:flex;align-items:center;justify-content:space-between;color:#a8fff0;margin-bottom:9px}#layerEditor input[type=range]{width:100%}#layerEditor .editnotice{min-height:24px;font-size:11px;color:#aeffd9;margin-top:10px;overflow-wrap:anywhere}#view.layer-editing{cursor:crosshair;touch-action:none}#editorToggle{border-color:#63dcae}#layerEditor .editorline button:disabled{opacity:.4;cursor:not-allowed}
-</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 9.4 · COLORWAVE CLUB LIGHTS</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · C collision · L layer outlines · Shift+L EDIT layers · F foreground on/off · Shift-click collision edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 9.4 · colorwave + sign flicker · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
+</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 9.6 · PUBLISHED LAYER REFINEMENTS</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · C collision · L layer outlines · Shift+L EDIT layers · F foreground on/off · Shift-click collision edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 9.6 · published layers + twinkle lights · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
   <div class="editorbanner"><b>✎ FOREGROUND EDITOR</b><button id="editClose" type="button">✕</button></div>
   <div class="mini">Paint with pixels from the existing arcade artwork. Erase removes unwanted foreground coverage; the floor stays unchanged.</div>
   <div class="editorline"><button type="button" id="editPaint" class="current">🖌 Paint</button><button type="button" id="editErase">⌫ Erase</button></div>
@@ -389,29 +389,31 @@ const layerEditorUI=document.querySelector('#layerEditor');
 const layerState={active:false,tool:'paint',size:4,offset:0,preview:false,maskView:false,zoom:'fit',actions:[],redo:[],drawing:null,hover:null,dirty:true,renderParts:new Map(),patches:[],erasedCanvas:null,owner:null};
 // Published foreground corrections from the user\u2019s exported editor JSON.
 // Kept separate from later local edits: all visitors receive these by default.
-const PUBLISHED_LAYER_STROKES=[{"tool":"erase","size":4,"points":[[830,681],[830,682],[830,684],[830,686],[829,691],[828,691],[828,692],[826,692],[823,698],[822,698],[822,697],[822,696],[822,694],[822,693],[822,692],[822,691],[822,690],[822,689],[822,688],[822,685],[822,681],[822,679],[822,677],[822,679],[821,682],[821,685],[821,686],[821,685],[821,684],[821,682],[821,681],[821,680],[821,679],[821,677],[821,676]],"depth":774},{"tool":"erase","size":8,"points":[[826,684],[826,685],[826,686],[826,689],[826,690],[825,690],[825,691],[825,692],[825,693],[824,693],[823,693],[822,693],[822,692],[821,692],[820,690],[819,689],[819,688],[819,686],[819,685],[819,684],[819,683],[819,682],[819,681],[819,680],[819,676],[819,675],[817,676],[816,677],[813,680],[812,681],[811,683],[811,684],[811,685],[811,686],[811,689],[811,690],[811,691],[811,692],[811,694],[812,694],[814,696],[815,697],[815,698]],"depth":774},{"tool":"paint","size":8,"points":[[405,214],[405,213],[406,212],[406,209],[407,208],[407,207],[408,206],[408,205],[409,205],[411,204],[413,204],[414,204],[415,204],[416,204],[416,208],[416,209],[415,209],[415,208],[414,208],[414,207],[413,207],[413,206],[413,205],[413,204],[413,202],[413,199],[413,198],[413,197],[413,194],[413,193],[413,190],[413,189],[413,188],[412,188],[412,187],[412,186],[412,185],[412,183],[412,181],[412,179],[412,177],[412,176],[412,173],[412,172],[412,173],[412,176],[413,176],[413,174],[413,173],[414,173],[413,173],[411,173],[409,173],[408,173],[406,173],[405,173],[404,172],[403,170],[401,169],[401,168],[403,171],[403,172],[404,172],[404,177],[404,178],[404,179],[404,180],[404,182],[404,183],[404,186],[404,187],[405,188],[406,189],[406,190],[406,191],[406,193],[406,194],[406,195],[406,196],[406,197]],"depth":239},{"tool":"paint","size":8,"points":[[1175,558],[1175,556],[1175,555],[1175,554],[1175,552],[1175,547],[1175,545],[1175,544],[1175,543]],"depth":584},{"tool":"erase","size":8,"points":[[1175,556],[1175,555],[1175,552],[1173,550],[1173,549],[1173,547],[1173,546],[1173,545],[1173,543],[1173,542],[1173,541],[1173,540],[1173,538],[1173,537],[1173,536],[1173,535],[1173,534],[1171,532],[1171,530],[1169,529],[1167,529],[1167,528],[1167,527],[1164,526],[1163,524],[1163,523],[1163,521],[1163,519],[1163,518],[1164,517],[1166,516],[1166,515],[1166,514],[1166,512],[1166,511],[1166,509],[1166,508],[1167,507],[1167,506],[1167,504],[1168,504],[1169,503],[1169,502],[1170,502],[1170,501]],"depth":584}];
-const LAYER_STORAGE='codaForegroundEditsV2';
+const PUBLISHED_LAYER_STROKES=[{"tool":"erase","size":4,"points":[[830,681],[830,682],[830,684],[830,686],[829,691],[828,691],[828,692],[826,692],[823,698],[822,698],[822,697],[822,696],[822,694],[822,693],[822,692],[822,691],[822,690],[822,689],[822,688],[822,685],[822,681],[822,679],[822,677],[822,679],[821,682],[821,685],[821,686],[821,685],[821,684],[821,682],[821,681],[821,680],[821,679],[821,677],[821,676]],"depth":774},{"tool":"erase","size":8,"points":[[826,684],[826,685],[826,686],[826,689],[826,690],[825,690],[825,691],[825,692],[825,693],[824,693],[823,693],[822,693],[822,692],[821,692],[820,690],[819,689],[819,688],[819,686],[819,685],[819,684],[819,683],[819,682],[819,681],[819,680],[819,676],[819,675],[817,676],[816,677],[813,680],[812,681],[811,683],[811,684],[811,685],[811,686],[811,689],[811,690],[811,691],[811,692],[811,694],[812,694],[814,696],[815,697],[815,698]],"depth":774},{"tool":"paint","size":8,"points":[[405,214],[405,213],[406,212],[406,209],[407,208],[407,207],[408,206],[408,205],[409,205],[411,204],[413,204],[414,204],[415,204],[416,204],[416,208],[416,209],[415,209],[415,208],[414,208],[414,207],[413,207],[413,206],[413,205],[413,204],[413,202],[413,199],[413,198],[413,197],[413,194],[413,193],[413,190],[413,189],[413,188],[412,188],[412,187],[412,186],[412,185],[412,183],[412,181],[412,179],[412,177],[412,176],[412,173],[412,172],[412,173],[412,176],[413,176],[413,174],[413,173],[414,173],[413,173],[411,173],[409,173],[408,173],[406,173],[405,173],[404,172],[403,170],[401,169],[401,168],[403,171],[403,172],[404,172],[404,177],[404,178],[404,179],[404,180],[404,182],[404,183],[404,186],[404,187],[405,188],[406,189],[406,190],[406,191],[406,193],[406,194],[406,195],[406,196],[406,197]],"depth":239},{"tool":"paint","size":8,"points":[[1175,558],[1175,556],[1175,555],[1175,554],[1175,552],[1175,547],[1175,545],[1175,544],[1175,543]],"depth":584},{"tool":"erase","size":8,"points":[[1175,556],[1175,555],[1175,552],[1173,550],[1173,549],[1173,547],[1173,546],[1173,545],[1173,543],[1173,542],[1173,541],[1173,540],[1173,538],[1173,537],[1173,536],[1173,535],[1173,534],[1171,532],[1171,530],[1169,529],[1167,529],[1167,528],[1167,527],[1164,526],[1163,524],[1163,523],[1163,521],[1163,519],[1163,518],[1164,517],[1166,516],[1166,515],[1166,514],[1166,512],[1166,511],[1166,509],[1166,508],[1167,507],[1167,506],[1167,504],[1168,504],[1169,503],[1169,502],[1170,502],[1170,501]],"depth":584},{"tool":"erase","size":4,"points":[[753,803],[753,801],[753,798],[753,797],[752,795],[752,794],[752,793],[752,790],[752,785],[751,784],[751,780],[751,779],[751,777],[752,777],[753,776],[754,774],[755,774],[756,772],[758,771],[759,771],[760,770],[761,769],[762,768],[763,768],[763,767],[764,767],[763,767],[762,767],[762,768],[761,769],[762,769],[763,769],[763,771],[763,772],[763,774],[763,775],[763,776],[763,777],[763,778],[762,779],[762,780],[761,780],[760,780],[759,780],[758,780],[758,781],[758,783],[756,783],[756,784],[755,784],[754,784],[753,784],[752,784],[751,784],[750,784],[748,784],[747,784],[746,784],[747,784],[748,784],[748,783],[750,781],[751,781],[753,781],[752,781],[752,783],[751,783],[751,784],[750,784],[748,785],[747,786],[746,787],[747,787],[748,787],[748,788],[748,790],[747,790],[747,792],[748,792],[750,792],[751,792],[752,792],[753,792],[753,793],[752,793],[751,794],[750,795],[750,796],[750,798],[750,800],[750,801],[750,802],[750,803],[750,804],[750,805],[748,806],[748,807],[747,807],[746,807],[745,807],[745,806],[744,806],[744,805]],"depth":905},{"tool":"erase","size":4,"points":[[675,674],[674,674],[673,674],[668,674],[666,674],[664,673],[661,673],[661,672],[660,672],[660,671],[659,671],[656,670],[650,667],[649,665],[648,665],[647,665],[633,659],[629,658],[625,656],[618,655],[609,651],[604,649],[603,649],[600,649],[598,649],[597,649],[596,649],[594,649],[592,649],[591,649],[591,648],[592,647],[596,644],[597,642],[598,640],[600,640],[602,640],[605,640],[608,644],[612,649],[614,650],[614,654],[615,655],[616,657],[616,659],[616,662],[617,662],[618,662],[620,662],[624,662],[625,662],[624,662],[621,663],[613,663],[609,662],[607,662],[606,662],[606,660],[607,659],[608,659],[609,658],[613,657]],"depth":725},{"tool":"erase","size":16,"points":[[668,670],[667,670],[666,670],[664,668],[661,667],[658,665],[656,664],[654,663],[649,660],[641,656],[632,651],[629,651],[629,650],[628,650],[626,649],[625,649],[624,649],[623,649],[622,649],[621,649],[618,648],[617,647],[616,647],[612,646],[604,642],[602,642],[600,642],[594,641],[592,641],[592,640],[591,640],[592,639],[596,638],[597,637],[600,637],[602,636],[604,634],[606,634],[608,634],[612,634],[614,636],[621,642],[623,646],[624,647],[625,647],[628,647],[630,647],[634,647],[637,647],[639,648],[641,649],[644,650],[647,651],[648,651],[651,654],[654,655],[656,656],[660,658],[664,659],[669,662],[673,662],[675,663],[677,663]],"depth":725},{"tool":"erase","size":16,"points":[[642,659],[643,659],[647,659],[650,660],[656,663],[657,664],[660,664],[663,665],[663,666],[664,668],[666,672],[668,673],[672,675],[674,676],[677,679],[680,681],[682,682],[675,684],[665,677],[664,673],[663,668],[663,658],[663,654],[663,647],[663,642],[663,639],[659,634],[651,624],[651,623],[647,620],[639,615],[634,614],[630,613],[628,613],[625,613],[622,613],[620,613],[616,612],[614,612],[614,611],[613,611],[613,612],[615,629],[616,629],[618,629],[625,632],[628,632],[633,632],[634,632],[638,632],[642,632],[647,632],[654,637],[647,630],[635,614],[634,614],[633,613],[632,613],[629,613],[629,615],[626,618],[624,623],[622,628],[621,631],[626,634],[632,636],[630,636],[613,621],[613,620],[609,619],[606,619],[606,618],[605,618],[602,614],[598,610],[602,606],[603,605],[605,605],[608,603],[609,603],[614,603],[618,605],[624,607],[631,611],[633,613],[640,615],[642,616],[644,616],[648,618],[650,618],[651,616],[652,615],[661,619],[667,621],[672,623],[676,625],[680,628],[683,630],[690,637],[698,640],[703,644],[704,647],[704,648],[704,651],[703,656],[701,660],[699,663],[696,665],[693,668],[689,672],[680,668],[674,663],[670,662],[672,668],[668,670],[667,671],[665,671],[663,672],[661,673],[660,673],[659,674],[658,674],[657,675],[656,675],[652,675],[649,675],[648,675],[644,673],[643,671],[639,666],[632,660],[631,659],[628,656],[625,655],[615,647],[609,638],[603,628],[600,622],[599,620],[597,616],[592,608],[591,606],[591,605],[596,598],[600,596],[604,598],[629,612],[640,616],[646,620],[655,627],[666,633],[669,636],[673,636],[674,636],[664,623],[656,613],[655,613],[652,612],[641,607],[639,607],[635,607],[630,608],[625,608],[624,611],[623,611]],"depth":725},{"tool":"erase","size":16,"points":[[556,616],[555,616],[555,618],[552,619],[551,620],[548,622],[547,627],[550,631],[554,633],[560,634],[563,634],[568,634],[572,633],[578,633],[585,640],[591,645],[591,646],[591,649],[588,654],[582,656],[566,650],[565,649],[557,646],[553,642],[559,642],[573,645],[573,644],[573,642],[573,641],[572,634],[572,633],[572,632],[570,631],[568,629],[565,629],[560,629],[553,629],[553,628],[550,631],[547,633],[545,639],[545,641],[546,641],[553,641],[557,641],[560,639],[562,636],[564,633],[566,630],[570,625],[571,624],[578,624],[588,627],[592,627],[598,625],[599,623],[600,623],[603,625],[604,630],[603,641],[600,646],[597,650],[574,649],[566,647],[553,646],[539,644],[536,644],[522,641],[488,639],[429,639],[409,639],[401,639],[375,639],[318,637],[326,637],[347,644],[371,650],[382,651],[416,654],[477,663],[495,664],[512,663],[539,660],[543,660],[528,654],[450,634],[440,633],[438,633],[417,633],[403,633],[400,633],[363,634],[355,634],[360,637],[370,639],[382,641],[447,641],[492,642],[494,642],[504,642],[511,642],[513,642],[511,645],[511,646],[482,646],[441,640],[415,638],[407,637],[377,632],[295,623],[295,624],[302,630],[313,634],[418,654],[440,656],[441,657],[433,657],[414,649],[366,640],[348,638],[346,637],[325,634],[307,632],[302,632],[301,634],[300,640],[300,642],[304,644],[312,646],[343,653],[348,653],[351,653],[386,660],[394,662],[401,662],[426,662],[476,663],[490,663],[502,662],[514,658],[517,654],[519,653],[519,651],[519,650],[524,646],[514,641],[488,636],[477,632],[470,631],[446,628],[433,627],[432,627],[380,627],[352,627],[347,627],[302,629],[290,629],[286,629],[287,629],[297,631],[321,638],[339,641],[340,641],[330,646],[304,646],[302,646],[297,646],[290,646],[287,646],[286,646],[285,646],[281,648],[278,648],[277,649],[279,650],[300,654],[330,657],[342,657],[347,657],[356,657],[365,660],[366,660],[366,662],[351,675],[345,675],[331,666],[329,665],[325,664],[321,664],[316,663],[301,662],[283,657],[269,657],[257,657],[256,657],[257,657],[262,658],[275,658],[296,664],[308,668],[333,671],[342,672],[343,670],[345,666],[345,664]],"depth":725},{"tool":"erase","size":16,"points":[[745,762],[743,762],[742,764],[732,767],[701,768],[675,769],[670,769],[672,768],[675,764],[677,762],[678,762],[685,761],[701,761],[716,762],[718,762],[720,762],[726,762],[727,762],[729,759],[730,755],[730,754],[732,750],[733,750],[732,750],[729,752],[728,754],[726,758],[725,759],[724,760],[724,761],[722,762],[719,764],[717,766],[716,766],[713,764],[713,763],[713,762],[716,758],[717,753],[718,749],[718,748],[719,746],[719,744],[719,742],[719,741],[719,740],[719,738],[720,738],[721,736],[722,735],[722,734],[724,734],[725,733],[726,733],[726,732],[727,732],[727,731],[728,729],[728,728],[730,728],[730,729],[730,731],[732,733],[732,734],[735,735],[738,735],[741,735],[742,735],[743,735],[743,734],[744,734],[743,734],[741,734],[739,734],[738,734],[737,734],[736,734],[733,734],[732,734],[730,733],[728,732],[727,731],[722,729],[719,728],[718,727],[717,727],[716,726],[715,726],[713,726],[710,728],[709,728],[708,729],[707,732],[709,729],[711,726],[713,725],[715,724],[717,722],[717,720],[718,719],[718,718],[719,718],[721,718],[726,719],[730,725],[733,727],[736,729],[739,731],[743,732],[746,732],[748,732],[750,732],[751,733],[752,734],[753,735],[754,735],[754,736],[754,737],[752,740],[748,743],[747,744],[746,744],[741,744],[735,744],[733,744],[730,744],[722,743],[717,741],[716,740],[715,741],[712,745],[710,749],[710,752],[710,754],[712,757],[718,757],[719,758],[722,758],[722,759],[725,759],[727,758],[727,754],[729,753],[732,751],[733,750],[735,748],[736,746],[737,746],[737,744],[737,742],[736,742],[735,743],[734,744],[733,745]],"depth":782}];
+const LAYER_STORAGE='codaForegroundEditsV3';
 const editorEl=(id)=>document.getElementById(id);
 const editNotice=(message)=>{editorEl('editNotice').textContent=message;};
 function isEditorAction(a){return a&&['paint','erase'].includes(a.tool)&&[1,2,4,8,16].includes(a.size)&&Array.isArray(a.points)&&a.points.length>0&&a.points.length<=30000&&a.points.every(p=>Array.isArray(p)&&p.length===2&&Number.isInteger(p[0])&&Number.isInteger(p[1])&&p[0]>=0&&p[0]<W&&p[1]>=0&&p[1]<H)&&Number.isFinite(a.depth)&&a.depth>=-500&&a.depth<=H+500;}
 function saveLayerActions(){try{localStorage.setItem(LAYER_STORAGE,JSON.stringify(layerState.actions));editNotice(`${layerState.actions.length} saved strokes · Undo available`);return true}catch(err){editNotice('Browser storage full or blocked. Export JSON to preserve edits.');return false;}}
-// Upgrade browser-local edits. Skip the five strokes now built into the published
-// arcade so the creator doesn't see the same paint twice after deploying.
+// Published strokes apply to every visitor. Keep any *additional* browser edits,
+// but migrate V2/V1 saves without replaying strokes included in this release.
 const sameStroke=(a,b)=>a.tool===b.tool&&a.size===b.size&&a.depth===b.depth&&
  a.points.length===b.points.length&&a.points.every((p,i)=>p[0]===b.points[i][0]&&p[1]===b.points[i][1]);
 try{
  const current=localStorage.getItem(LAYER_STORAGE);
  if(current!==null){
   const stored=JSON.parse(current);
-  if(Array.isArray(stored)&&stored.length<=1000&&stored.every(isEditorAction))layerState.actions=stored;
+  if(Array.isArray(stored)&&stored.length<=1000&&stored.every(isEditorAction))
+   layerState.actions=stored.filter(a=>!PUBLISHED_LAYER_STROKES.some(b=>sameStroke(a,b)));
  }else{
-  const previous=JSON.parse(localStorage.getItem('codaForegroundEditsV1')||'[]');
+  const oldSave=localStorage.getItem('codaForegroundEditsV2') ?? localStorage.getItem('codaForegroundEditsV1');
+  const previous=JSON.parse(oldSave||'[]');
   if(Array.isArray(previous)&&previous.length<=1000&&previous.every(isEditorAction)){
    layerState.actions=previous.filter(a=>!PUBLISHED_LAYER_STROKES.some(b=>sameStroke(a,b)));
-   localStorage.setItem(LAYER_STORAGE,JSON.stringify(layerState.actions));
   }
  }
-}catch(err){/* unavailable browser storage is safe */}
+ localStorage.setItem(LAYER_STORAGE,JSON.stringify(layerState.actions));
+}catch(err){/* unavailable browser storage is safe; published strokes still render */}
 function penBresenham(stroke,mark){
  const half=Math.floor(stroke.size/2);
  const stamp=(x,y)=>{const x0=Math.max(0,x-half),y0=Math.max(0,y-half),x1=Math.min(W,x0+stroke.size),y1=Math.min(H,y0+stroke.size);
@@ -670,16 +672,40 @@ updateAudioButton();updateFxButton();
 function danceFloorLight(beat){
  const playing=beat.on,mode=fxMode;
  const speed=playing?1.7:.48;
+ updateDanceStepBursts();
  g.save();g.globalCompositeOperation='screen';
  g.beginPath();g.moveTo(171,653);g.lineTo(632,653);g.lineTo(692,813);g.lineTo(118,813);g.closePath();g.clip();
  for(let row=0;row<5;row++)for(let col=0;col<10;col++){
   const cx=130+col*55,cy=652+row*39;
   const wave=pulse(clock*speed+col*.28+row*.39,3.1);
   const checker=(row+col)%3;
-  const power=playing?(.085+wave*.15+thump(beat)*.085):(.018+wave*.055);
-  g.globalAlpha=power;g.fillStyle=ambientPalette[(col+row*2+checker)%ambientPalette.length];
+  let power=playing?(.085+wave*.15+thump(beat)*.085):(.018+wave*.055);
+  for(const burst of danceStepBursts){
+   if(burst.col!==col||burst.row!==row)continue;
+   const age=clock-burst.t;
+   if(age<0||age>1.2)continue;
+   const kick=(1-age/1.2)*burst.e;
+   power += .18*kick + .11*Math.max(0,1-age/.45)*burst.e;
+  }
+  g.globalAlpha=Math.min(.6,power);g.fillStyle=ambientPalette[(col+row*2+checker)%ambientPalette.length];
   g.fillRect(cx+2,cy+2,50,34);
   if(playing&&mode==='full'&&wave>.82){g.globalAlpha=.14;g.fillStyle='#ffffff';g.fillRect(cx+18,cy+15,5,5);}
+ }
+ // Bright step accents appear when player/NPC feet land on tiles.
+ for(const burst of danceStepBursts){
+  const age=clock-burst.t;
+  if(age<0||age>1.2)continue;
+  const fade=(1-age/1.2),flash=Math.max(0,1-age/.25);
+  const cx=130+burst.col*55,cy=652+burst.row*39;
+  g.globalAlpha=.11*fade*burst.e;
+  g.fillStyle='#ffffff'; g.fillRect(cx+6,cy+6,42,26);
+  g.globalAlpha=.22*flash*burst.e;
+  g.fillStyle=ambientPalette[(burst.col+burst.row)%ambientPalette.length];
+  g.fillRect(cx+2,cy+2,50,34);
+  if(fxMode==='full'&&flash>.05){
+   g.globalAlpha=.26*flash; g.fillStyle='#ffffff';
+   g.fillRect(cx+23,cy+16,4,4);
+  }
  }
  g.restore();
  if(playing&&mode==='full'){
@@ -797,9 +823,10 @@ function speakerLife(beat){
  // Stronger reactive thump with expanding shock-rings and a hotter cone flash.
  if(!beat.on)return;
  const bass=thump(beat),pop=.25+.75*bass;
+ // Slightly right-shifted to sit on the woofer centers rather than left of them.
  const speakers=[
-  {x:280,ys:[580,612],r:10},{x:491,ys:[581,612],r:10},
-  {x:607,ys:[153,190],r:11},{x:1170,ys:[150,189],r:11}
+  {x:285,ys:[581,613],r:10},{x:496,ys:[582,613],r:10},
+  {x:611,ys:[153,190],r:11},{x:1174,ys:[150,189],r:11}
  ];
  for(const sp of speakers){
   for(const cy of sp.ys){
@@ -962,14 +989,102 @@ function flickerSelectedNeon(){
 }
 // =======================================================================
 
+
+// ===== PHASE 9.5: TWINKLING FLOOR LIGHTS + STEP TILES + LAMP PULSE =====
+const OPEN_FLOOR_TWINKLES=[
+ [834,338,0],[903,359,1],[980,346,0],[1058,371,1],[1138,349,0],[1218,370,1],[1303,353,0],[1385,370,1],
+ [870,430,1],[947,448,0],[1027,429,1],[1108,454,0],[1189,432,1],[1272,454,0],[1354,430,1],[1435,454,0],
+ [846,520,0],[928,541,1],[1011,519,0],[1092,542,1],[1174,518,0],[1257,541,1],[1341,519,0],[1423,541,1],
+ [874,607,1],[957,628,0],[1038,606,1],[1121,629,0],[1204,607,1],[1286,629,0],[1368,607,1],[1451,628,0],
+ [902,695,0],[984,716,1],[1066,694,0],[1147,717,1],[1230,695,0],[1312,717,1],[1394,695,0]
+];
+const WARM_LAMPS=[
+ [82,96,'#ffb95e',39],[454,132,'#ffb95e',38],[586,80,'#ffc36b',37],[705,84,'#ffb462',35],[1026,84,'#ffb45c',35],[1127,82,'#ffb65c',38],[1209,82,'#ffbb69',35],
+ [806,506,'#ffb968',40],[177,500,'#ffa6eb',34],[470,486,'#ffb86a',35],[603,592,'#ffb76a',34],[679,647,'#ffb96a',34],[805,649,'#ffb76a',32],[189,266,'#ffd070',22],[117,329,'#ffcf72',20]
+];
+const DANCE_TILE={x0:130,y0:652,w:55,h:39,cols:10,rows:5};
+let danceStepBursts=[];
+const danceStepState=new Map();
+function danceTileFor(x,y){
+ const col=Math.floor((x-DANCE_TILE.x0)/DANCE_TILE.w);
+ const row=Math.floor((y-DANCE_TILE.y0)/DANCE_TILE.h);
+ if(col<0||col>=DANCE_TILE.cols||row<0||row>=DANCE_TILE.rows)return null;
+ return {col,row};
+}
+function emitDanceStep(actorId,x,y,energy=1){
+ const tile=danceTileFor(x,y); if(!tile)return;
+ danceStepBursts.push({col:tile.col,row:tile.row,t:clock,e:Math.max(.45,Math.min(1.2,energy))});
+ if(danceStepBursts.length>120)danceStepBursts=danceStepBursts.slice(-80);
+}
+function updateDanceStepBursts(){
+ const actors=[{id:'player',x:player.x,y:player.y,mode:'walk'},...npc.filter(q=>!q.hidden).map((q,i)=>({id:'npc_'+i,x:q.x,y:q.y,mode:q.mode||'walk'}))];
+ for(const a of actors){
+  const footY=a.y+8;
+  const tile=danceTileFor(a.x,footY);
+  const prev=danceStepState.get(a.id)||{x:a.x,y:footY,last:-99,col:-1,row:-1};
+  if(tile){
+   const moved=Math.hypot(a.x-prev.x,footY-prev.y);
+   const changed=tile.col!==prev.col||tile.row!==prev.row;
+   const dancing=a.mode==='dance';
+   const cooldown=dancing?.16:.22;
+   if((changed||moved>6||dancing)&&clock-prev.last>cooldown){
+    emitDanceStep(a.id,a.x,footY,dancing?1.15:.85);
+    prev.last=clock;
+   }
+   prev.col=tile.col; prev.row=tile.row;
+  } else {
+   prev.col=-1; prev.row=-1;
+  }
+  prev.x=a.x; prev.y=footY;
+  danceStepState.set(a.id,prev);
+ }
+ danceStepBursts=danceStepBursts.filter(b=>clock-b.t<1.2);
+}
+function openFloorTwinkles(beat){
+ if(!effectsOn())return;
+ const activity=beat.on?1:.6;
+ g.save();
+ g.beginPath();
+ g.moveTo(823,340); g.lineTo(1548,340); g.lineTo(1548,799); g.lineTo(846,799); g.lineTo(846,466); g.lineTo(823,466); g.closePath();
+ g.clip();
+ g.globalCompositeOperation='screen';
+ for(let i=0;i<OPEN_FLOOR_TWINKLES.length;i++){
+  const [x,y,phaseKind]=OPEN_FLOOR_TWINKLES[i];
+  const tw=Math.pow(pulse(clock*(beat.on?2.7:1.15)+i*.63+(phaseKind?1.7:0),2.9),1.9);
+  const hueBase=phaseKind?202:330; // blue and red-magenta families
+  const hue=hueBase+(phaseKind?22*Math.sin(clock*.7+i):16*Math.sin(clock*.8+i*.4));
+  const alpha=(phaseKind?.12:.11)*activity + tw*(phaseKind?.26:.24)*activity;
+  g.fillStyle=`hsla(${hue.toFixed(1)},100%,68%,${alpha.toFixed(3)})`;
+  const sz=4+(tw>.72?1:0);
+  g.fillRect(Math.round(x-sz/2),Math.round(y-sz/2),sz,sz);
+  if(tw>.36)bloom(x,y,11+tw*13,`hsl(${hue.toFixed(1)},100%,70%)`,(.035+tw*.07)*activity);
+  if(tw>.82){
+   g.globalAlpha=.24*activity; g.fillStyle='#ffffff';
+   g.fillRect(x-1,y-1,2,2);
+  }
+ }
+ g.restore();
+}
+function pulseWarmLamps(beat){
+ if(!effectsOn())return;
+ const base=beat.on?1:.78;
+ for(let i=0;i<WARM_LAMPS.length;i++){
+  const [x,y,color,r]=WARM_LAMPS[i];
+  const glow=.055 + .03*pulse(clock*.72+i*.47,1.2) + (beat.on?.012:0);
+  bloom(x,y,r,color,glow*base);
+ }
+}
+
 function renderArcadeAtmosphere(){
  if(!effectsOn())return;
  const beat=beatInfo();
  flickerSelectedNeon();
  nightclubColorwash(beat);
+ openFloorTwinkles(beat);
  danceFloorLight(beat);
  gradientFloodlights(beat);
  if(fxMode==='full')discoReflections(beat);
+ pulseWarmLamps(beat);
  neonSigns(beat);
  animatedCabinets(beat);
  spinningDiscoBall(866,125,25,beat,0);
