@@ -3,7 +3,7 @@
 #gameoverlay{position:fixed;inset:0;z-index:100;background:#121327;display:flex;flex-direction:column}#gameoverlay[hidden]{display:none}.gamebar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#231a3c;border-bottom:2px solid #b583dc}.gamebar strong{color:#f0d7ff}#gameiframe{border:0;width:100%;flex:1;min-height:0;background:#111628}body.game-open{overflow:hidden}@media(max-width:650px){.gamebar{gap:6px}.gamebar strong{font-size:12px}.gamebar a{font-size:11px}}
 #panel{position:fixed;z-index:90;top:50%;left:50%;transform:translate(-50%,-50%);width:min(570px,94vw);max-height:84dvh;overflow:auto;padding:20px;background:#231c3b;border:2px solid #c69be9;box-shadow:0 0 0 100vmax #05030ab8,0 14px 55px #000c;border-radius:12px}#panel[hidden]{display:none}.panelHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.panelRow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0;padding:10px;border:1px solid #66517f;border-radius:7px}.panelRow small{display:block;opacity:.75}.formRow{display:grid;gap:5px;margin:10px 0}.formRow select,.formRow input{background:#17142c;color:#fff;border:1px solid #a08dbd;padding:9px;border-radius:5px;width:100%}.panelActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.muted{color:#c1b4d7;font-size:13px}.panelMsg{min-height:22px;color:#9fe9dc}body:has(#panel:not([hidden])) #view{filter:brightness(.65)}
 #pianoroom{position:fixed;inset:0;z-index:95;background:radial-gradient(ellipse at 50% 20%,#344962,#11172b 75%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#f5edff}#pianoroom[hidden]{display:none}#pianoroom .stage{border:9px solid #69567e;background:repeating-linear-gradient(90deg,#243349 0 32px,#28374d 32px 64px);width:min(650px,88vw);padding:30px;text-align:center;box-shadow:0 0 70px #b08ed255}#pianoroom .keys{display:flex;justify-content:center;margin:20px auto 0}#pianoroom .keys i{height:85px;width:27px;background:#eee9f3;border:2px solid #35324b;box-shadow:inset 0 -8px #aaa8bc}#pianoroom .keys i:nth-child(3n+2){background:#22223b;height:55px;width:18px;margin:0 -8px;z-index:1}#pianoroom h2{color:#9feaf2;letter-spacing:3px}#pianoroom button{font-size:16px}
-</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 8.9.2 · BLUE PASSAGE + PLANT LEAVES</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · C collision · L green occlusion masks · F foreground on/off · Shift-click edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 8.9.2 · walkable blue + plant foreground · C collision · L layers</span></footer><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><div id="pianoroom" hidden><div class="stage"><h2>♫ PIANO LAB ♫</h2><p>A quieter music space away from the arcade floor.</p><div class="keys"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p style="opacity:.7">Dedicated room preview — instruments and activities coming later.</p></div><button id="closepiano">← Return to Arcade</button></div><script>
+</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 8.9.3 · CORNER COLLISION FIX</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · C collision · L green occlusion masks · F foreground on/off · Shift-click edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 8.9.3 · corner path + wall seal · C collision · L layers</span></footer><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><div id="pianoroom" hidden><div class="stage"><h2>♫ PIANO LAB ♫</h2><p>A quieter music space away from the arcade floor.</p><div class="keys"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p style="opacity:.7">Dedicated room preview — instruments and activities coming later.</p></div><button id="closepiano">← Return to Arcade</button></div><script>
 (()=>{'use strict';const c=document.querySelector('#view'),g=c.getContext('2d',{alpha:false}),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}const W=1672,H=941,ART_SCALE=1,keys=new Set();let player={x:1180,y:388},cam={x:0,y:0},dest=null,emote=0,near=null,last=0,clock=0,walking=false,facing="down";const rooms=[{id:'lounge',name:'LOUNGE',x:95,y:145,w:350,h:235},{id:'dance',name:'DANCE',x:90,y:505,w:670,h:325},{id:'arcade',name:'ARCADE',x:648,y:220,w:900,h:580}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:718,y:313,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:831,y:314,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:951,y:315,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1064,y:315,url:'song-machine/index.html'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
 const looks=[['#e5b48d','#ed8cbe','#171424','spiky'],['#85543b','#8ddde6','#e3c27d','long'],['#f4cba6','#c9a3f1','#402c4b','buns'],['#a56b48','#f4ae77','#1c172d','short'],['#f3c3a1','#b2f37b','#6c3159','bob'],['#704633','#a8b5fc','#eee6df','curly'],['#f0b79d','#ffd48c','#171424','ponytail']];const npc=[{name:'Ziggy',x:1450,y:752,mode:'enter',goal:0,wait:0,look:0},{name:'Nova',x:1450,y:752,mode:'enter',goal:1,wait:1.7,look:1},{name:'Byte',x:1450,y:752,mode:'enter',goal:2,wait:3.4,look:2},{name:'Mochi',x:1450,y:752,mode:'enter',goal:3,wait:5,look:3},{name:'Riff',x:1450,y:752,mode:'enter',goal:0,wait:7,look:4},{name:'Fizz',x:1450,y:752,mode:'enter',goal:1,wait:9,look:5},{name:'Dot',x:1450,y:752,mode:'enter',goal:2,wait:11,look:6}];const sofas=[{x:105,y:135,w:110,h:45},{x:240,y:135,w:110,h:45}];const seats=[{x:158,y:267},{x:370,y:262},{x:190,y:304},{x:390,y:296}];const spot=(p)=>p.mode==='cabinet'?{x:games[p.goal%4].x,y:323}:p.mode==='lounge'?seats[p.goal%4]:p.mode==='dance'?{x:205+(p.goal%4)*125,y:718+(p.goal%2)*65}:p.mode==='leave'?{x:1450,y:752}:{x:1450,y:752};const r=(x,y,w,h,color)=>{g.fillStyle=color;g.fillRect(Math.round(x),Math.round(y),w,h)};const t=(s,x,y,size=18,color='#e7e2ff')=>{g.fillStyle=color;g.font=`bold ${size}px monospace`;g.textAlign='center';g.fillText(s,x,y)};function sprite(x,y,look,walk=false,dance=false,scale=1){const [skin,shirt,hair,style]=look;g.save();g.translate(Math.round(x),Math.round(y));g.scale(scale,scale);const bob=dance?Math.sin(clock*8)*5:walk?Math.sin(clock*12)*2:0;r(-10,-38+bob,20,17,hair);if(style==='buns'){r(-15,-39+bob,6,7,hair);r(9,-39+bob,6,7,hair)}if(style==='long')r(-13,-30+bob,26,20,hair);r(-9,-32+bob,18,16,skin);r(-12,-16+bob,24,20,shirt);r(-16,-12+bob,4,13,skin);r(12,-12+bob,4,13,skin);r(-9,4+bob,7,11,'#695d99');r(2,4+bob,7,11,'#695d99');r(-10,14+bob,9,4,'#f8d56b');r(1,14+bob,9,4,'#f8d56b');r(-6,-24+bob,3,3,'#222033');r(4,-24+bob,3,3,'#222033');if(dance){const beat=Math.floor(clock*4+look[0].length)%4,up=beat%2===0;r(-18,-(up?29:13)+bob,5,up?16:11,skin);r(13,-(up?13:29)+bob,5,up?11:16,skin);r(-10+(up?-5:3),14+bob,9,5,'#f8d56b');r(1+(up?4:-4),14+bob,9,5,'#f8d56b')}g.restore()};
 // Phase 7.1: world-coordinate collision, small foot hitboxes, and A* navigation.
@@ -92,10 +92,25 @@ function paintMarkAt(x,y,mark){
  for(let i=0;i<pairs.length;i+=2)if(xx>=pairs[i]&&xx<=pairs[i+1])return true;
  return false;
 }
+// Phase 8.9.3: localized two-part repair of the marked northeast dance-corridor corner.
+// Old blue paint ends halfway down this narrow walkway. Extend its playable-foot
+// channel SOUTH without changing the wall art or any previously marked red paint.
+// The footprint lies on the corridor side of the east retaining wall.
+function cornerOpenFootpath(x,y){return x>=798&&x<821&&y>=646&&y<759;}
+// Separately seal the tiny formerly-green section INSIDE the wall's masonry.
+// The real doorway below this corner (y >= 737) remains unobstructed.
+function cornerSolidWall(x,y){return x>=821&&x<849&&y>=699&&y<735;}
+function cornerCollisionRule(x,y){
+ if(cornerSolidWall(x,y))return -1;
+ if(paintMarkAt(x,y,annotatedRed))return -1;
+ if(cornerOpenFootpath(x,y))return 1;
+ if(paintMarkAt(x,y,annotatedBlue))return 1;
+ return 0;
+}
 function passablePoint(x,y){
  if(x<0||y<0||x>=W||y>=H)return false;
- if(paintMarkAt(x,y,annotatedRed))return false;
- if(paintMarkAt(x,y,annotatedBlue))return true;
+ const corner=cornerCollisionRule(x,y);
+ if(corner)return corner===1;
  if(x<64||y<125||x>1580||y>836)return false;
  if(!floorPolys.some(poly=>pointInPoly(x,y,poly)))return false;
  if(structuralWalls.some(poly=>pointInPoly(x,y,poly)))return false;
@@ -106,8 +121,8 @@ function passablePoint(x,y){
  return true;
 }
 function insideGeometry(x,y){
- if(paintMarkAt(x,y,annotatedRed))return false;
- if(paintMarkAt(x,y,annotatedBlue))return true;
+ const corner=cornerCollisionRule(x,y);
+ if(corner)return corner===1;
  // Pre-inflate the solids by the character's foot radius, once at map-build time.
  return [[0,0],[-FOOT_RADIUS,0],[FOOT_RADIUS,0],[0,-8],[0,8],[-7,-7],[7,-7],[-7,7],[7,7]].every(([dx,dy])=>passablePoint(x+dx,y+dy));
 }
@@ -117,8 +132,8 @@ for(let y=0;y<GRID_H;y++)for(let x=0;x<GRID_W;x++)
  navGrid[y*GRID_W+x]=insideGeometry((x+.5)*COLLISION_CELL,(y+.5)*COLLISION_CELL)?1:0;
 // Runtime movement AND A* read this same editable map. Shift-click changes truly affect walking.
 function inside(x,y){
- if(paintMarkAt(x,y,annotatedRed))return false;
- if(paintMarkAt(x,y,annotatedBlue))return true;
+ const corner=cornerCollisionRule(x,y);
+ if(corner)return corner===1;
  const cx=Math.floor(x/COLLISION_CELL),cy=Math.floor(y/COLLISION_CELL);
  return cx>=0&&cy>=0&&cx<GRID_W&&cy<GRID_H&&!!navGrid[cy*GRID_W+cx]&&insideGeometry(x,y);
 }
@@ -207,6 +222,13 @@ let collisionDebug=false,clickPath=[],lastTarget=null;
 const edits=new Map();
 try{for(const [i,v] of JSON.parse(localStorage.getItem('codaCollisionEditsV891')||'[]'))edits.set(i,v)}catch{}
 for(const [i,v] of edits)if(i>=0&&i<navGrid.length)navGrid[i]=v;
+// Local geometry supersedes old saved tile edits only at this repaired corner.
+for(let gy=64;gy<=74;gy++)for(let gx=79;gx<=85;gx++){
+ const px=(gx+.5)*COLLISION_CELL,py=(gy+.5)*COLLISION_CELL;
+ const rule=cornerCollisionRule(px,py);
+ if(rule!==0)navGrid[navIndex(gx,gy)]=rule===1?1:0;
+}
+
 function exportCollision(){const blob=new Blob([JSON.stringify([...edits],null,2)],{type:'application/json'});
  const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='coda-collision-edits.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
 
@@ -340,7 +362,7 @@ foregroundParts.push(...[{"name":"annotated_purple_1","bounds":[70,204,26,51],"s
 foregroundParts.push({name:"dance_passage_plant_leaves",bounds:[754,609,65,72],sortY:695,type:"pixel-accurate-leaf-occlusion",atlas:[370,530,65,72]}); // Only the green leaf silhouette from the approved art is elevated to the foreground.
 let depthDebug=false,foregroundEnabled=true;
 const greenMaskCache=new Map();
-window.CODA_BUILD="8.9.2-leaf-passage";
+window.CODA_BUILD="8.9.3-corner-geometry";
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -460,6 +482,7 @@ window.CodaArcadeQA=Object.freeze({
   place:(x,y)=>{if(!inside(x,y))return false;player.x=x;player.y=y;dest=null;clickPath=[];return true;},
   masks:()=>foregroundParts.map(p=>p.name),
   leafPassage:{blue:[[797,597],[835,654]],leaves:[754,609,65,72]},
+  cornerRepair:{openFootStrip:[798,646,821,759],solidWall:[821,699,849,735]},
   debugState:()=>({collisionDebug,depthDebug,foregroundEnabled,greenMasksReady:greenMaskCache.size}),
   menu:()=>({gameOpen,game:gameoverlay.hidden,panelOpen:!document.querySelector('#panel').hidden,pianoOpen:!document.querySelector('#pianoroom').hidden})
 });
