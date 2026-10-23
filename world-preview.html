@@ -7,7 +7,7 @@
 #musicBtn[aria-pressed="true"]{background:#1c5b5d;border-color:#64e9cf;color:#ddfff4;box-shadow:0 0 10px #40f4c02f}#fxBtn{border-color:#80bbef}header span{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end}header span button{padding:7px 10px}@media(max-width:650px){header{align-items:flex-start;flex-direction:column}header span{justify-content:flex-start}}
 #layerEditor{position:fixed;right:14px;top:174px;z-index:60;width:min(292px,calc(100vw - 24px));background:#17152aef;border:1px solid #72f5c8;box-shadow:0 10px 32px #000b,0 0 20px #2fecb228;border-radius:12px;padding:13px;color:#f0eaff;max-height:calc(100dvh - 190px);overflow-y:auto;font-size:13px;backdrop-filter:blur(7px)}
 #layerEditor[hidden]{display:none}#layerEditor button,#layerEditor select{font:inherit;min-height:31px;padding:5px 7px}#layerEditor .editorline{display:flex;gap:7px;align-items:center;margin:8px 0}#layerEditor .editorline>*{flex:1;min-width:0}#layerEditor label{display:block;font-weight:600}#layerEditor .mini{font-size:11px;opacity:.76;line-height:1.45;margin:6px 0}#layerEditor .current{border-color:#4dfac0;background:#175d52}#layerEditor .editorbanner{display:flex;align-items:center;justify-content:space-between;color:#a8fff0;margin-bottom:9px}#layerEditor input[type=range]{width:100%}#layerEditor .editnotice{min-height:24px;font-size:11px;color:#aeffd9;margin-top:10px;overflow-wrap:anywhere}#view.layer-editing{cursor:crosshair;touch-action:none}#editorToggle{border-color:#63dcae}#layerEditor .editorline button:disabled{opacity:.4;cursor:not-allowed}
-</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 9.2 · NEON NIGHTS IN MOTION</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · C collision · L layer outlines · Shift+L EDIT layers · F foreground on/off · Shift-click collision edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 9.2 · animated neon nights · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
+</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 9.3 · DISCO BEAM BOOST</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · C collision · L layer outlines · Shift+L EDIT layers · F foreground on/off · Shift-click collision edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 9.3 · disco beams + speaker boost · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
   <div class="editorbanner"><b>✎ FOREGROUND EDITOR</b><button id="editClose" type="button">✕</button></div>
   <div class="mini">Paint with pixels from the existing arcade artwork. Erase removes unwanted foreground coverage; the floor stays unchanged.</div>
   <div class="editorline"><button type="button" id="editPaint" class="current">🖌 Paint</button><button type="button" id="editErase">⌫ Erase</button></div>
@@ -715,17 +715,39 @@ function spinningDiscoBall(x,y,r,beat,seed=0){
  }
 }
 function discoReflections(beat){
- if(fxMode!=='full')return;
- g.save();g.globalCompositeOperation='screen';
- const active=beat.on?.075:.023;
- const lights=[['#36c8ff',388,538,460],['#e360ff',388,538,355]];
- for(const [color,cx,cy,length] of lights){
-  for(let k=0;k<3;k++){
-   const a=-.4+Math.sin(clock*(beat.on?.65:.20)+k*2.1)*.43;
-   const destX=cx+Math.sin(a+k*.6)*length*.55,destY=cy+length*.47;
-   g.beginPath();g.moveTo(cx,cy+10);
-   g.lineTo(destX-18,destY);g.lineTo(destX+18,destY);g.closePath();
-   g.fillStyle=color;g.globalAlpha=active;g.fill();
+ if(!effectsOn())return;
+ g.save();
+ g.globalCompositeOperation='screen';
+ const active=beat.on?1:.35;
+ const ballSets=[
+  {cx:866,cy:125,spin:.55,beams:[{color:'#66dcff',len:235,spread:16,alpha:.09},{color:'#ff63ef',len:210,spread:14,alpha:.08},{color:'#fff7bd',len:175,spread:11,alpha:.055}]},
+  {cx:390,cy:538,spin:.82,beams:[{color:'#36c8ff',len:460,spread:22,alpha:.10},{color:'#e360ff',len:355,spread:18,alpha:.09},{color:'#fff4c1',len:280,spread:14,alpha:.06}]}
+ ];
+ for(const set of ballSets){
+  const spinBase=clock*(beat.on?1.9:.65)*set.spin;
+  const beamCount=fxMode==='full'?6:3;
+  for(let i=0;i<beamCount;i++)for(const beam of set.beams){
+   const ang=spinBase+i*(Math.PI*2/beamCount)+(i%2?0.18:-0.12);
+   const spread=beam.spread+(beat.on?6:0);
+   const len=beam.len*(.88+.14*Math.sin(clock*1.7+i));
+   const dx=Math.cos(ang),dy=Math.sin(ang);
+   const px=-dy,py=dx;
+   const sx=set.cx+dx*10,sy=set.cy+dy*10;
+   const ex=set.cx+dx*len,ey=set.cy+dy*len;
+   g.beginPath();
+   g.moveTo(sx+px*spread,sy+py*spread);
+   g.lineTo(ex+px*(spread*.26),ey+py*(spread*.26));
+   g.lineTo(ex-px*(spread*.26),ey-py*(spread*.26));
+   g.lineTo(sx-px*spread,sy-py*spread);
+   g.closePath();
+   g.fillStyle=beam.color;
+   g.globalAlpha=(beam.alpha+(beat.on?.045:0))*active;
+   g.fill();
+  }
+  for(let j=0;j<8;j++){
+   const sparkA=spinBase*1.8+j*.785;
+   const sparkR=42+10*Math.sin(clock*2.4+j);
+   bloom(set.cx+Math.cos(sparkA)*sparkR,set.cy+Math.sin(sparkA)*sparkR*.72,10,ambientPalette[(j*2)%ambientPalette.length],(.035+(beat.on?.03:0))*active);
   }
  }
  g.restore();
@@ -772,19 +794,31 @@ function animatedCabinets(beat){
  }
 }
 function speakerLife(beat){
- // Cones throb in sync to whichever audio source is active. No music = no thump.
+ // Stronger reactive thump with expanding shock-rings and a hotter cone flash.
  if(!beat.on)return;
- const bass=thump(beat),pop=.2+.8*bass;
+ const bass=thump(beat),pop=.25+.75*bass;
  const speakers=[
   {x:280,ys:[580,612],r:10},{x:491,ys:[581,612],r:10},
   {x:607,ys:[153,190],r:11},{x:1170,ys:[150,189],r:11}
  ];
  for(const sp of speakers){
   for(const cy of sp.ys){
-   g.save();g.globalCompositeOperation='screen';
-   g.beginPath();g.arc(sp.x,cy,sp.r+2.4*bass,0,Math.PI*2);
-   g.lineWidth=1.5+1.2*bass;g.strokeStyle='#7be4ff';g.globalAlpha=.05+.19*bass;g.stroke();g.restore();
-   if(fxMode==='full'&&bass>.15)bloom(sp.x,cy,sp.r*3.7,'#5f9fff',.07*bass);
+   g.save();
+   g.globalCompositeOperation='screen';
+   for(let ring=0;ring<3;ring++){
+    const rr=sp.r+2+bass*(5+ring*4)+ring*4;
+    g.beginPath();g.arc(sp.x,cy,rr,0,Math.PI*2);
+    g.lineWidth=Math.max(1,2.4-ring*.45+bass*1.5);
+    g.strokeStyle=ring===0?'#b8f1ff':ring===1?'#7be4ff':'#8f6dff';
+    g.globalAlpha=(.22-ring*.055)*bass*pop;
+    g.stroke();
+   }
+   g.beginPath();g.arc(sp.x,cy,sp.r+.8+bass*2.6,0,Math.PI*2);
+   g.fillStyle='#dffbff';
+   g.globalAlpha=.05+.15*bass;
+   g.fill();
+   g.restore();
+   if(bass>.08)bloom(sp.x,cy,sp.r*(4.2+bass*1.8),'#5f9fff',.11*bass);
   }
  }
 }
