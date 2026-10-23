@@ -13,7 +13,10 @@
 #cameraTools button:hover{background:#514073}
 #cameraTools #zoomReset{min-width:58px;font-size:12px;font-weight:650;color:#a8f3f2;border-radius:4px}
 #cameraTools button:focus-visible{outline:2px solid #a6eff4;outline-offset:1px}
-</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 10.1 · CLUB AMBIENCE + DISCO SYNC</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · Wheel / + / − Zoom · 0 Reset · C collision · L layer outlines · Shift+L EDIT layers · F foreground on/off · Shift-click collision edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 10.1 · room pulse · centered disco rays · speaker notes · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
+\n/* Coda Asset Studio v11: stays separate from collision + pixel masks. */
+#assetStudio{position:fixed;left:12px;top:80px;z-index:65;width:min(334px,calc(100vw - 24px));max-height:calc(100dvh - 99px);overflow:auto;background:#171529f5;border:1px solid #eac17d;box-shadow:0 12px 50px #05010de0,0 0 22px #fdac4a24;border-radius:12px;padding:13px;color:#f8efff;font:12px system-ui;backdrop-filter:blur(9px)}
+#assetStudio[hidden]{display:none}#assetStudio .studioHead{display:flex;align-items:center;justify-content:space-between;color:#ffe4a4;font-size:14px;gap:9px;margin-bottom:7px}#assetStudio .studioActions{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0}#assetStudio button{font:inherit;min-height:28px;padding:5px 7px}#assetStudio .studioActions button{flex:1 0 90px}#assetStudio button:disabled{opacity:.36;cursor:not-allowed}#assetStudio hr{border:0;border-top:1px solid #655374;margin:13px 0}#assetStudio .studioField{display:grid;gap:3px;margin:7px 0}#assetStudio .studioField>label{font-weight:650;color:#dccdf3}#assetStudio input:not([type=checkbox]),#assetStudio select{background:#131024;border:1px solid #866e9b;color:#fff;padding:7px;border-radius:5px;width:100%;font:inherit;min-width:0}#assetStudio input[type=checkbox]{accent-color:#f9c880}#assetStudio .studioGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}#assetStudio .studioTip{color:#c9b9d6;line-height:1.45;font-size:11px;margin:6px 0}#assetStudio #assetList{height:108px;padding:2px}#assetStudio #assetList option{padding:6px}#assetStudio #assetMessage{color:#bbf5e5;min-height:18px;overflow-wrap:anywhere}#assetStudio #assetSelection[hidden]{display:none}#assetStudio .studioCheck{display:inline-flex;align-items:center;gap:6px;margin:5px 11px 5px 0}#assetStudio .studioCollapsible{border:1px solid #655374;border-radius:7px;padding:8px}#assetStudio summary{cursor:pointer;color:#ffe4b1;font-weight:650}#assetToggle{border-color:#eecc7c}#view.asset-editing{cursor:crosshair;touch-action:none}#assetStudio #assetAdd{background:#675022;border-color:#e8b85c}#assetStudio #assetImport{border-color:#80d3ed}#assetStudio #assetExport{border-color:#80d3ed}#assetStudio #assetHelp{background:#271d3c}#assetStudio .studioHot{color:#ffcfa4}body.asset-console-open #layerEditor{display:none!important}@media(max-width:650px){#assetStudio{top:120px;max-height:calc(100dvh - 138px)}}
+</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 11 · ASSET STUDIO</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="assetToggle" type="button" title="Open Asset Studio (Shift+A)">✥ Assets</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · Wheel / + / − Zoom · 0 Reset · C collision · L layer outlines · Shift+L EDIT layers · Shift+A ASSETS · F foreground on/off · Shift-click collision edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 11 · asset studio · animations · layers · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
   <div class="editorbanner"><b>✎ FOREGROUND EDITOR</b><button id="editClose" type="button">✕</button></div>
   <div class="mini">Paint with pixels from the existing arcade artwork. Erase removes unwanted foreground coverage; the floor stays unchanged.</div>
   <div class="editorline"><button type="button" id="editPaint" class="current">🖌 Paint</button><button type="button" id="editErase">⌫ Erase</button></div>
@@ -29,6 +32,49 @@
   <input id="editImportFile" type="file" accept="application/json,.json" hidden/>
   <div class="editnotice" role="status" id="editNotice">Drag across the arcade to edit foreground pixels.</div>
   <p class="mini">Shift+L closes editor · Drag to draw · Zoom for individual pixels · JSON can be shared to publish changes for everyone.</p>
+</aside><aside id="assetStudio" hidden aria-label="Asset Studio — place and animate artwork">
+ <div class="studioHead"><strong>✥ ASSET STUDIO <small>· WORLD PREVIEW</small></strong><button id="assetClose" type="button" title="Close studio">✕</button></div>
+ <p class="studioTip">Place assets on the actual 1672 × 941 world. Your existing collision editor and pixel masks are independent.</p>
+ <div class="studioActions"><button id="assetAdd" type="button">＋ Add image(s)</button><button id="assetPreset" type="button">✧ New neon note</button></div>
+ <div class="studioActions"><button id="assetCapture" type="button">▣ Crop world art</button><button id="assetCaptureFG" type="button">◩ Crop foreground</button></div>
+ <input id="assetUpload" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/apng,.png,.jpg,.jpeg,.webp,.gif,.apng" multiple hidden>
+ <label class="studioField">Scene objects <select id="assetList" size="5" aria-label="Placed assets"></select></label>
+ <div class="studioActions"><button id="assetDuplicate" type="button">Duplicate</button><button id="assetRemove" type="button">Delete</button><button id="assetBack" type="button">Send back</button><button id="assetFront" type="button">Bring forward</button></div>
+ <section id="assetSelection" hidden>
+  <div class="studioField"><label for="assetName">Asset name</label><input id="assetName" maxlength="72" type="text"></div>
+  <div class="studioGrid">
+   <div class="studioField"><label for="assetX">Center X</label><input id="assetX" type="number" min="-1000" max="3000" step="1"></div>
+   <div class="studioField"><label for="assetY">Center Y</label><input id="assetY" type="number" min="-1000" max="2200" step="1"></div>
+   <div class="studioField"><label for="assetW">Width (px)</label><input id="assetW" type="number" min="2" max="2400" step="1"></div>
+   <div class="studioField"><label for="assetH">Height (px)</label><input id="assetH" type="number" min="2" max="1800" step="1"></div>
+   <div class="studioField"><label for="assetRotate">Rotation °</label><input id="assetRotate" type="number" min="-3600" max="3600" step="1"></div>
+   <div class="studioField"><label for="assetOpacity">Opacity %</label><input id="assetOpacity" type="number" min="0" max="100" step="1"></div>
+  </div>
+  <div class="studioGrid">
+   <div class="studioField"><label for="assetLayer">Depth layer</label><select id="assetLayer"><option value="back">Behind actors</option><option value="world">Actor depth / Y-sort</option><option value="front">Above foreground</option></select></div>
+   <div class="studioField"><label for="assetAnim">Animation</label><select id="assetAnim"><option value="none">None / sheet only</option><option value="bob">Bobbing</option><option value="float">Drift / float</option><option value="spin">Rotate</option><option value="pulse">Breathing pulse</option><option value="bounce">Bounce</option><option value="sway">Sway</option><option value="blink">Blink</option><option value="flicker">Neon flicker</option></select></div>
+   <div class="studioField"><label for="assetSpeed">Animation speed</label><input id="assetSpeed" type="number" min="0" max="12" step="0.1"></div>
+   <div class="studioField"><label for="assetAmplitude">Amplitude (px / %)</label><input id="assetAmplitude" type="number" min="0" max="120" step="1"></div>
+  </div>
+  <details class="studioCollapsible"><summary>Sprite sheet animation</summary>
+   <p class="studioTip">For an uploaded horizontal/grid spritesheet, set the number of columns, rows and used frames. Frames play left-to-right, top-to-bottom.</p>
+   <div class="studioGrid">
+    <div class="studioField"><label for="assetCols">Columns</label><input id="assetCols" type="number" min="1" max="64"></div>
+    <div class="studioField"><label for="assetRows">Rows</label><input id="assetRows" type="number" min="1" max="64"></div>
+    <div class="studioField"><label for="assetFrames">Frame count</label><input id="assetFrames" type="number" min="1" max="4096"></div>
+    <div class="studioField"><label for="assetFPS">Frames / sec</label><input id="assetFPS" type="number" min="0" max="60" step="1"></div>
+   </div>
+  </details>
+  <div><label class="studioCheck"><input type="checkbox" id="assetVisible" checked> Visible</label><label class="studioCheck"><input type="checkbox" id="assetLocked"> Lock</label><label class="studioCheck"><input type="checkbox" id="assetAspect" checked> Lock aspect</label></div>
+  <p class="studioTip">Drag image to move; drag gold corner to resize, round handle to rotate. Shift-drag to bypass snapping. Delete removes selected asset.</p>
+ </section>
+ <hr>
+ <div class="studioGrid"><label class="studioField">Snap grid <select id="assetSnap"><option value="1">Off (1 px)</option><option value="4">4 px</option><option value="8" selected>8 px</option><option value="16">16 px</option><option value="32">32 px</option></select></label><div><label class="studioCheck"><input type="checkbox" id="assetPlay" checked> Animate</label><label class="studioCheck"><input type="checkbox" id="assetGuides" checked> Handles</label></div></div>
+ <div class="studioActions"><button id="assetUndo" type="button">↶ Undo</button><button id="assetRedo" type="button">↷ Redo</button><button id="assetSave" type="button">Save now</button></div>
+ <div class="studioActions"><button id="assetExport" type="button">↓ Export scene JSON</button><button id="assetImport" type="button">↑ Import scene JSON</button></div>
+ <input id="assetImportFile" type="file" accept="application/json,.json" hidden>
+ <p id="assetMessage" role="status">Your assets are saved in this browser. Export scene JSON to publish or move them to another computer.</p>
+ <details><summary id="assetHelp">Help · shortcuts and storage</summary><p class="studioTip">Shift+A opens/closes. Delete removes. Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z redo. Arrows nudge selected asset (Shift = 8 px). Escape closes. GIF/APNG playback depends on browser support; sprite sheets offer deterministic frame animation. Crop selects a rectangular section of the *original art* (not the whole live canvas). Imported images are embedded in exported JSON. Browser storage is local to this page/origin; GitHub won't receive edits until you publish the export.</p></details>
 </aside><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><div id="pianoroom" hidden><div class="stage"><h2>♫ PIANO LAB ♫</h2><p>A quieter music space away from the arcade floor.</p><div class="keys"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p style="opacity:.7">Dedicated room preview — instruments and activities coming later.</p></div><button id="closepiano">← Return to Arcade</button></div><script>
 (()=>{'use strict';const c=document.querySelector('#view'),g=c.getContext('2d',{alpha:false}),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}const W=1672,H=941,ART_SCALE=1,keys=new Set();let player={x:1180,y:388},cam={x:0,y:0,zoom:1,targetZoom:1},dest=null,emote=0,near=null,last=0,clock=0,walking=false,facing="down";const rooms=[{id:'lounge',name:'LOUNGE',x:95,y:145,w:350,h:235},{id:'dance',name:'DANCE',x:90,y:505,w:670,h:325},{id:'arcade',name:'ARCADE',x:648,y:220,w:900,h:580}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:718,y:313,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:831,y:314,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:951,y:315,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1064,y:315,url:'song-machine/index.html'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
 
@@ -318,7 +364,7 @@ function go(p,dt){const aim=spot(p);const targetKey=p.mode+':'+p.goal;
  // Rebuild a valid route instead of bypassing the collision boundary.
  p.route=makeRoute(p,aim);return p.route.length?true:null;
 }
-function update(dt){clock+=dt;if(layerState.active&&!layerState.preview)return;if(dialog.style.display==='block'||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;let dx=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),dy=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);if(dx||dy){dest=null;clickPath=[];facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');}if(dest){
+function update(dt){clock+=dt;if((layerState.active&&!layerState.preview)||assetStudio.active)return;if(dialog.style.display==='block'||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;let dx=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),dy=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);if(dx||dy){dest=null;clickPath=[];facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');}if(dest){
  if(!clickPath.length){dest=null;dx=dy=0}
  else {
   const waypoint=clickPath[0];dx=waypoint.x-player.x;dy=waypoint.y-player.y;
@@ -543,7 +589,7 @@ function refreshLayerToolbar(){
  editorEl('editZoom').value=layerState.zoom;
 }
 function toggleLayerEditor(force){layerState.active=typeof force==='boolean'?force:!layerState.active;layerState.drawing=null;layerState.preview=false;dest=null;clickPath=[];keys.clear();
- if(layerState.active){depthDebug=false;collisionDebug=false;foregroundEnabled=true;editNotice('Paint/erase directly on the game artwork. No collision is changed.');}
+ if(layerState.active){if(assetStudio.active)toggleAssetStudio(false);depthDebug=false;collisionDebug=false;foregroundEnabled=true;editNotice('Paint/erase directly on the game artwork. No collision is changed.');}
  else{c.style.width='';layerState.zoom='fit'}
  refreshLayerToolbar();c.focus();}
 editorEl('editorToggle').addEventListener('click',()=>toggleLayerEditor());
@@ -555,7 +601,7 @@ editorEl('editDepth').oninput=(e)=>{layerState.offset=Number(e.target.value);ref
 editorEl('editZoom').onchange=(e)=>{layerState.zoom=e.target.value;c.style.width=layerState.zoom==='fit'?'':Math.round(W*Number(layerState.zoom))+'px';refreshLayerToolbar();};
 editorEl('editPreview').onclick=()=>{layerState.preview=!layerState.preview;layerState.hover=null;depthDebug=false;refreshLayerToolbar();c.focus()};
 editorEl('editMasks').onclick=()=>{layerState.maskView=!layerState.maskView;depthDebug=layerState.maskView;refreshLayerToolbar()};
-function layerHistoryRefresh(){layerState.dirty=true;saveLayerActions();refreshLayerToolbar();}
+function layerHistoryRefresh(){assetForegroundCompositeCache=null;layerState.dirty=true;saveLayerActions();refreshLayerToolbar();}
 editorEl('editUndo').onclick=()=>{if(layerState.actions.length){layerState.redo.push(layerState.actions.pop());layerHistoryRefresh()}};
 editorEl('editRedo').onclick=()=>{if(layerState.redo.length){layerState.actions.push(layerState.redo.pop());layerHistoryRefresh()}};
 editorEl('editSave').onclick=()=>{saveLayerActions();refreshLayerToolbar()};
@@ -595,7 +641,241 @@ function drawEditorOverlay(){if(!layerState.active||layerState.preview)return;
  if(layerState.hover){const [x,y]=layerState.hover,n=layerState.size,half=Math.floor(n/2);g.save();g.lineWidth=2;g.strokeStyle=layerState.tool==='paint'?'#64ffe0':'#ffcc64';g.strokeRect(x-half-.5,y-half-.5,n+1,n+1);g.restore()}
 }
 
-window.CODA_BUILD="10.1-world-preview-room-pulse-notes";
+// --- PHASE 11: NON-DESTRUCTIVE ASSET STUDIO ----------------------------------
+// Asset definitions are separate from collision cells and foreground brush strokes.
+// Storage format deliberately contains no executable code or arbitrary URLs.
+const assetUI=id=>document.getElementById(id);
+const ASSET_FORMAT='CodaArcadeAssetScene',ASSET_VERSION=1,ASSET_STORE='codaArcadeAssetSceneV1';
+const ASSET_MAX=80,ASSET_MAX_FILE=8*1024*1024,ASSET_MAX_JSON=70*1024*1024;
+const assetStudio={active:false,assets:[],selected:null,drag:null,capturing:null,undo:[],redo:[],nextId:1,animate:true,showGuides:true,snap:8,dirty:false,notice:'',ready:false};
+const assetImages=new Map();
+let assetForegroundCompositeCache=null;
+function assetForegroundComposite(){
+ if(!assetForegroundCompositeCache){
+  rebuildLayerEdits();
+  const composite=makeCanvas(W,H),ctx=composite.getContext('2d');ctx.imageSmoothingEnabled=false;
+  for(const part of foregroundParts){const img=getPartImage(part);if(img){const [x,y,w,h]=part.bounds;ctx.drawImage(img,x,y,w,h);}}
+  for(const patch of layerState.patches)ctx.drawImage(patch.canvas,patch.x,patch.y);
+  assetForegroundCompositeCache=composite;
+ }
+ return assetForegroundCompositeCache;
+}
+function studioMessage(message){assetStudio.notice=message;assetUI('assetMessage').textContent=message;}
+function assetSelected(){return assetStudio.assets.find(a=>a.id===assetStudio.selected)||null;}
+function numberBound(v,min,max,def=min){v=Number(v);return Number.isFinite(v)?Math.min(max,Math.max(min,v)):def;}
+function assetSnap(v,shift=false){const n=shift?1:assetStudio.snap;return Math.round(v/n)*n;}
+function assetSnapshot(){return JSON.stringify(assetStudio.assets);}
+function assetRecordHistory(before){if(before!==assetSnapshot()){assetStudio.undo.push(before);if(assetStudio.undo.length>40)assetStudio.undo.shift();assetStudio.redo=[];}assetStudio.dirty=true;assetSaveDebounced();studioRefresh();}
+let assetSaveTimer=null,assetDbPromise=null;
+function assetDB(){if(assetDbPromise)return assetDbPromise;assetDbPromise=new Promise((resolve,reject)=>{
+ if(!window.indexedDB){reject(Error('IndexedDB not available'));return;}
+ const req=indexedDB.open('codaArcadeAssetStudioDB',1);
+ req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains('layouts'))db.createObjectStore('layouts');};
+ req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||Error('Could not open asset storage'));
+ });return assetDbPromise;}
+async function persistAssets(){
+ const payload={format:ASSET_FORMAT,version:ASSET_VERSION,world:{width:W,height:H},assets:assetStudio.assets};
+ try{const db=await assetDB();await new Promise((resolve,reject)=>{const tx=db.transaction('layouts','readwrite');tx.objectStore('layouts').put(payload,ASSET_STORE);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||Error('Database write failed'));});
+ assetStudio.dirty=false;studioMessage('Saved '+payload.assets.length+' assets locally (IndexedDB). Export JSON to publish them.');return true;
+ }catch(err){try{localStorage.setItem(ASSET_STORE,JSON.stringify(payload));assetStudio.dirty=false;studioMessage('Saved in localStorage. Export JSON to protect your work.');return true;}catch(e){studioMessage('Storage failed or full. EXPORT JSON now: '+e.message);return false;}}
+}
+function assetSaveDebounced(){clearTimeout(assetSaveTimer);assetSaveTimer=setTimeout(()=>{if(assetStudio.ready)persistAssets()},400);}
+function assetImageKey(a){return a.kind==='builtin'?'builtin:'+a.ref:a.kind==='note'?'generated-note':a.data;}
+function assetPicture(a){if(a.kind==='note')return null;if(a.kind==='builtin')return (a.ref==='foreground'?assetForegroundComposite():({world:worldArt,characters:actorsArt})[a.ref])||null;
+ const key=assetImageKey(a);let image=assetImages.get(key);if(!image){image=new Image();image.decoding='async';image.src=a.data;assetImages.set(key,image)}return image;}
+function assetBoundsFrame(a,img){if(a.kind==='builtin')return a.crop;
+ const iw=img?.naturalWidth||0,ih=img?.naturalHeight||0;
+ const cols=Math.max(1,a.cols),rows=Math.max(1,a.rows),count=Math.min(a.frames,cols*rows);
+ const frame=assetStudio.animate&&a.fps>0&&count>1?Math.floor(clock*a.fps*a.speed)%count:0;
+ const cellW=iw/cols,cellH=ih/rows;
+ return [(frame%cols)*cellW,Math.floor(frame/cols)*cellH,cellW,cellH];
+}
+function assetAnimTransform(a){const progress=assetStudio.animate?clock*a.speed:0,amp=a.amplitude;
+ const s=Math.sin(progress*Math.PI*2),c=Math.cos(progress*Math.PI*2);
+ const out={dx:0,dy:0,rot:0,scale:1,alpha:1};
+ if(!assetStudio.animate)return out;
+ switch(a.anim){
+ case 'bob':out.dy=-amp*(.5+.5*s);break;
+ case 'float':out.dx=amp*.33*c;out.dy=-amp*.6*s;break;
+ case 'bounce':out.dy=-amp*Math.abs(s);break;
+ case 'spin':out.rot=progress*2*Math.PI;break;
+ case 'sway':out.rot=Math.sin(progress*2*Math.PI)*(amp*Math.PI/180);break;
+ case 'pulse':out.scale=1+(amp/100)*s;break;
+ case 'blink':out.alpha=s>0?.98:.12;break;
+ case 'flicker':out.alpha=.72+.28*(Math.sin(progress*48)*Math.sin(progress*31)>.55?.18:1);break;
+ }return out;}
+function drawPlacedAsset(a){if(!a.visible)return;
+ const anim=assetAnimTransform(a),p=assetPicture(a);
+ g.save();g.imageSmoothingEnabled=false;g.globalAlpha=(a.opacity/100)*anim.alpha;
+ g.translate(a.x+anim.dx,a.y+anim.dy);g.rotate(a.rotation*Math.PI/180+anim.rot);g.scale(anim.scale,anim.scale);
+ if(a.kind==='note'){
+   g.textAlign='center';g.textBaseline='middle';g.font=`900 ${Math.max(12,Math.round(a.h*.88))}px Georgia,serif`;
+   g.shadowColor='#65f5ff';g.shadowBlur=12;g.fillStyle='#83efff';g.fillText('♫',0,0);
+ }else if(p?.complete&&p.naturalWidth&&p.naturalHeight){const [sx,sy,sw,sh]=assetBoundsFrame(a,p);
+   if(sw>0&&sh>0&&sx>=0&&sy>=0&&sx+sw<=p.naturalWidth+.001&&sy+sh<=p.naturalHeight+.001)g.drawImage(p,sx,sy,sw,sh,-a.w/2,-a.h/2,a.w,a.h);
+ }g.restore();}
+function renderAssetsOfLayer(layer){for(const a of assetStudio.assets){if(a.layer===layer)drawPlacedAsset(a);}}
+function assetControlPositions(a){const ang=a.rotation*Math.PI/180,cs=Math.cos(ang),sn=Math.sin(ang);
+ const rotate=(lx,ly)=>({x:a.x+lx*cs-ly*sn,y:a.y+lx*sn+ly*cs});
+ return {corner:rotate(a.w/2,a.h/2),rotator:rotate(0,-a.h/2-27)};}
+function assetHit(a,x,y){if(!a.visible||a.locked)return false;const angle=-a.rotation*Math.PI/180,cs=Math.cos(angle),sn=Math.sin(angle),dx=x-a.x,dy=y-a.y;
+ const lx=dx*cs-dy*sn,ly=dx*sn+dy*cs;return Math.abs(lx)<=a.w/2&&Math.abs(ly)<=a.h/2;}
+function assetAt(x,y){const groups=['front','world','back'];for(const layer of groups){const list=assetStudio.assets.filter(a=>a.layer===layer).slice().reverse();for(const a of list)if(assetHit(a,x,y))return a;}return null;}
+function assetDrawHandles(){if(!assetStudio.active||!assetStudio.showGuides)return;
+ const a=assetSelected();if(!a)return;const {corner,rotator}=assetControlPositions(a);
+ g.save();g.translate(a.x,a.y);g.rotate(a.rotation*Math.PI/180);g.strokeStyle='#ffe1a1';g.lineWidth=2/cam.zoom;g.setLineDash([6/cam.zoom,4/cam.zoom]);g.strokeRect(-a.w/2,-a.h/2,a.w,a.h);g.setLineDash([]);g.restore();
+ g.save();g.strokeStyle='#ffe1a1';g.fillStyle='#edb654';g.lineWidth=2/cam.zoom;
+ g.fillRect(corner.x-6/cam.zoom,corner.y-6/cam.zoom,12/cam.zoom,12/cam.zoom);
+ g.beginPath();g.moveTo(a.x,a.y); // line drawn from top center, not object center
+ const top=(()=>{const t=a.rotation*Math.PI/180;return {x:a.x+Math.sin(t)*a.h/2,y:a.y-Math.cos(t)*a.h/2}})();
+ g.moveTo(top.x,top.y);g.lineTo(rotator.x,rotator.y);g.stroke();
+ g.beginPath();g.arc(rotator.x,rotator.y,6/cam.zoom,0,Math.PI*2);g.fill();g.restore();}
+function assetPrototype(name,kind='note'){const id='asset-'+(assetStudio.nextId++);
+ return {id,name,kind,ref:null,data:null,crop:null,x:W/2,y:H/2,w:48,h:48,rotation:0,opacity:100,visible:true,locked:false,keepAspect:true,layer:'world',anim:'bob',speed:1,amplitude:6,cols:1,rows:1,frames:1,fps:0};}
+function assetKeepSelected(id){assetStudio.selected=id;studioRefresh();}
+function assetNew(a){if(assetStudio.assets.length>=ASSET_MAX){studioMessage('80 assets maximum. Export or remove unused assets.');return false;}
+ const before=assetSnapshot();assetStudio.assets.push(a);assetRecordHistory(before);assetKeepSelected(a.id);studioMessage('Added '+a.name+'. Drag to reposition.');return true;}
+function assetDeselect(){assetStudio.selected=null;studioRefresh()}
+const assetFields=['Name','X','Y','W','H','Rotate','Opacity','Layer','Anim','Speed','Amplitude','Cols','Rows','Frames','FPS','Visible','Locked','Aspect'];
+function studioRefresh(){
+ const list=assetUI('assetList'),sel=assetSelected(),prevScroll=list.scrollTop;
+ list.replaceChildren();
+ for(const a of assetStudio.assets){const o=document.createElement('option');o.value=a.id;o.textContent=(a.visible?'◉ ':'○ ')+(a.locked?'🔒 ':'')+a.name+' · '+a.layer+(a.anim!=='none'?' · '+a.anim:'');list.append(o)}
+ list.value=sel?.id||'';list.scrollTop=prevScroll;assetUI('assetSelection').hidden=!sel;
+ if(sel){const values={Name:sel.name,X:Math.round(sel.x*10)/10,Y:Math.round(sel.y*10)/10,W:Math.round(sel.w*10)/10,H:Math.round(sel.h*10)/10,Rotate:Math.round(sel.rotation*10)/10,Opacity:sel.opacity,Layer:sel.layer,Anim:sel.anim,Speed:sel.speed,Amplitude:sel.amplitude,Cols:sel.cols,Rows:sel.rows,Frames:sel.frames,FPS:sel.fps};
+   for(const [name,value]of Object.entries(values)){const el=assetUI('asset'+name);if(document.activeElement!==el)el.value=value;}
+   for(const name of ['Visible','Locked','Aspect'])assetUI('asset'+name).checked=sel[name==='Aspect'?'keepAspect':name.toLowerCase()];
+ }
+ for(const id of ['assetDuplicate','assetRemove','assetFront','assetBack'])assetUI(id).disabled=!sel;
+ assetUI('assetUndo').disabled=!assetStudio.undo.length;assetUI('assetRedo').disabled=!assetStudio.redo.length;
+}
+function toggleAssetStudio(force){assetStudio.active=typeof force==='boolean'?force:!assetStudio.active;
+ assetStudio.drag=null;assetStudio.capturing=null;keys.clear();dest=null;clickPath=[];
+ if(assetStudio.active){if(layerState.active)toggleLayerEditor(false);collisionDebug=false;depthDebug=false;assetUI('assetStudio').hidden=false;document.body.classList.add('asset-console-open');studioMessage('Asset editor active · drag objects and handles. Collision and masks remain unchanged.');}
+ else{assetUI('assetStudio').hidden=true;document.body.classList.remove('asset-console-open');if(assetStudio.dirty)persistAssets();}
+ c.classList.toggle('asset-editing',assetStudio.active);studioRefresh();c.focus();}
+assetUI('assetToggle').onclick=()=>toggleAssetStudio();assetUI('assetClose').onclick=()=>toggleAssetStudio(false);
+assetUI('assetList').addEventListener('change',e=>assetKeepSelected(e.target.value));
+assetUI('assetAdd').onclick=()=>assetUI('assetUpload').click();
+function dataURLFromFile(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(reader.error||Error('Image read failed'));reader.readAsDataURL(file)});}
+function readImageDimensions(dataURL){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve([img.naturalWidth,img.naturalHeight]);img.onerror=()=>reject(Error('Image could not be decoded'));img.src=dataURL});}
+assetUI('assetUpload').addEventListener('change',async e=>{
+ const files=Array.from(e.target.files||[]);e.target.value='';
+ try{let added=0;
+ for(const f of files){if(assetStudio.assets.length>=ASSET_MAX)break;
+  if(!/^image\/(png|jpeg|webp|gif|apng)$/i.test(f.type)){studioMessage('Unsupported image: '+f.name);continue;}
+  if(f.size>ASSET_MAX_FILE){studioMessage('Image too large (8 MB max): '+f.name);continue;}
+  const data=await dataURLFromFile(f);const [iw,ih]=await readImageDimensions(data);
+  if(iw<1||ih<1||iw>8192||ih>8192)throw Error('Invalid image dimensions (maximum 8192 × 8192)');
+  const a=assetPrototype(f.name.replace(/\.[^.]+$/,''),'image');a.data=data;
+  const scale=Math.min(1,180/Math.max(iw,ih));a.w=Math.max(2,Math.round(iw*scale));a.h=Math.max(2,Math.round(ih*scale));a.x=Math.round(player.x+40+added*18);a.y=Math.round(player.y+added*18);a.anim='none';
+  if(assetNew(a))added++;
+ }if(added)studioMessage('Added '+added+' image(s). Use sprite sheet settings for animated PNG sheets.');
+ }catch(err){studioMessage('Could not add image: '+err.message);}
+});
+assetUI('assetPreset').onclick=()=>{const a=assetPrototype('Neon music note');a.x=Math.round(player.x+40);a.y=Math.round(player.y-40);a.layer='front';assetNew(a)};
+function assetCaptureMode(which){assetStudio.capturing={which,start:null,end:null};studioMessage('Drag a rectangle on the world to crop '+which+' artwork (Esc cancels).');}
+assetUI('assetCapture').onclick=()=>assetCaptureMode('world');assetUI('assetCaptureFG').onclick=()=>assetCaptureMode('foreground');
+assetUI('assetDuplicate').onclick=()=>{const a=assetSelected();if(!a)return;const b={...a,id:'asset-'+(assetStudio.nextId++),name:a.name+' copy',x:a.x+24,y:a.y+24};assetNew(b)};
+assetUI('assetRemove').onclick=()=>{const a=assetSelected();if(!a)return;const before=assetSnapshot();assetStudio.assets=assetStudio.assets.filter(q=>q.id!==a.id);assetStudio.selected=assetStudio.assets.at(-1)?.id||null;assetRecordHistory(before);studioMessage('Deleted '+a.name+'. Undo is available.');};
+function assetMoveInList(step){const a=assetSelected();if(!a)return;const before=assetSnapshot(),i=assetStudio.assets.indexOf(a),j=i+step;
+ if(j<0||j>=assetStudio.assets.length)return;assetStudio.assets.splice(i,1);assetStudio.assets.splice(j,0,a);assetRecordHistory(before);}
+assetUI('assetBack').onclick=()=>assetMoveInList(-1);assetUI('assetFront').onclick=()=>assetMoveInList(1);
+assetUI('assetSnap').onchange=e=>{assetStudio.snap=Number(e.target.value)||1};
+assetUI('assetPlay').onchange=e=>{assetStudio.animate=e.target.checked};assetUI('assetGuides').onchange=e=>{assetStudio.showGuides=e.target.checked};
+const assetAttr={Name:'name',X:'x',Y:'y',W:'w',H:'h',Rotate:'rotation',Opacity:'opacity',Layer:'layer',Anim:'anim',Speed:'speed',Amplitude:'amplitude',Cols:'cols',Rows:'rows',Frames:'frames',FPS:'fps',Visible:'visible',Locked:'locked',Aspect:'keepAspect'};
+const assetRanges={x:[-1000,3000],y:[-1000,2200],w:[2,2400],h:[2,1800],rotation:[-3600,3600],opacity:[0,100],speed:[0,12],amplitude:[0,120],cols:[1,64],rows:[1,64],frames:[1,4096],fps:[0,60]};
+for(const field of assetFields){const el=assetUI('asset'+field),key=assetAttr[field];
+ el.addEventListener('change',()=>{const a=assetSelected();if(!a)return;const before=assetSnapshot(),oldW=a.w,oldH=a.h;
+ if(el.type==='checkbox')a[key]=el.checked;
+ else if(key==='name')a.name=el.value.trim().slice(0,72)||'Untitled asset';
+ else if(key==='layer'||key==='anim')a[key]=el.value;
+ else {const [min,max]=assetRanges[key];a[key]=numberBound(el.value,min,max,a[key]);if(['cols','rows','frames','fps'].includes(key))a[key]=Math.round(a[key]);}
+ if(a.keepAspect&&key==='w')a.h=numberBound(oldH*a.w/oldW,2,1800,oldH);
+ if(a.keepAspect&&key==='h')a.w=numberBound(oldW*a.h/oldH,2,2400,oldW);
+ if(key==='cols'||key==='rows')a.frames=Math.min(a.frames,a.cols*a.rows);
+ assetRecordHistory(before);
+ });
+}
+function assetUndoRedo(undo){const from=undo?assetStudio.undo:assetStudio.redo,to=undo?assetStudio.redo:assetStudio.undo;
+ if(!from.length)return;to.push(assetSnapshot());assetStudio.assets=JSON.parse(from.pop());if(!assetSelected())assetStudio.selected=assetStudio.assets.at(-1)?.id||null;
+ assetStudio.dirty=true;assetSaveDebounced();studioRefresh();}
+assetUI('assetUndo').onclick=()=>assetUndoRedo(true);assetUI('assetRedo').onclick=()=>assetUndoRedo(false);
+assetUI('assetSave').onclick=()=>{clearTimeout(assetSaveTimer);persistAssets()};
+function downloadAssetJSON(){const payload={format:ASSET_FORMAT,version:ASSET_VERSION,world:{width:W,height:H},assets:assetStudio.assets};
+ const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+ const link=document.createElement('a'),url=URL.createObjectURL(blob);link.href=url;link.download='coda-world-assets.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),5000);
+ studioMessage('Exported complete asset scene including embedded image artwork.');}
+assetUI('assetExport').onclick=downloadAssetJSON;
+function isValidAsset(a){const allowedKind=['image','builtin','note'],allowedLayer=['back','world','front'],allowedAnim=['none','bob','float','spin','pulse','bounce','sway','blink','flicker'];
+ if(!a||typeof a!=='object'||typeof a.id!=='string'||a.id.length>90||typeof a.name!=='string'||a.name.length>72||!allowedKind.includes(a.kind)||!allowedLayer.includes(a.layer)||!allowedAnim.includes(a.anim))return false;
+ if(a.kind==='image'&&(typeof a.data!=='string'||a.data.length>ASSET_MAX_FILE*1.5||!/^data:image\/(png|jpeg|webp|gif|apng);base64,[A-Za-z0-9+/=]+$/i.test(a.data)))return false;
+ if(a.kind==='builtin'&&(!['world','foreground','characters'].includes(a.ref)||!Array.isArray(a.crop)||a.crop.length!==4||!a.crop.every(x=>Number.isFinite(x)&&x>=0)))return false;
+ if(typeof a.visible!=='boolean'||typeof a.locked!=='boolean'||typeof a.keepAspect!=='boolean')return false;
+ return Object.entries(assetRanges).every(([key,[lo,hi]])=>Number.isFinite(a[key])&&a[key]>=lo&&a[key]<=hi)&&a.cols*a.rows>=a.frames;
+}
+function validScene(data){return data?.format===ASSET_FORMAT&&data.version===ASSET_VERSION&&data.world?.width===W&&data.world?.height===H&&Array.isArray(data.assets)&&data.assets.length<=ASSET_MAX&&data.assets.every(isValidAsset)&&new Set(data.assets.map(a=>a.id)).size===data.assets.length;}
+assetUI('assetImport').onclick=()=>assetUI('assetImportFile').click();
+assetUI('assetImportFile').onchange=async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;
+ try{if(file.size>ASSET_MAX_JSON)throw Error('Scene JSON is too large (70 MB max).');const data=JSON.parse(await file.text());
+ if(!validScene(data))throw Error('Invalid asset scene, unsupported format or incorrect world dimensions.');
+ if(!confirm('Replace '+assetStudio.assets.length+' placed assets with '+data.assets.length+' imported assets? Existing collision and masking edits will NOT change.'))return;
+ const before=assetSnapshot();assetStudio.assets=data.assets.map(x=>({...x}));assetStudio.selected=assetStudio.assets[0]?.id||null;
+ assetStudio.nextId=Math.max(assetStudio.nextId,...assetStudio.assets.map(a=>Number(a.id.match(/^asset-(\d+)$/)?.[1]||0)+1),1);
+ assetRecordHistory(before);studioMessage('Imported '+assetStudio.assets.length+' placed assets. Other editors untouched.');
+ }catch(err){studioMessage('Import failed: '+err.message);}
+};
+function captureClipEnd(){const q=assetStudio.capturing;assetStudio.capturing=null;if(!q||!q.start||!q.end)return;
+ const x=Math.max(0,Math.floor(Math.min(q.start.x,q.end.x))),y=Math.max(0,Math.floor(Math.min(q.start.y,q.end.y)));
+ const x2=Math.min(W,Math.ceil(Math.max(q.start.x,q.end.x))),y2=Math.min(H,Math.ceil(Math.max(q.start.y,q.end.y)));
+ const w=x2-x,h=y2-y;if(w<3||h<3){studioMessage('Crop was too small. Drag at least 3 × 3 px.');return;}
+ const a=assetPrototype('Crop · '+q.which,'builtin');a.ref=q.which;a.crop=[x,y,w,h];a.w=w;a.h=h;a.x=x+w/2;a.y=y+h/2;a.anim='none';assetNew(a);
+}
+function assetPointerStart(e){if(!assetStudio.active)return false;
+ if(e.button!==0)return true;e.preventDefault();c.focus();keys.clear();dest=null;clickPath=[];
+ const p=canvasToWorld(e.clientX,e.clientY);
+ if(assetStudio.capturing){assetStudio.capturing.start=p;assetStudio.capturing.end=p;try{c.setPointerCapture(e.pointerId)}catch{}return true;}
+ let a=assetSelected(),mode=null;if(a&&!a.locked){const ctl=assetControlPositions(a),tol=14/cam.zoom;
+  if(Math.hypot(p.x-ctl.corner.x,p.y-ctl.corner.y)<tol)mode='resize';
+  else if(Math.hypot(p.x-ctl.rotator.x,p.y-ctl.rotator.y)<tol)mode='rotate';}
+ if(!mode){a=assetAt(p.x,p.y);if(a){assetKeepSelected(a.id);mode='move';}else{assetDeselect();return true;}}
+ assetStudio.drag={id:a.id,mode,start:p,original:{...a},before:assetSnapshot()};
+ try{c.setPointerCapture(e.pointerId)}catch{}return true;
+}
+function assetPointerMove(e){if(!assetStudio.active)return;const p=canvasToWorld(e.clientX,e.clientY);
+ if(assetStudio.capturing?.start){assetStudio.capturing.end=p;return;}
+ const d=assetStudio.drag;if(!d)return;const a=assetStudio.assets.find(x=>x.id===d.id);if(!a)return;
+ const orig=d.original;
+ if(d.mode==='move'){a.x=assetSnap(orig.x+p.x-d.start.x,e.shiftKey);a.y=assetSnap(orig.y+p.y-d.start.y,e.shiftKey);}
+ if(d.mode==='resize'){
+  const rad=-orig.rotation*Math.PI/180,dx=p.x-orig.x,dy=p.y-orig.y,lx=dx*Math.cos(rad)-dy*Math.sin(rad),ly=dx*Math.sin(rad)+dy*Math.cos(rad);
+  let nw=numberBound(Math.abs(lx)*2,2,2400,orig.w),nh=numberBound(Math.abs(ly)*2,2,1800,orig.h);
+  if(orig.keepAspect){const ratio=orig.w/orig.h;if(nw/nh>ratio)nh=nw/ratio;else nw=nh*ratio;}
+  a.w=numberBound(assetSnap(nw,e.shiftKey),2,2400,orig.w);a.h=numberBound(assetSnap(nh,e.shiftKey),2,1800,orig.h);
+ }
+ if(d.mode==='rotate'){
+  const start=Math.atan2(d.start.y-orig.y,d.start.x-orig.x),angle=Math.atan2(p.y-orig.y,p.x-orig.x);
+  a.rotation=Math.round((orig.rotation+(angle-start)*180/Math.PI)*(e.shiftKey?10:1))/(e.shiftKey?10:1);
+ }
+ studioRefresh();
+}
+function assetPointerEnd(){if(assetStudio.capturing?.start){captureClipEnd();return;}
+ const d=assetStudio.drag;if(!d)return;assetStudio.drag=null;assetRecordHistory(d.before);}
+function drawAssetEditorOverlay(){if(!assetStudio.active)return;
+ if(assetStudio.capturing?.start){const q=assetStudio.capturing,{start,end}=q;g.save();g.strokeStyle='#f8d483';g.lineWidth=2/cam.zoom;g.setLineDash([5/cam.zoom,5/cam.zoom]);g.strokeRect(start.x,start.y,end.x-start.x,end.y-start.y);g.restore();}
+ assetDrawHandles();}
+async function loadAssetStudio(){let found=null;
+ try{const db=await assetDB();found=await new Promise((resolve,reject)=>{const tx=db.transaction('layouts','readonly');const rq=tx.objectStore('layouts').get(ASSET_STORE);rq.onsuccess=()=>resolve(rq.result);rq.onerror=()=>reject(rq.error);});}catch(err){}
+ if(!found){try{found=JSON.parse(localStorage.getItem(ASSET_STORE)||'null')}catch{}}
+ if(found&&validScene(found)){assetStudio.assets=found.assets;assetStudio.nextId=Math.max(1,...found.assets.map(a=>Number(a.id.match(/^asset-(\d+)$/)?.[1]||0)+1));
+ studioMessage('Restored '+found.assets.length+' saved assets. Export JSON to publish.');}
+ assetStudio.ready=true;studioRefresh();
+}
+loadAssetStudio();
+window.CodaAssetStudioQA={get:()=>({active:assetStudio.active,count:assetStudio.assets.length,selected:assetStudio.selected,assets:assetStudio.assets.map(a=>({id:a.id,name:a.name,kind:a.kind,x:a.x,y:a.y,w:a.w,h:a.h,layer:a.layer,anim:a.anim,frames:a.frames}))}),open:()=>toggleAssetStudio(true),close:()=>toggleAssetStudio(false),preset:()=>assetUI('assetPreset').click(),export:downloadAssetJSON,save:persistAssets};
+// --- END ASSET STUDIO ------------------------------------------------------
+
+window.CODA_BUILD="11.0-world-preview-asset-studio";
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -1272,6 +1552,7 @@ function draw(){
  // camera transform. Keep it active until the end of this draw pass.
  g.save();g.setTransform(cam.zoom,0,0,cam.zoom,-cam.x*cam.zoom,-cam.y*cam.zoom);
  g.drawImage(worldArt,0,0,W,H);
+ renderAssetsOfLayer('back');
  // Removed obsolete doorway overlay, revealing the clean original corridor art.
  // The open doorway is already composited into the relocated entrance artwork.
  // Primary lighting is rendered beneath actors and isolated foreground objects.
@@ -1287,6 +1568,7 @@ function draw(){
  const scene=[...liveActors];
  for(const part of foregroundParts)scene.push({type:'foreground',y:(part.sortY??part.y),part});
  for(const patch of layerState.patches)scene.push({type:'editor-paint',y:patch.sortY,patch});
+ for(const a of assetStudio.assets)if(a.layer==='world'&&a.visible)scene.push({type:'placed-asset',y:a.y+a.h/2,part:a});
  scene.sort((a,b)=>a.y-b.y||(a.type==='foreground'?1:-1));
  for(const item of scene){
   if(item.type==='foreground'){
@@ -1294,6 +1576,7 @@ function draw(){
    continue;
   }
   if(item.type==='editor-paint'){if(foregroundEnabled)g.drawImage(item.patch.canvas,item.patch.x,item.patch.y);continue;}
+  if(item.type==='placed-asset'){drawPlacedAsset(item.part);continue;}
   if(item.type==='player'){
    g.save();g.globalCompositeOperation='screen';g.globalAlpha=.12;
    g.fillStyle='#7aefff';g.beginPath();g.ellipse(player.x,player.y+2,17,5,0,0,Math.PI*2);g.fill();g.restore();
@@ -1304,6 +1587,7 @@ function draw(){
    drawActor(kind+'_down_0',p.x,p.y,39,52,dancing?Math.sin(clock*7+p.look)*4:0);
   }
  }
+ renderAssetsOfLayer('front');
  // Soft club color haze touches characters too, without changing occlusion order.
  // Skip it while editing or inspecting collision/foreground masks.
  if(effectsOn()&&!collisionDebug&&!depthDebug&&!layerState.active){
@@ -1362,6 +1646,7 @@ function draw(){
  if(near&&!layerState.active){g.globalAlpha=.91;r(near.x-62,near.y-93,124,25,'#18132e');g.globalAlpha=1;
   t('E · '+(near.type==='game'?'PLAY':near.type==='piano'?'ENTER':'INTERACT'),near.x,near.y-76,11,'#c8fff6');}
  drawEditorOverlay();
+ drawAssetEditorOverlay();
  g.restore(); // Restore screen-space canvas state for next frame.
 }
 window.CodaArcadeQA=Object.freeze({
@@ -1378,6 +1663,7 @@ window.CodaArcadeQA=Object.freeze({
   position:()=>({x:player.x,y:player.y}),
   place:(x,y)=>{if(!inside(x,y))return false;player.x=x;player.y=y;dest=null;clickPath=[];return true;},
   masks:()=>foregroundParts.map(p=>p.name),
+  assetStudio:()=>({active:assetStudio.active,count:assetStudio.assets.length,selected:assetStudio.selected}),
   layerEditor:()=>({active:layerState.active,tool:layerState.tool,publishedStrokes:PUBLISHED_LAYER_STROKES.length,strokes:layerState.actions.length,redo:layerState.redo.length,paintPatches:layerState.patches.length,editedPixels:layerState.owner?layerState.owner.reduce((a,v)=>a+(v!==-1),0):0}),
   foregroundPixelAlpha:(name,x,y)=>{const part=foregroundParts.find(p=>p.name===name);if(!part)return null;const b=part.bounds;if(x<b[0]||y<b[1]||x>=b[0]+b[2]||y>=b[1]+b[3])return null;const img=getPartImage(part);if(!img)return null;return img.getContext('2d',{willReadFrequently:true}).getImageData(Math.floor(x-b[0]),Math.floor(y-b[1]),1,1).data[3]},
   editForegroundAt:(x,y,tool='paint',size=4,offset=0)=>{const action={tool,size,points:[[x,y]],depth:strokeAutoDepth(x,y)+offset};if(!isEditorAction(action))return false;layerState.actions.push(action);layerState.redo=[];layerHistoryRefresh();return true;},
@@ -1394,9 +1680,10 @@ function frame(ms){const dt=Math.min(.05,(ms-last)/1000||0);last=ms;
  g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.globalCompositeOperation='source-over';
  g.fillStyle='#10142b';g.fillRect(0,0,W,H);
  g.fillStyle='#ffb9e5';g.font='bold 25px monospace';g.fillText('Arcade error: '+err.message,55,110);
- }requestAnimationFrame(frame)}window.addEventListener('keydown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const k=e.key.toLowerCase();if(k==='l'&&e.shiftKey&&!e.repeat){e.preventDefault();toggleLayerEditor();return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='z'&&!e.repeat){e.preventDefault();editorEl(e.shiftKey?'editRedo':'editUndo').click();return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='y'&&!e.repeat){e.preventDefault();editorEl('editRedo').click();return;}if(layerState.active&&k==='escape'&&!e.repeat){e.preventDefault();toggleLayerEditor(false);return;}if(layerState.active&&!layerState.preview){if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k))e.preventDefault();return;}if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.repeat&&['=','+','-','_','0'].includes(k)&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){
+ }requestAnimationFrame(frame)}window.addEventListener('keydown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const k=e.key.toLowerCase();if(k==='a'&&e.shiftKey&&!e.repeat&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();toggleAssetStudio();return;}if(assetStudio.active){if(k==='escape'){e.preventDefault();if(assetStudio.capturing){assetStudio.capturing=null;studioMessage('Crop cancelled.')}else toggleAssetStudio(false);return;}if((e.ctrlKey||e.metaKey)&&k==='z'&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUndoRedo(!e.shiftKey);return;}if((e.ctrlKey||e.metaKey)&&k==='y'&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUndoRedo(false);return;}if(['delete','backspace'].includes(k)&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUI('assetRemove').click();return;}if(k.startsWith('arrow')&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();const a=assetSelected();if(a&&!a.locked){const before=assetSnapshot(),step=e.shiftKey?8:1;a.x+=(k==='arrowright'?step:k==='arrowleft'?-step:0);a.y+=(k==='arrowdown'?step:k==='arrowup'?-step:0);assetRecordHistory(before);}return;}if(!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)&&['+','=','-','_','0'].includes(k)){e.preventDefault();setCameraZoom(k==='0'?1:cam.targetZoom+((k==='+'||k==='=')?ZOOM_STEP:-ZOOM_STEP));return;}if(!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName))e.preventDefault();return;}if(k==='l'&&e.shiftKey&&!e.repeat){e.preventDefault();toggleLayerEditor();return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='z'&&!e.repeat){e.preventDefault();editorEl(e.shiftKey?'editRedo':'editUndo').click();return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='y'&&!e.repeat){e.preventDefault();editorEl('editRedo').click();return;}if(layerState.active&&k==='escape'&&!e.repeat){e.preventDefault();toggleLayerEditor(false);return;}if(layerState.active&&!layerState.preview){if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k))e.preventDefault();return;}if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.repeat&&['=','+','-','_','0'].includes(k)&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){
  e.preventDefault();setCameraZoom(k==='0'?1:cam.targetZoom+((k==='+'||k==='=')?ZOOM_STEP:-ZOOM_STEP));return;}
  if(k==='c'&&!e.repeat){collisionDebug=!collisionDebug;return;}if(k==='l'&&!e.repeat){depthDebug=!depthDebug;return;}if(k==='f'&&!e.repeat){foregroundEnabled=!foregroundEnabled;return;}if(k==='x'&&collisionDebug&&!e.repeat){exportCollision();return;}if(k==='r'&&e.shiftKey&&collisionDebug&&!e.repeat){localStorage.removeItem('codaCollisionEditsV891');window.location.reload();return;}if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k)){e.preventDefault();keys.add(k);if(k==='e'&&!e.repeat)talk();if(k==='q')emote=clock+2}});window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>keys.clear());c.addEventListener('pointerdown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const b=c.getBoundingClientRect();
+ if(assetPointerStart(e))return;
  if(editorPointerDown(e))return;
  if(collisionDebug&&e.shiftKey){
   const {x:xx,y:yy}=canvasToWorld(e.clientX,e.clientY);
@@ -1414,9 +1701,9 @@ function frame(ms){const dt=Math.min(.05,(ms-last)/1000||0);last=ms;
  }
  dest=canvasToWorld(e.clientX,e.clientY);
  clickPath=pathTo(player.x,player.y,dest.x,dest.y);
- if(!clickPath.length)dest=null;c.focus()});c.addEventListener('pointermove',editorPointerMove);
-c.addEventListener('pointerup',editorPointerEnd);
-c.addEventListener('pointercancel',editorPointerEnd);
+ if(!clickPath.length)dest=null;c.focus()});c.addEventListener('pointermove',e=>{assetPointerMove(e);editorPointerMove(e)});
+c.addEventListener('pointerup',e=>{assetPointerEnd(e);editorPointerEnd(e)});
+c.addEventListener('pointercancel',e=>{assetPointerEnd(e);editorPointerEnd(e)});
 c.addEventListener('pointerleave',()=>{layerState.hover=null});
 document.querySelector('#close').onclick=()=>dialog.style.display='none';document.querySelector('#fs').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else c.requestFullscreen?.()};// Phase 4.2 account, boutique, and song library bridge (preview only).
 const panel=document.querySelector('#panel'),panelBody=document.querySelector('#panelBody'),panelTitle=document.querySelector('#panelTitle');
