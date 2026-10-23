@@ -3,7 +3,26 @@
 #gameoverlay{position:fixed;inset:0;z-index:100;background:#121327;display:flex;flex-direction:column}#gameoverlay[hidden]{display:none}.gamebar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#231a3c;border-bottom:2px solid #b583dc}.gamebar strong{color:#f0d7ff}#gameiframe{border:0;width:100%;flex:1;min-height:0;background:#111628}body.game-open{overflow:hidden}@media(max-width:650px){.gamebar{gap:6px}.gamebar strong{font-size:12px}.gamebar a{font-size:11px}}
 #panel{position:fixed;z-index:90;top:50%;left:50%;transform:translate(-50%,-50%);width:min(570px,94vw);max-height:84dvh;overflow:auto;padding:20px;background:#231c3b;border:2px solid #c69be9;box-shadow:0 0 0 100vmax #05030ab8,0 14px 55px #000c;border-radius:12px}#panel[hidden]{display:none}.panelHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.panelRow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0;padding:10px;border:1px solid #66517f;border-radius:7px}.panelRow small{display:block;opacity:.75}.formRow{display:grid;gap:5px;margin:10px 0}.formRow select,.formRow input{background:#17142c;color:#fff;border:1px solid #a08dbd;padding:9px;border-radius:5px;width:100%}.panelActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.muted{color:#c1b4d7;font-size:13px}.panelMsg{min-height:22px;color:#9fe9dc}body:has(#panel:not([hidden])) #view{filter:brightness(.65)}
 #pianoroom{position:fixed;inset:0;z-index:95;background:radial-gradient(ellipse at 50% 20%,#344962,#11172b 75%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#f5edff}#pianoroom[hidden]{display:none}#pianoroom .stage{border:9px solid #69567e;background:repeating-linear-gradient(90deg,#243349 0 32px,#28374d 32px 64px);width:min(650px,88vw);padding:30px;text-align:center;box-shadow:0 0 70px #b08ed255}#pianoroom .keys{display:flex;justify-content:center;margin:20px auto 0}#pianoroom .keys i{height:85px;width:27px;background:#eee9f3;border:2px solid #35324b;box-shadow:inset 0 -8px #aaa8bc}#pianoroom .keys i:nth-child(3n+2){background:#22223b;height:55px;width:18px;margin:0 -8px;z-index:1}#pianoroom h2{color:#9feaf2;letter-spacing:3px}#pianoroom button{font-size:16px}
-</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 8.9.3 · CORNER COLLISION FIX</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · C collision · L green occlusion masks · F foreground on/off · Shift-click edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 8.9.3 · corner path + wall seal · C collision · L layers</span></footer><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><div id="pianoroom" hidden><div class="stage"><h2>♫ PIANO LAB ♫</h2><p>A quieter music space away from the arcade floor.</p><div class="keys"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p style="opacity:.7">Dedicated room preview — instruments and activities coming later.</p></div><button id="closepiano">← Return to Arcade</button></div><script>
+
+#layerEditor{position:fixed;right:14px;top:174px;z-index:60;width:min(292px,calc(100vw - 24px));background:#17152aef;border:1px solid #72f5c8;box-shadow:0 10px 32px #000b,0 0 20px #2fecb228;border-radius:12px;padding:13px;color:#f0eaff;max-height:calc(100dvh - 190px);overflow-y:auto;font-size:13px;backdrop-filter:blur(7px)}
+#layerEditor[hidden]{display:none}#layerEditor button,#layerEditor select{font:inherit;min-height:31px;padding:5px 7px}#layerEditor .editorline{display:flex;gap:7px;align-items:center;margin:8px 0}#layerEditor .editorline>*{flex:1;min-width:0}#layerEditor label{display:block;font-weight:600}#layerEditor .mini{font-size:11px;opacity:.76;line-height:1.45;margin:6px 0}#layerEditor .current{border-color:#4dfac0;background:#175d52}#layerEditor .editorbanner{display:flex;align-items:center;justify-content:space-between;color:#a8fff0;margin-bottom:9px}#layerEditor input[type=range]{width:100%}#layerEditor .editnotice{min-height:24px;font-size:11px;color:#aeffd9;margin-top:10px;overflow-wrap:anywhere}#view.layer-editing{cursor:crosshair;touch-action:none}#editorToggle{border-color:#63dcae}#layerEditor .editorline button:disabled{opacity:.4;cursor:not-allowed}
+</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 9.0 · IN-GAME LAYER EDITOR</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · C collision · L layer outlines · Shift+L EDIT layers · F foreground on/off · Shift-click collision edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 9.0 · Shift+L layer editor · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
+  <div class="editorbanner"><b>✎ FOREGROUND EDITOR</b><button id="editClose" type="button">✕</button></div>
+  <div class="mini">Paint with pixels from the existing arcade artwork. Erase removes unwanted foreground coverage; the floor stays unchanged.</div>
+  <div class="editorline"><button type="button" id="editPaint" class="current">🖌 Paint</button><button type="button" id="editErase">⌫ Erase</button></div>
+  <label for="editBrush">Brush size <span id="editBrushLabel">4 px</span></label>
+  <div class="editorline"><select id="editBrush"><option>1</option><option>2</option><option selected>4</option><option>8</option><option>16</option></select><select id="editZoom"><option value="fit">Fit screen</option><option value="1">100% zoom</option><option value="2">200% zoom</option><option value="3">300% zoom</option></select></div>
+  <label for="editDepth">Depth offset <span id="editDepthLabel">+0 px</span></label>
+  <input id="editDepth" type="range" min="-120" max="120" step="5" value="0"/>
+  <p class="mini">Adjust depth when painting a new object: negative draws it behind more of the room; positive covers more of the player.</p>
+  <div class="editorline"><button type="button" id="editUndo">↶ Undo</button><button type="button" id="editRedo">↷ Redo</button></div>
+  <div class="editorline"><button type="button" id="editPreview">◉ Playtest</button><button type="button" id="editMasks">◫ Mask view</button></div>
+  <div class="editorline"><button type="button" id="editExport">↓ Export JSON</button><button type="button" id="editImport">↑ Import JSON</button></div>
+  <div class="editorline"><button type="button" id="editReset">Reset edits</button><button type="button" id="editSave">Save locally</button></div>
+  <input id="editImportFile" type="file" accept="application/json,.json" hidden/>
+  <div class="editnotice" role="status" id="editNotice">Drag across the arcade to edit foreground pixels.</div>
+  <p class="mini">Shift+L closes editor · Drag to draw · Zoom for individual pixels · JSON can be shared to publish changes for everyone.</p>
+</aside><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><div id="pianoroom" hidden><div class="stage"><h2>♫ PIANO LAB ♫</h2><p>A quieter music space away from the arcade floor.</p><div class="keys"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p style="opacity:.7">Dedicated room preview — instruments and activities coming later.</p></div><button id="closepiano">← Return to Arcade</button></div><script>
 (()=>{'use strict';const c=document.querySelector('#view'),g=c.getContext('2d',{alpha:false}),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}const W=1672,H=941,ART_SCALE=1,keys=new Set();let player={x:1180,y:388},cam={x:0,y:0},dest=null,emote=0,near=null,last=0,clock=0,walking=false,facing="down";const rooms=[{id:'lounge',name:'LOUNGE',x:95,y:145,w:350,h:235},{id:'dance',name:'DANCE',x:90,y:505,w:670,h:325},{id:'arcade',name:'ARCADE',x:648,y:220,w:900,h:580}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:718,y:313,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:831,y:314,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:951,y:315,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1064,y:315,url:'song-machine/index.html'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
 const looks=[['#e5b48d','#ed8cbe','#171424','spiky'],['#85543b','#8ddde6','#e3c27d','long'],['#f4cba6','#c9a3f1','#402c4b','buns'],['#a56b48','#f4ae77','#1c172d','short'],['#f3c3a1','#b2f37b','#6c3159','bob'],['#704633','#a8b5fc','#eee6df','curly'],['#f0b79d','#ffd48c','#171424','ponytail']];const npc=[{name:'Ziggy',x:1450,y:752,mode:'enter',goal:0,wait:0,look:0},{name:'Nova',x:1450,y:752,mode:'enter',goal:1,wait:1.7,look:1},{name:'Byte',x:1450,y:752,mode:'enter',goal:2,wait:3.4,look:2},{name:'Mochi',x:1450,y:752,mode:'enter',goal:3,wait:5,look:3},{name:'Riff',x:1450,y:752,mode:'enter',goal:0,wait:7,look:4},{name:'Fizz',x:1450,y:752,mode:'enter',goal:1,wait:9,look:5},{name:'Dot',x:1450,y:752,mode:'enter',goal:2,wait:11,look:6}];const sofas=[{x:105,y:135,w:110,h:45},{x:240,y:135,w:110,h:45}];const seats=[{x:158,y:267},{x:370,y:262},{x:190,y:304},{x:390,y:296}];const spot=(p)=>p.mode==='cabinet'?{x:games[p.goal%4].x,y:323}:p.mode==='lounge'?seats[p.goal%4]:p.mode==='dance'?{x:205+(p.goal%4)*125,y:718+(p.goal%2)*65}:p.mode==='leave'?{x:1450,y:752}:{x:1450,y:752};const r=(x,y,w,h,color)=>{g.fillStyle=color;g.fillRect(Math.round(x),Math.round(y),w,h)};const t=(s,x,y,size=18,color='#e7e2ff')=>{g.fillStyle=color;g.font=`bold ${size}px monospace`;g.textAlign='center';g.fillText(s,x,y)};function sprite(x,y,look,walk=false,dance=false,scale=1){const [skin,shirt,hair,style]=look;g.save();g.translate(Math.round(x),Math.round(y));g.scale(scale,scale);const bob=dance?Math.sin(clock*8)*5:walk?Math.sin(clock*12)*2:0;r(-10,-38+bob,20,17,hair);if(style==='buns'){r(-15,-39+bob,6,7,hair);r(9,-39+bob,6,7,hair)}if(style==='long')r(-13,-30+bob,26,20,hair);r(-9,-32+bob,18,16,skin);r(-12,-16+bob,24,20,shirt);r(-16,-12+bob,4,13,skin);r(12,-12+bob,4,13,skin);r(-9,4+bob,7,11,'#695d99');r(2,4+bob,7,11,'#695d99');r(-10,14+bob,9,4,'#f8d56b');r(1,14+bob,9,4,'#f8d56b');r(-6,-24+bob,3,3,'#222033');r(4,-24+bob,3,3,'#222033');if(dance){const beat=Math.floor(clock*4+look[0].length)%4,up=beat%2===0;r(-18,-(up?29:13)+bob,5,up?16:11,skin);r(13,-(up?13:29)+bob,5,up?11:16,skin);r(-10+(up?-5:3),14+bob,9,5,'#f8d56b');r(1+(up?4:-4),14+bob,9,5,'#f8d56b')}g.restore()};
 // Phase 7.1: world-coordinate collision, small foot hitboxes, and A* navigation.
@@ -243,7 +262,7 @@ function go(p,dt){const aim=spot(p);const targetKey=p.mode+':'+p.goal;
  // Rebuild a valid route instead of bypassing the collision boundary.
  p.route=makeRoute(p,aim);return p.route.length?true:null;
 }
-function update(dt){clock+=dt;if(dialog.style.display==='block'||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;let dx=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),dy=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);if(dx||dy){dest=null;clickPath=[];facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');}if(dest){
+function update(dt){clock+=dt;if(layerState.active&&!layerState.preview)return;if(dialog.style.display==='block'||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;let dx=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),dy=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);if(dx||dy){dest=null;clickPath=[];facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');}if(dest){
  if(!clickPath.length){dest=null;dx=dy=0}
  else {
   const waypoint=clickPath[0];dx=waypoint.x-player.x;dy=waypoint.y-player.y;
@@ -362,7 +381,138 @@ foregroundParts.push(...[{"name":"annotated_purple_1","bounds":[70,204,26,51],"s
 foregroundParts.push({name:"dance_passage_plant_leaves",bounds:[754,609,65,72],sortY:695,type:"pixel-accurate-leaf-occlusion",atlas:[370,530,65,72]}); // Only the green leaf silhouette from the approved art is elevated to the foreground.
 let depthDebug=false,foregroundEnabled=true;
 const greenMaskCache=new Map();
-window.CODA_BUILD="8.9.3-corner-geometry";
+
+// Coda Arcade pixel layer editor. Gesture data, not screenshot coordinates, is saved.
+// The world image remains untouched; these edits affect foreground masks only.
+const layerEditorUI=document.querySelector('#layerEditor');
+const layerState={active:false,tool:'paint',size:4,offset:0,preview:false,maskView:false,zoom:'fit',actions:[],redo:[],drawing:null,hover:null,dirty:true,renderParts:new Map(),patches:[],erasedCanvas:null,owner:null};
+const LAYER_STORAGE='codaForegroundEditsV1';
+const editorEl=(id)=>document.getElementById(id);
+const editNotice=(message)=>{editorEl('editNotice').textContent=message;};
+function isEditorAction(a){return a&&['paint','erase'].includes(a.tool)&&[1,2,4,8,16].includes(a.size)&&Array.isArray(a.points)&&a.points.length>0&&a.points.length<=30000&&a.points.every(p=>Array.isArray(p)&&p.length===2&&Number.isInteger(p[0])&&Number.isInteger(p[1])&&p[0]>=0&&p[0]<W&&p[1]>=0&&p[1]<H)&&Number.isFinite(a.depth)&&a.depth>=-500&&a.depth<=H+500;}
+function saveLayerActions(){try{localStorage.setItem(LAYER_STORAGE,JSON.stringify(layerState.actions));editNotice(`${layerState.actions.length} saved strokes · Undo available`);return true}catch(err){editNotice('Browser storage full or blocked. Export JSON to preserve edits.');return false;}}
+try{const stored=JSON.parse(localStorage.getItem(LAYER_STORAGE)||'[]');if(Array.isArray(stored)&&stored.length<=1000&&stored.every(isEditorAction))layerState.actions=stored;}catch(err){/* unavailable browser storage is safe */}
+function penBresenham(stroke,mark){
+ const half=Math.floor(stroke.size/2);
+ const stamp=(x,y)=>{const x0=Math.max(0,x-half),y0=Math.max(0,y-half),x1=Math.min(W,x0+stroke.size),y1=Math.min(H,y0+stroke.size);
+  for(let yy=y0;yy<y1;yy++){let idx=yy*W+x0;for(let xx=x0;xx<x1;xx++,idx++)mark(idx,xx,yy);}};
+ let prev=null;
+ for(const next of stroke.points){
+  if(prev){let x=prev[0],y=prev[1];const dx=Math.abs(next[0]-x),dy=Math.abs(next[1]-y),sx=x<next[0]?1:-1,sy=y<next[1]?1:-1;let err=dx-dy;
+   while(x!==next[0]||y!==next[1]){stamp(x,y);const twice=2*err;if(twice>-dy){err-=dy;x+=sx}if(twice<dx){err+=dx;y+=sy}}
+  }
+  stamp(next[0],next[1]);prev=next;
+ }
+}
+function makeCanvas(w,h){const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;return canvas}
+function strokeAutoDepth(x,y){
+ // Match nearby existing objects' base depth when painting additional leaves/edges.
+ let best=null,dist=Infinity;
+ for(const part of foregroundParts){const [bx,by,bw,bh]=part.bounds;
+  const dx=Math.max(bx-x,0,x-(bx+bw)),dy=Math.max(by-y,0,y-(by+bh));
+  const d=Math.hypot(dx,dy);if(d<dist){dist=d;best=part}
+ }
+ return Math.round(dist<=24?(best.sortY??(best.bounds[1]+best.bounds[3])):y+30);
+}
+function rebuildLayerEdits(){
+ if(!layerState.dirty||!worldArt.complete||!worldArt.naturalWidth||!foregroundArt.complete||!foregroundArt.naturalWidth)return;
+ const all=layerState.drawing?[...layerState.actions,layerState.drawing]:layerState.actions;
+ const owner=new Int32Array(W*H);owner.fill(-1);
+ const boxes=all.map(()=>({minX:W,minY:H,maxX:-1,maxY:-1}));
+ for(let i=0;i<all.length;i++){
+  const stroke=all[i];penBresenham(stroke,(id,x,y)=>{owner[id]=stroke.tool==='erase'?-2:i;const b=boxes[i];b.minX=Math.min(b.minX,x);b.minY=Math.min(b.minY,y);b.maxX=Math.max(b.maxX,x);b.maxY=Math.max(b.maxY,y)});
+ }
+ const eraseCanvas=makeCanvas(W,H),eCtx=eraseCanvas.getContext('2d',{willReadFrequently:false});
+ const erased=eCtx.createImageData(W,H),data=erased.data;
+ for(let i=0;i<owner.length;i++)if(owner[i]===-2){const p=i*4;data[p]=255;data[p+3]=255}
+ eCtx.putImageData(erased,0,0);
+ layerState.erasedCanvas=eraseCanvas;
+ layerState.renderParts.clear();
+ for(const part of foregroundParts){const [x,y,w,h]=part.bounds,[sx,sy,sw,sh]=part.atlas;
+  const out=makeCanvas(w,h),ctx=out.getContext('2d');ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(foregroundArt,sx,sy,sw,sh,0,0,w,h);ctx.globalCompositeOperation='destination-out';ctx.drawImage(eraseCanvas,x,y,w,h,0,0,w,h);ctx.globalCompositeOperation='source-over';
+  layerState.renderParts.set(part.name,out);
+ }
+ layerState.patches=[];
+ for(let i=0;i<all.length;i++){
+  const stroke=all[i];if(stroke.tool!=='paint')continue;const b=boxes[i];if(b.maxX<0)continue;
+  const x=b.minX,y=b.minY,w=b.maxX-x+1,h=b.maxY-y+1;
+  const canvas=makeCanvas(w,h),ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(worldArt,x,y,w,h,0,0,w,h);
+  const im=ctx.getImageData(0,0,w,h),pixels=im.data;
+  for(let yy=0;yy<h;yy++)for(let xx=0;xx<w;xx++)if(owner[(yy+y)*W+(xx+x)]!==i)pixels[(yy*w+xx)*4+3]=0;
+  ctx.putImageData(im,0,0);
+  const relative=stroke.depth;
+  const tint=makeCanvas(w,h),tg=tint.getContext('2d');tg.drawImage(canvas,0,0);tg.globalCompositeOperation='source-in';tg.fillStyle='#55ffaa';tg.fillRect(0,0,w,h);
+  layerState.patches.push({x,y,w,h,canvas,tint,sortY:relative});
+ }
+ layerState.owner=owner;layerState.dirty=false;greenMaskCache.clear();
+}
+function getPartImage(part){return layerState.renderParts.get(part.name)||null;}
+function paintEditorAtPoint(evt){const rect=c.getBoundingClientRect(),x=Math.floor((evt.clientX-rect.left)*W/rect.width),y=Math.floor((evt.clientY-rect.top)*H/rect.height);return [Math.max(0,Math.min(W-1,x)),Math.max(0,Math.min(H-1,y))]}
+function refreshLayerToolbar(){
+ layerEditorUI.hidden=!layerState.active;
+ c.classList.toggle('layer-editing',layerState.active&&!layerState.preview);
+ editorEl('editPaint').classList.toggle('current',layerState.tool==='paint');
+ editorEl('editErase').classList.toggle('current',layerState.tool==='erase');
+ editorEl('editUndo').disabled=layerState.actions.length===0;editorEl('editRedo').disabled=layerState.redo.length===0;
+ editorEl('editPreview').classList.toggle('current',layerState.preview);
+ editorEl('editPreview').textContent=layerState.preview?'◉ Back to painting':'◉ Playtest';
+ editorEl('editMasks').classList.toggle('current',layerState.maskView);
+ editorEl('editBrushLabel').textContent=layerState.size+' px';
+ editorEl('editDepthLabel').textContent=(layerState.offset>=0?'+':'')+layerState.offset+' px';
+ editorEl('editZoom').value=layerState.zoom;
+}
+function toggleLayerEditor(force){layerState.active=typeof force==='boolean'?force:!layerState.active;layerState.drawing=null;layerState.preview=false;dest=null;clickPath=[];keys.clear();
+ if(layerState.active){depthDebug=false;collisionDebug=false;foregroundEnabled=true;editNotice('Paint/erase directly on the game artwork. No collision is changed.');}
+ else{c.style.width='';layerState.zoom='fit'}
+ refreshLayerToolbar();c.focus();}
+editorEl('editorToggle').addEventListener('click',()=>toggleLayerEditor());
+editorEl('editClose').onclick=()=>toggleLayerEditor(false);
+editorEl('editPaint').onclick=()=>{layerState.tool='paint';refreshLayerToolbar()};
+editorEl('editErase').onclick=()=>{layerState.tool='erase';refreshLayerToolbar()};
+editorEl('editBrush').onchange=(e)=>{layerState.size=Number(e.target.value);refreshLayerToolbar()};
+editorEl('editDepth').oninput=(e)=>{layerState.offset=Number(e.target.value);refreshLayerToolbar()};
+editorEl('editZoom').onchange=(e)=>{layerState.zoom=e.target.value;c.style.width=layerState.zoom==='fit'?'':Math.round(W*Number(layerState.zoom))+'px';refreshLayerToolbar();};
+editorEl('editPreview').onclick=()=>{layerState.preview=!layerState.preview;layerState.hover=null;depthDebug=false;refreshLayerToolbar();c.focus()};
+editorEl('editMasks').onclick=()=>{layerState.maskView=!layerState.maskView;depthDebug=layerState.maskView;refreshLayerToolbar()};
+function layerHistoryRefresh(){layerState.dirty=true;saveLayerActions();refreshLayerToolbar();}
+editorEl('editUndo').onclick=()=>{if(layerState.actions.length){layerState.redo.push(layerState.actions.pop());layerHistoryRefresh()}};
+editorEl('editRedo').onclick=()=>{if(layerState.redo.length){layerState.actions.push(layerState.redo.pop());layerHistoryRefresh()}};
+editorEl('editSave').onclick=()=>{saveLayerActions();refreshLayerToolbar()};
+editorEl('editReset').onclick=()=>{if(!confirm('Clear ALL locally saved foreground brush edits? The original arcade masks will be restored.'))return;layerState.actions=[];layerState.redo=[];layerHistoryRefresh();editNotice('Foreground edits reset. Original masks preserved.');};
+function exportLayerEdits(){const data={format:'CodaArcadeForegroundStrokes',version:1,world:{width:W,height:H},strokes:layerState.actions};const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+ const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='coda-foreground-layer-edits.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1500);editNotice('Downloaded coda-foreground-layer-edits.json');}
+editorEl('editExport').onclick=exportLayerEdits;
+editorEl('editImport').onclick=()=>editorEl('editImportFile').click();
+editorEl('editImportFile').onchange=async(evt)=>{const file=evt.target.files?.[0];if(!file)return;try{const data=JSON.parse(await file.text());if(data.format!=='CodaArcadeForegroundStrokes'||data.version!==1||data.world?.width!==W||data.world?.height!==H||!Array.isArray(data.strokes)||data.strokes.length>1000||!data.strokes.every(isEditorAction))throw Error('Not a valid foreground edit file for this arcade map.');
+ if(!confirm(`Import ${data.strokes.length} strokes? This replaces the locally saved foreground edits.`))return;
+ layerState.actions=data.strokes.map(a=>({tool:a.tool,size:a.size,points:a.points,depth:a.depth}));layerState.redo=[];layerHistoryRefresh();editNotice(`Imported ${layerState.actions.length} foreground strokes.`);
+ }catch(err){editNotice('Import failed: '+err.message)}finally{evt.target.value=''}};
+function editorPointerDown(e){if(!layerState.active||layerState.preview)return false;
+ if(e.button!==0)return true;e.preventDefault();c.focus();const [x,y]=paintEditorAtPoint(e);
+ const action={tool:layerState.tool,size:layerState.size,points:[[x,y]],depth:Math.max(-500,Math.min(H+500,strokeAutoDepth(x,y)+layerState.offset))};
+ layerState.drawing=action;layerState.hover=[x,y];layerState.dirty=true;dest=null;clickPath=[];
+ try{c.setPointerCapture(e.pointerId)}catch{}return true;
+}
+function editorPointerMove(e){if(!layerState.active)return;const [x,y]=paintEditorAtPoint(e);layerState.hover=[x,y];if(!layerState.drawing)return;
+ const points=layerState.drawing.points,last=points[points.length-1];if((last[0]!==x||last[1]!==y)&&points.length<30000){points.push([x,y]);layerState.dirty=true;}
+}
+function editorPointerEnd(e){if(!layerState.drawing)return;const stroke=layerState.drawing;layerState.drawing=null;
+ if(stroke.points.length){if(layerState.actions.length>=1000){editNotice('1,000 stroke limit reached. Export your JSON before continuing.');return;}layerState.actions.push(stroke);layerState.redo=[];layerHistoryRefresh()}
+}
+function drawEditorOverlay(){if(!layerState.active||layerState.preview)return;
+ if(layerState.maskView){g.save();g.globalAlpha=.45;for(const part of foregroundParts){const img=getPartImage(part);if(img){const [x,y,w,h]=part.bounds;g.drawImage(img,x,y,w,h)}}g.restore()}
+ // Pixel-exact ghosting: green is added foreground, amber pixels are explicitly erased.
+ if(layerState.owner){const pts=layerState.owner;
+  // Mask visualization is a small tint drawn at edited pixels only.
+  g.save();g.globalAlpha=.45;
+  for(const patch of layerState.patches)g.drawImage(patch.tint,patch.x,patch.y);
+  g.restore();
+ }
+ if(layerState.hover){const [x,y]=layerState.hover,n=layerState.size,half=Math.floor(n/2);g.save();g.lineWidth=2;g.strokeStyle=layerState.tool==='paint'?'#64ffe0':'#ffcc64';g.strokeRect(x-half-.5,y-half-.5,n+1,n+1);g.restore()}
+}
+
+window.CODA_BUILD="9.0-layer-editor";
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -380,12 +530,15 @@ function drawForeground(part){
  const [x,y,w,h]=part.bounds,[sx,sy,sw,sh]=part.atlas;
  // Alpha masks contain only solid-object pixels. Floors and glows are never foreground.
  // The source rectangle never intersects any other object's pixels.
- g.drawImage(foregroundArt,sx,sy,sw,sh,x,y,w,h);
+ const modified=getPartImage(part);
+ if(modified)g.drawImage(modified,x,y,w,h);
+ else g.drawImage(foregroundArt,sx,sy,sw,sh,x,y,w,h);
 }
 function draw(){
  g.setTransform(1,0,0,1,0,0);g.fillStyle='#050716';g.fillRect(0,0,W,H);
  if(!worldArt.complete||!worldArt.naturalWidth){t('Loading the neon arcade…',W/2,H/2,24,'#9ff9ff');return;}
  g.imageSmoothingEnabled=false;
+ rebuildLayerEdits();
  g.drawImage(worldArt,0,0,W,H);cam.x=0;cam.y=0;
  // Removed obsolete doorway overlay, revealing the clean original corridor art.
  // The open doorway is already composited into the relocated entrance artwork.
@@ -411,12 +564,14 @@ function draw(){
  liveActors.push({type:'player',y:player.y,x:player.x});
  const scene=[...liveActors];
  for(const part of foregroundParts)scene.push({type:'foreground',y:(part.sortY??part.y),part});
+ for(const patch of layerState.patches)scene.push({type:'editor-paint',y:patch.sortY,patch});
  scene.sort((a,b)=>a.y-b.y||(a.type==='foreground'?1:-1));
  for(const item of scene){
   if(item.type==='foreground'){
    if(foregroundEnabled)drawForeground(item.part);
    continue;
   }
+  if(item.type==='editor-paint'){if(foregroundEnabled)g.drawImage(item.patch.canvas,item.patch.x,item.patch.y);continue;}
   if(item.type==='player'){
    g.save();g.globalCompositeOperation='screen';g.globalAlpha=.12;
    g.fillStyle='#7aefff';g.beginPath();g.ellipse(player.x,player.y+2,17,5,0,0,Math.PI*2);g.fill();g.restore();
@@ -450,7 +605,7 @@ function draw(){
     if(!overlay){
       overlay=document.createElement('canvas');overlay.width=w;overlay.height=h;
       const og=overlay.getContext('2d',{willReadFrequently:false});
-      og.imageSmoothingEnabled=false;og.drawImage(foregroundArt,sx,sy,sw,sh,0,0,w,h);
+      og.imageSmoothingEnabled=false;const modified=getPartImage(part);if(modified)og.drawImage(modified,0,0);else og.drawImage(foregroundArt,sx,sy,sw,sh,0,0,w,h);
       og.globalCompositeOperation='source-in';og.fillStyle='rgba(67,255,132,0.82)';
       og.fillRect(0,0,w,h);og.globalCompositeOperation='source-over';
       greenMaskCache.set(part.name,overlay);
@@ -461,6 +616,8 @@ function draw(){
     g.fillText(part.name,x,y-4);
    }
   }
+  // User-painted foreground pixels are included in the green preview.
+  for(const patch of layerState.patches){const m=makeCanvas(patch.w,patch.h),mg=m.getContext('2d');mg.drawImage(patch.canvas,0,0);mg.globalCompositeOperation='source-in';mg.fillStyle='#47ff8e';mg.fillRect(0,0,patch.w,patch.h);g.globalAlpha=.85;g.drawImage(m,patch.x,patch.y)}
   g.globalAlpha=.88;g.strokeStyle='#ff5757';g.lineWidth=1.7;
   for(const poly of structuralWalls){
    g.beginPath();poly.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));
@@ -468,8 +625,9 @@ function draw(){
   }
   g.restore();
  }
- if(near){g.globalAlpha=.91;r(near.x-62,near.y-93,124,25,'#18132e');g.globalAlpha=1;
+ if(near&&!layerState.active){g.globalAlpha=.91;r(near.x-62,near.y-93,124,25,'#18132e');g.globalAlpha=1;
   t('E · '+(near.type==='game'?'PLAY':near.type==='piano'?'ENTER':'INTERACT'),near.x,near.y-76,11,'#c8fff6');}
+ drawEditorOverlay();
 }
 window.CodaArcadeQA=Object.freeze({
   build:window.CODA_BUILD,
@@ -481,6 +639,9 @@ window.CodaArcadeQA=Object.freeze({
   position:()=>({x:player.x,y:player.y}),
   place:(x,y)=>{if(!inside(x,y))return false;player.x=x;player.y=y;dest=null;clickPath=[];return true;},
   masks:()=>foregroundParts.map(p=>p.name),
+  layerEditor:()=>({active:layerState.active,tool:layerState.tool,strokes:layerState.actions.length,redo:layerState.redo.length,paintPatches:layerState.patches.length,editedPixels:layerState.owner?layerState.owner.reduce((a,v)=>a+(v!==-1),0):0}),
+  foregroundPixelAlpha:(name,x,y)=>{const part=foregroundParts.find(p=>p.name===name);if(!part)return null;const b=part.bounds;if(x<b[0]||y<b[1]||x>=b[0]+b[2]||y>=b[1]+b[3])return null;const img=getPartImage(part);if(!img)return null;return img.getContext('2d',{willReadFrequently:true}).getImageData(Math.floor(x-b[0]),Math.floor(y-b[1]),1,1).data[3]},
+  editForegroundAt:(x,y,tool='paint',size=4,offset=0)=>{const action={tool,size,points:[[x,y]],depth:strokeAutoDepth(x,y)+offset};if(!isEditorAction(action))return false;layerState.actions.push(action);layerState.redo=[];layerHistoryRefresh();return true;},
   leafPassage:{blue:[[797,597],[835,654]],leaves:[754,609,65,72]},
   cornerRepair:{openFootStrip:[798,646,821,759],solidWall:[821,699,849,735]},
   debugState:()=>({collisionDebug,depthDebug,foregroundEnabled,greenMasksReady:greenMaskCache.size}),
@@ -491,7 +652,8 @@ function frame(ms){const dt=Math.min(.05,(ms-last)/1000||0);last=ms;
  console.error('Arcade frame error:',err);
  g.setTransform(1,0,0,1,0,0);g.fillStyle='#10142b';g.fillRect(0,0,W,H);
  g.fillStyle='#ffb9e5';g.font='bold 25px monospace';g.fillText('Arcade error: '+err.message,55,110);
- }requestAnimationFrame(frame)}window.addEventListener('keydown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const k=e.key.toLowerCase();if(k==='c'&&!e.repeat){collisionDebug=!collisionDebug;return;}if(k==='l'&&!e.repeat){depthDebug=!depthDebug;return;}if(k==='f'&&!e.repeat){foregroundEnabled=!foregroundEnabled;return;}if(k==='x'&&collisionDebug&&!e.repeat){exportCollision();return;}if(k==='r'&&e.shiftKey&&collisionDebug&&!e.repeat){localStorage.removeItem('codaCollisionEditsV891');window.location.reload();return;}if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k)){e.preventDefault();keys.add(k);if(k==='e'&&!e.repeat)talk();if(k==='q')emote=clock+2}});window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>keys.clear());c.addEventListener('pointerdown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const b=c.getBoundingClientRect();
+ }requestAnimationFrame(frame)}window.addEventListener('keydown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const k=e.key.toLowerCase();if(k==='l'&&e.shiftKey&&!e.repeat){e.preventDefault();toggleLayerEditor();return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='z'&&!e.repeat){e.preventDefault();editorEl(e.shiftKey?'editRedo':'editUndo').click();return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='y'&&!e.repeat){e.preventDefault();editorEl('editRedo').click();return;}if(layerState.active&&k==='escape'&&!e.repeat){e.preventDefault();toggleLayerEditor(false);return;}if(layerState.active&&!layerState.preview){if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k))e.preventDefault();return;}if(k==='c'&&!e.repeat){collisionDebug=!collisionDebug;return;}if(k==='l'&&!e.repeat){depthDebug=!depthDebug;return;}if(k==='f'&&!e.repeat){foregroundEnabled=!foregroundEnabled;return;}if(k==='x'&&collisionDebug&&!e.repeat){exportCollision();return;}if(k==='r'&&e.shiftKey&&collisionDebug&&!e.repeat){localStorage.removeItem('codaCollisionEditsV891');window.location.reload();return;}if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k)){e.preventDefault();keys.add(k);if(k==='e'&&!e.repeat)talk();if(k==='q')emote=clock+2}});window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>keys.clear());c.addEventListener('pointerdown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const b=c.getBoundingClientRect();
+ if(editorPointerDown(e))return;
  if(collisionDebug&&e.shiftKey){
   const xx=(e.clientX-b.left)*c.width/b.width,yy=(e.clientY-b.top)*c.height/b.height;
   const gx=Math.floor(xx/COLLISION_CELL),gy=Math.floor(yy/COLLISION_CELL);
@@ -508,7 +670,11 @@ function frame(ms){const dt=Math.min(.05,(ms-last)/1000||0);last=ms;
  }
  dest={x:cam.x+(e.clientX-b.left)*c.width/b.width/ART_SCALE,y:cam.y+(e.clientY-b.top)*c.height/b.height/ART_SCALE};
  clickPath=pathTo(player.x,player.y,dest.x,dest.y);
- if(!clickPath.length)dest=null;c.focus()});document.querySelector('#close').onclick=()=>dialog.style.display='none';document.querySelector('#fs').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else c.requestFullscreen?.()};// Phase 4.2 account, boutique, and song library bridge (preview only).
+ if(!clickPath.length)dest=null;c.focus()});c.addEventListener('pointermove',editorPointerMove);
+c.addEventListener('pointerup',editorPointerEnd);
+c.addEventListener('pointercancel',editorPointerEnd);
+c.addEventListener('pointerleave',()=>{layerState.hover=null});
+document.querySelector('#close').onclick=()=>dialog.style.display='none';document.querySelector('#fs').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else c.requestFullscreen?.()};// Phase 4.2 account, boutique, and song library bridge (preview only).
 const panel=document.querySelector('#panel'),panelBody=document.querySelector('#panelBody'),panelTitle=document.querySelector('#panelTitle');
 let firebaseApi=null,cloudAuth=null,cloudDb=null,cloudUser=null,profileReady=false,authMessage='Connecting…',songRecords={},songPlayer=null;
 const config=window.ARCADE_ACCOUNTS_CONFIG;
