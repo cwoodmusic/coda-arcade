@@ -3,7 +3,7 @@
 #gameoverlay{position:fixed;inset:0;z-index:100;background:#121327;display:flex;flex-direction:column}#gameoverlay[hidden]{display:none}.gamebar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#231a3c;border-bottom:2px solid #b583dc}.gamebar strong{color:#f0d7ff}#gameiframe{border:0;width:100%;flex:1;min-height:0;background:#111628}body.game-open{overflow:hidden}@media(max-width:650px){.gamebar{gap:6px}.gamebar strong{font-size:12px}.gamebar a{font-size:11px}}
 #panel{position:fixed;z-index:90;top:50%;left:50%;transform:translate(-50%,-50%);width:min(570px,94vw);max-height:84dvh;overflow:auto;padding:20px;background:#231c3b;border:2px solid #c69be9;box-shadow:0 0 0 100vmax #05030ab8,0 14px 55px #000c;border-radius:12px}#panel[hidden]{display:none}.panelHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.panelRow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0;padding:10px;border:1px solid #66517f;border-radius:7px}.panelRow small{display:block;opacity:.75}.formRow{display:grid;gap:5px;margin:10px 0}.formRow select,.formRow input{background:#17142c;color:#fff;border:1px solid #a08dbd;padding:9px;border-radius:5px;width:100%}.panelActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.muted{color:#c1b4d7;font-size:13px}.panelMsg{min-height:22px;color:#9fe9dc}body:has(#panel:not([hidden])) #view{filter:brightness(.65)}
 #pianoroom{position:fixed;inset:0;z-index:95;background:radial-gradient(ellipse at 50% 20%,#344962,#11172b 75%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#f5edff}#pianoroom[hidden]{display:none}#pianoroom .stage{border:9px solid #69567e;background:repeating-linear-gradient(90deg,#243349 0 32px,#28374d 32px 64px);width:min(650px,88vw);padding:30px;text-align:center;box-shadow:0 0 70px #b08ed255}#pianoroom .keys{display:flex;justify-content:center;margin:20px auto 0}#pianoroom .keys i{height:85px;width:27px;background:#eee9f3;border:2px solid #35324b;box-shadow:inset 0 -8px #aaa8bc}#pianoroom .keys i:nth-child(3n+2){background:#22223b;height:55px;width:18px;margin:0 -8px;z-index:1}#pianoroom h2{color:#9feaf2;letter-spacing:3px}#pianoroom button{font-size:16px}
-</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 7.9 · SOLID GEOMETRY + DEPTH</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1536" height="1024" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · C collision · L object edges · F foreground on/off · Shift-click edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 7.9 · geometry and depth QA · C collision · L layers</span></footer><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><div id="pianoroom" hidden><div class="stage"><h2>♫ PIANO LAB ♫</h2><p>A quieter music space away from the arcade floor.</p><div class="keys"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p style="opacity:.7">Dedicated room preview — instruments and activities coming later.</p></div><button id="closepiano">← Return to Arcade</button></div><script>
+</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 8.0 · ENTRANCE OPEN + LAYER TUNING</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1536" height="1024" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · C collision · L object edges · F foreground on/off · Shift-click edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 8.0 · entrance open + layer tuning · C collision · L layers</span></footer><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><div id="pianoroom" hidden><div class="stage"><h2>♫ PIANO LAB ♫</h2><p>A quieter music space away from the arcade floor.</p><div class="keys"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p style="opacity:.7">Dedicated room preview — instruments and activities coming later.</p></div><button id="closepiano">← Return to Arcade</button></div><script>
 (()=>{'use strict';const c=document.querySelector('#view'),g=c.getContext('2d',{alpha:false}),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}const W=1536,H=1024,ART_SCALE=1,keys=new Set();let player={x:1168,y:365},cam={x:0,y:0},dest=null,emote=0,near=null,last=0,clock=0,walking=false,facing="down";const rooms=[{id:'lounge',name:'LOUNGE',x:60,y:100,w:330,h:270},{id:'dance',name:'DANCE',x:45,y:620,w:580,h:325},{id:'arcade',name:'ARCADE',x:490,y:110,w:735,h:435}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:694,y:279,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:810,y:279,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:927,y:279,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1047,y:279,url:'song-machine/index.html'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
 const looks=[['#e5b48d','#ed8cbe','#171424','spiky'],['#85543b','#8ddde6','#e3c27d','long'],['#f4cba6','#c9a3f1','#402c4b','buns'],['#a56b48','#f4ae77','#1c172d','short'],['#f3c3a1','#b2f37b','#6c3159','bob'],['#704633','#a8b5fc','#eee6df','curly'],['#f0b79d','#ffd48c','#171424','ponytail']];const npc=[{name:'Ziggy',x:1380,y:524,mode:'enter',goal:0,wait:0,look:0},{name:'Nova',x:1380,y:524,mode:'enter',goal:1,wait:1.7,look:1},{name:'Byte',x:1380,y:524,mode:'enter',goal:2,wait:3.4,look:2},{name:'Mochi',x:1380,y:524,mode:'enter',goal:3,wait:5,look:3},{name:'Riff',x:1380,y:524,mode:'enter',goal:0,wait:7,look:4},{name:'Fizz',x:1380,y:524,mode:'enter',goal:1,wait:9,look:5},{name:'Dot',x:1380,y:524,mode:'enter',goal:2,wait:11,look:6}];const sofas=[{x:105,y:135,w:110,h:45},{x:240,y:135,w:110,h:45}];const seats=[{x:125,y:260},{x:328,y:270},{x:146,y:312},{x:329,y:312}];const spot=(p)=>p.mode==='cabinet'?{x:games[p.goal%4].x,y:355}:p.mode==='lounge'?seats[p.goal%4]:p.mode==='dance'?{x:175+(p.goal%4)*120,y:750+(p.goal%2)*70}:p.mode==='leave'?{x:1380,y:524}:{x:1380,y:524};const r=(x,y,w,h,color)=>{g.fillStyle=color;g.fillRect(Math.round(x),Math.round(y),w,h)};const t=(s,x,y,size=18,color='#e7e2ff')=>{g.fillStyle=color;g.font=`bold ${size}px monospace`;g.textAlign='center';g.fillText(s,x,y)};function sprite(x,y,look,walk=false,dance=false,scale=1){const [skin,shirt,hair,style]=look;g.save();g.translate(Math.round(x),Math.round(y));g.scale(scale,scale);const bob=dance?Math.sin(clock*8)*5:walk?Math.sin(clock*12)*2:0;r(-10,-38+bob,20,17,hair);if(style==='buns'){r(-15,-39+bob,6,7,hair);r(9,-39+bob,6,7,hair)}if(style==='long')r(-13,-30+bob,26,20,hair);r(-9,-32+bob,18,16,skin);r(-12,-16+bob,24,20,shirt);r(-16,-12+bob,4,13,skin);r(12,-12+bob,4,13,skin);r(-9,4+bob,7,11,'#695d99');r(2,4+bob,7,11,'#695d99');r(-10,14+bob,9,4,'#f8d56b');r(1,14+bob,9,4,'#f8d56b');r(-6,-24+bob,3,3,'#222033');r(4,-24+bob,3,3,'#222033');if(dance){const beat=Math.floor(clock*4+look[0].length)%4,up=beat%2===0;r(-18,-(up?29:13)+bob,5,up?16:11,skin);r(13,-(up?13:29)+bob,5,up?11:16,skin);r(-10+(up?-5:3),14+bob,9,5,'#f8d56b');r(1+(up?4:-4),14+bob,9,5,'#f8d56b')}g.restore()};
 // Phase 7.1: world-coordinate collision, small foot hitboxes, and A* navigation.
@@ -112,8 +112,6 @@ function insidePhysicalFloor(x,y){
  if(x>=1139&&x<1186&&y>=449&&y<495)return false;
  // Entrances should be approached from FLOOR rather than climbed from walls.
  if(x>=1295&&x<=1473&&y>=371&&y<459)return false;
- // Closed entrance door: feet must stay on the approach landing, not the glass.
- if(x>=1330&&x<=1450&&y>=459&&y<504)return false;
  // Front lip of the entrance platform is a vertical face.
  if(x>=1230&&x<=1505&&y>=548&&y<=644)return false;
  return true;
@@ -146,7 +144,7 @@ const fixturePots=[
  [76,808,17,14],[151,888,18,15],[237,934,18,13],[422,939,18,13],
  [467,900,21,14],[555,893,22,15],[658,900,20,15],[691,768,20,14],
  [797,815,18,13],[739,682,21,12],[798,547,22,14],
- [1209,483,20,16],[1272,480,19,14],[1474,478,20,13],
+ // Entrance platform plants are decorative and should not pinch the walkway.
  [1345,289,21,15],[554,451,20,15],[570,347,20,13],[585,306,18,14]
 ];
 function insideFixture(x,y){
@@ -397,6 +395,64 @@ const foregroundParts=[{"name":"lounge_couch","y":233,"bounds":[122,148,268,85],
 // Removed three duplicate legacy wall sprites here: their broad alpha regions
 // overpainted player sprites and sometimes even adjacent dance floor pixels.
 // The precise structural wall masks above are the sole occlusion layers.
+
+const sortYOverrides={
+ lounge_couch:272,
+ lounge_table:286,
+ lounge_side_table:336,
+ boutique_counter:486,
+ boutique_north_wall:536,
+ boutique_rooftop_palm:392,
+ boutique_side_palm:490,
+ boutique_palm:496,
+ main_palm_left:540,
+ main_palm_right:548,
+ arcade_counter_palm_center:570,
+ main_front_wall:620,
+ central_wall_west:640,
+ central_wall_middle:636,
+ central_wall_corner:678,
+ dance_right_couch:786,
+ dance_palm_left:794,
+ dance_palm_right:818,
+ dance_bottom_palm:958,
+ dance_bottom_right_palm:860,
+ dance_floor_right_palm:944,
+ dance_front_left_palm:960,
+ dance_stairs_left_palm:986,
+ dance_front_right_palm:946,
+ hall_fame_small_palm:430,
+ hall_terminal_palm:372,
+ hall_terminal_case:346,
+ entrance_stair_palm:544,
+ entrance_upper_bench:432,
+ entrance_sign_canopy:560,
+ entrance_frame_left:572,
+ entrance_frame_right:572,
+ dance_east_wall_upper:782,
+ dance_east_wall_lower:982
+};
+for(const part of foregroundParts){ if(sortYOverrides[part.name]!=null) part.sortY=sortYOverrides[part.name]; }
+function drawOpenEntrance(){
+ // Visually open the glass doors into a dark doorway.
+ g.save();
+ const left=1355, top=446, width=64, height=88;
+ const grad=g.createLinearGradient(left,top,left,top+height);
+ grad.addColorStop(0,'rgba(20,24,36,0.78)');
+ grad.addColorStop(1,'rgba(4,8,16,0.94)');
+ g.fillStyle=grad;
+ g.fillRect(left,top,width,height);
+ g.globalCompositeOperation='screen';
+ g.globalAlpha=.18;
+ g.fillStyle='#6ee6ff';
+ g.fillRect(left+2,top+8,6,height-16);
+ g.fillRect(left+width-8,top+8,6,height-16);
+ g.globalAlpha=.12;
+ g.fillStyle='#ffffff';
+ g.fillRect(left+20,top+10,2,height-20);
+ g.fillRect(left+42,top+10,2,height-20);
+ g.restore();
+}
 let depthDebug=false,foregroundEnabled=true;
 window.CODA_BUILD="7.9-depth-and-collision";
 function drawActor(name,x,y,w=38,h=52,bob=0){
@@ -424,6 +480,7 @@ function draw(){
  g.imageSmoothingEnabled=false;
  g.drawImage(worldArt,0,0,W,H);cam.x=0;cam.y=0;
  if(danceDoorArt.complete&&danceDoorArt.naturalWidth)g.drawImage(danceDoorArt,0,0,W,H);
+ drawOpenEntrance();
  // Beat-synced dance tiles and softly moving club lighting over the existing art.
  g.save();g.globalCompositeOperation='screen';
  const palette=['#fa6ac5','#50dfff','#f7dd78','#a77bff','#76ffc3'];
@@ -445,7 +502,7 @@ function draw(){
  }
  liveActors.push({type:'player',y:player.y,x:player.x});
  const scene=[...liveActors];
- for(const part of foregroundParts)scene.push({type:'foreground',y:part.y,part});
+ for(const part of foregroundParts)scene.push({type:'foreground',y:(part.sortY??part.y),part});
  scene.sort((a,b)=>a.y-b.y||(a.type==='foreground'?1:-1));
  for(const item of scene){
   if(item.type==='foreground'){
