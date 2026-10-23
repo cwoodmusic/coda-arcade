@@ -6,7 +6,7 @@
 
 #layerEditor{position:fixed;right:14px;top:174px;z-index:60;width:min(292px,calc(100vw - 24px));background:#17152aef;border:1px solid #72f5c8;box-shadow:0 10px 32px #000b,0 0 20px #2fecb228;border-radius:12px;padding:13px;color:#f0eaff;max-height:calc(100dvh - 190px);overflow-y:auto;font-size:13px;backdrop-filter:blur(7px)}
 #layerEditor[hidden]{display:none}#layerEditor button,#layerEditor select{font:inherit;min-height:31px;padding:5px 7px}#layerEditor .editorline{display:flex;gap:7px;align-items:center;margin:8px 0}#layerEditor .editorline>*{flex:1;min-width:0}#layerEditor label{display:block;font-weight:600}#layerEditor .mini{font-size:11px;opacity:.76;line-height:1.45;margin:6px 0}#layerEditor .current{border-color:#4dfac0;background:#175d52}#layerEditor .editorbanner{display:flex;align-items:center;justify-content:space-between;color:#a8fff0;margin-bottom:9px}#layerEditor input[type=range]{width:100%}#layerEditor .editnotice{min-height:24px;font-size:11px;color:#aeffd9;margin-top:10px;overflow-wrap:anywhere}#view.layer-editing{cursor:crosshair;touch-action:none}#editorToggle{border-color:#63dcae}#layerEditor .editorline button:disabled{opacity:.4;cursor:not-allowed}
-</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 9.0 · IN-GAME LAYER EDITOR</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · C collision · L layer outlines · Shift+L EDIT layers · F foreground on/off · Shift-click collision edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 9.0 · Shift+L layer editor · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
+</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 9.1 · PUBLISHED FOREGROUND FIXES</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · C collision · L layer outlines · Shift+L EDIT layers · F foreground on/off · Shift-click collision edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 9.1 · published layer fixes · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
   <div class="editorbanner"><b>✎ FOREGROUND EDITOR</b><button id="editClose" type="button">✕</button></div>
   <div class="mini">Paint with pixels from the existing arcade artwork. Erase removes unwanted foreground coverage; the floor stays unchanged.</div>
   <div class="editorline"><button type="button" id="editPaint" class="current">🖌 Paint</button><button type="button" id="editErase">⌫ Erase</button></div>
@@ -386,12 +386,31 @@ const greenMaskCache=new Map();
 // The world image remains untouched; these edits affect foreground masks only.
 const layerEditorUI=document.querySelector('#layerEditor');
 const layerState={active:false,tool:'paint',size:4,offset:0,preview:false,maskView:false,zoom:'fit',actions:[],redo:[],drawing:null,hover:null,dirty:true,renderParts:new Map(),patches:[],erasedCanvas:null,owner:null};
-const LAYER_STORAGE='codaForegroundEditsV1';
+// Published foreground corrections from the user’s exported editor JSON.
+// Kept separate from later local edits: all visitors receive these by default.
+const PUBLISHED_LAYER_STROKES=[{"tool":"erase","size":4,"points":[[830,681],[830,682],[830,684],[830,686],[829,691],[828,691],[828,692],[826,692],[823,698],[822,698],[822,697],[822,696],[822,694],[822,693],[822,692],[822,691],[822,690],[822,689],[822,688],[822,685],[822,681],[822,679],[822,677],[822,679],[821,682],[821,685],[821,686],[821,685],[821,684],[821,682],[821,681],[821,680],[821,679],[821,677],[821,676]],"depth":774},{"tool":"erase","size":8,"points":[[826,684],[826,685],[826,686],[826,689],[826,690],[825,690],[825,691],[825,692],[825,693],[824,693],[823,693],[822,693],[822,692],[821,692],[820,690],[819,689],[819,688],[819,686],[819,685],[819,684],[819,683],[819,682],[819,681],[819,680],[819,676],[819,675],[817,676],[816,677],[813,680],[812,681],[811,683],[811,684],[811,685],[811,686],[811,689],[811,690],[811,691],[811,692],[811,694],[812,694],[814,696],[815,697],[815,698]],"depth":774},{"tool":"paint","size":8,"points":[[405,214],[405,213],[406,212],[406,209],[407,208],[407,207],[408,206],[408,205],[409,205],[411,204],[413,204],[414,204],[415,204],[416,204],[416,208],[416,209],[415,209],[415,208],[414,208],[414,207],[413,207],[413,206],[413,205],[413,204],[413,202],[413,199],[413,198],[413,197],[413,194],[413,193],[413,190],[413,189],[413,188],[412,188],[412,187],[412,186],[412,185],[412,183],[412,181],[412,179],[412,177],[412,176],[412,173],[412,172],[412,173],[412,176],[413,176],[413,174],[413,173],[414,173],[413,173],[411,173],[409,173],[408,173],[406,173],[405,173],[404,172],[403,170],[401,169],[401,168],[403,171],[403,172],[404,172],[404,177],[404,178],[404,179],[404,180],[404,182],[404,183],[404,186],[404,187],[405,188],[406,189],[406,190],[406,191],[406,193],[406,194],[406,195],[406,196],[406,197]],"depth":239},{"tool":"paint","size":8,"points":[[1175,558],[1175,556],[1175,555],[1175,554],[1175,552],[1175,547],[1175,545],[1175,544],[1175,543]],"depth":584},{"tool":"erase","size":8,"points":[[1175,556],[1175,555],[1175,552],[1173,550],[1173,549],[1173,547],[1173,546],[1173,545],[1173,543],[1173,542],[1173,541],[1173,540],[1173,538],[1173,537],[1173,536],[1173,535],[1173,534],[1171,532],[1171,530],[1169,529],[1167,529],[1167,528],[1167,527],[1164,526],[1163,524],[1163,523],[1163,521],[1163,519],[1163,518],[1164,517],[1166,516],[1166,515],[1166,514],[1166,512],[1166,511],[1166,509],[1166,508],[1167,507],[1167,506],[1167,504],[1168,504],[1169,503],[1169,502],[1170,502],[1170,501]],"depth":584}];
+const LAYER_STORAGE='codaForegroundEditsV2';
 const editorEl=(id)=>document.getElementById(id);
 const editNotice=(message)=>{editorEl('editNotice').textContent=message;};
 function isEditorAction(a){return a&&['paint','erase'].includes(a.tool)&&[1,2,4,8,16].includes(a.size)&&Array.isArray(a.points)&&a.points.length>0&&a.points.length<=30000&&a.points.every(p=>Array.isArray(p)&&p.length===2&&Number.isInteger(p[0])&&Number.isInteger(p[1])&&p[0]>=0&&p[0]<W&&p[1]>=0&&p[1]<H)&&Number.isFinite(a.depth)&&a.depth>=-500&&a.depth<=H+500;}
 function saveLayerActions(){try{localStorage.setItem(LAYER_STORAGE,JSON.stringify(layerState.actions));editNotice(`${layerState.actions.length} saved strokes · Undo available`);return true}catch(err){editNotice('Browser storage full or blocked. Export JSON to preserve edits.');return false;}}
-try{const stored=JSON.parse(localStorage.getItem(LAYER_STORAGE)||'[]');if(Array.isArray(stored)&&stored.length<=1000&&stored.every(isEditorAction))layerState.actions=stored;}catch(err){/* unavailable browser storage is safe */}
+// Upgrade browser-local edits. Skip the five strokes now built into the published
+// arcade so the creator doesn't see the same paint twice after deploying.
+const sameStroke=(a,b)=>a.tool===b.tool&&a.size===b.size&&a.depth===b.depth&&
+ a.points.length===b.points.length&&a.points.every((p,i)=>p[0]===b.points[i][0]&&p[1]===b.points[i][1]);
+try{
+ const current=localStorage.getItem(LAYER_STORAGE);
+ if(current!==null){
+  const stored=JSON.parse(current);
+  if(Array.isArray(stored)&&stored.length<=1000&&stored.every(isEditorAction))layerState.actions=stored;
+ }else{
+  const previous=JSON.parse(localStorage.getItem('codaForegroundEditsV1')||'[]');
+  if(Array.isArray(previous)&&previous.length<=1000&&previous.every(isEditorAction)){
+   layerState.actions=previous.filter(a=>!PUBLISHED_LAYER_STROKES.some(b=>sameStroke(a,b)));
+   localStorage.setItem(LAYER_STORAGE,JSON.stringify(layerState.actions));
+  }
+ }
+}catch(err){/* unavailable browser storage is safe */}
 function penBresenham(stroke,mark){
  const half=Math.floor(stroke.size/2);
  const stamp=(x,y)=>{const x0=Math.max(0,x-half),y0=Math.max(0,y-half),x1=Math.min(W,x0+stroke.size),y1=Math.min(H,y0+stroke.size);
@@ -416,7 +435,10 @@ function strokeAutoDepth(x,y){
 }
 function rebuildLayerEdits(){
  if(!layerState.dirty||!worldArt.complete||!worldArt.naturalWidth||!foregroundArt.complete||!foregroundArt.naturalWidth)return;
- const all=layerState.drawing?[...layerState.actions,layerState.drawing]:layerState.actions;
+ // Permanent base strokes always render, even in a new browser or after Reset.
+ const all=layerState.drawing
+  ?[...PUBLISHED_LAYER_STROKES,...layerState.actions,layerState.drawing]
+  :[...PUBLISHED_LAYER_STROKES,...layerState.actions];
  const owner=new Int32Array(W*H);owner.fill(-1);
  const boxes=all.map(()=>({minX:W,minY:H,maxX:-1,maxY:-1}));
  for(let i=0;i<all.length;i++){
@@ -479,14 +501,17 @@ function layerHistoryRefresh(){layerState.dirty=true;saveLayerActions();refreshL
 editorEl('editUndo').onclick=()=>{if(layerState.actions.length){layerState.redo.push(layerState.actions.pop());layerHistoryRefresh()}};
 editorEl('editRedo').onclick=()=>{if(layerState.redo.length){layerState.actions.push(layerState.redo.pop());layerHistoryRefresh()}};
 editorEl('editSave').onclick=()=>{saveLayerActions();refreshLayerToolbar()};
-editorEl('editReset').onclick=()=>{if(!confirm('Clear ALL locally saved foreground brush edits? The original arcade masks will be restored.'))return;layerState.actions=[];layerState.redo=[];layerHistoryRefresh();editNotice('Foreground edits reset. Original masks preserved.');};
+editorEl('editReset').onclick=()=>{if(!confirm('Clear locally saved foreground brush edits? The published arcade fixes will remain active.'))return;layerState.actions=[];layerState.redo=[];layerHistoryRefresh();editNotice('Local edits reset. Published foreground fixes preserved.');};
 function exportLayerEdits(){const data={format:'CodaArcadeForegroundStrokes',version:1,world:{width:W,height:H},strokes:layerState.actions};const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
  const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='coda-foreground-layer-edits.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1500);editNotice('Downloaded coda-foreground-layer-edits.json');}
 editorEl('editExport').onclick=exportLayerEdits;
 editorEl('editImport').onclick=()=>editorEl('editImportFile').click();
 editorEl('editImportFile').onchange=async(evt)=>{const file=evt.target.files?.[0];if(!file)return;try{const data=JSON.parse(await file.text());if(data.format!=='CodaArcadeForegroundStrokes'||data.version!==1||data.world?.width!==W||data.world?.height!==H||!Array.isArray(data.strokes)||data.strokes.length>1000||!data.strokes.every(isEditorAction))throw Error('Not a valid foreground edit file for this arcade map.');
  if(!confirm(`Import ${data.strokes.length} strokes? This replaces the locally saved foreground edits.`))return;
- layerState.actions=data.strokes.map(a=>({tool:a.tool,size:a.size,points:a.points,depth:a.depth}));layerState.redo=[];layerHistoryRefresh();editNotice(`Imported ${layerState.actions.length} foreground strokes.`);
+ layerState.actions=data.strokes.filter(a=>!PUBLISHED_LAYER_STROKES.some(b=>sameStroke(a,b)))
+  .map(a=>({tool:a.tool,size:a.size,points:a.points,depth:a.depth}));
+ layerState.redo=[];layerHistoryRefresh();
+ editNotice(`Imported ${layerState.actions.length} additional strokes; ${PUBLISHED_LAYER_STROKES.length} published fixes remain active.`);
  }catch(err){editNotice('Import failed: '+err.message)}finally{evt.target.value=''}};
 function editorPointerDown(e){if(!layerState.active||layerState.preview)return false;
  if(e.button!==0)return true;e.preventDefault();c.focus();const [x,y]=paintEditorAtPoint(e);
@@ -512,7 +537,7 @@ function drawEditorOverlay(){if(!layerState.active||layerState.preview)return;
  if(layerState.hover){const [x,y]=layerState.hover,n=layerState.size,half=Math.floor(n/2);g.save();g.lineWidth=2;g.strokeStyle=layerState.tool==='paint'?'#64ffe0':'#ffcc64';g.strokeRect(x-half-.5,y-half-.5,n+1,n+1);g.restore()}
 }
 
-window.CODA_BUILD="9.0-layer-editor";
+window.CODA_BUILD="9.1-published-layer-fixes";
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -639,7 +664,7 @@ window.CodaArcadeQA=Object.freeze({
   position:()=>({x:player.x,y:player.y}),
   place:(x,y)=>{if(!inside(x,y))return false;player.x=x;player.y=y;dest=null;clickPath=[];return true;},
   masks:()=>foregroundParts.map(p=>p.name),
-  layerEditor:()=>({active:layerState.active,tool:layerState.tool,strokes:layerState.actions.length,redo:layerState.redo.length,paintPatches:layerState.patches.length,editedPixels:layerState.owner?layerState.owner.reduce((a,v)=>a+(v!==-1),0):0}),
+  layerEditor:()=>({active:layerState.active,tool:layerState.tool,publishedStrokes:PUBLISHED_LAYER_STROKES.length,strokes:layerState.actions.length,redo:layerState.redo.length,paintPatches:layerState.patches.length,editedPixels:layerState.owner?layerState.owner.reduce((a,v)=>a+(v!==-1),0):0}),
   foregroundPixelAlpha:(name,x,y)=>{const part=foregroundParts.find(p=>p.name===name);if(!part)return null;const b=part.bounds;if(x<b[0]||y<b[1]||x>=b[0]+b[2]||y>=b[1]+b[3])return null;const img=getPartImage(part);if(!img)return null;return img.getContext('2d',{willReadFrequently:true}).getImageData(Math.floor(x-b[0]),Math.floor(y-b[1]),1,1).data[3]},
   editForegroundAt:(x,y,tool='paint',size=4,offset=0)=>{const action={tool,size,points:[[x,y]],depth:strokeAutoDepth(x,y)+offset};if(!isEditorAction(action))return false;layerState.actions.push(action);layerState.redo=[];layerHistoryRefresh();return true;},
   leafPassage:{blue:[[797,597],[835,654]],leaves:[754,609,65,72]},
