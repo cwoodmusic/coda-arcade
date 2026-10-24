@@ -67,9 +67,42 @@ class FishingWorldTests(_world.WorldBrowserCase):
     def field(self,selector,value):
         control=self.page.locator('#'+selector);control.fill(str(value));control.dispatch_event('change');self.page.clock.run_for(32)
 
+    def walk_to(self,x,y):
+        canvas=self.page.locator('#fishingLakeCanvas');canvas.scroll_into_view_if_needed();box=canvas.bounding_box()
+        point={'id':1,'x':box['x']+x/1000*box['width'],'y':box['y']+y/620*box['height']}
+        touch=self.page.evaluate('navigator.maxTouchPoints>0')
+        client=self.context.new_cdp_session(self.page) if touch else None
+        if client:client.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[point]})
+        else:self.page.mouse.click(point['x'],point['y'])
+        try:
+            for _ in range(30):
+                self.page.clock.run_for(120);player=self.state()['player']
+                if (player['x']-x)**2+(player['y']-y)**2<64:break
+        finally:
+            if client:client.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]});client.detach()
+        self.page.clock.run_for(32)
+
+    def board(self):
+        if self.page.locator('#fishingBoatBoard').is_disabled():
+            landing=self.state().get('shore',{}).get('spawn',{'x':135,'y':285});self.walk_to(landing['x'],landing['y'])
+        pier=self.state().get('boardingPoint',{'x':218,'y':380});self.walk_to(pier['x'],pier['y'])
+        self.assertFalse(self.page.locator('#fishingBoatBoard').is_disabled())
+        self.page.locator('#fishingBoatBoard').click();self.page.clock.run_for(40)
+
+    def approach_shadow(self):
+        for _ in range(16):
+            if not self.page.locator('#fishingCast').is_disabled():return
+            state=self.state();boat=state['boat'];fish=min((item for item in state['shadows'] if item['visible']),key=lambda item:(item['x']-boat['x'])**2+(item['y']-boat['y'])**2)
+            dx,dy=fish['x']-boat['x'],fish['y']-boat['y'];directions=(['d' if dx>0 else 'a'] if abs(dx)>8 else [])+(['s' if dy>0 else 'w'] if abs(dy)>8 else [])
+            self.page.locator('#fishingLakeCanvas').focus()
+            for key in directions:self.page.keyboard.down(key)
+            self.page.clock.run_for(200)
+            for key in directions:self.page.keyboard.up(key)
+        self.fail('Swimming fish should remain approachable within casting range')
+
     def cast(self,meter='4/4'):
         self.enter();self.page.locator('#fishingMeter').select_option(meter)
-        self.page.locator('#fishingBoatBoard').click();self.page.clock.run_for(40)
+        self.board();self.approach_shadow()
         self.page.locator('#fishingCast').click();self.page.clock.run_for(2400)
         self.assertEqual(self.state()['phase'],'rhythm');self.page.locator('#fishingTap').focus()
 
@@ -92,7 +125,7 @@ class FishingWorldTests(_world.WorldBrowserCase):
         self.page.locator('[data-captain-topic="rhythm"]').click();lesson=self.page.locator('#fishingCaptainWords').inner_text().lower()
         self.assertIn('tap',lesson);self.assertIn('rest',lesson);self.assertIn('bar',lesson)
         self.page.keyboard.press('Escape');self.assertEqual(self.state()['phase'],'shore')
-        self.page.locator('#fishingBoatBoard').click();before=self.state()['boat'];self.page.locator('#fishingLakeCanvas').focus()
+        self.board();before=self.state()['boat'];self.page.locator('#fishingLakeCanvas').focus()
         self.page.keyboard.down('d');self.page.clock.run_for(300);self.page.keyboard.up('d')
         self.assertGreater(self.state()['boat']['x'],before['x']+20)
         self.assertEqual(self.page.evaluate('CodaArcadeQA.position()'),outside)
@@ -142,14 +175,14 @@ class FishingWorldTests(_world.WorldBrowserCase):
 
     def test_touch_entry_held_boat_steering_release_and_compound_meter_phone(self):
         self.enter();self.page.clock.run_for(100);self.assertEqual(self.page.evaluate('CodaArcadeQA.touch().context'),'fishing')
-        self.page.locator('#fishingBoatBoard').tap();self.page.clock.run_for(64);before=self.state()['boat']
+        self.board();self.page.clock.run_for(64);before=self.state()['boat']
         box=self.page.locator('#fishingLakeCanvas').bounding_box();client=self.context.new_cdp_session(self.page)
         point={'x':box['x']+500/1000*box['width'],'y':box['y']+415/620*box['height'],'id':1}
         client.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[point]});self.page.clock.run_for(300)
         self.assertGreater(self.state()['boat']['x'],before['x']+15);self.assertTrue(self.state()['fingerWalk']['following'])
         client.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]});self.page.clock.run_for(32);stopped=self.state()['boat'];self.page.clock.run_for(200)
         self.assertEqual(self.state()['boat'],stopped);self.assertFalse(self.state()['fingerWalk']['following']);client.detach()
-        self.page.locator('#fishingMeter').select_option('6/8');self.page.locator('#fishingCast').tap();self.page.clock.run_for(1800)
+        self.page.locator('#fishingMeter').select_option('6/8');self.approach_shadow();self.page.locator('#fishingCast').tap();self.page.clock.run_for(1800)
         challenge=self.state()['challenge'];self.assertEqual(challenge['meter'],'6/8');self.assertEqual(challenge['pulseUnit'],'dotted-quarter');self.assertEqual(challenge['countInBeats'],2)
         self.assertFalse(self.page.evaluate('CodaArcadeQA.touch().visible'),'The rhythm tap surface replaces movement controls during the challenge')
         self.assertGreaterEqual(self.page.locator('#fishingTap').bounding_box()['height'],64)

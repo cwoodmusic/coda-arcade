@@ -31,7 +31,7 @@ class Handler(SimpleHTTPRequestHandler):
 <button id="enter">Enter the cave</button><section id="fishing" hidden></section>
 <script src="/character-renderer.js"></script><script src="/finger-follow.js"></script>
 <script src="/music-notation.js"></script>
-<script src="/rhythm-fishing-engine.js"></script><script src="/rhythm-fishing.js"></script>
+<script src="/rhythm-fishing-engine.js"></script><script src="/fishing-cave-layout.js"></script><script src="/fishing-cave-effects.js"></script><script src="/fish-shadow-motion.js"></script><script src="/rhythm-beaming.js"></script><script src="/rhythm-fishing.js"></script>
 <script>
 window.rewards=[];window.rewardCalls=[];window.exits=0;window.failReward=false;
 window.failStorage=false;
@@ -118,13 +118,60 @@ class RhythmFishingTests(unittest.TestCase):
     def state(self):
         return self.page.evaluate('lab.getState()')
 
+    def walk_to(self, x, y):
+        canvas = self.page.locator('#fishingLakeCanvas')
+        canvas.scroll_into_view_if_needed()
+        box = canvas.bounding_box()
+        point = {'id': 1, 'x': box['x']+x/1000*box['width'],
+                 'y': box['y']+y/620*box['height']}
+        touch = self.page.evaluate('navigator.maxTouchPoints>0')
+        client = self.context.new_cdp_session(self.page) if touch else None
+        if client:
+            client.send('Input.dispatchTouchEvent', {'type':'touchStart','touchPoints':[point]})
+        else:
+            self.page.mouse.click(point['x'],point['y'])
+        try:
+            for _ in range(30):
+                self.page.clock.run_for(120)
+                player = self.state()['player']
+                if (player['x']-x)**2+(player['y']-y)**2 < 8**2:
+                    break
+        finally:
+            if client:
+                client.send('Input.dispatchTouchEvent', {'type':'touchEnd','touchPoints':[]})
+                client.detach()
+        self.page.clock.run_for(32)
+
     def board(self):
+        if self.page.locator('#fishingBoatBoard').is_disabled():
+            landing=self.state().get('shore',{}).get('spawn',{'x':135,'y':285})
+            self.walk_to(landing['x'],landing['y'])
+        pier=self.state().get('boardingPoint',{'x':218,'y':380})
+        self.walk_to(pier['x'],pier['y'])
+        self.assertFalse(self.page.locator('#fishingBoatBoard').is_disabled(),
+                         'Walking to the pier should make the boat reachable')
         self.page.locator('#fishingBoatBoard').click()
         self.page.clock.run_for(40)
+
+    def approach_shadow(self):
+        for _ in range(16):
+            if not self.page.locator('#fishingCast').is_disabled():
+                return
+            state=self.state();boat=state['boat']
+            fish=min((item for item in state['shadows'] if item['visible']),
+                     key=lambda item:(item['x']-boat['x'])**2+(item['y']-boat['y'])**2)
+            dx,dy=fish['x']-boat['x'],fish['y']-boat['y']
+            directions=(['d' if dx>0 else 'a'] if abs(dx)>8 else [])+(['s' if dy>0 else 'w'] if abs(dy)>8 else [])
+            self.page.locator('#fishingLakeCanvas').focus()
+            for key in directions:self.page.keyboard.down(key)
+            self.page.clock.run_for(200)
+            for key in directions:self.page.keyboard.up(key)
+        self.fail('Swimming fish should remain approachable within casting range')
 
     def cast(self):
         if self.state()['phase'] == 'shore':
             self.board()
+        self.approach_shadow()
         self.page.locator('#fishingCast').click()
         self.page.clock.run_for(2400)
         state = self.state()

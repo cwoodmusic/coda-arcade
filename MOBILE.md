@@ -20,9 +20,9 @@ The classroom offers **Room** and **Study books**. Hold and drag on the room flo
 
 ## Underground Rhythm Fishing
 
-Enter through the arcade trapdoor or **Menu → Rhythm Fishing**. On the dock, hold/drag or use the pad to walk; **Talk** meets Captain Cadence. **Board boat** starts lake exploration. Steer the boat with the same finger controls and use **Cast** near a fish shadow.
+Enter through the arcade trapdoor or **Menu → Rhythm Fishing**. On the dock, hold/drag or use the pad to walk; **Talk** meets Captain Cadence. Walk down the pier before using **Board boat** to start lake exploration. On shore, **Climb / E** at the rope ladder returns to the arcade; the larger stone landing connects the ladder and dock. Steer the boat with the same finger controls and use **Cast** near a fish shadow.
 
-During a bite and rhythm challenge, the movement pad hides. Tap the large rhythm button or the one-line staff when each note reaches the gold line. A rest needs no tap; a long note needs one tap at its start. The 4/4, 6/8, and cut-time choices use their proper pulses. Pause and Sound controls remain available, and changing apps pauses a hooked fish. Fish collection and achievement progress are available from the room header.
+During a bite and rhythm challenge, the movement pad hides. Tap the large rhythm button or the one-line staff when each note reaches the gold line. A rest needs no tap; a long note needs one tap at its start. The 4/4, 6/8, and cut-time choices use their proper pulses. Pause and Sound controls remain available, and changing apps pauses a hooked fish. Fish collection and achievement progress are available from the room header. Fish shadows swim, and Full/Lite/Off effects control the cave lights, water shimmer, and wakes. Eighth/sixteenth notes use readable beam groups.
 
 ## Song Machine
 
