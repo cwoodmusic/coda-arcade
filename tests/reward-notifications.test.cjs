@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict');
-const {createNotificationQueue,achievementItem,missionCompleteItem,missionRewardItem}=require('../reward-notifications.js');
+const {createNotificationQueue,achievementItem,missionCompleteItem,missionRewardItem,levelUpItem}=require('../reward-notifications.js');
 test('new celebrations queue in order and duplicate event IDs never replay',()=>{
  const queue=createNotificationQueue();assert.equal(queue.push({id:'one',title:'First'}),true);assert.equal(queue.push({id:'two',title:'Second'}),true);
  assert.equal(queue.snapshot().current.id,'one');assert.deepEqual(queue.snapshot().queued.map(item=>item.id),['two']);
@@ -48,4 +48,43 @@ test('claiming before a queued completion displays removes stale instructions pe
  queue.dismiss();assert.equal(queue.snapshot().current.kind,'mission-reward');queue.dismiss();
  assert.equal(queue.push(missionCompleteItem({id:'chopin',giver:'Chopin',reward:20})),false);
  const claimedFirst=createNotificationQueue();claimedFirst.push(missionRewardItem({id:'bach',notes:10}));assert.equal(claimedFirst.push(missionCompleteItem({id:'bach',reward:10})),false);
+});
+test('level celebrations name only supplied rewards and use stable level IDs',()=>{
+ const item=levelUpItem({level:2,fromLevel:1,prizes:[{label:'Pocket watch chain'},'Crystal Harp · Song Machine sound']});
+ assert.equal(item.id,'level:2');assert.equal(item.kind,'level');assert.equal(item.title,'Level 2!');
+ assert.match(item.message,/Pocket watch chain/);assert.match(item.message,/Crystal Harp · Song Machine sound/);
+ assert.doesNotMatch(item.message,/Notes|XP/);
+ assert.equal(levelUpItem({level:1}),null);assert.equal(levelUpItem({level:2.5}),null);
+ assert.equal(levelUpItem({level:'2'}),null);
+ const queue=createNotificationQueue();assert.equal(queue.push(item),true);assert.equal(queue.push(levelUpItem({level:2})),false);
+});
+test('skipped levels aggregate real rewards without truncating a reward name',()=>{
+ const item=levelUpItem({level:5,fromLevel:2,prizes:['Artist beret','Neon Marimba',{label:'Black leather jacket'},'Electric Piano','Space boots',{},null]});
+ assert.match(item.message,/You gained 3 levels!/);assert.match(item.message,/Artist beret/);
+ assert.match(item.message,/and 1 more reward\./);assert.doesNotMatch(item.message,/undefined|null/);
+ assert.ok(item.message.length<=320);
+ assert.doesNotMatch(levelUpItem({level:12,prizes:[]}).message,/Unlocked:/,'No invented prizes at levels without supplied rewards');
+});
+test('level-up notices follow mission instructions and precede ordinary achievements',()=>{
+ const queue=createNotificationQueue();queue.push(achievementItem({id:'current',title:'Current'}));
+ queue.push(achievementItem({id:'waiting',title:'Waiting'}));queue.push(levelUpItem({level:2,prizes:['Crystal Harp']}));
+ queue.push(missionCompleteItem({id:'bach',giver:'Bach',reward:90}));
+ assert.deepEqual(queue.snapshot().queued.map(item=>item.kind),['mission-complete','level','achievement']);
+ queue.dismiss();assert.equal(queue.snapshot().current.kind,'mission-complete');queue.dismiss();assert.equal(queue.snapshot().current.kind,'level');
+});
+test('achievement bursts cannot evict mission or level-up notices',()=>{
+ const queue=createNotificationQueue({limit:2});queue.push(achievementItem({id:'current',title:'Current'}));
+ queue.push(missionCompleteItem({id:'bach',giver:'Bach',reward:90}));queue.push(levelUpItem({level:2}));
+ for(const id of ['one','two','three'])assert.equal(queue.push(achievementItem({id,title:id})),false);
+ assert.deepEqual(queue.snapshot().queued.map(item=>item.kind),['mission-complete','level']);
+});
+test('saved level changes can announce once while reloads, duplicate rewards and failures stay quiet',()=>{
+ const progression=require('../player-progression.js'),values=new Map(),storage={getItem:key=>values.get(key)||null,setItem:(key,value)=>values.set(key,value)};
+ const queue=createNotificationQueue(),announce=award=>{if(award.level>award.levelBefore)queue.push(levelUpItem({level:award.level,fromLevel:award.levelBefore,prizes:['Test reward']}));};
+ const player=progression.create({storage,onAward:announce});player.awardXP('test:level',80,'Musical practice');
+ assert.equal(queue.snapshot().current.title,'Level 2!');queue.dismiss();
+ player.awardXP('test:level',80,'Musical practice');progression.create({storage,onAward:announce});
+ assert.equal(queue.snapshot().current,null);
+ const blocked=progression.create({storage:{getItem:()=>null,setItem(){throw Error('quota');}},onAward:announce});
+ blocked.awardXP('test:blocked',200,'Musical practice');assert.equal(queue.snapshot().current,null);
 });

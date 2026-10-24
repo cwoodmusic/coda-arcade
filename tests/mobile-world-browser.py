@@ -81,6 +81,11 @@ class MobileWorldTests(unittest.TestCase):
         return {'x':max(20,min(player['width']-20,player['x']+dx)),
           'y':player['y']+dy,'id':touch_id,'radiusX':3,'radiusY':3,'force':1}
 
+    def pinch_points(self,distance=120):
+        box=self.page.locator('#worldStage').bounding_box()
+        x=box['x']+box['width']/2;y=box['y']+box['height']*.3
+        return [{'x':x-distance/2,'y':y,'id':1},{'x':x+distance/2,'y':y,'id':2}]
+
     def settle_camera(self):
         # Teleportation eases the camera. Wait for it before choosing a held
         # screen-space target, as a player would after looking around.
@@ -226,16 +231,64 @@ class MobileWorldTests(unittest.TestCase):
         self.assert_avatar_visible()
 
     def test_real_pinch_changes_camera_zoom_without_leaving_a_walk_destination(self):
-        self.place(1225,675);self.assert_avatar_visible()
-        box=self.page.locator('#worldStage').bounding_box();y=box['y']+box['height']*.4
-        points=[{'x':box['x']+130,'y':y,'id':1},{'x':box['x']+260,'y':y,'id':2}]
+        self.place(1225,675);self.assert_avatar_visible();self.settle_camera();start=self.position()
+        points=self.pinch_points()
         before=self.page.evaluate('CodaArcadeQA.camera().targetZoom')
         self.touches('touchStart',*points)
-        self.touches('touchMove',{**points[0],'x':box['x']+90},{**points[1],'x':box['x']+300})
+        self.assertTrue(self.page.evaluate('CodaArcadeQA.fingerWalk().pinching'))
+        self.touches('touchMove',*self.pinch_points(210))
         self.page.wait_for_function('before=>CodaArcadeQA.camera().targetZoom>before+.3',arg=before)
+        zoomed=self.page.evaluate('CodaArcadeQA.camera().targetZoom')
+        contracted=self.pinch_points(65);self.touches('touchMove',*contracted)
+        self.page.wait_for_function('zoomed=>CodaArcadeQA.camera().targetZoom<zoomed-.3',arg=zoomed)
+        self.assertEqual(self.position(),start,'Pinching changes the camera without walking the avatar')
+        self.assertEqual(self.page.evaluate('visualViewport.scale'),1,'Pinch must scale the game camera rather than the browser page')
+        # CDP touchEnd with a nonempty list identifies the lifted finger.
+        # Moving the remaining finger must stay suppressed until it also lifts.
+        self.touches('touchEnd',contracted[1])
+        self.assertTrue(self.page.evaluate('CodaArcadeQA.fingerWalk().suppressed'))
+        self.touches('touchMove',{**contracted[0],'x':contracted[0]['x']+40})
+        self.assert_finger_stopped();self.assertEqual(self.position(),start)
+        final_zoom=self.page.evaluate('CodaArcadeQA.camera().targetZoom')
         self.touches('touchEnd');self.page.wait_for_timeout(100)
         self.assertIsNone(self.page.evaluate('CodaArcadeQA.characters().player.destination'))
         self.assertEqual(self.touch()['held'],[]);self.assert_avatar_visible()
+        self.load();self.assertEqual(self.page.evaluate('CodaArcadeQA.camera().targetZoom'),final_zoom)
+        self.page.locator('#worldMenuBtn').tap()
+        self.assertTrue(self.page.locator('#mobilePinchHint').is_visible())
+        self.assertIn('pinch two fingers to zoom',self.page.locator('#mobilePinchHint').inner_text())
+
+    def test_pinch_cancellation_and_rotation_do_not_leave_ghost_fingers(self):
+        self.place(1225,675);self.assert_avatar_visible();self.settle_camera()
+        self.touches('touchStart',*self.pinch_points())
+        self.touches('touchMove',*self.pinch_points(200))
+        self.touches('touchCancel');self.assert_finger_stopped()
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.fingerWalk().pointerCount'),0)
+        before=self.page.evaluate('CodaArcadeQA.camera().targetZoom')
+        self.touches('touchStart',*self.pinch_points())
+        self.touches('touchMove',*self.pinch_points(70))
+        self.page.wait_for_function('before=>CodaArcadeQA.camera().targetZoom<before-.3',arg=before)
+        self.page.set_viewport_size({'width':844,'height':390})
+        self.assert_finger_stopped();self.assertEqual(self.page.evaluate('CodaArcadeQA.fingerWalk().pointerCount'),0)
+        self.touches('touchEnd');self.settle_camera()
+        before=self.page.evaluate('CodaArcadeQA.camera().targetZoom')
+        self.touches('touchStart',*self.pinch_points())
+        self.touches('touchMove',*self.pinch_points(210))
+        self.page.wait_for_function('before=>CodaArcadeQA.camera().targetZoom>before+.3',arg=before)
+        self.touches('touchEnd');self.assert_finger_stopped();self.assert_avatar_visible()
+
+    def test_pinch_takes_over_a_held_direction_without_leaving_pad_movement(self):
+        self.place(1225,675);self.assert_avatar_visible();self.settle_camera();start=self.position()
+        right=self.button_point('Move right',9);self.touches('touchStart',right)
+        self.page.wait_for_function('x=>CodaArcadeQA.position().x>x+10',arg=start['x'])
+        self.touches('touchStart',right,*self.pinch_points())
+        self.assertTrue(self.page.evaluate('CodaArcadeQA.fingerWalk().pinching'))
+        self.assertEqual(self.touch()['held'],[])
+        start=self.position();before=self.page.evaluate('CodaArcadeQA.camera().targetZoom')
+        self.touches('touchMove',right,*self.pinch_points(210))
+        self.page.wait_for_function('before=>CodaArcadeQA.camera().targetZoom>before+.3',arg=before)
+        self.page.wait_for_timeout(120);self.assertEqual(self.position(),start)
+        self.touches('touchEnd');self.assert_finger_stopped();self.assertEqual(self.touch()['held'],[])
 
     def test_touch_menu_purchases_and_text_entry_preserve_outfit_currency_and_position(self):
         self.menu('#notesBtn');self.page.wait_for_function('!CodaArcadeQA.touch().visible')

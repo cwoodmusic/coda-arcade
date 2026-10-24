@@ -285,6 +285,35 @@ class RewardNotificationBrowserTests(unittest.TestCase):
         self.page.get_by_role('button',name='View active missions',exact=True).tap()
         self.assertEqual(self.page.evaluate('actionLog[0].action.id'),'missions')
 
+    def test_level_up_names_real_prizes_and_keeps_profile_action_accessible_on_phones(self):
+        for viewport in [{'width':390,'height':844},{'width':844,'height':390}]:
+            with self.subTest(viewport=viewport):
+                self.load_fixture(viewport,mobile=True,reduced_motion='reduce')
+                self.page.evaluate("""() => {
+                  document.documentElement.style.setProperty('--coda-touch-controls-height','220px');
+                  touchState.visible=true;document.querySelector('#fakePad').hidden=false;
+                  window.levelNotice={level:2,fromLevel:1,
+                    prizes:[{label:'Pocket watch chain'},'Crystal Harp · Song Machine sound'],
+                    action:{id:'profile',label:'View profile'}};
+                  popups.levelUp(levelNotice);
+                }""")
+                self.wait_for_current('level:2')
+                self.assertEqual(self.page.locator('.reward-toast-title').inner_text(),'Level 2!')
+                self.assertEqual(self.page.locator('.reward-toast-eyebrow').inner_text(),'LEVEL UP')
+                message=self.page.locator('.reward-toast-message').inner_text()
+                self.assertIn('Pocket watch chain',message)
+                self.assertIn('Crystal Harp · Song Machine sound',message)
+                self.assertNotRegex(message,r'\d+\s+(Notes|XP)')
+                self.assertEqual(self.page.evaluate('document.activeElement.id'),'outside')
+                self.assertEqual(self.page.locator('.reward-toast').get_attribute('role'),'status')
+                self.assert_phone_geometry()
+                self.assertFalse(self.page.evaluate('popups.levelUp(levelNotice)'))
+                self.assertEqual(self.page.evaluate('popups.getState().queued'),[])
+                self.page.get_by_role('button',name='View profile',exact=True).tap()
+                self.assertEqual(self.page.evaluate('actionLog[0].action.id'),'profile')
+                self.wait_for_current(None)
+                self.assertFalse(self.page.evaluate('popups.levelUp(levelNotice)'))
+
     def test_mission_returns_take_priority_and_collecting_removes_stale_returns(self):
         self.page.evaluate("""() => {
           popups.achievement({id:'current',title:'Currently celebrating',xp:20});

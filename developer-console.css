@@ -1,6 +1,7 @@
 /* The developer console edits world data; game menus retain their own styles. */
 #assetStudio.dev-console { width:min(380px,calc(100vw - 24px)); top:90px; max-height:calc(100dvh - 108px); }
-.dev-tabs { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; margin:10px 0; }
+.dev-tabs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; margin:10px 0; }
+#assetStudio.dev-console .dev-tabs button{min-height:44px;min-width:0;padding:7px 4px}
 #assetStudio .dev-tabs button[aria-selected="true"] { background:#476251; border-color:#9bffcc; }
 #assetStudio .dev-pane[hidden], #assetStudio .dev-original[hidden] { display:none; }
 #assetStudio .dev-toolbar { display:flex; gap:5px; flex-wrap:wrap; margin:8px 0; }
@@ -29,4 +30,14 @@
   }
   #assetStudio .studioHead, #assetStudio .dev-tabs, #assetStudio > :last-child { position:static; }
   #assetStudio .studioHead button[aria-label="Move console to the other side"] { display:none; }
+}
+/* Keep an editable area between the sticky controls on short landscape screens. */
+@media(max-height:550px) and (orientation:landscape) {
+  #assetStudio.dev-console { top:8px; max-height:calc(100dvh - 16px); }
+  #assetStudio .studioHead { min-height:40px; padding:4px 0; }
+  #assetStudio .dev-tabs { grid-template-columns:repeat(6,minmax(0,1fr)); top:29px; gap:3px; margin:6px 0; padding:4px 0; }
+  #assetStudio.dev-console .dev-tabs button { padding:4px 2px; font-size:10px; }
+  #assetStudio > :last-child { padding:2px 0; }
+  #assetStudio > :last-child .dev-toolbar { margin:4px 0; }
+  #assetStudio .dev-status { min-height:2em; max-height:32px; overflow:auto; font-size:10px; }
 }

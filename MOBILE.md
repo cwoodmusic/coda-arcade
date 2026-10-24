@@ -6,7 +6,7 @@ The same site adapts to a phone or tablet; no separate installation is required.
 
 - Hold a direction on the eight-way touch pad to walk. Slide between arrows to change direction, or onto its center to stop. A second finger can press **Jump** while you keep moving.
 - **Interact** talks, opens cabinets, visits shops, or enters rooms according to the nearby prompt. **Emote** performs your equipped emote.
-- Hold and drag a finger on the map to steer toward it. Lift to stop immediately. This uses normal walking collision without a stored path. Pinch with two fingers to zoom; movement stays stopped until both fingers lift. The phone camera follows the player and remains usable at every map edge.
+- Hold and drag a finger on the map to steer toward it. Lift to stop immediately. This uses normal walking collision without a stored path. Pinch two fingers on the map to zoom between 100% and 300%; the camera stays centered on your character. Your zoom is saved. Movement stays stopped until both fingers lift, and canceled gestures or rotation clear the pinch. The phone camera follows the player and remains usable at every map edge.
 - **Menu** contains your profile, Notes, wardrobe, musicians, rooms, Hall of Fame, audio, zoom, fullscreen, and developer tools. Closing a menu or room clears its held touch inputs. Pointer cancellation, rotation, app switching, and screen hiding also release controls.
 - The touch pad hides while shopping, typing, editing, reading books, or playing a cabinet game. Cabinets use their own controls. **Return to world** stays accessible above the iframe.
 

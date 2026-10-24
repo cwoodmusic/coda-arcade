@@ -22,6 +22,10 @@
   const ACTIVITY={cabinet:'playing',lounge:'relaxing',dance:'dancing',wander:'waiting'};
   const ARRIVAL=12,PERSON_SPACE=19;
   window.CodaMusicianCast=Object.freeze(PROFILES.map(profile=>Object.freeze({id:profile.id,name:profile.name})));
+  window.CodaNPCDialogueDefaults=Object.freeze(Object.fromEntries(PROFILES.map(profile=>[profile.id,Object.freeze({
+    description:profile.description,greetings:Object.freeze(profile.greetings.slice()),
+    choices:Object.freeze([{id:'music',label:'Tell me about your music',reply:profile.music},{id:'activity',label:'What are you doing?',reply:''},{id:'advice',label:'Give me a musical tip',reply:profile.advice},{id:'games',label:'Which game do you like?',reply:profile.games}].map(Object.freeze))
+  })])));
 
   window.createCodaNPCBehavior=function (api) {
     const npcs=api.npcs,states=new Map();
@@ -30,6 +34,14 @@
     const profileFor=(p,index)=>PROFILES.find(profile=>profile.id===p.id||profile.name===p.name)||PROFILES[index%PROFILES.length];
     const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
     const player=()=>api.getPlayer?.()||{x:-9999,y:-9999};
+    function dialogueFor(p){
+      const profile=states.get(p).profile,base=window.CodaNPCDialogueDefaults[profile.id];let edited=null;
+      try{edited=api.getDialogue?.(p.id);}catch{}
+      if(!edited||typeof edited!=='object')return base;
+      return {description:typeof edited.description==='string'?edited.description:base.description,
+        greetings:Array.isArray(edited.greetings)&&edited.greetings.length?edited.greetings:base.greetings,
+        choices:Array.isArray(edited.choices)?edited.choices:base.choices};
+    }
     function facing(p,dx,dy){if(Math.hypot(dx,dy)<.01)return;p.facing=Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'down':'up';}
     function occupied(x,y,p,space=PERSON_SPACE){
       const user=player();if(Math.hypot(x-user.x,y-user.y)<space)return true;
@@ -165,12 +177,15 @@
     }
 
     function getConversation(value){
-      const p=find(value);if(!p)return null;const state=states.get(p),profile=state.profile;
-      return {id:p.id,name:p.name,description:profile.description,activity:p.activity,fictional:true,line:state.lastLine||profile.greetings[0],choices:[{id:'music',label:'Tell me about your music'},{id:'activity',label:'What are you doing?'},{id:'advice',label:'Give me a musical tip'},{id:'games',label:'Which game do you like?'}]};
+      const p=find(value);if(!p)return null;const state=states.get(p),dialogue=dialogueFor(p);
+      return {id:p.id,name:p.name,description:dialogue.description,activity:p.activity,fictional:true,line:state.lastLine||dialogue.greetings[0],choices:dialogue.choices.map(choice=>({id:choice.id,label:choice.label}))};
     }
     function say(value,topic='greeting'){
-      const p=find(value);if(!p)return '';const state=states.get(p),profile=state.profile;
-      if(topic==='greeting')state.lastLine=profile.greetings[state.greetings++%profile.greetings.length];
+      const p=find(value);if(!p)return '';const state=states.get(p),dialogue=dialogueFor(p),profile={...state.profile};
+      for(const choice of dialogue.choices)if(['music','advice','games'].includes(choice.id))profile[choice.id]=choice.reply;
+      const selected=dialogue.choices.find(choice=>choice.id===topic);
+      if(topic==='greeting')state.lastLine=dialogue.greetings[state.greetings++%dialogue.greetings.length];
+      else if(selected?.reply)state.lastLine=selected.reply;
       else if(topic==='activity'){
         const activity=state.chat?state.wasActivity:p.activity;
         state.lastLine=activity==='playing'?'I am exploring '+(state.target?.label||'an arcade game')+'. '+profile.games:activity==='dancing'?'I am trying out a rhythm on the dance floor. '+profile.advice:activity==='relaxing'?'I am taking a moment in the lounge to listen and think. '+profile.music:state.target?.mode==='cabinet'?'I am on my way to '+state.target.label+'. '+profile.games:'I am exploring the arcade and listening for a new idea. '+profile.advice;
@@ -187,7 +202,7 @@
     function invalidateRoutes(){
       for(const p of npcs){const state=states.get(p);if(!p.hidden&&!api.inside(p.x,p.y)){despawnBlocked(p);continue;}p.route=[];p.routeKey='';p.walking=false;if(!p.hidden)state.replanIn=state.index*.05;state.blocked=0;state.retries=0;if(p.arrived&&state.target){p.arrived=false;p.wait=0;p.activity=state.chat?'chatting':'waiting';}}
     }
-    function snapshot(){return npcs.map(p=>{const state=states.get(p);return {id:p.id,name:p.name,description:state.profile.description,x:p.x,y:p.y,facing:p.facing,walking:p.walking,phase:p.phase,activity:p.activity,mode:p.mode,arrived:p.arrived,hidden:p.hidden,wait:p.wait,conversation:state.chat,target:state.target?{...state.target}:null,routeLength:p.route.length};});}
+    function snapshot(){return npcs.map(p=>{const state=states.get(p);return {id:p.id,name:p.name,description:dialogueFor(p).description,x:p.x,y:p.y,facing:p.facing,walking:p.walking,phase:p.phase,activity:p.activity,mode:p.mode,arrived:p.arrived,hidden:p.hidden,wait:p.wait,conversation:state.chat,target:state.target?{...state.target}:null,routeLength:p.route.length};});}
     return {update,beginConversation,endConversation,say,getConversation,invalidateRoutes,snapshot};
   };
 })();

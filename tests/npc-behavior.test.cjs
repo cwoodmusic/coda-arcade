@@ -12,10 +12,26 @@ function setup(options={}){
   const npcs=options.npcs||[{id:'bach',name:'J. S. Bach',x:100,y:100,look:0}];
   let available=options.games||[GAME()],user=options.player||{x:-9999,y:-9999},calls=[];
   const inside=options.inside||((x,y)=>x>=0&&x<1672&&y>=0&&y<941);
-  const engine=create({npcs,inside,route:(...args)=>{calls.push(args);return options.route?options.route(...args):[{x:args[2],y:args[3]}];},getGames:()=>available,getPlayer:()=>user});
+  const engine=create({npcs,inside,route:(...args)=>{calls.push(args);return options.route?options.route(...args):[{x:args[2],y:args[3]}];},getGames:()=>available,getPlayer:()=>user,getDialogue:options.getDialogue});
   return {engine,npcs,calls,inside,setGames:value=>{available=value;},setPlayer:value=>{user=value;}};
 }
 function run(engine,seconds){for(let t=0;t<seconds;t+=.1)engine.update(.1);}
+
+test('project dialogue edits affect greetings, biography, choices and replies without changing routines',()=>{
+  let edited=null;const env=setup({getDialogue:()=>edited}),defaults=JSON.parse(JSON.stringify(context.window.CodaNPCDialogueDefaults.bach));
+  assert.match(env.engine.beginConversation('bach').line,/independent/);env.engine.endConversation();
+  edited={...defaults,description:'A teacher with a question.',greetings:['Hello, class!'],choices:[{id:'music',label:'Our music lesson',reply:'Keep the beat steady.'},{id:'activity',label:'What now?',reply:''},{id:'custom-one',label:'A new idea',reply:'Try clapping the rhythm.'}]};
+  const conversation=env.engine.beginConversation('bach');
+  assert.equal(conversation.line,'Hello, class!');assert.equal(conversation.description,edited.description);
+  assert.deepEqual(Array.from(conversation.choices,choice=>choice.id),['music','activity','custom-one']);
+  assert.equal(env.engine.say('bach','custom-one'),'Try clapping the rhythm.');
+  assert.match(env.engine.say('bach','activity'),/exploring.*arcade/);
+  assert.equal(env.engine.snapshot()[0].description,edited.description);
+  env.engine.endConversation();edited=null;
+  assert.equal(env.engine.getConversation('bach').description,defaults.description);
+  assert.match(env.engine.say('bach','music'),/counterpoint/);
+  run(env.engine,1);assert.ok(env.calls.length>0,'Dialogue does not replace movement routines');
+});
 
 test('nine historical musical personalities have distinct conversations, safe spawn points, and varied routines',()=>{
   const npcs=IDS.map((id,look)=>({id,x:1450,y:752,look})),env=setup({npcs,games:[0,1,2,3].map(index=>({...GAME(),index,x:700+index*100,npcX:700+index*100,npcY:323}))});

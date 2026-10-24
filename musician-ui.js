@@ -15,6 +15,7 @@ window.createCodaMusicianUI=function(api){
     choices.replaceChildren();
     for(const choice of data.choices){const button=document.createElement('button');button.type='button';button.textContent=choice.label;button.onclick=()=>{$('words').textContent=api.getBrain().say(selected,choice.id);};choices.append(button);}
     if(api.openMissions){const mission=document.createElement('button');mission.type='button';const entry=api.getMission?.(selected);mission.textContent=entry?.status==='complete'?'I finished your mission · Collect reward':entry?.status==='active'?'My mission · Check progress':'Any missions for me? · Earn Notes';mission.onclick=()=>{const id=selected;closeConversation();api.openMissions(id);};choices.append(mission);}
+    if(api.openTrivia){const trivia=document.createElement('button');trivia.type='button';trivia.textContent='Ask me a music question · Earn Notes';trivia.onclick=()=>{const id=selected;closeConversation();api.openTrivia(id);};choices.append(trivia);}
     $('close').textContent='See you around · E';$('close').focus();
   }
   $('close').onclick=closeConversation;
@@ -27,8 +28,8 @@ window.createCodaMusicianUI=function(api){
       const portraitContext=portrait.getContext('2d');portraitContext.save();portraitContext.translate(50,118);portraitContext.scale(1.35,1.35);api.renderer.drawNPC(portraitContext,{...person,x:0,y:0,facing:'down',walking:false,activity:'idle'},0);portraitContext.restore();
       const body=document.createElement('div'),name=document.createElement('strong'),bio=document.createElement('p'),activity=document.createElement('small');
       name.textContent=person.name;bio.textContent=data.description;activity.textContent='Now: '+data.activity;body.append(name,bio,activity);
-      const button=document.createElement('button');button.type='button';const near=api.distance(person)<100;button.textContent=near?'Chat':'Find on map';button.setAttribute('aria-label',(near?'Chat with ':'Find ')+person.name);
-      button.onclick=()=>{api.closePanel();if(api.distance(person)<100)talk(person);else api.walkTo(person);};
+      const button=document.createElement('button');button.type='button';const near=api.distance(person)<94;button.textContent=near?'Chat':'Find on map';button.setAttribute('aria-label',(near?'Chat with ':'Find ')+person.name);
+      button.onclick=()=>{api.closePanel();if(api.distance(person)<94)talk(person);else api.walkTo(person);};
       card.append(portrait,body,button);api.panelBody.append(card);
       if(api.openMissions){const mission=document.createElement('button');mission.type='button';mission.textContent='Missions · Notes';mission.setAttribute('aria-label','Missions from '+person.name);mission.onclick=()=>api.openMissions(person.id);body.append(mission);}
     }

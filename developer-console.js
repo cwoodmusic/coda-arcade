@@ -13,6 +13,9 @@ window.createCodaDeveloperConsole = function (api) {
   let tab = 'objects', playtest = false, loading = true, strokeBefore = null, saveTimer;
   let pickSample = false, baseCache = null, baseKey = '', cleanupCache = null, loadFailed = false, pan = null;
   let publishedProject = null, publishedError = null, loadError = null, projectSource = 'base';
+  let dialogue={}, sprites={}, dialogueEditor=null, pixelEditor=null;
+  const dialogueDefaults=api.dialogueDefaults||window.CodaNPCDialogueDefaults||{};
+  const TABS=['objects','collision','layers','dialogue','pixels','project'];
   const pictures = new Map();
   const maskedLayers = new WeakMap();
   const panel = $('assetStudio');
@@ -29,7 +32,7 @@ window.createCodaDeveloperConsole = function (api) {
   head.insertBefore(dock,$('assetClose'));
   dock.onclick=()=>{const right=panel.style.right!=='12px';panel.style.left=right?'auto':'12px';panel.style.right=right?'12px':'auto';};
   const nav = document.createElement('div'); nav.className = 'dev-tabs'; nav.setAttribute('role','tablist'); nav.setAttribute('aria-label','Developer tools');
-  nav.innerHTML = ['objects','collision','layers','project'].map(name => `<button type="button" role="tab" id="devTab-${name}" aria-controls="dev-${name}">${name[0].toUpperCase()+name.slice(1)}</button>`).join('');
+  nav.innerHTML = TABS.map(name => `<button type="button" role="tab" id="devTab-${name}" aria-controls="dev-${name}">${name==='pixels'?'Sprites':name[0].toUpperCase()+name.slice(1)}</button>`).join('');
   head.after(nav);
   objects.id = 'dev-objects';
   objects.querySelector('.studioTip').textContent = 'Select an existing object, lift a region, or add artwork. Drag objects and gold handles to move, resize and rotate.';
@@ -66,7 +69,16 @@ window.createCodaDeveloperConsole = function (api) {
     <label class="studioField">Brush size<select id="devLayerSize"><option>1</option><option>2</option><option selected>4</option><option>8</option><option>16</option></select></label>
     <label class="studioField">Depth offset (px)<input id="devLayerDepth" type="number" min="-120" max="120" step="5" value="0"></label>
     <label class="studioCheck"><input id="devMasks" type="checkbox">Show foreground masks</label>`);
-  pane('project', `<h3 class="dev-heading">Complete world project</h3><p class="dev-note">Save or export objects, embedded images, floor patches, collision and foreground brush edits together. Edits are local to this browser until you export and publish them.</p>
+  const dialoguePane=pane('dialogue','');
+  if(window.CodaDialogueEditor)dialogueEditor=window.CodaDialogueEditor.mount({host:dialoguePane,defaults:dialogueDefaults,people:window.CodaMusicianCast||[],getData:()=>dialogue,
+    onApply:(id,entry)=>{const before=snapshot();dialogue[id]=clone(entry);changed(before);message('Applied musician dialogue. Save or export the project to keep a backup.');return true;},
+    onReset:id=>{const before=snapshot();delete dialogue[id];changed(before);message('Restored default musician dialogue.');return true;}});
+  else dialoguePane.textContent='Dialogue tools could not load. Reload the page to try again.';
+  const pixelPane=pane('pixels','');
+  if(window.CodaPixelEditor&&api.renderer)pixelEditor=window.CodaPixelEditor.mount({host:pixelPane,renderer:api.renderer,getData:()=>sprites,getProfile:api.getPixelProfile,getTargets:api.getPixelTargets,
+    onChange:next=>{if(!window.CodaPixelEditor.validate(next))return false;const before=snapshot();sprites=clone(next);api.renderer.setPixelEdits(sprites);changed(before);message('Applied pixel edits. Save or export the project to keep a backup.');return true;}});
+  else pixelPane.textContent='Sprite tools could not load. Reload the page to try again.';
+  pane('project', `<h3 class="dev-heading">Complete world project</h3><p class="dev-note">Save or export objects, embedded images, floor patches, collision, foreground brush edits, musician dialogue and character sprite edits together. Edits are local to this browser until you export and publish them.</p>
     <div class="dev-toolbar"><button id="devSave" type="button">Save project</button><button id="devExport" type="button">Export project JSON</button></div>
     <div class="dev-toolbar"><button id="devImport" type="button">Import project JSON</button><button id="devReset" type="button">Reset project</button></div>
     <input id="devImportFile" type="file" accept="application/json,.json" hidden>
@@ -83,9 +95,9 @@ window.createCodaDeveloperConsole = function (api) {
   let collisionBefore;
   collision.mount($('devCollisionTools'),{beforeChange:()=>{collisionBefore=snapshot();},afterChange:()=>{api.record(collisionBefore);}});
 
-  function pane(name, html) { const el=document.createElement('section'); el.id='dev-'+name; el.className='dev-pane'; el.hidden=true; el.innerHTML=html; panel.append(el); return el; }
+  function pane(name, html) { const el=document.createElement('section'); el.id='dev-'+name; el.className='dev-pane'; el.hidden=true; el.setAttribute('role','tabpanel');el.setAttribute('aria-labelledby','devTab-'+name);el.innerHTML=html; panel.append(el); return el; }
   function message(text) { $('devStatus').textContent=text; }
-  function snapshot() { return JSON.stringify({assets:studio.assets,collision:collision.get(),strokes:layer.actions}); }
+  function snapshot() { return JSON.stringify({assets:studio.assets,collision:collision.get(),strokes:layer.actions,...(Object.keys(dialogue).length?{dialogue}:{}),...(Object.keys(sprites).length?{sprites}:{})}); }
   function documentData() { return {format:FORMAT,version:VERSION,world:{width:W,height:H},...JSON.parse(snapshot())}; }
   function changed(before) { api.record(before); }
   function invalidate(layersChanged=true) { if(layersChanged)api.invalidateArtwork(); syncNavigation(); }
@@ -102,14 +114,17 @@ window.createCodaDeveloperConsole = function (api) {
     studio.dirty=true; scheduleSave(); message(undo?'Undid last edit.':'Redid last edit.');
   }
   function applyState(data) {
+    pixelEditor?.cancelGesture?.();
+    dialogue=clone(data.dialogue||{});sprites=clone(data.sprites||{});api.renderer?.setPixelEdits?.(sprites);
     studio.assets=clone(data.assets); layer.actions=clone(data.strokes); layer.redo=[]; layer.drawing=null; layer.dirty=true;
     collision.apply(data.collision); studio.nextId=Math.max(1,...studio.assets.map(a=>Number(a.id.match(/^asset-(\d+)$/)?.[1]||0)+1));
     if(!studio.assets.some(a=>a.id===studio.selected))studio.selected=studio.assets.at(-1)?.id||null;
     invalidate(); api.refresh(); refresh();
   }
   function setTab(name) {
+    name=name==='sprites'?'pixels':TABS.includes(name)?name:'objects';
     finishGesture(); tab=name; pickSample=false; studio.capturing=null;
-    for(const name of ['objects','collision','layers','project']) { $('dev-'+name).hidden=name!==tab; $('devTab-'+name).setAttribute('aria-selected',String(name===tab)); }
+    for(const name of TABS) { $('dev-'+name).hidden=name!==tab; $('devTab-'+name).setAttribute('aria-selected',String(name===tab)); }
     layer.active=studio.active&&tab==='layers'&&!playtest; layer.preview=false;
     collision.setActive(studio.active&&tab==='collision'&&!playtest);
     studio.showGuides=tab==='objects'&&!playtest&&$('assetGuides').checked;
@@ -241,7 +256,7 @@ window.createCodaDeveloperConsole = function (api) {
     return true;
   }
   function validate(data) {
-    return data?.format===FORMAT&&data.version===VERSION&&data.world?.width===W&&data.world?.height===H&&Array.isArray(data.assets)&&data.assets.length<=api.maxAssets&&data.assets.every(a=>api.validAsset(a)&&validateAssetExtension(a))&&new Set(data.assets.map(a=>a.id)).size===data.assets.length&&new Set(data.assets.filter(a=>a.origin).map(a=>a.origin.name)).size===data.assets.filter(a=>a.origin).length&&collision.validate(data.collision)&&Array.isArray(data.strokes)&&data.strokes.length<=1000&&data.strokes.every(api.validStroke);
+    return data?.format===FORMAT&&data.version===VERSION&&data.world?.width===W&&data.world?.height===H&&Array.isArray(data.assets)&&data.assets.length<=api.maxAssets&&data.assets.every(a=>api.validAsset(a)&&validateAssetExtension(a))&&new Set(data.assets.map(a=>a.id)).size===data.assets.length&&new Set(data.assets.filter(a=>a.origin).map(a=>a.origin.name)).size===data.assets.filter(a=>a.origin).length&&collision.validate(data.collision)&&Array.isArray(data.strokes)&&data.strokes.length<=1000&&data.strokes.every(api.validStroke)&&(data.dialogue===undefined||window.CodaDialogueEditor?.validate(data.dialogue,dialogueDefaults))&&(data.sprites===undefined||window.CodaPixelEditor?.validate(data.sprites));
   }
   // Movement and A* share conservative collision cells. A footprint thinner than
   // one navigation cell must still block every cell its rotated rectangle enters.
@@ -297,14 +312,15 @@ window.createCodaDeveloperConsole = function (api) {
     }
     api.invalidateRoutes();
   }
-  async function save() {
+  async function save(options={}) {
     if(loading||loadFailed){message('Project loading failed or is incomplete. Export your current work before replacing storage.');return false;}
+    if(options.finishGesture!==false){finishGesture();clearTimeout(saveTimer);}
     const payload={...documentData(),savedAt:Date.now()};
     if(!validate(payload)){message('Project contains unsupported data. Export a backup before changing storage.');return false;}
     try { const db=await api.db();await new Promise((resolve,reject)=>{const tx=db.transaction('layouts','readwrite');tx.objectStore('layouts').put(payload,STORE);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});studio.dirty=false;projectSource='local';message('Complete world project saved in this browser. Export JSON for a portable backup.');return true; }
     catch(err) { try {localStorage.setItem(STORE,JSON.stringify(payload));studio.dirty=false;projectSource='local';message('Project saved in local storage. Export a backup.');return true;}catch{message('Storage unavailable or full. Export project JSON now to keep your work.');return false;} }
   }
-  function scheduleSave() {clearTimeout(saveTimer);saveTimer=setTimeout(save,450);}
+  function scheduleSave() {clearTimeout(saveTimer);saveTimer=setTimeout(()=>save({finishGesture:false}),450);}
   async function stored(key) {
     let databaseValue=null, localValue=null;
     try {const db=await api.db();databaseValue=await new Promise((resolve,reject)=>{const req=db.transaction('layouts','readonly').objectStore('layouts').get(key);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}catch{}
@@ -360,7 +376,7 @@ window.createCodaDeveloperConsole = function (api) {
     loading=false;studio.ready=true; refresh();catalogPreview();
   }
   function exportProject() {
-    finishGesture(); const blob=new Blob([JSON.stringify(documentData(),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='coda-world-project.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),5000);message('Exported objects, images, source patches, collision and foreground edits.');
+    finishGesture(); const blob=new Blob([JSON.stringify(documentData(),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='coda-world-project.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),5000);message('Exported the complete world, musician dialogue and character sprite edits.');
   }
   async function importFile(file) {
     if(!file)return;
@@ -374,6 +390,7 @@ window.createCodaDeveloperConsole = function (api) {
     }catch(err){message('Import failed: '+err.message);}
   }
   function refresh() {
+    dialogueEditor?.refresh();pixelEditor?.refresh();
     const a=api.selected(); $('devUndo').disabled=!studio.undo.length;$('devRedo').disabled=!studio.redo.length;
     const part=catalog.find(p=>p.name===a?.origin?.name);$('devDisco').hidden=part?.ballIndex===undefined;
     if(part?.ballIndex!==undefined){$('devDiscoSpin').value=a.discoSpin??part.spin;$('devDiscoRays').checked=a.discoRays!==false;}
@@ -384,6 +401,7 @@ window.createCodaDeveloperConsole = function (api) {
   }
   function editSelected(fn) {const a=api.selected();if(!a)return;const before=snapshot();fn(a);changed(before);api.refresh();refresh();}
   function finishGesture() {
+    pixelEditor?.finishGesture?.();
     pan=null;
     if(studio.drag||studio.capturing?.start)api.assetPointerEnd();
     if(strokeBefore!==null){api.layerPointerEnd();const before=strokeBefore;strokeBefore=null;changed(before);}
@@ -416,7 +434,7 @@ window.createCodaDeveloperConsole = function (api) {
     if(tab==='objects'){const a=api.selected();if(a?.collider){const b=a.collider;g.save();g.translate(a.x,a.y);g.rotate(a.rotation*Math.PI/180);g.fillStyle='#ff56764d';g.strokeStyle='#ff8aab';g.lineWidth=2/cam.zoom;g.fillRect(b.x*a.w/100,b.y*a.h/100,b.w*a.w/100,b.h*a.h/100);g.strokeRect(b.x*a.w/100,b.y*a.h/100,b.w*a.w/100,b.h*a.h/100);g.restore();}}
   }
   function liftedRegion(bounds) { return lift({name:'region-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),bounds}); }
-  for(const name of ['objects','collision','layers','project'])$('devTab-'+name).onclick=()=>setTab(name);
+  for(const name of TABS)$('devTab-'+name).onclick=()=>setTab(name);
   $('devCatalog').onchange=catalogPreview;$('devLift').onclick=()=>{const part=catalog.find(p=>p.name===$('devCatalog').value);lift({name:part.name,bounds:part.bounds.slice()});};
   $('devDiscoSpin').onchange=()=>editSelected(a=>{a.discoSpin=api.bound($('devDiscoSpin').value,0,4,1);});
   $('devDiscoRays').onchange=()=>editSelected(a=>{a.discoRays=$('devDiscoRays').checked;});
@@ -469,5 +487,6 @@ window.createCodaDeveloperConsole = function (api) {
   setTab('objects');load();
   return {snapshot,recordChange,undoRedo,save,refresh,onToggle,open,renderBase,renderCleanup,suppressOriginal,drawUnliftedPixels,originalPicture:a=>a.origin?picture(a.origin):null,validateAssetExtension,walkableOverride,pointerDown,pointerMove,pointerEnd,drawOverlay,liftedRegion,finishGesture,isPlaytest:()=>playtest,isEditing:()=>studio.active&&!playtest,exportProject,loadReady:()=>!loading,validate,
     // Data-only inspection supports repeatable browser integration checks.
-    getProject:()=>clone(documentData()),getPublishedProject:()=>publishedProject?clone(publishedProject):null,getProjectSource:()=>projectSource};
+    getProject:()=>clone(documentData()),getPublishedProject:()=>publishedProject?clone(publishedProject):null,getProjectSource:()=>projectSource,
+    getDialogue:id=>id===undefined?clone(dialogue):dialogue[id]?clone(dialogue[id]):null,getSprites:()=>clone(sprites)};
 };

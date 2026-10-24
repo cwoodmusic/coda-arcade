@@ -15,6 +15,7 @@
   const limit=Math.max(1,Math.min(50,Math.floor(api.limit||20))),seen=new Set(),claimedMissions=new Set(),waiting=[];let current=null;
   const snapshot=()=>({current:copy(current),queued:waiting.map(copy),seen:Array.from(seen)});
   function changed(){api.onChange?.(snapshot());}
+  const priority=item=>item.kind==='mission-complete'?0:item.kind==='mission-reward'?1:item.kind==='level'?2:3;
   function push(item){const next=normalize(item);if(!next||seen.has(next.id))return false;
    if(next.kind==='mission-complete'&&next.missionId&&claimedMissions.has(next.missionId))return false;seen.add(next.id);
    if(next.kind==='mission-reward'&&next.missionId){
@@ -23,10 +24,17 @@
     if(current?.kind==='mission-complete'&&current.missionId===next.missionId){current=next;changed();return true;}
    }
    if(!current)current=next;
-   else if(next.kind==='mission-complete'){
-    if(waiting.length>=limit)waiting.pop();
-    const index=waiting.findIndex(value=>value.kind!=='mission-complete');waiting.splice(index<0?waiting.length:index,0,next);
-   }else{if(waiting.length>=limit){const index=waiting.findIndex(value=>value.kind!=='mission-complete');if(index<0)return false;waiting.splice(index,1);}waiting.push(next);}changed();return true;
+   else{
+    if(waiting.length>=limit){
+     // A burst of ordinary celebrations must not hide a return instruction,
+     // collected reward, or level prize. Keep the newest of equal priority.
+     const lowest=Math.max(...waiting.map(priority));
+     if(lowest<priority(next))return false;
+     waiting.splice(waiting.findIndex(value=>priority(value)===lowest),1);
+    }
+    const index=waiting.findIndex(value=>priority(value)>priority(next));
+    waiting.splice(index<0?waiting.length:index,0,next);
+   }changed();return true;
   }
   function dismiss(){if(!current)return false;current=waiting.shift()||null;changed();return true;}
   return {push,dismiss,snapshot,clear(){current=null;waiting.length=0;changed();}};
@@ -44,6 +52,15 @@
  function missionRewardItem(value={}){
   const notes=Number.isFinite(value.notes)?Math.max(0,Math.floor(value.notes)):0,xp=Number.isFinite(value.xp)&&value.xp>0?Math.floor(value.xp):0;
   return {id:prefixed('mission-reward',value.id),missionId:missionKey(value.id),kind:'mission-reward',title:cleanText(value.title,90)||'Reward collected!',message:'Collected '+notes+' Notes'+(xp?' and '+xp+' XP':'')+'. Nice work!',action:value.action,announce:value.announce};
+ }
+ function levelUpItem(value={}){
+  const level=value.level;if(!Number.isInteger(level)||level<2||level>1000)return null;
+  const from=Number.isInteger(value.fromLevel)&&value.fromLevel>0&&value.fromLevel<level?value.fromLevel:level-1;
+  const prizes=[...new Set((Array.isArray(value.prizes)?value.prizes:[]).map(prize=>cleanText(typeof prize==='string'?prize:prize?.label,75)).filter(Boolean))];
+  const visible=[];let size=0;for(const prize of prizes){if(visible.length>=4||size+prize.length>205)break;visible.push(prize);size+=prize.length+2;}
+  const more=prizes.length-visible.length;
+  const unlocked=visible.length?'Unlocked: '+visible.join(', ')+(more?' and '+more+' more reward'+(more===1?'':'s'):'')+'.':'Keep making music and earning experience!';
+  return {id:'level:'+level,kind:'level',title:'Level '+level+'!',message:(level-from>1?'You gained '+(level-from)+' levels! ':'')+unlocked,action:value.action,announce:value.announce};
  }
  function createCodaRewardNotifications(api={}){
   const host=api.host||(api.document||document).body.appendChild((api.document||document).createElement('div')),doc=host.ownerDocument,win=doc.defaultView;
@@ -67,7 +84,7 @@
   }
   function icon(kind){
    const box=node('span','reward-toast-icon');box.setAttribute('aria-hidden','true');
-   const paths=kind==='mission-complete'?'<path d="M9 8h17v23H9zM13 14h9M13 19h9M13 24h5"/>':kind==='mission-reward'?'<path d="M9 14h20v17H9zM8 10h22v6H8zM19 10v21M19 10c-10 0-9-10-4-7l4 7c10 0 9-10 4-7z"/>':'<path d="m19 3 4.4 9 9.9 1.4-7.2 7 1.7 9.9-8.8-4.7-8.8 4.7 1.7-9.9-7.2-7 9.9-1.4z"/>';
+   const paths=kind==='mission-complete'?'<path d="M9 8h17v23H9zM13 14h9M13 19h9M13 24h5"/>':kind==='mission-reward'?'<path d="M9 14h20v17H9zM8 10h22v6H8zM19 10v21M19 10c-10 0-9-10-4-7l4 7c10 0 9-10 4-7z"/>':kind==='level'?'<path d="m19 4-10 11h7v16h6V15h7zM5 26h5M28 26h5"/>':'<path d="m19 3 4.4 9 9.9 1.4-7.2 7 1.7 9.9-8.8-4.7-8.8 4.7 1.7-9.9-7.2-7 9.9-1.4z"/>';
    box.innerHTML='<svg viewBox="0 0 38 36" width="38" height="36" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">'+paths+'</svg>';return box;
   }
   function render(state){
@@ -90,9 +107,9 @@
   listen(host,'focusin',()=>pause('focus'));listen(host,'focusout',event=>{if(!host.contains(event.relatedTarget))resume('focus');});
   listen(win,'resize',updatePosition);listen(doc,'visibilitychange',()=>{if(doc.hidden)pause('hidden');else resume('hidden');});
   const poll=win.setInterval(updatePosition,150);host.hidden=true;updatePosition();
-  return {notify,achievement:value=>notify(achievementItem(value)),missionComplete:value=>notify(missionCompleteItem(value)),missionReward:value=>notify(missionRewardItem(value)),dismiss,
+  return {notify,achievement:value=>notify(achievementItem(value)),missionComplete:value=>notify(missionCompleteItem(value)),missionReward:value=>notify(missionRewardItem(value)),levelUp:value=>notify(levelUpItem(value)),dismiss,
    getState:()=>({...queue.snapshot(),paused:reasons.size>0,remaining:timer===null?remaining:Math.max(0,remaining-(now()-started)),aboveTouchControls:host.classList.contains('has-touch-controls')}),
    dispose(){if(disposed)return;disposed=true;clearTimer();win.clearInterval(poll);listeners.forEach(stop=>stop());host.remove();}};
  }
- return {normalize,createNotificationQueue,achievementItem,missionCompleteItem,missionRewardItem,createCodaRewardNotifications};
+ return {normalize,createNotificationQueue,achievementItem,missionCompleteItem,missionRewardItem,levelUpItem,createCodaRewardNotifications};
 });

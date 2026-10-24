@@ -23,7 +23,9 @@ The renderer has 158 choices across hair, outfits, hats, glasses, accessories, s
 
 Talk to a musician and choose **Any missions for me?**, or open a mission from **Meet musicians**. Accept before starting a fresh cabinet game. Nine authored missions use completed results, including Music Triad wins/captures/comebacks, Pitch Race runs/streaks, and Rhythm Room perfect rounds or 20/50 consecutive notes. Consecutive-hit tracking resets on misses and extra taps. Finishing a mission marks it ready to collect and opens a bottom notification. Return within talking distance of its musician and choose **Collect reward** to receive its Notes and 100 quest XP once. Remote mission panels and the profile show progress but cannot pay rewards. Collection can be retried after a browser write failure without duplicate payment. Earned achievements also show bottom notifications; loading old progress does not replay them.
 
-XP comes from completed cabinet games, earned achievements, musician quests, Chopin challenges, and played original Song Machine compositions. Buying items or spending Notes awards no XP. Twelve levels unlock cosmetics and eight additional Song Machine sounds. **Profile** shows your live character, level, exact XP remaining, the actual next cosmetic and sound rewards, active missions, and classroom progress. Its **See all level prizes** button opens all thresholds and rewards. Each new classroom tutorial completion earns a once-only 50 XP achievement; reviews award no extra XP. Imported songs retain their instrument sounds even when the listener has not unlocked those sounds for new selections.
+Talk to a nearby musician and choose **Ask me a music question · Earn Notes** for trivia. Each of the nine visitors has five questions: 45 in total, covering pitch, rhythm, steady beat, dynamics, timbre, tempo, articulation, melody, harmony, and musical form. Correct answers award 4 Notes the first time that question is solved. Wrong answers offer a hint and another try; completed questions can be practiced without another payment. Trivia rewards stay in the existing Notes journal and do not award XP.
+
+XP comes from completed cabinet games, earned achievements, musician quests, Chopin challenges, and played original Song Machine compositions. Buying items or spending Notes awards no XP. Twelve levels unlock cosmetics and eight additional Song Machine sounds. **Profile** shows your live character, level, exact XP remaining, the actual next cosmetic and sound rewards, active missions, and classroom progress. Its **See all level prizes** button opens all thresholds and rewards. Gaining a level opens a bottom popup with the newly unlocked character looks and Song Machine sounds, plus a shortcut to your profile. Level changes from Song Machine inside its cabinet also announce in the world; loading an existing saved level stays quiet. Each new classroom tutorial completion earns a once-only 50 XP achievement; reviews award no extra XP. Imported songs retain their instrument sounds even when the listener has not unlocked those sounds for new selections.
 
 Game messages check the active iframe, expected origin, game ID, and per-session token. On the published shared origin, live hooks additionally observe actual Rhythm Room hit ordering. These are client-reported progress records, not a server anti-cheat system. Local development cannot establish the public games' parent-origin handshake; unit and integration fixtures cover the bridge without changing those games' allowlists.
 
@@ -45,6 +47,8 @@ Relevant checks:
 node --test tests/*.test.cjs
 python3 tests/learning-world-browser.py
 python3 tests/student-world-browser.py
+python3 tests/music-rewards-world-browser.py
+python3 tests/musician-trivia-browser.py
 python3 tests/classroom-tutorials-browser.py
 python3 tests/player-profile-browser.py
 python3 tests/reward-notifications-browser.py

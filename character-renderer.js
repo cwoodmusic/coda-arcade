@@ -358,13 +358,37 @@ window.createCodaCharacterRenderer=function(api){
     // Loafers have a broad toe, low vamp, and a gold penny bar.
     r(x,y-2,9,4,'#655044');r(x,y+1,10,1,'#302938');r(x+1,y-2,6,1,'#aa7b5a');r(x+3,y-1,4,1,'#e2ba76');
   }
-  function render(ctx,p,motion,time){
+  const pixelTargets=['player','bach','mozart','beethoven','clara','joplin','ellington','ella','nina','miles','dj'];
+  let pixelEdits={},pixelTops={},pixelSurface=null;
+  const pixelCopy=value=>JSON.parse(JSON.stringify(value));
+  function validPixelEdits(data){
+    if(!data||typeof data!=='object'||Array.isArray(data)||Object.keys(data).some(id=>!pixelTargets.includes(id)))return false;
+    return Object.values(data).every(views=>views&&typeof views==='object'&&!Array.isArray(views)&&Object.keys(views).every(direction=>DIRECTIONS.includes(direction))&&Object.values(views).every(points=>{
+      if(!Array.isArray(points)||points.length>7680)return false;const seen=new Set();
+      return points.every(point=>Array.isArray(point)&&point.length===3&&Number.isInteger(point[0])&&point[0]>=0&&point[0]<80&&Number.isInteger(point[1])&&point[1]>=0&&point[1]<96&&(point[2]===null||typeof point[2]==='string'&&/^#[0-9a-f]{6}$/i.test(point[2]))&&!seen.has(point[1]*80+point[0])&&!!seen.add(point[1]*80+point[0]));
+    }));
+  }
+  function setPixelEdits(data){if(!validPixelEdits(data))return false;pixelEdits=pixelCopy(data);pixelTops={};for(const [target,views]of Object.entries(pixelEdits))for(const points of Object.values(views))for(const [,y,color]of points)if(color!==null)pixelTops[target]=Math.min(pixelTops[target]??96,y);return true;}
+  function getPixelEdits(){return pixelCopy(pixelEdits);}
+  function canvasFor(ctx,width,height){const doc=ctx?.canvas?.ownerDocument||(typeof document==='object'?document:window.document);const surface=typeof api.createCanvas==='function'?api.createCanvas(width,height):doc?.createElement?.('canvas');if(!surface)return null;surface.width=width;surface.height=height;return surface;}
+  function pixelPoints(target,motion,data=pixelEdits){return data[target]?.[DIRECTIONS.includes(motion.facing)?motion.facing:'down']||[];}
+  function renderPixelActor(ctx,p,motion,time,points){
+    const surface=pixelSurface||(pixelSurface=canvasFor(ctx,128,128));
+    if(!surface)return render(ctx,p,motion,time,null);
+    const g=surface.getContext('2d');g.clearRect(0,0,128,128);g.imageSmoothingEnabled=false;
+    render(g,p,{...motion,x:64,y:104,scale:1,_pixelSurface:true},time,points);
+    const pose=sampleMotion(motion,time),scale=motion._pixelFrame?1:Math.max(.25,Math.min(8,finite(motion.scale,1)))*worldScale;
+    ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(Math.round(finite(motion.x)),Math.round(finite(motion.y)));ctx.scale(scale,scale);
+    const shadowScale=1-Math.min(.35,pose.jumpHeight/110);ctx.fillStyle='#080b214f';ctx.beginPath();ctx.ellipse(0,1,13*shadowScale,3*shadowScale,0,0,Math.PI*2);ctx.fill();
+    ctx.translate(pose.dx,-pose.lift-pose.jumpHeight);ctx.drawImage(surface,-64,-104);ctx.restore();
+  }
+  function render(ctx,p,motion,time,points){
+    if(points?.length&&!motion._pixelSurface)return renderPixelActor(ctx,p,motion,time,points);
     const pose=sampleMotion(motion,time),c=palette(p),side=pose.facing==='left'||pose.facing==='right',back=pose.facing==='up';
-    const x=finite(motion.x),y=finite(motion.y),scale=Math.max(.25,Math.min(8,finite(motion.scale,1)))*worldScale;
+    const x=finite(motion.x),y=finite(motion.y),scale=motion._pixelSurface||motion._pixelFrame?1:Math.max(.25,Math.min(8,finite(motion.scale,1)))*worldScale;
     ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(Math.round(x),Math.round(y));ctx.scale(scale,scale);
     const shadowScale=1-Math.min(.35,pose.jumpHeight/110);
-    ctx.fillStyle='#080b214f';ctx.beginPath();ctx.ellipse(0,1,13*shadowScale,3*shadowScale,0,0,Math.PI*2);ctx.fill();
-    ctx.translate(pose.dx,-pose.lift-pose.jumpHeight);if(pose.facing==='left')ctx.scale(-1,1);
+    if(!motion._pixelSurface){ctx.fillStyle='#080b214f';ctx.beginPath();ctx.ellipse(0,1,13*shadowScale,3*shadowScale,0,0,Math.PI*2);ctx.fill();ctx.translate(pose.dx,-pose.lift-pose.jumpHeight);}if(pose.facing==='left')ctx.scale(-1,1);
     const buildX=finite(p.bodyScaleX,1),buildY=finite(p.bodyScaleY,1);
     const r=(x,y,w,h,col)=>{ctx.fillStyle=col;const left=Math.round(x*buildX),top=Math.round(y*buildY);ctx.fillRect(left,top,Math.max(1,Math.round((x+w)*buildX)-left),Math.max(1,Math.round((y+h)*buildY)-top));};
     const stride=['moonwalk','breakdance'].includes(pose.gesture)?Math.round(Math.sin(pose.actionTime*7)*3):pose.stride,dress=p.outfit==='dress'||p.outfit==='gown';
@@ -459,14 +483,26 @@ window.createCodaCharacterRenderer=function(api){
     if(pose.gesture==='airguitar'){r(-6,-14,15,12,'#d98259');r(-10,-10,8,6,'#e9b36c');for(let j=0;j<5;j++)r(5+j*2,-17-j*2,4,3,'#d7b67b');r(-3,-10,4,4,'#4c3752');}
     if(pose.gesture==='facepalm'){head(1,-38,7,10,c.skin);head(2,-39,4,3,c.skinLight);r(9,-28,4,9,c.skin);}
     if(pose.gesture==='think'){head(3,-29,6,5,c.skinLight);r(11,-57,6,2,'#edce7d');r(15,-55,2,5,'#edce7d');r(12,-50,4,2,'#edce7d');r(12,-46,2,2,'#edce7d');}
+    // Details live on the animated body plane. Transparent pixels clear only
+    // this isolated character surface, never the world behind its feet.
+    if(motion._pixelSurface&&points?.length)for(const [px,py,color]of points){const localX=pose.facing==='left'?39-px:px-40,localY=py-80;if(color===null)ctx.clearRect(localX,localY,1,1);else{ctx.fillStyle=color;ctx.fillRect(localX,localY,1,1);}}
     ctx.restore();ctx.restore();
   }
-  function drawPlayer(ctx,profile,motion={},time=0){
+  function playerLook(profile){
     const base=profile?.characterId?appearanceFor(profile.characterId):null;
     const look=base?{...base,...normalizeProfile({...base,...profile})}:normalizeProfile(profile);
     if(base&&own(profile,'hairstyle')&&profile.hairstyle!==base.hairstyle)delete look.hairDetail;
     if(base&&own(profile,'outfit')&&profile.outfit!==base.outfit)delete look.neckwear;
-    render(ctx,look,motion&&typeof motion==='object'?motion:{},time);return true;
+    return look;
+  }
+  function drawPlayer(ctx,profile,motion={},time=0){
+    const pose=motion&&typeof motion==='object'?motion:{},target=pose.pixelTarget||profile?.characterId||'player';
+    render(ctx,playerLook(profile),pose,time,pixelPoints(target,pose));return true;
+  }
+  function renderPixelFrame(target,profile={},motion={},time=0,options={}){
+    if(!pixelTargets.includes(target))return null;const canvas=canvasFor(null,80,96);if(!canvas)return null;
+    const pose={...motion,x:40,y:80,scale:1,_pixelFrame:true},look=playerLook(target==='player'?profile:{...profile,characterId:target}),data=options.pixelEdits&&validPixelEdits(options.pixelEdits)?options.pixelEdits:pixelEdits;
+    render(canvas.getContext('2d'),look,pose,time,options.base?null:pixelPoints(target,pose,data));return canvas;
   }
   function drawNPC(ctx,npc,time=0){
     const p=npc&&typeof npc==='object'?npc:{},base=appearanceFor(p.id||p.name),custom=p.appearance&&typeof p.appearance==='object'?p.appearance:{};
@@ -476,7 +512,7 @@ window.createCodaCharacterRenderer=function(api){
     if(own(custom,'accessory'))appearance.earrings=custom.accessory==='earrings';
     const activity=p.activity||'',emote=activity==='dancing'?'dance':activity==='chatting'||p.conversation?'talk':activity==='playing'?'playing':activity==='relaxing'?'sit':p.emote;
     const seed=String(base.id).split('').reduce((a,c)=>a+c.charCodeAt(0),0);
-    render(ctx,appearance,{x:p.x,y:p.y,facing:p.facing,walking:p.walking,phase:p.phase,emote,emoteTime:p.emoteTime,seed},time);return true;
+    const pose={x:p.x,y:p.y,facing:p.facing,walking:p.walking,phase:p.phase,emote,emoteTime:p.emoteTime,seed};render(ctx,appearance,pose,time,pixelPoints(p.id||base.id,pose));return true;
   }
   function labelOffset(raw={},id){
     const base=id?appearanceFor(id):{},p={...base,...normalizeProfile({...base,...raw})};
@@ -484,9 +520,9 @@ window.createCodaCharacterRenderer=function(api){
     const hairTop=p.hairstyle==='mohawk'?60:p.hairstyle==='spiky'||p.hairstyle==='afro'||p.hairstyle==='pompadour'?56:p.hairstyle==='bald'?44:52;
     const gearTop={halo:56,umbrella:65,balloon:66}[p.accessory]||0;
     const top=Math.max(hairTop,p.headwear==='none'?0:hats[p.headwear]||53,gearTop,p.emote==='think'?59:0);
-    return Math.max(59,Math.ceil(top*finite(base.bodyScaleY,1))+9);
+    const pixelTop=pixelTops[id||raw?.characterId||'player'];return Math.max(59,Math.ceil(top*finite(base.bodyScaleY,1))+9,Number.isFinite(pixelTop)?80-pixelTop+9:0);
   }
   const getState=()=>({ready:true,mode:'javascript-characters',base:'bald-gray',motion:'javascript-animation',artStyle:'procedural-pixel',sourcePolicy:'javascript-drawn',layers:0,tintedFrames:0,paletteCount:palettes.size,cacheLimit,cell:[80,96],totalFrames:0});
   const ready=Promise.resolve({mode:'javascript-characters',base:'bald-gray'});
-  return {drawPlayer,drawNPC,normalizeProfile,appearanceFor,sampleMotion,labelOffset,catalog,ready,isReady:()=>true,error:null,getState};
+  return {drawPlayer,drawNPC,setPixelEdits,getPixelEdits,renderPixelFrame,normalizeProfile,appearanceFor,sampleMotion,labelOffset,catalog,ready,isReady:()=>true,error:null,getState};
 };

@@ -48,13 +48,25 @@ Erasing foreground also works on lifted original objects and their animated scre
 
 Layer painting changes occlusion, not walking collision. Painting existing room pixels also does not create or redraw an object; use Objects for that.
 
+## Musician dialogue
+
+Open **Dialogue** and choose a musician. Edit the biography, greetings, conversation button labels, and replies; add, remove, or reorder conversation choices. The preview shows your draft. **Apply dialogue** makes it active in the game. Leave the activity reply blank to keep the live description of what the musician is doing. **Revert draft** returns to the current applied dialogue; **Reset this musician to default** restores the authored lines and can be undone.
+
+Dialogue is plain text. It cannot run scripts, change mission rewards, or change trivia answers. Applied edits travel with complete project saves and exports; older project files without dialogue load the default conversations.
+
+## Pixel sprite details
+
+Open **Sprites** to edit your avatar, the nine musicians, or DJ Coda. Select the character and facing direction, then zoom into the 80 × 96 pixel grid. Pencil paints pixels, Eraser makes a character pixel transparent, Pick colour samples the current appearance, Fill changes a connected colour region, and Restore returns a pixel to the JavaScript drawing. Choose **Pan canvas** to move around a zoomed grid with your finger. Each direction has separate edits. The live preview offers idle, walk, and equipped-emote animations. **Export facing as PNG** saves the current view as an image.
+
+Pixel details follow the animated body while the JavaScript character keeps walking, jumping, and wearing boutique items. Edits are appearance details for each character and direction, rather than replacements for the animation system. Reset the direction or character to remove those details. Completed strokes share the console Undo/Redo history. Complete project saves and exports include the sprite edits; importing an older project restores the default drawings.
+
 ## Playtest, undo, and saving
 
 **Playtest** resumes normal WASD/arrow movement and click-to-walk with editor overlays hidden. Click **Stop playtest** to resume editing. Zoom with the wheel or +/− up to **800%** for detail work; reset with 0. Wheel zoom keeps the point under the cursor in place when map bounds allow it. Playtest and closing the console return to the 300% gameplay limit. Right-drag pans the editor when zoomed. Use the ⇄ button to dock the console on the other side when it covers artwork.
 
-Undo and redo apply to complete project edits, including objects, collision, and layer strokes. Use the buttons, Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, or Ctrl/Cmd+Y. Escape cancels a pending selection or closes the console.
+Undo and redo apply to complete project edits, including objects, collision, layer strokes, applied musician dialogue, and completed pixel strokes. Use the buttons, Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, or Ctrl/Cmd+Y. Escape cancels a pending selection or closes the console.
 
-Edits save locally in this browser and origin. The Project tab's **Save project** reports storage success or failure. **Export project JSON** backs up the whole project, including embedded uploaded images, source cleanup patches, collision overrides, and local foreground strokes. **Import project JSON** validates a backup before replacing the current project and can be undone. **Reset project** replaces the current layout with the shared published layout and saves that copy locally; it can also be undone. Individual object and collision **Restore original** tools still return to the underlying original artwork or collision cells.
+Edits save locally in this browser and origin. The Project tab's **Save project** reports storage success or failure. **Export project JSON** backs up the whole project, including embedded uploaded images, source cleanup patches, collision overrides, local foreground strokes, dialogue, and sprite details. **Import project JSON** validates a backup before replacing the current project and can be undone. **Reset project** replaces the current layout with the shared published layout and saves that copy locally; it can also be undone. Individual object and collision **Restore original** tools still return to the underlying original artwork or collision cells.
 
 Fresh browsers load `published-world-project.json` as the shared default. The checked-in file uses the latest supplied version-1 export, including 8 lifted objects, 1,085 collision overrides, and 99 foreground strokes. The dance-passage plant is hidden with a cleanup silhouette covering its leaves, trunk, and pot. Its floor repair preserves the corridor's horizontal grid rows and adjoining wall. The other seven objects and all uploaded collision and layer edits are preserved; the corridor's existing green cells already permit NPC passage, while the neighboring red wall cells remain solid.
 
@@ -73,6 +85,8 @@ node --test tests/collision-editor.test.cjs
 node --test tests/world-object-runtime.test.cjs
 python3 tests/clean-world-art.py
 python3 tests/developer-console-browser.py
+python3 tests/dialogue-editor-browser.py
+python3 tests/pixel-editor-browser.py
 python3 tests/published-world-browser.py
 python3 tests/collision-integration-browser.py
 python3 tests/dance-passage-browser.py
