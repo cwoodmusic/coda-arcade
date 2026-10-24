@@ -30,6 +30,8 @@ During a bite and rhythm challenge, the movement pad hides. Tap the large rhythm
 
 The battle illustration shows the fish tugging on your line and being reeled closer after good taps. Rare catches get a brief announcement. Quarter, half, eighth, and whole-bar rests are silent; rarer fish add more syncopation. Short landscape screens place the illustration beside progress so the full rhythm button remains visible.
 
+Harder fish also change speed. Watch the tempo cue: **accelerando** means gradually faster and **ritardando** means gradually slower. The strongest fish reach **Presto**. Follow the moving notes and metronome; the speed display and tap timing stay together. Pause freezes the change as well as the battle.
+
 ## Song Machine
 
 The phone composer has a fixed Play/Stop/Undo/Loop dock and expandable instrument options. Tap a grid cell to place or remove a note; swipe horizontally for later bars and vertically for other pitches. **Draw notes** enables sideways duration drawing; **Tap & scroll** restores navigation. Canceled gestures never place notes. Editing retains the visible bar and pitch rather than jumping back to the grid's beginning.

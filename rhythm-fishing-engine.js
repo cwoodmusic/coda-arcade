@@ -48,9 +48,23 @@
   ['royal-moonfish','Royal Moonfish','legendary','#b19ed4','#efd49c','deep',[70,120],80,35],
   ['luminous-dragonfish','Luminous Dragonfish','legendary','#7cc9c3','#e9a2cc','dragon',[90,160],80,35]
  ];
+ // Tempo markings name quarter-note rates. The conducted meter pulse is
+ // converted separately, so cut time never silently doubles a Presto speed.
+ function tempoMarking(quarterBpm){
+  if(quarterBpm>=168)return {marking:'Presto',meaning:'Very fast'};
+  if(quarterBpm>=156)return {marking:'Vivace',meaning:'Lively'};
+  if(quarterBpm>=120)return {marking:'Allegro',meaning:'Fast'};
+  if(quarterBpm>=108)return {marking:'Moderato',meaning:'Moderately'};
+  return {marking:'Andante',meaning:'Walking pace'};
+ }
+ function speciesTempo(rarity,index){
+  const rank=RARITIES.find(value=>value.id===rarity).rank,range=rank===2?[108,132]:rank===3?[132,160]:rank===4?[168,192]:rank===1?[82,82]:[76,76];
+  const change=rank<2?'steady':['accelerando','ritardando','steady','ritardando','steady','accelerando'][index%6],start=change==='ritardando'?range[1]:change==='steady'?(range[0]+range[1])/2:range[0],end=change==='accelerando'?range[1]:change==='ritardando'?range[0]:start;
+  return Object.freeze({...tempoMarking(start),initialMarking:tempoMarking(start).marking,endMarking:tempoMarking(end).marking,unit:'quarter',change,startQuarterBpm:start,endQuarterBpm:end,rampAfterBars:1,rampBars:3});
+ }
  const FISH=Object.freeze(SPECIES.map(([id,name,rarity,color,accent,shape,size,notes,xp],index)=>Object.freeze({
   id,name,rarity,rarityLabel:RARITIES.find(value=>value.id===rarity).label,rarityRank:RARITIES.find(value=>value.id===rarity).rank,
-  color,accent,shape,silhouette:shape,size:Object.freeze(size),notes,reward:notes,rewardNotes:notes,xp,patternIndex:index%6,meter:['4/4','6/8','2/2'][index%3],timeSignature:['4/4','6/8','2/2'][index%3],
+  color,accent,shape,silhouette:shape,size:Object.freeze(size),notes,reward:notes,rewardNotes:notes,xp,tempo:speciesTempo(rarity,index),patternIndex:index%6,meter:['4/4','6/8','2/2'][index%3],timeSignature:['4/4','6/8','2/2'][index%3],
   // Common/uncommon fish teach every meter. Some rarer species have one
   // meter habitat; others inhabit two. The preferred meter remains valid.
   meters:Object.freeze(['common','uncommon'].includes(rarity)?Object.keys(METERS):rarity==='legendary'||index%6<3?[['4/4','6/8','2/2'][index%3]]:[['4/4','6/8','2/2'][index%3],['4/4','6/8','2/2'][(index+1)%3]])
@@ -106,25 +120,45 @@
   const fish=options.fish===undefined?chooseFish(options):fishFor(options.fish);if(!fish)throw Error('Choose a known fish species.');
   const rarity=rarityFor(fish),meter=meterFor(options.meter||fish.meter);if(!meter)throw Error('Choose 4/4, 6/8, or cut time.');
   if(!canFishInMeter(fish,meter))throw Error(fish.name+' can only be caught in '+fish.meters.join(' or ')+'.');
-  // Keep the written subdivisions playable while naming the correct conducted
-  // pulse: quarter, dotted quarter, or half note respectively.
-  const bpm=Math.round(rarity.bpm/meter.pulseBeats),secondsPerPulse=60/bpm,secondsPerBeat=secondsPerPulse/meter.pulseBeats,countInBeats=meter.pulsesPerBar,countInSeconds=countInBeats*secondsPerPulse;
-  const startTime=Number.isFinite(options.startTime)?options.startTime:0,id=typeof options.id==='string'&&options.id.length?options.id.slice(0,180):sessionID();
-  const musicStart=startTime+countInSeconds;
+  const profile=fish.tempo,q0=profile.startQuarterBpm,q1=profile.endQuarterBpm,startBeat=meter.barBeats*profile.rampAfterBars,endBeat=startBeat+meter.barBeats*profile.rampBars,slope=(q1-q0)/(endBeat-startBeat),changing=Math.abs(slope)>1e-10;
+  const initialSecondsPerBeat=60/q0,initialSecondsPerPulse=initialSecondsPerBeat*meter.pulseBeats,countInBeats=meter.pulsesPerBar,countInSeconds=countInBeats*initialSecondsPerPulse;
+  const startTime=Number.isFinite(options.startTime)?options.startTime:0,id=typeof options.id==='string'&&options.id.length?options.id.slice(0,180):sessionID(),musicStart=startTime+countInSeconds;
+  const rampStartSeconds=startBeat*initialSecondsPerBeat,rampSeconds=changing?60/slope*Math.log(q1/q0):(endBeat-startBeat)*initialSecondsPerBeat,rampEndSeconds=rampStartSeconds+rampSeconds;
+  // Integrate seconds per beat exactly. Every audible/visual/judged event uses
+  // this immutable map, including a note sustained across the tempo ramp.
+  function tempoAtBeat(beat){if(!Number.isFinite(beat))return NaN;return changing?q0+slope*clamp(beat-startBeat,0,endBeat-startBeat):q0;}
+  function secondsAtBeat(beat){
+   if(!Number.isFinite(beat))return NaN;
+   if(!changing||beat<=startBeat)return beat*initialSecondsPerBeat;
+   if(beat<endBeat)return rampStartSeconds+60/slope*Math.log1p(slope*(beat-startBeat)/q0);
+   return rampEndSeconds+(beat-endBeat)*60/q1;
+  }
+  function timeAtBeat(beat){return musicStart+secondsAtBeat(beat);}
+  function beatAtTime(time){
+   if(!Number.isFinite(time))return NaN;const seconds=time-musicStart;
+   if(!changing||seconds<=rampStartSeconds)return seconds/initialSecondsPerBeat;
+   if(seconds<rampEndSeconds)return startBeat+q0*Math.expm1(slope*(seconds-rampStartSeconds)/60)/slope;
+   return endBeat+(seconds-rampEndSeconds)*q1/60;
+  }
   const patterns=PATTERNS.filter(pattern=>pattern.rarity===rarity.id&&pattern.meter===meter.id),events=[];
   let now=startTime,phase='count-in',progress=45,hits=0,misses=0,extras=0,bar=0,sequence=0,lastJudgement=null,result=null,finished=false;
   function makeUntil(beat){
    while(bar*meter.barBeats<=beat){const pattern=patterns[(bar+fish.patternIndex)%patterns.length],barNumber=bar++;
-    for(const source of pattern.events){const onset=barNumber*meter.barBeats+source.onset,time=musicStart+onset*secondsPerBeat,beam=Math.floor(source.onset/meter.pulseBeats);
-     events.push({...source,id:'note-'+sequence++,bar:barNumber,pattern:pattern.id,meter:meter.id,onset,beat:onset,time,at:time,durationSeconds:source.duration*secondsPerBeat,beamingGroup:!source.rest&&source.duration<1?'beam-'+barNumber+'-'+beam:null,beam:!source.rest&&source.duration<1?beam:null,judgement:source.rest?'rest':'pending',hitAt:null});
+    for(const source of pattern.events){const onset=barNumber*meter.barBeats+source.onset,time=timeAtBeat(onset),durationSeconds=timeAtBeat(onset+source.duration)-time,beam=Math.floor(source.onset/meter.pulseBeats),previous=events.at(-1);
+     // Dense fast subdivisions need disjoint judgement windows. Written rest
+     // boundaries count too, so tapping silence cannot steal a nearby target.
+     const window=source.rest?0:rarity.rank<2?rarity.window:Math.min(rarity.window,durationSeconds*.42,previous?(time-previous.time)*.42:Infinity);
+     events.push({...source,id:'note-'+sequence++,bar:barNumber,pattern:pattern.id,meter:meter.id,onset,beat:onset,time,at:time,durationSeconds,window,judgementWindow:window,beamingGroup:!source.rest&&source.duration<1?'beam-'+barNumber+'-'+beam:null,beam:!source.rest&&source.duration<1?beam:null,judgement:source.rest?'rest':'pending',hitAt:null});
     }
    }
   }
   makeUntil(16);
+  function tempoState(beat){const currentQuarterBpm=tempoAtBeat(beat),rampProgress=changing?clamp((beat-startBeat)/(endBeat-startBeat),0,1):0;return {...profile,...tempoMarking(currentQuarterBpm),currentQuarterBpm,currentPulseBpm:currentQuarterBpm/meter.pulseBeats,startBeat,endBeat,active:changing&&beat>=startBeat&&beat<endBeat,settled:changing&&beat>=endBeat,progress:rampProgress};}
   function finish(outcome,reason){
    if(finished)return;finished=true;phase=outcome;progress=outcome==='caught'?100:0;
+   const tempo=tempoState(beatAtTime(now));
    result={id,fishId:fish.id,fish:copy(fish),rarity:fish.rarity,outcome,caught:outcome==='caught',reason:reason||null,hits,misses,extras,perfect:hits>0&&misses===0&&extras===0,
-    notes:outcome==='caught'?fish.notes:0,xp:outcome==='caught'?fish.xp:0,elapsed:Math.max(0,now-startTime),duration:Math.max(0,now-startTime-countInSeconds),bpm,meter:meter.id,timeSignature:meter.id,pulseUnit:meter.pulseUnit};
+    notes:outcome==='caught'?fish.notes:0,xp:outcome==='caught'?fish.xp:0,elapsed:Math.max(0,now-startTime),duration:Math.max(0,now-startTime-countInSeconds),bpm:tempo.currentPulseBpm,quarterBpm:tempo.currentQuarterBpm,tempo,meter:meter.id,timeSignature:meter.id,pulseUnit:meter.pulseUnit};
    try{options.onFinish?.(copy(result));}catch{/* Feedback cannot change a completed result. */}
   }
   function judge(kind,event){
@@ -136,12 +170,12 @@
   }
   function update(time){
    if(!Number.isFinite(time)||time<now||finished)return getState();now=time;
-   const beat=(now-musicStart)/secondsPerBeat;
+   const beat=beatAtTime(now);
    if(beat<0)return getState();phase='playing';
-   for(const event of events){if(event.time+rarity.window>=now)break;if(event.judgement==='pending'){judge('miss',event);if(finished)break;}}
+   for(const event of events){if(event.rest)continue;if(event.time+event.window>=now)break;if(event.judgement==='pending'){judge('miss',event);if(finished)break;}}
    if(!finished)makeUntil(beat+16);
    // Retain the nearby score for rendering; a long session must not grow forever.
-   if(events.length>192){const remove=events.findIndex(event=>event.time>=now-8*secondsPerBeat);if(remove>0)events.splice(0,remove);}
+   if(events.length>192){const remove=events.findIndex(event=>event.onset>=beat-8);if(remove>0)events.splice(0,remove);}
    return getState();
   }
   function tap(time){
@@ -149,16 +183,18 @@
    update(time);if(finished)return {accepted:false,kind:'finished',state:getState()};
    if(phase==='count-in')return {accepted:false,kind:'count-in',state:getState()};
    let nearest=null,distance=Infinity;
-   for(const event of events){if(event.judgement!=='pending')continue;const delta=Math.abs(event.time-now);if(delta<=rarity.window&&delta<distance){nearest=event;distance=delta;}}
+   for(const event of events){if(event.judgement!=='pending')continue;const delta=Math.abs(event.time-now);if(delta<=event.window&&delta<distance){nearest=event;distance=delta;}}
    if(nearest){judge('hit',nearest);return {accepted:true,kind:'hit',noteId:nearest.id,error:now-nearest.time,state:getState()};}
    judge('extra');return {accepted:true,kind:'extra',state:getState()};
   }
-  function getState(){const elapsed=Math.max(0,now-startTime),musicTime=now-musicStart,beat=musicTime/secondsPerBeat,countInRemaining=Math.max(0,musicStart-now);
-   return {id,phase,fish:copy(fish),rarity:copy(rarity),meter:meter.id,timeSignature:meter.id,meterInfo:{...meter},bpm,displayBpm:bpm,startTime,now,time:now,elapsed,musicTime,beat,secondsPerBeat,secondsPerPulse,pulseBeats:meter.pulseBeats,pulsesPerBar:meter.pulsesPerBar,pulseUnit:meter.pulseUnit,barBeats:meter.barBeats,countInBeats,countInQuarterBeats:meter.barBeats,countInSeconds,
-    countInRemaining,countInBeat:phase==='count-in'?Math.max(1,Math.ceil(countInRemaining/secondsPerPulse-1e-9)):0,
+  function getState(){const elapsed=Math.max(0,now-startTime),musicTime=now-musicStart,beat=beatAtTime(now),countInRemaining=Math.max(0,musicStart-now),tempo=tempoState(beat),secondsPerBeat=60/tempo.currentQuarterBpm,secondsPerPulse=secondsPerBeat*meter.pulseBeats,pulses=[],barLines=[];
+   for(let pulse=Math.max(-meter.pulsesPerBar,Math.floor(beat/meter.pulseBeats)-1);pulse<=Math.ceil((beat+16)/meter.pulseBeats);pulse++){const at=pulse*meter.pulseBeats;pulses.push({id:'pulse-'+pulse,beat:at,time:timeAtBeat(at),strong:((pulse%meter.pulsesPerBar)+meter.pulsesPerBar)%meter.pulsesPerBar===0,countIn:pulse<0});}
+   for(let line=Math.max(0,Math.floor(beat/meter.barBeats)-1);line<=Math.ceil((beat+16)/meter.barBeats);line++){const at=line*meter.barBeats;barLines.push({bar:line,beat:at,time:timeAtBeat(at)});}
+   return {id,phase,fish:copy(fish),rarity:copy(rarity),meter:meter.id,timeSignature:meter.id,meterInfo:{...meter},bpm:tempo.currentPulseBpm,displayBpm:tempo.currentPulseBpm,quarterBpm:tempo.currentQuarterBpm,tempo,startTime,musicStart,now,time:now,elapsed,musicTime,beat,secondsPerBeat,secondsPerPulse,pulseBeats:meter.pulseBeats,pulsesPerBar:meter.pulsesPerBar,pulseUnit:meter.pulseUnit,barBeats:meter.barBeats,countInBeats,countInQuarterBeats:meter.barBeats,countInSeconds,
+    countInRemaining,countInBeat:phase==='count-in'?Math.max(1,Math.ceil(countInRemaining/initialSecondsPerPulse-1e-9)):0,pulses,barLines,
     progress,hits,misses,extras,window:rarity.window,lastJudgement:lastJudgement?{...lastJudgement}:null,
     notes:events.filter(event=>event.onset+event.duration>=beat-8&&event.onset<=beat+16).map(event=>({...event})),result:result?copy(result):null};}
-  return {update,tap,getState,snapshot:getState,abort(){if(!finished)finish('escaped','aborted');return getState();}};
+  return {update,tap,getState,snapshot:getState,timeAtBeat,beatAtTime,tempoAtBeat,abort(){if(!finished)finish('escaped','aborted');return getState();}};
  }
- return Object.freeze({FISH,RARITIES,METERS,PATTERNS,chooseFish,availableFish,canFishInMeter,fishFor,rarityFor,meterFor,createSession});
+ return Object.freeze({FISH,RARITIES,METERS,PATTERNS,chooseFish,availableFish,canFishInMeter,fishFor,rarityFor,meterFor,tempoMarking,createSession});
 });

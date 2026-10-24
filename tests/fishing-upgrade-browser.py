@@ -20,6 +20,9 @@ class FishingUpgradeTests(_fish._world.WorldBrowserCase):
 
     def setUp(self):
         _fish.FishingWorldTests.setUp(self)
+        # Freeze between protocol calls so Presto's narrow note windows do not
+        # absorb unrelated browser automation latency. Actual input is retained.
+        self.page.clock.pause_at(self.page.evaluate('Date.now()/1000')+5)
         self.page.wait_for_function('CodaRhythmFishing.availableFish&&CodaFishingBattle')
         self.page.evaluate('''()=>{
           window.fishingRestInk=[];window.fishingToneStarts=[];
@@ -63,13 +66,22 @@ class FishingUpgradeTests(_fish._world.WorldBrowserCase):
         return self.state()
 
     def advance_to(self,time):
-        self.page.clock.run_for(max(1,round((time+.025-self.state()['clock'])*1000)))
+        current=self.state()['clock']
+        if time>current:self.page.clock.run_for(max(1,math.floor((time-current)*1000)))
+        for _ in range(20):
+            if self.state()['clock']>=time-.000001:return
+            self.page.clock.run_for(1)
+        self.fail('The controlled game clock should reach the rhythm target')
 
-    def tap_note(self):
+    def tap_note(self,maintain=False):
         state=self.state();note=next(note for note in state['challenge']['notes']
             if note['judgement']=='pending' and note['time']>=state['clock']-.03)
         self.advance_to(note['time']);self.page.locator('#fishingRhythmCanvas').focus()
-        self.page.keyboard.press('Space');self.page.clock.run_for(16)
+        self.page.keyboard.press('Space')
+        after=self.state()
+        if maintain and after['phase']=='rhythm' and after['challenge']['progress']>65:
+            self.page.keyboard.press('Space')
+        self.page.clock.run_for(16)
         return self.state()
 
     def play_until(self,time):
@@ -79,7 +91,7 @@ class FishingUpgradeTests(_fish._world.WorldBrowserCase):
             self.assertEqual(state['phase'],'rhythm')
             notes=[note for note in state['challenge']['notes'] if note['judgement']=='pending'
                 and note['time']>=state['clock']-.03 and note['time']<time]
-            if notes:self.tap_note()
+            if notes:self.tap_note(maintain=True)
             else:self.advance_to(time);return
         self.fail('The real rhythm should advance to the requested battle time')
 

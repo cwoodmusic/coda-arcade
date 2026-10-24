@@ -24,6 +24,14 @@ The BPM label names the actual pulse unit. The engine keeps note lengths separat
 
 Common and Uncommon species live in all three meters. Some Rare and Epic species have one or two habitats; Legendary species each belong to one meter. Changing **Fishing meter** changes the wild encounter pool, and every collection card lists its allowed meters. For example, Glass Cavefish and Thunderfin Pike require 4/4, Sapphire Pike and Starlight Sturgeon require 6/8, and Amethyst Koi and Prism Koi require cut time. Existing saved catches remain in the journal.
 
+## Tempo and changing speed
+
+Each species has a tempo profile. Common and Uncommon fish keep a steady Andante (walking pace). Rare fish use 108–132 quarter notes per minute, Epic fish use 132–160, and Legendary fish use Presto at 168–192. Some difficult fish stay fast; others use **accelerando** (gradually getting faster) or **ritardando** (gradually getting slower). The first bar stays steady, then the change unfolds over three bars and settles at its target speed.
+
+The tempo display names the current speed with Andante, Moderato, Allegro, Vivace, or Presto and explains the change in plain language. These markings use quarter-note BPM. The metronome follows the selected meter’s actual pulse: quarter notes in 4/4, dotted quarters in 6/8, and half notes in cut time. A change of tempo does not change the time signature.
+
+Note onsets, rests, bar lines, scrolling, and metronome clicks use the same tempo map. Longer notes and rests keep their musical lengths through a speed change. Dense fast notes have separate timing windows, so one tap cannot collect neighboring notes. Pausing or switching away freezes the musical clock and speed change; resuming does not replay a beat that already sounded. Catch rewards still depend on the fish species.
+
 ## Catches and rewards
 
 Each successful catch records the species, size, meter, result, and stable catch ID in `codaRhythmFishingV1`. Common through legendary fish award 4–80 Notes and 8–35 catch XP. Nine milestones cover the first catch, five/twenty catches, a perfect catch, rare/legendary catches, all three meters, ten species, and all thirty species. Each achievement gives 50 XP once and uses the existing bottom notifications and level rewards.
@@ -45,9 +53,10 @@ python3 tests/fishing-world-browser.py
 python3 tests/cave-upgrade-browser.py
 python3 tests/rhythm-beaming-browser.py
 python3 tests/fishing-upgrade-browser.py
+python3 tests/fishing-tempo-browser.py
 python3 tests/cave-camera-browser.py
 python3 tests/fishing-battle-browser.py
-node --test tests/cave-camera.test.cjs tests/fishing-battle.test.cjs
+node --test tests/cave-camera.test.cjs tests/fishing-battle.test.cjs tests/fishing-tempo.test.cjs
 python3 tests/time-signature-lesson-browser.py
 python3 tests/music-notation-browser.py
 ```

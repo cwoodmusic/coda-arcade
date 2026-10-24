@@ -11,6 +11,14 @@
 #fishingCaptainWords{white-space:pre-line}
 
 .fishing-fish-card .fishing-fish-habitat{color:#b8eee0;margin-top:7px;font-weight:650}
+.fishing-rhythm-meta{align-items:center;column-gap:12px;row-gap:4px}
+#fishingTempoLabel{font-variant-numeric:tabular-nums;color:#f4e3ba}
+.fishing-tempo-change{color:#bde8e3;font-weight:650}
+.fishing-tempo-change[data-change=accelerando][data-phase=active]{color:#a4f2c3}
+.fishing-tempo-change[data-change=ritardando][data-phase=active]{color:#c6baff}
+.fishing-fish-card .fishing-fish-tempo{color:#e8d9b5;margin-top:4px}
+@media(max-width:760px),(pointer:coarse){.fishing-rhythm-meta{column-gap:8px;row-gap:3px}.fishing-scroll-hint{display:none}}
+@media(orientation:landscape) and (max-height:550px){.fishing-rhythm-meta{column-gap:10px;row-gap:2px}#fishingTempoLabel{white-space:nowrap}}
 /* On a short phone, the battle illustration shares the progress area so
  * the complete rhythm button stays visible beneath the staff. */
 @media(orientation:landscape) and (max-height:550px){
