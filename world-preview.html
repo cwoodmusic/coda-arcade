@@ -13,10 +13,11 @@
 #cameraTools button:hover{background:#514073}
 #cameraTools #zoomReset{min-width:58px;font-size:12px;font-weight:650;color:#a8f3f2;border-radius:4px}
 #cameraTools button:focus-visible{outline:2px solid #a6eff4;outline-offset:1px}
-\n/* Coda Asset Studio v11: stays separate from collision + pixel masks. */
+
+/* Coda Asset Studio v11: stays separate from collision + pixel masks. */
 #assetStudio{position:fixed;left:12px;top:80px;z-index:65;width:min(334px,calc(100vw - 24px));max-height:calc(100dvh - 99px);overflow:auto;background:#171529f5;border:1px solid #eac17d;box-shadow:0 12px 50px #05010de0,0 0 22px #fdac4a24;border-radius:12px;padding:13px;color:#f8efff;font:12px system-ui;backdrop-filter:blur(9px)}
 #assetStudio[hidden]{display:none}#assetStudio .studioHead{display:flex;align-items:center;justify-content:space-between;color:#ffe4a4;font-size:14px;gap:9px;margin-bottom:7px}#assetStudio .studioActions{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0}#assetStudio button{font:inherit;min-height:28px;padding:5px 7px}#assetStudio .studioActions button{flex:1 0 90px}#assetStudio button:disabled{opacity:.36;cursor:not-allowed}#assetStudio hr{border:0;border-top:1px solid #655374;margin:13px 0}#assetStudio .studioField{display:grid;gap:3px;margin:7px 0}#assetStudio .studioField>label{font-weight:650;color:#dccdf3}#assetStudio input:not([type=checkbox]),#assetStudio select{background:#131024;border:1px solid #866e9b;color:#fff;padding:7px;border-radius:5px;width:100%;font:inherit;min-width:0}#assetStudio input[type=checkbox]{accent-color:#f9c880}#assetStudio .studioGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}#assetStudio .studioTip{color:#c9b9d6;line-height:1.45;font-size:11px;margin:6px 0}#assetStudio #assetList{height:108px;padding:2px}#assetStudio #assetList option{padding:6px}#assetStudio #assetMessage{color:#bbf5e5;min-height:18px;overflow-wrap:anywhere}#assetStudio #assetSelection[hidden]{display:none}#assetStudio .studioCheck{display:inline-flex;align-items:center;gap:6px;margin:5px 11px 5px 0}#assetStudio .studioCollapsible{border:1px solid #655374;border-radius:7px;padding:8px}#assetStudio summary{cursor:pointer;color:#ffe4b1;font-weight:650}#assetToggle{border-color:#eecc7c}#view.asset-editing{cursor:crosshair;touch-action:none}#assetStudio #assetAdd{background:#675022;border-color:#e8b85c}#assetStudio #assetImport{border-color:#80d3ed}#assetStudio #assetExport{border-color:#80d3ed}#assetStudio #assetHelp{background:#271d3c}#assetStudio .studioHot{color:#ffcfa4}body.asset-console-open #layerEditor{display:none!important}@media(max-width:650px){#assetStudio{top:120px;max-height:calc(100dvh - 138px)}}
-</style><header><b>♫ CODA ARCADE · CONNECTED WORLD / PHASE 11 · ASSET STUDIO</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="assetToggle" type="button" title="Open Asset Studio (Shift+A)">✥ Assets</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · Wheel / + / − Zoom · 0 Reset · C collision · L layer outlines · Shift+L EDIT layers · Shift+A ASSETS · F foreground on/off · Shift-click collision edit · X export · Shift+R reset &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 11 · asset studio · animations · layers · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
+</style><link rel="stylesheet" href="developer-console.css"><script src="collision-editor.js"></script><script src="developer-console.js"></script><header><b>♫ CODA ARCADE · CONNECTED WORLD / WORLD BUILDER</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="assetToggle" type="button" title="Open Asset Studio (Shift+A)">✥ Assets</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · Wheel / + / − Zoom · 0 Reset · F2 Developer console · C Edit collision · Shift+L Edit layers · Right-drag to pan in editor &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 11 · asset studio · animations · layers · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
   <div class="editorbanner"><b>✎ FOREGROUND EDITOR</b><button id="editClose" type="button">✕</button></div>
   <div class="mini">Paint with pixels from the existing arcade artwork. Erase removes unwanted foreground coverage; the floor stays unchanged.</div>
   <div class="editorline"><button type="button" id="editPaint" class="current">🖌 Paint</button><button type="button" id="editErase">⌫ Erase</button></div>
@@ -76,7 +77,7 @@
  <p id="assetMessage" role="status">Your assets are saved in this browser. Export scene JSON to publish or move them to another computer.</p>
  <details><summary id="assetHelp">Help · shortcuts and storage</summary><p class="studioTip">Shift+A opens/closes. Delete removes. Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z redo. Arrows nudge selected asset (Shift = 8 px). Escape closes. GIF/APNG playback depends on browser support; sprite sheets offer deterministic frame animation. Crop selects a rectangular section of the *original art* (not the whole live canvas). Imported images are embedded in exported JSON. Browser storage is local to this page/origin; GitHub won't receive edits until you publish the export.</p></details>
 </aside><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><div id="pianoroom" hidden><div class="stage"><h2>♫ PIANO LAB ♫</h2><p>A quieter music space away from the arcade floor.</p><div class="keys"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p style="opacity:.7">Dedicated room preview — instruments and activities coming later.</p></div><button id="closepiano">← Return to Arcade</button></div><script>
-(()=>{'use strict';const c=document.querySelector('#view'),g=c.getContext('2d',{alpha:false}),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}const W=1672,H=941,ART_SCALE=1,keys=new Set();let player={x:1180,y:388},cam={x:0,y:0,zoom:1,targetZoom:1},dest=null,emote=0,near=null,last=0,clock=0,walking=false,facing="down";const rooms=[{id:'lounge',name:'LOUNGE',x:95,y:145,w:350,h:235},{id:'dance',name:'DANCE',x:90,y:505,w:670,h:325},{id:'arcade',name:'ARCADE',x:648,y:220,w:900,h:580}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:718,y:313,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:831,y:314,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:951,y:315,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1064,y:315,url:'song-machine/index.html'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
+(()=>{'use strict';let developerConsole=null;const c=document.querySelector('#view'),g=c.getContext('2d',{alpha:false}),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}const W=1672,H=941,ART_SCALE=1,keys=new Set();let player={x:1180,y:388},cam={x:0,y:0,zoom:1,targetZoom:1},dest=null,emote=0,near=null,last=0,clock=0,walking=false,facing="down";const rooms=[{id:'lounge',name:'LOUNGE',x:95,y:145,w:350,h:235},{id:'dance',name:'DANCE',x:90,y:505,w:670,h:325},{id:'arcade',name:'ARCADE',x:648,y:220,w:900,h:580}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:718,y:313,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:831,y:314,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:951,y:315,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1064,y:315,url:'song-machine/index.html'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
 
 // PHASE 9.8: World-space camera. Gameplay, collisions and editor masks stay in
 // their original 1672x941 coordinate system. Only the canvas view is scaled.
@@ -98,9 +99,11 @@ function setCameraZoom(value){
 }
 function updateCamera(dt){
  const blend=1-Math.exp(-Math.min(.05,Math.max(0,dt))*11);
+ const previousZoom=cam.zoom;
  cam.zoom+=(cam.targetZoom-cam.zoom)*blend;
  if(Math.abs(cam.targetZoom-cam.zoom)<.0001)cam.zoom=cam.targetZoom;
  const visibleW=W/cam.zoom,visibleH=H/cam.zoom;
+ if(developerConsole?.isEditing()){cam.x=Math.max(0,Math.min(W-visibleW,cam.x+(W/previousZoom-visibleW)/2));cam.y=Math.max(0,Math.min(H-visibleH,cam.y+(H/previousZoom-visibleH)/2));return;}
  // The avatar is the focal point. Clamping avoids showing empty space outside
  // the artwork, including when the camera is near an edge or the zoom resets.
  const tx=Math.max(0,Math.min(W-visibleW,player.x-visibleW/2));
@@ -253,6 +256,8 @@ for(let y=0;y<GRID_H;y++)for(let x=0;x<GRID_W;x++)
  navGrid[y*GRID_W+x]=insideGeometry((x+.5)*COLLISION_CELL,(y+.5)*COLLISION_CELL)?1:0;
 // Runtime movement AND A* read this same editable map. Shift-click changes truly affect walking.
 function inside(x,y){
+ if(x<0||y<0||x>=W||y>=H)return false;
+ const override=developerConsole?.walkableOverride(x,y);if(override!==undefined)return override;
  const corner=cornerCollisionRule(x,y);
  if(corner)return corner===1;
  const cx=Math.floor(x/COLLISION_CELL),cy=Math.floor(y/COLLISION_CELL);
@@ -340,6 +345,7 @@ function pathTo(sx,sy,tx,ty){
  return [];
 }
 let collisionDebug=false,clickPath=[],lastTarget=null;
+const defaultNavGrid=navGrid.slice();
 const edits=new Map();
 try{for(const [i,v] of JSON.parse(localStorage.getItem('codaCollisionEditsV891')||'[]'))edits.set(i,v)}catch{}
 for(const [i,v] of edits)if(i>=0&&i<navGrid.length)navGrid[i]=v;
@@ -364,7 +370,7 @@ function go(p,dt){const aim=spot(p);const targetKey=p.mode+':'+p.goal;
  // Rebuild a valid route instead of bypassing the collision boundary.
  p.route=makeRoute(p,aim);return p.route.length?true:null;
 }
-function update(dt){clock+=dt;if((layerState.active&&!layerState.preview)||assetStudio.active)return;if(dialog.style.display==='block'||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;let dx=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),dy=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);if(dx||dy){dest=null;clickPath=[];facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');}if(dest){
+function update(dt){clock+=dt;if(developerConsole?developerConsole.isEditing():((layerState.active&&!layerState.preview)||assetStudio.active))return;if(dialog.style.display==='block'||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;let dx=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),dy=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);if(dx||dy){dest=null;clickPath=[];facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');}if(dest){
  if(!clickPath.length){dest=null;dx=dy=0}
  else {
   const waypoint=clickPath[0];dx=waypoint.x-player.x;dy=waypoint.y-player.y;
@@ -646,7 +652,7 @@ function drawEditorOverlay(){if(!layerState.active||layerState.preview)return;
 // Storage format deliberately contains no executable code or arbitrary URLs.
 const assetUI=id=>document.getElementById(id);
 const ASSET_FORMAT='CodaArcadeAssetScene',ASSET_VERSION=1,ASSET_STORE='codaArcadeAssetSceneV1';
-const ASSET_MAX=80,ASSET_MAX_FILE=8*1024*1024,ASSET_MAX_JSON=70*1024*1024;
+const ASSET_MAX=200,ASSET_MAX_FILE=8*1024*1024,ASSET_MAX_JSON=70*1024*1024;
 const assetStudio={active:false,assets:[],selected:null,drag:null,capturing:null,undo:[],redo:[],nextId:1,animate:true,showGuides:true,snap:8,dirty:false,notice:'',ready:false};
 const assetImages=new Map();
 let assetForegroundCompositeCache=null;
@@ -664,8 +670,8 @@ function studioMessage(message){assetStudio.notice=message;assetUI('assetMessage
 function assetSelected(){return assetStudio.assets.find(a=>a.id===assetStudio.selected)||null;}
 function numberBound(v,min,max,def=min){v=Number(v);return Number.isFinite(v)?Math.min(max,Math.max(min,v)):def;}
 function assetSnap(v,shift=false){const n=shift?1:assetStudio.snap;return Math.round(v/n)*n;}
-function assetSnapshot(){return JSON.stringify(assetStudio.assets);}
-function assetRecordHistory(before){if(before!==assetSnapshot()){assetStudio.undo.push(before);if(assetStudio.undo.length>40)assetStudio.undo.shift();assetStudio.redo=[];}assetStudio.dirty=true;assetSaveDebounced();studioRefresh();}
+function assetSnapshot(){return developerConsole?developerConsole.snapshot():JSON.stringify(assetStudio.assets);}
+function assetRecordHistory(before){if(developerConsole){developerConsole.recordChange(before);return;}if(before!==assetSnapshot()){assetStudio.undo.push(before);if(assetStudio.undo.length>40)assetStudio.undo.shift();assetStudio.redo=[];}assetStudio.dirty=true;assetSaveDebounced();studioRefresh();}
 let assetSaveTimer=null,assetDbPromise=null;
 function assetDB(){if(assetDbPromise)return assetDbPromise;assetDbPromise=new Promise((resolve,reject)=>{
  if(!window.indexedDB){reject(Error('IndexedDB not available'));return;}
@@ -674,6 +680,7 @@ function assetDB(){if(assetDbPromise)return assetDbPromise;assetDbPromise=new Pr
  req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||Error('Could not open asset storage'));
  });return assetDbPromise;}
 async function persistAssets(){
+ if(developerConsole)return developerConsole.save();
  const payload={format:ASSET_FORMAT,version:ASSET_VERSION,world:{width:W,height:H},assets:assetStudio.assets};
  try{const db=await assetDB();await new Promise((resolve,reject)=>{const tx=db.transaction('layouts','readwrite');tx.objectStore('layouts').put(payload,ASSET_STORE);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||Error('Database write failed'));});
  assetStudio.dirty=false;studioMessage('Saved '+payload.assets.length+' assets locally (IndexedDB). Export JSON to publish them.');return true;
@@ -681,7 +688,7 @@ async function persistAssets(){
 }
 function assetSaveDebounced(){clearTimeout(assetSaveTimer);assetSaveTimer=setTimeout(()=>{if(assetStudio.ready)persistAssets()},400);}
 function assetImageKey(a){return a.kind==='builtin'?'builtin:'+a.ref:a.kind==='note'?'generated-note':a.data;}
-function assetPicture(a){if(a.kind==='note')return null;if(a.kind==='builtin')return (a.ref==='foreground'?assetForegroundComposite():({world:worldArt,characters:actorsArt})[a.ref])||null;
+function assetPicture(a){if(a.origin&&a.kind==='builtin')return developerConsole?.originalPicture(a);if(a.kind==='note')return null;if(a.kind==='builtin')return (a.ref==='foreground'?assetForegroundComposite():({world:worldArt,characters:actorsArt})[a.ref])||null;
  const key=assetImageKey(a);let image=assetImages.get(key);if(!image){image=new Image();image.decoding='async';image.src=a.data;assetImages.set(key,image)}return image;}
 function assetBoundsFrame(a,img){if(a.kind==='builtin')return a.crop;
  const iw=img?.naturalWidth||0,ih=img?.naturalHeight||0;
@@ -711,8 +718,8 @@ function drawPlacedAsset(a){if(!a.visible)return;
  if(a.kind==='note'){
    g.textAlign='center';g.textBaseline='middle';g.font=`900 ${Math.max(12,Math.round(a.h*.88))}px Georgia,serif`;
    g.shadowColor='#65f5ff';g.shadowBlur=12;g.fillStyle='#83efff';g.fillText('♫',0,0);
- }else if(p?.complete&&p.naturalWidth&&p.naturalHeight){const [sx,sy,sw,sh]=assetBoundsFrame(a,p);
-   if(sw>0&&sh>0&&sx>=0&&sy>=0&&sx+sw<=p.naturalWidth+.001&&sy+sh<=p.naturalHeight+.001)g.drawImage(p,sx,sy,sw,sh,-a.w/2,-a.h/2,a.w,a.h);
+ }else if(p&&(p instanceof HTMLCanvasElement||(p.complete&&p.naturalWidth&&p.naturalHeight))){const [sx,sy,sw,sh]=assetBoundsFrame(a,p);
+   if(sw>0&&sh>0&&sx>=0&&sy>=0&&sx+sw<=(p.naturalWidth||p.width)+.001&&sy+sh<=(p.naturalHeight||p.height)+.001)g.drawImage(p,sx,sy,sw,sh,-a.w/2,-a.h/2,a.w,a.h);
  }g.restore();}
 function renderAssetsOfLayer(layer){for(const a of assetStudio.assets){if(a.layer===layer)drawPlacedAsset(a);}}
 function assetControlPositions(a){const ang=a.rotation*Math.PI/180,cs=Math.cos(ang),sn=Math.sin(ang);
@@ -720,7 +727,7 @@ function assetControlPositions(a){const ang=a.rotation*Math.PI/180,cs=Math.cos(a
  return {corner:rotate(a.w/2,a.h/2),rotator:rotate(0,-a.h/2-27)};}
 function assetHit(a,x,y){if(!a.visible||a.locked)return false;const angle=-a.rotation*Math.PI/180,cs=Math.cos(angle),sn=Math.sin(angle),dx=x-a.x,dy=y-a.y;
  const lx=dx*cs-dy*sn,ly=dx*sn+dy*cs;return Math.abs(lx)<=a.w/2&&Math.abs(ly)<=a.h/2;}
-function assetAt(x,y){const groups=['front','world','back'];for(const layer of groups){const list=assetStudio.assets.filter(a=>a.layer===layer).slice().reverse();for(const a of list)if(assetHit(a,x,y))return a;}return null;}
+function assetAt(x,y){const groups=['front','world','back'];for(const layer of groups){const list=assetStudio.assets.filter(a=>a.layer===layer);if(layer==='world')list.sort((a,b)=>(a.y+a.h/2+(a.depthOffset||0))-(b.y+b.h/2+(b.depthOffset||0)));list.reverse();for(const a of list)if(assetHit(a,x,y))return a;}return null;}
 function assetDrawHandles(){if(!assetStudio.active||!assetStudio.showGuides)return;
  const a=assetSelected();if(!a)return;const {corner,rotator}=assetControlPositions(a);
  g.save();g.translate(a.x,a.y);g.rotate(a.rotation*Math.PI/180);g.strokeStyle='#ffe1a1';g.lineWidth=2/cam.zoom;g.setLineDash([6/cam.zoom,4/cam.zoom]);g.strokeRect(-a.w/2,-a.h/2,a.w,a.h);g.setLineDash([]);g.restore();
@@ -731,9 +738,9 @@ function assetDrawHandles(){if(!assetStudio.active||!assetStudio.showGuides)retu
  g.moveTo(top.x,top.y);g.lineTo(rotator.x,rotator.y);g.stroke();
  g.beginPath();g.arc(rotator.x,rotator.y,6/cam.zoom,0,Math.PI*2);g.fill();g.restore();}
 function assetPrototype(name,kind='note'){const id='asset-'+(assetStudio.nextId++);
- return {id,name,kind,ref:null,data:null,crop:null,x:W/2,y:H/2,w:48,h:48,rotation:0,opacity:100,visible:true,locked:false,keepAspect:true,layer:'world',anim:'bob',speed:1,amplitude:6,cols:1,rows:1,frames:1,fps:0};}
+ return {id,name:String(name).trim().slice(0,72)||'Untitled asset',kind,ref:null,data:null,crop:null,x:W/2,y:H/2,w:48,h:48,rotation:0,opacity:100,visible:true,locked:false,keepAspect:true,layer:'world',anim:'bob',speed:1,amplitude:6,cols:1,rows:1,frames:1,fps:0};}
 function assetKeepSelected(id){assetStudio.selected=id;studioRefresh();}
-function assetNew(a){if(assetStudio.assets.length>=ASSET_MAX){studioMessage('80 assets maximum. Export or remove unused assets.');return false;}
+function assetNew(a){if(!isValidAsset(a)){studioMessage('Asset data is incomplete or outside supported limits. Wait for artwork to load, then try again.');return false;}if(assetStudio.assets.length>=ASSET_MAX){studioMessage('200 assets maximum. Export or remove unused assets.');return false;}
  const before=assetSnapshot();assetStudio.assets.push(a);assetRecordHistory(before);assetKeepSelected(a.id);studioMessage('Added '+a.name+'. Drag to reposition.');return true;}
 function assetDeselect(){assetStudio.selected=null;studioRefresh()}
 const assetFields=['Name','X','Y','W','H','Rotate','Opacity','Layer','Anim','Speed','Amplitude','Cols','Rows','Frames','FPS','Visible','Locked','Aspect'];
@@ -748,12 +755,13 @@ function studioRefresh(){
  }
  for(const id of ['assetDuplicate','assetRemove','assetFront','assetBack'])assetUI(id).disabled=!sel;
  assetUI('assetUndo').disabled=!assetStudio.undo.length;assetUI('assetRedo').disabled=!assetStudio.redo.length;
+ developerConsole?.refresh();
 }
-function toggleAssetStudio(force){assetStudio.active=typeof force==='boolean'?force:!assetStudio.active;
+function toggleAssetStudio(force){developerConsole?.finishGesture();assetStudio.active=typeof force==='boolean'?force:!assetStudio.active;
  assetStudio.drag=null;assetStudio.capturing=null;keys.clear();dest=null;clickPath=[];
  if(assetStudio.active){if(layerState.active)toggleLayerEditor(false);collisionDebug=false;depthDebug=false;assetUI('assetStudio').hidden=false;document.body.classList.add('asset-console-open');studioMessage('Asset editor active · drag objects and handles. Collision and masks remain unchanged.');}
  else{assetUI('assetStudio').hidden=true;document.body.classList.remove('asset-console-open');if(assetStudio.dirty)persistAssets();}
- c.classList.toggle('asset-editing',assetStudio.active);studioRefresh();c.focus();}
+ c.classList.toggle('asset-editing',assetStudio.active);studioRefresh();developerConsole?.onToggle();c.focus();}
 assetUI('assetToggle').onclick=()=>toggleAssetStudio();assetUI('assetClose').onclick=()=>toggleAssetStudio(false);
 assetUI('assetList').addEventListener('change',e=>assetKeepSelected(e.target.value));
 assetUI('assetAdd').onclick=()=>assetUI('assetUpload').click();
@@ -776,8 +784,8 @@ assetUI('assetUpload').addEventListener('change',async e=>{
 assetUI('assetPreset').onclick=()=>{const a=assetPrototype('Neon music note');a.x=Math.round(player.x+40);a.y=Math.round(player.y-40);a.layer='front';assetNew(a)};
 function assetCaptureMode(which){assetStudio.capturing={which,start:null,end:null};studioMessage('Drag a rectangle on the world to crop '+which+' artwork (Esc cancels).');}
 assetUI('assetCapture').onclick=()=>assetCaptureMode('world');assetUI('assetCaptureFG').onclick=()=>assetCaptureMode('foreground');
-assetUI('assetDuplicate').onclick=()=>{const a=assetSelected();if(!a)return;const b={...a,id:'asset-'+(assetStudio.nextId++),name:a.name+' copy',x:a.x+24,y:a.y+24};assetNew(b)};
-assetUI('assetRemove').onclick=()=>{const a=assetSelected();if(!a)return;const before=assetSnapshot();assetStudio.assets=assetStudio.assets.filter(q=>q.id!==a.id);assetStudio.selected=assetStudio.assets.at(-1)?.id||null;assetRecordHistory(before);studioMessage('Deleted '+a.name+'. Undo is available.');};
+assetUI('assetDuplicate').onclick=()=>{const a=assetSelected();if(!a)return;const b={...JSON.parse(JSON.stringify(a)),id:'asset-'+(assetStudio.nextId++),name:a.name.slice(0,67)+' copy',x:numberBound(a.x+24,-1000,3000,a.x),y:numberBound(a.y+24,-1000,2200,a.y)};delete b.origin;delete b.releaseCollision;if(a.origin&&b.kind==='builtin'){b.data=developerConsole.originalPicture(a)?.toDataURL();b.kind='image';b.ref=null;b.crop=null;}assetNew(b)};
+assetUI('assetRemove').onclick=()=>{const a=assetSelected();if(!a)return;const before=assetSnapshot();if(a.origin){a.visible=false;assetRecordHistory(before);studioMessage('Original hidden. Restore original removes its source patch; Undo restores visibility.');return;}assetStudio.assets=assetStudio.assets.filter(q=>q.id!==a.id);assetStudio.selected=assetStudio.assets.at(-1)?.id||null;assetRecordHistory(before);studioMessage('Deleted '+a.name+'. Undo is available.');};
 function assetMoveInList(step){const a=assetSelected();if(!a)return;const before=assetSnapshot(),i=assetStudio.assets.indexOf(a),j=i+step;
  if(j<0||j>=assetStudio.assets.length)return;assetStudio.assets.splice(i,1);assetStudio.assets.splice(j,0,a);assetRecordHistory(before);}
 assetUI('assetBack').onclick=()=>assetMoveInList(-1);assetUI('assetFront').onclick=()=>assetMoveInList(1);
@@ -791,13 +799,13 @@ for(const field of assetFields){const el=assetUI('asset'+field),key=assetAttr[fi
  else if(key==='name')a.name=el.value.trim().slice(0,72)||'Untitled asset';
  else if(key==='layer'||key==='anim')a[key]=el.value;
  else {const [min,max]=assetRanges[key];a[key]=numberBound(el.value,min,max,a[key]);if(['cols','rows','frames','fps'].includes(key))a[key]=Math.round(a[key]);}
- if(a.keepAspect&&key==='w')a.h=numberBound(oldH*a.w/oldW,2,1800,oldH);
- if(a.keepAspect&&key==='h')a.w=numberBound(oldW*a.h/oldH,2,2400,oldW);
+ if(a.keepAspect&&key==='w'){const ratio=oldW/oldH;a.w=numberBound(a.w,Math.max(2,2*ratio),Math.min(2400,1800*ratio),oldW);a.h=a.w/ratio;}
+ if(a.keepAspect&&key==='h'){const ratio=oldW/oldH;a.h=numberBound(a.h,Math.max(2,2/ratio),Math.min(1800,2400/ratio),oldH);a.w=a.h*ratio;}
  if(key==='cols'||key==='rows')a.frames=Math.min(a.frames,a.cols*a.rows);
  assetRecordHistory(before);
  });
 }
-function assetUndoRedo(undo){const from=undo?assetStudio.undo:assetStudio.redo,to=undo?assetStudio.redo:assetStudio.undo;
+function assetUndoRedo(undo){if(developerConsole){developerConsole.undoRedo(undo);return;}const from=undo?assetStudio.undo:assetStudio.redo,to=undo?assetStudio.redo:assetStudio.undo;
  if(!from.length)return;to.push(assetSnapshot());assetStudio.assets=JSON.parse(from.pop());if(!assetSelected())assetStudio.selected=assetStudio.assets.at(-1)?.id||null;
  assetStudio.dirty=true;assetSaveDebounced();studioRefresh();}
 assetUI('assetUndo').onclick=()=>assetUndoRedo(true);assetUI('assetRedo').onclick=()=>assetUndoRedo(false);
@@ -807,7 +815,7 @@ function downloadAssetJSON(){const payload={format:ASSET_FORMAT,version:ASSET_VE
  const link=document.createElement('a'),url=URL.createObjectURL(blob);link.href=url;link.download='coda-world-assets.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),5000);
  studioMessage('Exported complete asset scene including embedded image artwork.');}
 assetUI('assetExport').onclick=downloadAssetJSON;
-function isValidAsset(a){const allowedKind=['image','builtin','note'],allowedLayer=['back','world','front'],allowedAnim=['none','bob','float','spin','pulse','bounce','sway','blink','flicker'];
+function isValidAsset(a){if(developerConsole&&!developerConsole.validateAssetExtension(a))return false;const allowedKind=['image','builtin','note'],allowedLayer=['back','world','front'],allowedAnim=['none','bob','float','spin','pulse','bounce','sway','blink','flicker'];
  if(!a||typeof a!=='object'||typeof a.id!=='string'||a.id.length>90||typeof a.name!=='string'||a.name.length>72||!allowedKind.includes(a.kind)||!allowedLayer.includes(a.layer)||!allowedAnim.includes(a.anim))return false;
  if(a.kind==='image'&&(typeof a.data!=='string'||a.data.length>ASSET_MAX_FILE*1.5||!/^data:image\/(png|jpeg|webp|gif|apng);base64,[A-Za-z0-9+/=]+$/i.test(a.data)))return false;
  if(a.kind==='builtin'&&(!['world','foreground','characters'].includes(a.ref)||!Array.isArray(a.crop)||a.crop.length!==4||!a.crop.every(x=>Number.isFinite(x)&&x>=0)))return false;
@@ -829,6 +837,7 @@ function captureClipEnd(){const q=assetStudio.capturing;assetStudio.capturing=nu
  const x=Math.max(0,Math.floor(Math.min(q.start.x,q.end.x))),y=Math.max(0,Math.floor(Math.min(q.start.y,q.end.y)));
  const x2=Math.min(W,Math.ceil(Math.max(q.start.x,q.end.x))),y2=Math.min(H,Math.ceil(Math.max(q.start.y,q.end.y)));
  const w=x2-x,h=y2-y;if(w<3||h<3){studioMessage('Crop was too small. Drag at least 3 × 3 px.');return;}
+ if(q.which==='lift'){developerConsole?.liftedRegion([x,y,w,h]);return;}
  const a=assetPrototype('Crop · '+q.which,'builtin');a.ref=q.which;a.crop=[x,y,w,h];a.w=w;a.h=h;a.x=x+w/2;a.y=y+h/2;a.anim='none';assetNew(a);
 }
 function assetPointerStart(e){if(!assetStudio.active)return false;
@@ -846,16 +855,17 @@ function assetPointerMove(e){if(!assetStudio.active)return;const p=canvasToWorld
  if(assetStudio.capturing?.start){assetStudio.capturing.end=p;return;}
  const d=assetStudio.drag;if(!d)return;const a=assetStudio.assets.find(x=>x.id===d.id);if(!a)return;
  const orig=d.original;
- if(d.mode==='move'){a.x=assetSnap(orig.x+p.x-d.start.x,e.shiftKey);a.y=assetSnap(orig.y+p.y-d.start.y,e.shiftKey);}
+ if(d.mode==='move'){a.x=numberBound(assetSnap(orig.x+p.x-d.start.x,e.shiftKey),-1000,3000,orig.x);a.y=numberBound(assetSnap(orig.y+p.y-d.start.y,e.shiftKey),-1000,2200,orig.y);}
  if(d.mode==='resize'){
   const rad=-orig.rotation*Math.PI/180,dx=p.x-orig.x,dy=p.y-orig.y,lx=dx*Math.cos(rad)-dy*Math.sin(rad),ly=dx*Math.sin(rad)+dy*Math.cos(rad);
   let nw=numberBound(Math.abs(lx)*2,2,2400,orig.w),nh=numberBound(Math.abs(ly)*2,2,1800,orig.h);
-  if(orig.keepAspect){const ratio=orig.w/orig.h;if(nw/nh>ratio)nh=nw/ratio;else nw=nh*ratio;}
-  a.w=numberBound(assetSnap(nw,e.shiftKey),2,2400,orig.w);a.h=numberBound(assetSnap(nh,e.shiftKey),2,1800,orig.h);
+  if(orig.keepAspect){const ratio=orig.w/orig.h;nw=Math.max(nw,nh*ratio);a.w=numberBound(assetSnap(nw,e.shiftKey),Math.max(2,2*ratio),Math.min(2400,1800*ratio),orig.w);a.h=a.w/ratio;}
+  else{a.w=numberBound(assetSnap(nw,e.shiftKey),2,2400,orig.w);a.h=numberBound(assetSnap(nh,e.shiftKey),2,1800,orig.h);}
  }
  if(d.mode==='rotate'){
   const start=Math.atan2(d.start.y-orig.y,d.start.x-orig.x),angle=Math.atan2(p.y-orig.y,p.x-orig.x);
-  a.rotation=Math.round((orig.rotation+(angle-start)*180/Math.PI)*(e.shiftKey?10:1))/(e.shiftKey?10:1);
+  const degrees=((orig.rotation+(angle-start)*180/Math.PI+180)%360+360)%360-180;
+  a.rotation=Math.round(degrees*(e.shiftKey?10:1))/(e.shiftKey?10:1);
  }
  studioRefresh();
 }
@@ -871,11 +881,11 @@ async function loadAssetStudio(){let found=null;
  studioMessage('Restored '+found.assets.length+' saved assets. Export JSON to publish.');}
  assetStudio.ready=true;studioRefresh();
 }
-loadAssetStudio();
+// The developer console loads the full document, migrating legacy assets when needed.
 window.CodaAssetStudioQA={get:()=>({active:assetStudio.active,count:assetStudio.assets.length,selected:assetStudio.selected,assets:assetStudio.assets.map(a=>({id:a.id,name:a.name,kind:a.kind,x:a.x,y:a.y,w:a.w,h:a.h,layer:a.layer,anim:a.anim,frames:a.frames}))}),open:()=>toggleAssetStudio(true),close:()=>toggleAssetStudio(false),preset:()=>assetUI('assetPreset').click(),export:downloadAssetJSON,save:persistAssets};
 // --- END ASSET STUDIO ------------------------------------------------------
 
-window.CODA_BUILD="11.0-world-preview-asset-studio";
+window.CODA_BUILD="12.0-world-developer-console";
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -889,12 +899,13 @@ function drawActor(name,x,y,w=38,h=52,bob=0){
    Math.round(x-displayWidth/2),Math.round(y-h+bob),Math.round(displayWidth),h);
 }
 function drawForeground(part){
+ if(developerConsole?.suppressOriginal(part.name))return;
  if(!foregroundArt.complete||!foregroundArt.naturalWidth)return;
  const [x,y,w,h]=part.bounds,[sx,sy,sw,sh]=part.atlas;
  // Alpha masks contain only solid-object pixels. Floors and glows are never foreground.
  // The source rectangle never intersects any other object's pixels.
  const modified=getPartImage(part);
- if(modified)g.drawImage(modified,x,y,w,h);
+ if(modified){if(developerConsole)developerConsole.drawUnliftedPixels(g,modified,x,y);else g.drawImage(modified,x,y,w,h);}
  else g.drawImage(foregroundArt,sx,sy,sw,sh,x,y,w,h);
 }
 
@@ -1551,13 +1562,14 @@ function draw(){
  // All world art, sprites, glow, debug masks and editor brushes use the same
  // camera transform. Keep it active until the end of this draw pass.
  g.save();g.setTransform(cam.zoom,0,0,cam.zoom,-cam.x*cam.zoom,-cam.y*cam.zoom);
- g.drawImage(worldArt,0,0,W,H);
- renderAssetsOfLayer('back');
+ if(developerConsole)developerConsole.renderBase(g);else g.drawImage(worldArt,0,0,W,H);
  // Removed obsolete doorway overlay, revealing the clean original corridor art.
  // The open doorway is already composited into the relocated entrance artwork.
  // Primary lighting is rendered beneath actors and isolated foreground objects.
  // A faint post-process club wash adds atmosphere without changing object depth.
  renderArcadeAtmosphere();
+ developerConsole?.renderCleanup(g);
+ renderAssetsOfLayer('back');
  // Original floor remains beneath actors. Above them render only isolated
  // object silhouettes (plus precise facades for structural walls/door frames).
  const liveActors=[];
@@ -1568,14 +1580,14 @@ function draw(){
  const scene=[...liveActors];
  for(const part of foregroundParts)scene.push({type:'foreground',y:(part.sortY??part.y),part});
  for(const patch of layerState.patches)scene.push({type:'editor-paint',y:patch.sortY,patch});
- for(const a of assetStudio.assets)if(a.layer==='world'&&a.visible)scene.push({type:'placed-asset',y:a.y+a.h/2,part:a});
+ for(const a of assetStudio.assets)if(a.layer==='world'&&a.visible)scene.push({type:'placed-asset',y:a.y+a.h/2+(a.depthOffset||0),part:a});
  scene.sort((a,b)=>a.y-b.y||(a.type==='foreground'?1:-1));
  for(const item of scene){
   if(item.type==='foreground'){
    if(foregroundEnabled)drawForeground(item.part);
    continue;
   }
-  if(item.type==='editor-paint'){if(foregroundEnabled)g.drawImage(item.patch.canvas,item.patch.x,item.patch.y);continue;}
+  if(item.type==='editor-paint'){if(foregroundEnabled){if(developerConsole)developerConsole.drawUnliftedPixels(g,item.patch.canvas,item.patch.x,item.patch.y);else g.drawImage(item.patch.canvas,item.patch.x,item.patch.y);}continue;}
   if(item.type==='placed-asset'){drawPlacedAsset(item.part);continue;}
   if(item.type==='player'){
    g.save();g.globalCompositeOperation='screen';g.globalAlpha=.12;
@@ -1646,7 +1658,8 @@ function draw(){
  if(near&&!layerState.active){g.globalAlpha=.91;r(near.x-62,near.y-93,124,25,'#18132e');g.globalAlpha=1;
   t('E · '+(near.type==='game'?'PLAY':near.type==='piano'?'ENTER':'INTERACT'),near.x,near.y-76,11,'#c8fff6');}
  drawEditorOverlay();
- drawAssetEditorOverlay();
+ if(!developerConsole||!developerConsole.isPlaytest())drawAssetEditorOverlay();
+ developerConsole?.drawOverlay(g,cam);
  g.restore(); // Restore screen-space canvas state for next frame.
 }
 window.CodaArcadeQA=Object.freeze({
@@ -1680,12 +1693,14 @@ function frame(ms){const dt=Math.min(.05,(ms-last)/1000||0);last=ms;
  g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.globalCompositeOperation='source-over';
  g.fillStyle='#10142b';g.fillRect(0,0,W,H);
  g.fillStyle='#ffb9e5';g.font='bold 25px monospace';g.fillText('Arcade error: '+err.message,55,110);
- }requestAnimationFrame(frame)}window.addEventListener('keydown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const k=e.key.toLowerCase();if(k==='a'&&e.shiftKey&&!e.repeat&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();toggleAssetStudio();return;}if(assetStudio.active){if(k==='escape'){e.preventDefault();if(assetStudio.capturing){assetStudio.capturing=null;studioMessage('Crop cancelled.')}else toggleAssetStudio(false);return;}if((e.ctrlKey||e.metaKey)&&k==='z'&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUndoRedo(!e.shiftKey);return;}if((e.ctrlKey||e.metaKey)&&k==='y'&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUndoRedo(false);return;}if(['delete','backspace'].includes(k)&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUI('assetRemove').click();return;}if(k.startsWith('arrow')&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();const a=assetSelected();if(a&&!a.locked){const before=assetSnapshot(),step=e.shiftKey?8:1;a.x+=(k==='arrowright'?step:k==='arrowleft'?-step:0);a.y+=(k==='arrowdown'?step:k==='arrowup'?-step:0);assetRecordHistory(before);}return;}if(!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)&&['+','=','-','_','0'].includes(k)){e.preventDefault();setCameraZoom(k==='0'?1:cam.targetZoom+((k==='+'||k==='=')?ZOOM_STEP:-ZOOM_STEP));return;}if(!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName))e.preventDefault();return;}if(k==='l'&&e.shiftKey&&!e.repeat){e.preventDefault();toggleLayerEditor();return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='z'&&!e.repeat){e.preventDefault();editorEl(e.shiftKey?'editRedo':'editUndo').click();return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='y'&&!e.repeat){e.preventDefault();editorEl('editRedo').click();return;}if(layerState.active&&k==='escape'&&!e.repeat){e.preventDefault();toggleLayerEditor(false);return;}if(layerState.active&&!layerState.preview){if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k))e.preventDefault();return;}if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.repeat&&['=','+','-','_','0'].includes(k)&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){
+ }requestAnimationFrame(frame)}window.addEventListener('keydown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const k=e.key.toLowerCase();if(k==='a'&&e.shiftKey&&!e.repeat&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();toggleAssetStudio();return;}if(assetStudio.active&&!developerConsole?.isPlaytest()){if(k==='escape'){e.preventDefault();if(assetStudio.capturing){assetStudio.capturing=null;studioMessage('Crop cancelled.')}else toggleAssetStudio(false);return;}if((e.ctrlKey||e.metaKey)&&k==='z'&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUndoRedo(!e.shiftKey);return;}if((e.ctrlKey||e.metaKey)&&k==='y'&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUndoRedo(false);return;}if(['delete','backspace'].includes(k)&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUI('assetRemove').click();return;}if(k.startsWith('arrow')&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();const a=assetSelected();if(a&&!a.locked){const before=assetSnapshot(),step=e.shiftKey?8:1;a.x=numberBound(a.x+(k==='arrowright'?step:k==='arrowleft'?-step:0),-1000,3000,a.x);a.y=numberBound(a.y+(k==='arrowdown'?step:k==='arrowup'?-step:0),-1000,2200,a.y);assetRecordHistory(before);}return;}if(!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)&&['+','=','-','_','0'].includes(k)){e.preventDefault();setCameraZoom(k==='0'?1:cam.targetZoom+((k==='+'||k==='=')?ZOOM_STEP:-ZOOM_STEP));return;}if(!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName))e.preventDefault();return;}if(k==='l'&&e.shiftKey&&!e.repeat){e.preventDefault();developerConsole.open('layers');return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='z'&&!e.repeat){e.preventDefault();editorEl(e.shiftKey?'editRedo':'editUndo').click();return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='y'&&!e.repeat){e.preventDefault();editorEl('editRedo').click();return;}if(layerState.active&&k==='escape'&&!e.repeat){e.preventDefault();toggleLayerEditor(false);return;}if(layerState.active&&!layerState.preview){if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k))e.preventDefault();return;}if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.repeat&&['=','+','-','_','0'].includes(k)&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){
  e.preventDefault();setCameraZoom(k==='0'?1:cam.targetZoom+((k==='+'||k==='=')?ZOOM_STEP:-ZOOM_STEP));return;}
- if(k==='c'&&!e.repeat){collisionDebug=!collisionDebug;return;}if(k==='l'&&!e.repeat){depthDebug=!depthDebug;return;}if(k==='f'&&!e.repeat){foregroundEnabled=!foregroundEnabled;return;}if(k==='x'&&collisionDebug&&!e.repeat){exportCollision();return;}if(k==='r'&&e.shiftKey&&collisionDebug&&!e.repeat){localStorage.removeItem('codaCollisionEditsV891');window.location.reload();return;}if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k)){e.preventDefault();keys.add(k);if(k==='e'&&!e.repeat)talk();if(k==='q')emote=clock+2}});window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>keys.clear());c.addEventListener('pointerdown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const b=c.getBoundingClientRect();
- if(assetPointerStart(e))return;
+ if(k==='c'&&!e.repeat){if(developerConsole){developerConsole.open('collision');return;}collisionDebug=!collisionDebug;return;}if(k==='l'&&!e.repeat){depthDebug=!depthDebug;return;}if(k==='f'&&!e.repeat){foregroundEnabled=!foregroundEnabled;return;}if(k==='x'&&collisionDebug&&!e.repeat){exportCollision();return;}if(k==='r'&&e.shiftKey&&collisionDebug&&!e.repeat){localStorage.removeItem('codaCollisionEditsV891');window.location.reload();return;}if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k)){e.preventDefault();keys.add(k);if(k==='e'&&!e.repeat)talk();if(k==='q')emote=clock+2}});window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>keys.clear());c.addEventListener('pointerdown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const b=c.getBoundingClientRect();
+ if(developerConsole?.pointerDown(e))return;
+ if((!developerConsole||developerConsole.isEditing())&&assetPointerStart(e))return;
  if(editorPointerDown(e))return;
  if(collisionDebug&&e.shiftKey){
+  if(developerConsole){developerConsole.open('collision');return;}
   const {x:xx,y:yy}=canvasToWorld(e.clientX,e.clientY);
   const gx=Math.floor(xx/COLLISION_CELL),gy=Math.floor(yy/COLLISION_CELL);
   if(gx>=0&&gy>=0&&gx<GRID_W&&gy<GRID_H){
@@ -1701,9 +1716,9 @@ function frame(ms){const dt=Math.min(.05,(ms-last)/1000||0);last=ms;
  }
  dest=canvasToWorld(e.clientX,e.clientY);
  clickPath=pathTo(player.x,player.y,dest.x,dest.y);
- if(!clickPath.length)dest=null;c.focus()});c.addEventListener('pointermove',e=>{assetPointerMove(e);editorPointerMove(e)});
-c.addEventListener('pointerup',e=>{assetPointerEnd(e);editorPointerEnd(e)});
-c.addEventListener('pointercancel',e=>{assetPointerEnd(e);editorPointerEnd(e)});
+ if(!clickPath.length)dest=null;c.focus()});c.addEventListener('pointermove',e=>{developerConsole?.pointerMove(e);if(!developerConsole||developerConsole.isEditing())assetPointerMove(e);if(!developerConsole)editorPointerMove(e)});
+c.addEventListener('pointerup',e=>{developerConsole?.pointerEnd(e);assetPointerEnd(e);if(!developerConsole)editorPointerEnd(e)});
+c.addEventListener('pointercancel',e=>{developerConsole?.pointerEnd(e);assetPointerEnd(e);if(!developerConsole)editorPointerEnd(e)});
 c.addEventListener('pointerleave',()=>{layerState.hover=null});
 document.querySelector('#close').onclick=()=>dialog.style.display='none';document.querySelector('#fs').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else c.requestFullscreen?.()};// Phase 4.2 account, boutique, and song library bridge (preview only).
 const panel=document.querySelector('#panel'),panelBody=document.querySelector('#panelBody'),panelTitle=document.querySelector('#panelTitle');
@@ -1742,5 +1757,21 @@ function playSong(song){stopAmbientMusic();stopSong();const C=window.AudioContex
  for(const tr of song.tracks||[]){if(tr.mute)continue;for(const n of tr.notes||[])if(n.t<song.bars*steps(song.meter))note(n.p,start+n.t*beat,n.d*beat*.94,tr.sound,tr.volume)}for(let i=0;i<3;i++){const tr=song.drums?.[i];if(!tr||tr.mute)continue;for(const n of tr.notes||[])if(n.t<song.bars*steps(song.meter))note(i===0?45:i===1?57:88,start+n.t*beat,.12,i===0?3:1,tr.volume)}songPlayer={stop(){if(stopped)return;stopped=true;for(const o of oscillators)try{o.stop()}catch{}ctx.close().catch(()=>{})}};msg('Now playing your composition.');setTimeout(()=>{if(songPlayer&&!stopped){stopSong();msg('Playback finished.')}},(song.bars*steps(song.meter)*beat+.2)*1000)}
 async function openJukebox(){openPanel('♫ Jukebox · Your Songs');addAction('■ Stop playback',stopSong);const m=document.createElement('p');m.className='panelMsg';m.textContent='Loading saved compositions…';panelBody.append(m);if(!cloudUser||!profileReady){m.textContent='Sign in with Google to see your saved Song Machine compositions.';return}try{const snap=await firebaseApi.get(firebaseApi.ref(cloudDb,'songLibrary/'+cloudUser.uid));songRecords=snap.val()||{};const songs=Object.entries(songRecords).sort((a,b)=>(b[1].updatedAt||0)-(a[1].updatedAt||0));m.textContent=songs.length?songs.length+' saved composition(s)':'No saved compositions yet. Visit Song Machine to create one.';for(const [id,record] of songs){if(!record.composition)continue;const row=document.createElement('div');row.className='panelRow';const info=document.createElement('div');const strong=document.createElement('strong');strong.textContent=record.title||'Untitled';info.append(strong);const small=document.createElement('small');small.textContent=(record.composition.bpm||110)+' BPM';info.append(small);row.append(info);const play=document.createElement('button');play.textContent='▶ Play';play.onclick=()=>playSong(record.composition);row.append(play);const edit=document.createElement('button');edit.textContent='Edit ↗';edit.onclick=()=>{stopSong();closePanel();openCabinet({...games[3],url:'song-machine/index.html?song='+encodeURIComponent(id)})};row.append(edit);panelBody.append(row)}}catch(e){m.textContent='Could not load saved songs: '+e.message}}
 document.querySelector('#accountBtn').onclick=openAccount;document.querySelector('#jukeboxBtn').onclick=openJukebox;initCloud();
+developerConsole=window.createCodaDeveloperConsole({
+ W,H,c,studio:assetStudio,layer:layerState,parts:foregroundParts,worldArt,foregroundArt,
+ cell:COLLISION_CELL,gridWidth:GRID_W,gridHeight:GRID_H,navGrid,baseGrid:defaultNavGrid,
+ legacyCollision:[...edits].filter(([i,v])=>Number.isInteger(i)&&i>=0&&i<navGrid.length&&(v===0||v===1)),
+ panByScreen:(dx,dy)=>{const b=c.getBoundingClientRect();cam.x=Math.max(0,Math.min(W-W/cam.zoom,cam.x+dx*W/b.width/cam.zoom));cam.y=Math.max(0,Math.min(H-H/cam.zoom,cam.y+dy*H/b.height/cam.zoom));},
+ focusWorld:(x,y)=>{cam.x=Math.max(0,Math.min(W-W/cam.zoom,x-W/cam.zoom/2));cam.y=Math.max(0,Math.min(H-H/cam.zoom,y-H/cam.zoom/2));},
+ toWorld:canvasToWorld,bound:numberBound,record:assetRecordHistory,refresh:studioRefresh,
+ toggle:toggleAssetStudio,selected:assetSelected,prototype:assetPrototype,add:assetNew,
+ assetAt,nearHandle:(a,p)=>{const ctl=assetControlPositions(a);return Math.min(Math.hypot(p.x-ctl.corner.x,p.y-ctl.corner.y),Math.hypot(p.x-ctl.rotator.x,p.y-ctl.rotator.y))<14/cam.zoom},
+ assetPointerEnd,layerPointerDown:editorPointerDown,layerPointerMove:editorPointerMove,layerPointerEnd:editorPointerEnd,
+ invalidateRoutes:()=>{keys.clear();dest=null;clickPath=[];for(const p of npc){p.routeKey=null;p.route=[]}},
+ invalidateArtwork:()=>{layerState.dirty=true;assetForegroundCompositeCache=null;greenMaskCache.clear()},
+ db:assetDB,legacyStore:ASSET_STORE,validLegacy:validScene,validAsset:isValidAsset,validStroke:isEditorAction,
+ maxAssets:ASSET_MAX,fileData:dataURLFromFile,imageDimensions:readImageDimensions
+});
+window.CodaDeveloperConsole=Object.freeze({open:developerConsole.open,getProject:developerConsole.getProject,ready:developerConsole.loadReady,save:developerConsole.save});
 requestAnimationFrame(frame);
 })();</script></html>

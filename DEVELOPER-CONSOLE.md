@@ -1,0 +1,56 @@
+# Connected-world developer console
+
+The editor lives in `world-preview.html`. The original `index.html` arcade and Song Machine are separate pages. Serve the repository with a static web server, for example:
+
+```sh
+python3 -m http.server 8000 --bind 127.0.0.1
+```
+
+Open `world-preview.html` from that server in your browser. Use the **Developer** button, **F2**, or **Shift+A** to open the editor. It edits scene data through controls; it does not evaluate JavaScript or require browser developer tools.
+
+## Objects
+
+Choose a named object from **Existing world objects**, then click **Edit existing object**. You can also click its visible pixels on the map. **Lift a region** lets you select artwork outside the named catalog.
+
+- Drag an object to move it. Drag its gold corner to resize or its round handle to rotate. Numeric fields provide precise position, size, rotation, and opacity.
+- Use **Lock aspect** to preserve proportions, **Lock** to prevent canvas dragging, and **Visible** to hide artwork. Arrows nudge the selected object; Shift increases the nudge distance. Shift-drag bypasses the snap grid.
+- **Add image(s)** uploads artwork. **Replace image** changes a selected object's appearance while retaining placement. **Duplicate** creates an independent copy.
+- Choose **Background / behind actors**, **Actor depth / Y-sort**, or **Foreground / above actors** to control draw order. Actor-depth objects sort relative to the player's feet.
+- **Restore original** removes an original object's edits and reveals its published artwork again. Deleting an edited original hides it while retaining its source cleanup; deleting a newly placed object removes it.
+
+The room art is a flattened PNG: the original pixels beneath furniture and plants are unavailable. Moving or hiding an existing object covers its old silhouette with a tiled floor clone. Adjust **Floor sample X/Y**, or use **Pick floor sample on map**, to choose a clean patch matching that part of the room. This is an editable cleanup patch, not automatic recovery of hidden artwork. A lifted rectangular region includes all pixels inside that rectangle.
+
+## Collision
+
+Open the **Collision** tab, or press **C** from gameplay. Drag to paint **Block walking**, **Allow walking**, or **Restore original** with a 1, 3, or 5-cell brush. Cells are 10 world pixels across. Green cells allow walking; red cells block it. Outlined cells contain explicit overrides. These changes affect player movement and NPC pathfinding, including the original architectural walls.
+
+Object art and collision are separate. For an edited original, **Open collision at original position** releases its old rectangular source area. Enable **Solid collision footprint** to add a footprint that follows the object's position, size, and rotation; its left/top/width/height fields use percentages of the object's dimensions. Explicit collision paint takes priority over object footprints and released source areas. Restore removes painted overrides and returns those cells to the original map.
+
+## Foreground and background masks
+
+Open **Layers**, or press **Shift+L**. **Paint foreground** promotes pixels from the existing room artwork to an occluding layer. **Send to background / erase mask** removes foreground coverage while retaining the room art beneath actors. Adjust brush size and depth offset; **Show foreground masks** helps inspect coverage. Use object layer controls when changing the depth of a moved or newly added object.
+
+Layer painting changes occlusion, not walking collision. Painting existing room pixels also does not create or redraw an object; use Objects for that.
+
+## Playtest, undo, and saving
+
+**Playtest** resumes normal WASD/arrow movement and click-to-walk with editor overlays hidden. Click **Stop playtest** to resume editing. Zoom with the wheel or +/−; reset with 0. Right-drag pans the editor when zoomed. Use the ⇄ button to dock the console on the other side when it covers artwork.
+
+Undo and redo apply to complete project edits, including objects, collision, and layer strokes. Use the buttons, Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, or Ctrl/Cmd+Y. Escape cancels a pending selection or closes the console.
+
+Edits save locally in this browser and origin. The Project tab's **Save project** reports storage success or failure. **Export project JSON** backs up the whole project, including embedded uploaded images, source cleanup patches, collision overrides, and local foreground strokes. **Import project JSON** validates a backup before replacing the current project and can be undone. **Reset project** restores the published map and clears local project edits; it can also be undone.
+
+Export before switching browsers, clearing site data, or moving to another server origin. Browser storage is not a shared project database. The editor does not write source files, commit changes, update Firebase rules, or publish a live site. To distribute edits, retain the exported JSON and import it into another editor session or integrate it in a separate publishing change. The original PNG files remain unchanged.
+
+Image uploads support PNG, JPEG, WebP, GIF, and APNG up to 8 MB each and 8192 × 8192 pixels. Sprite-sheet controls provide explicit animation frames; GIF/APNG animation depends on browser support. Projects allow up to 200 placed/edited objects and 1,000 local layer strokes. Imported project files are limited to 70 MB. Browser storage quotas may be lower, so keep JSON backups.
+
+## Verification
+
+From the repository root:
+
+```sh
+node --test tests/collision-editor.test.cjs
+python3 tests/developer-console-browser.py
+```
+
+The collision tests exercise override restoration, atomic rejection of invalid imports, and coordinate-aware interpolated pointer strokes. The browser runner requires Python Playwright and Chromium, starts its own temporary local server, and exercises the editor through its UI in disposable browser contexts. Existing local projects are preserved.

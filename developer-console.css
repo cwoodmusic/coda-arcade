@@ -1,0 +1,22 @@
+/* The developer console edits world data; game menus retain their own styles. */
+#assetStudio.dev-console { width:min(380px,calc(100vw - 24px)); top:90px; max-height:calc(100dvh - 108px); }
+.dev-tabs { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; margin:10px 0; }
+#assetStudio .dev-tabs button[aria-selected="true"] { background:#476251; border-color:#9bffcc; }
+#assetStudio .dev-pane[hidden], #assetStudio .dev-original[hidden] { display:none; }
+#assetStudio .dev-toolbar { display:flex; gap:5px; flex-wrap:wrap; margin:8px 0; }
+#assetStudio .dev-toolbar button { flex:1; }
+#assetStudio .dev-note { padding:8px; background:#282137; border-left:2px solid #c5a1e8; line-height:1.5; }
+#assetStudio .dev-status { color:#aaf5d4; min-height:2.5em; overflow-wrap:anywhere; }
+#assetStudio #devCatalog { max-width:100%; }
+#assetStudio .dev-preview { width:100%; height:85px; background:#121021; image-rendering:pixelated; object-fit:contain; }
+#assetStudio .dev-heading { color:#ffdfa0; margin:10px 0 5px; }
+#assetStudio label { overflow-wrap:anywhere; }
+#assetStudio [aria-pressed="true"] { border-color:#9bffcc; background:#365746; }
+#assetStudio.dev-playtest .dev-pane { opacity:.55; pointer-events:none; }
+#assetStudio .dev-warning { color:#ffcf9d; }
+#assetStudio .studioHead { position:sticky; top:-13px; z-index:3; background:#171529; padding:8px 0; }
+#assetStudio .dev-tabs { position:sticky; top:22px; z-index:3; background:#171529; padding:6px 0; }
+#assetStudio > :last-child { position:sticky; bottom:-13px; background:#171529; padding:4px 0; border-top:1px solid #655374; }
+#assetStudio .dev-status { margin:4px 0; font-size:11px; }
+#assetStudio .collision-editor-fields label { display:grid; gap:6px; margin:10px 0; }
+@media(max-width:650px) { #assetStudio.dev-console { top:155px; max-height:calc(100dvh - 170px); } }
