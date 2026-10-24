@@ -51,7 +51,7 @@ window.createCodaCharacterRenderer=function(api){
   const worldScale=Math.max(.125,Math.min(4,finite(api.worldScale,1)));
   const locationURL=()=>window.location?.href||'http://localhost/';
   const url=(value,base)=>new URL(value,base).href;
-  const artVersion=api.artVersion===false?'':typeof api.artVersion==='string'?api.artVersion:'original-16';
+  const artVersion=api.artVersion===false?'':typeof api.artVersion==='string'?api.artVersion:'unified-17';
   function artURL(value,base){
     const resolved=new URL(value,base);
     // A new art revision refreshes the manifest and every raster layer together.
@@ -123,7 +123,7 @@ window.createCodaCharacterRenderer=function(api){
     const material=layer.material;
     if(material==='skin')return p.skin;
     if(material==='hair')return p.hair;
-    if(material==='clothes'||material==='original-clothes')return p.shirt+':'+p.lowerColor;
+    if(material==='clothes'||material==='original-clothes')return p.shirt+':'+p.lowerColor+':'+p.skin;
     if(material==='headwear')return p.headwearColor;
     if(material==='eyewear')return p.eyewearColor;
     if(material==='shoes')return {sneakers:'#e8e4ef',boots:'#765342',hightops:'#c4789c',neon:'#78d9c4',gold:'#e2bc60'}[p.shoes];
@@ -145,6 +145,7 @@ window.createCodaCharacterRenderer=function(api){
       else if(material==='clothes'){
         if(source.h>=275&&source.h<=335){hex=p.shirt;base=.8;}
         else if(source.h>=185&&source.h<=265){hex=p.lowerColor;base=.68;}
+        else if(source.h>=85&&source.h<=145){hex=p.skin;base=.9;}
       }else if(material==='original-clothes'){
         if((source.h<=18||source.h>=330)&&p.shirt!==DEFAULTS.shirt){hex=p.shirt;base=.95;}
         else if(source.h>=185&&source.h<=265&&p.lowerColor!==DEFAULTS.lowerColor){hex=p.lowerColor;base=.95;}
@@ -171,7 +172,7 @@ window.createCodaCharacterRenderer=function(api){
     if(layer.layout==='animated')return [0,0];
     const frame=manifest.frameData?.[pose.index]||{};
     const bone=layer.bone||(category==='hair'||category==='headwear'||category==='eyewear'||category==='accessory'&&['bow','headphones','starclip','halo','earrings','pixelheadphones'].includes(variant)?'head':category==='accessory'&&['trumpet','microphone'].includes(variant)?'hand':'body');
-    return [finite(frame[bone+'X']),finite(frame[bone+'Y'])];
+    return [finite(frame[bone+'X']),finite(frame[bone+'Y']),finite(frame[bone+'ScaleX'],1),finite(frame[bone+'ScaleY'],1)];
   }
   function originalLook(p){return ['skin','hair','shirt','lowerColor','hairstyle','outfit','headwear','eyewear','accessory','shoes'].every(key=>p[key]===DEFAULTS[key]);}
   function drawOriginal(ctx,motion,time){
@@ -195,7 +196,11 @@ window.createCodaCharacterRenderer=function(api){
     if(originalHero&&originalLook(p))return drawOriginal(ctx,motion,time);
     const pose=animation.sample(motion,time,reduced()),[w,h]=manifest.cell,[ax,ay]=manifest.anchor;
     const scale=Math.max(.25,Math.min(8,finite(motion.scale,1)))*worldScale;
-    const blit=(layer,category,variant)=>{if(!layer)return;const frame=sprite(layer,pose,p),[dx,dy]=offset(layer,category,variant,pose);ctx.drawImage(frame.source,frame.sx,frame.sy,w,h,-ax+dx,-ay+dy,w,h);};
+    const blit=(layer,category,variant)=>{
+      if(!layer)return;const frame=sprite(layer,pose,p),[dx,dy,sx=1,sy=1]=offset(layer,category,variant,pose);
+      if(sx!==1||sy!==1){ctx.save();ctx.translate(dx,dy);ctx.scale(sx,sy);ctx.drawImage(frame.source,frame.sx,frame.sy,w,h,-ax,-ay,w,h);ctx.restore();}
+      else ctx.drawImage(frame.source,frame.sx,frame.sy,w,h,-ax+dx,-ay+dy,w,h);
+    };
     ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(Math.round(finite(motion.x)),Math.round(finite(motion.y)));ctx.scale(scale,scale);
     if(manifest.artStyle!=='original-atlas'){ctx.fillStyle='#080b214f';ctx.beginPath();ctx.ellipse(0,1,14,3,0,0,Math.PI*2);ctx.fill();}
     const hair=entry('hair',p.hairstyle);blit(hair?.back,'hair',p.hairstyle);
@@ -214,5 +219,5 @@ window.createCodaCharacterRenderer=function(api){
     return render(ctx,appearance,{x:p.x,y:p.y,facing:p.facing,walking:p.walking,phase:p.phase,emote,emoteTime:p.emoteTime,seed:base.id.length},time);
   }
   return {drawPlayer,drawNPC,normalizeProfile,appearanceFor,sampleMotion,ready,catalog,isReady:()=>loaded,
-    get error(){return loadError?.message||null;},getState:()=>({ready:loaded,mode:'raster-sprites',artStyle:manifest?.artStyle||'layered-raster',layers:entries.size,tintedFrames:tinted.size,cacheLimit,cell:manifest?.cell||null,totalFrames:112})};
+    get error(){return loadError?.message||null;},getState:()=>({ready:loaded,mode:'raster-sprites',artStyle:manifest?.artStyle||'layered-raster',sourcePolicy:manifest?.sourcePolicy||null,layers:entries.size,tintedFrames:tinted.size,cacheLimit,cell:manifest?.cell||null,totalFrames:112})};
 };

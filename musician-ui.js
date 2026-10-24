@@ -40,7 +40,7 @@ window.createCodaMusicianUI=function(api){
     for(const [facing,label]of [['down','Front'],['left','Left'],['up','Back'],['right','Right']]){
       const figure=document.createElement('figure'),canvas=document.createElement('canvas'),caption=document.createElement('figcaption');canvas.width=100;canvas.height=104;canvas.setAttribute('aria-label',label+' avatar preview');caption.textContent=label;figure.append(canvas,caption);row.append(figure);views.push({facing,canvas});
     }
-    const label=document.createElement('label');label.className='formRow';label.textContent='Preview animation';const mode=document.createElement('select');mode.id='avatarPreviewMode';mode.setAttribute('aria-label','Preview animation');for(const [value,text]of [['walk','Walk'],['idle','Idle'],['emote','Selected emote']])mode.append(new Option(text,value));label.append(mode);section.append(row,label);api.panelBody.insertBefore(section,api.panelBody.children[1]||null);preview={section,views,getProfile,mode};
+    const label=document.createElement('label');label.className='formRow';label.textContent='Preview animation';const mode=document.createElement('select');mode.id='avatarPreviewMode';mode.setAttribute('aria-label','Preview animation');for(const [value,text]of [['walk','Walk'],['idle','Idle'],['emote','Selected emote']])mode.append(new Option(text,value));label.append(mode);section.append(row,label);api.panelBody.insertBefore(section,api.panelBody.children[1]||null);preview={section,views,getProfile,mode};drawPreview(0);
   }
   function drawPreview(time){
     if(!preview?.section.isConnected||api.panelBody.parentElement.hidden)return;

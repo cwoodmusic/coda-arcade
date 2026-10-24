@@ -103,5 +103,52 @@ module.exports = function buildOriginalSpriteLayers(options) {
     return out;
   }
   const hair={short,bob:blue,long:pink.map((base,i)=>extended(base,'long',i)),curly:blue.map((base,i)=>extended(base,'curly',i)),ponytail:blue.map((base,i)=>extended(base,'ponytail',i)),spiky:directions.map((_,i)=>i===0?extract('green',i):copy(blue[i])),bald:directions.map(()=>make()),buns:pink.map((base,i)=>extended(base,'buns',i))};
-  return {hair,headwear:{cap},metadata:{source:'coda_arcade_phase73_characters.png',method:'native atlas extraction and pixel clones',cell,anchor,directions}};
+  // Every cosmetic shares the same original hero head and face opening. Source
+  // NPCs have wider heads; fitting their hair never changes the hero's face,
+  // eye size, body proportions, or pixel grid underneath the cosmetic.
+  const headHeights=[42,36,41,30];
+  const faceWindows=[{x:26,y:45,right:54,bottom:62},{x:21,y:38,right:52,bottom:56},null,{x:28,y:31,right:62,bottom:50}];
+  const headWindows=frames.map((f,index)=>({x:Math.round(anchor[0]-f.w/2),y:anchor[1]-f.h,w:f.w,h:headHeights[index]}));
+  const paletteSource=crop({x:12,y:164,w:55,h:29}),palettePixels=context(paletteSource).getImageData(0,0,55,29).data;
+  const palette=[.24,.38,.52,.67,.82,.96].map(value=>{
+    let best=null,distance=Infinity;
+    for(let at=0;at<palettePixels.length;at+=4){
+      if(palettePixels[at+3]<170)continue;const color=hsv(...palettePixels.slice(at,at+3));
+      if(color.h<175||color.h>265||color.s<.38)continue;
+      const luminance=(palettePixels[at]*.2126+palettePixels[at+1]*.7152+palettePixels[at+2]*.0722)/255;
+      const delta=Math.abs(color.v-value)*2+Math.abs(luminance-value*.65)+Math.abs(color.s-.6)*.05;
+      if(delta<distance){distance=delta;best=Array.from(palettePixels.slice(at,at+3));}
+    }
+    return best;
+  }).filter(Boolean);
+  function normalizeHair(source,id,index){
+    const data=context(source).getImageData(0,0,cell[0],cell[1]).data;
+    let left=cell[0],top=cell[1],right=-1,bottom=-1;
+    for(let y=0;y<cell[1];y++)for(let x=0;x<cell[0];x++)if(data[(y*cell[0]+x)*4+3]){left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}
+    if(right<left)return make();
+    const window=headWindows[index],extension=id==='long'?(index===2?12:8):id==='ponytail'?(index===2?8:4):0;
+    const out=make(),g=context(out);g.imageSmoothingEnabled=false;
+    g.drawImage(source,left,top,right-left+1,bottom-top+1,window.x,window.y,window.w,window.h+extension);
+    const pixels=g.getImageData(0,0,cell[0],cell[1]),face=faceWindows[index],lights=[];
+    for(let y=0;y<cell[1];y++)for(let x=0;x<cell[0];x++){
+      const at=(y*cell[0]+x)*4;if(!pixels.data[at+3])continue;
+      const faceBottom=extension&&index!==2?cell[1]:face?.bottom;
+      if(face&&x>=face.x&&x<=face.right&&y>=face.y&&y<=faceBottom){pixels.data[at+3]=0;continue;}
+      const color=hsv(...pixels.data.slice(at,at+3));
+      if(color.v<.15||color.s<.12||!palette.length)continue;
+      if(pixels.data[at+3]>128)lights.push((pixels.data[at]*.2126+pixels.data[at+1]*.7152+pixels.data[at+2]*.0722)/255);
+    }
+    lights.sort((a,b)=>a-b);
+    const darkest=lights[Math.floor(lights.length*.06)]??0,lightest=lights[Math.floor(lights.length*.94)]??1;
+    for(let at=0;at<pixels.data.length;at+=4){
+      if(!pixels.data[at+3])continue;const color=hsv(...pixels.data.slice(at,at+3));
+      if(color.v<.15||color.s<.12||!palette.length)continue;
+      const light=(pixels.data[at]*.2126+pixels.data[at+1]*.7152+pixels.data[at+2]*.0722)/255;
+      const shade=Math.max(0,Math.min(palette.length-1,Math.floor((light-darkest)/Math.max(.01,lightest-darkest)*palette.length)));
+      for(let channel=0;channel<3;channel++)pixels.data[at+channel]=palette[shade][channel];
+    }
+    g.putImageData(pixels,0,0);return out;
+  }
+  for(const [id,views]of Object.entries(hair))hair[id]=views.map((view,index)=>normalizeHair(view,id,index));
+  return {hair,headwear:{cap},metadata:{source:'coda_arcade_phase73_characters.png',method:'original atlas pixels fitted to the shared hero head',cell,anchor,directions,headWindows,faceWindows,hairPalette:palette}};
 };

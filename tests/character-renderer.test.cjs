@@ -117,3 +117,13 @@ test('per-frame tint cache stays bounded across many independently customized lo
   for(let i=0;i<90;i++)r.drawPlayer(context(),{skin:'#'+(0x704000+i*103).toString(16).padStart(6,'0')},{walking:true,phase:i/5},i);
   assert.equal(r.getState().tintedFrames,32);assert.equal(r.getState().cacheLimit,32);
 });
+
+test('exposed legs follow skin color independently of clothing colors and cached looks',async()=>{
+  const skinCanvas=(w,h)=>{const value=canvas(w,h);value.getContext().getImageData=()=>({data:new Uint8ClampedArray([30,180,40,255])});return value;};
+  const r=renderer({createCanvas:skinCanvas});await r.ready;
+  function legs(profile){const ctx=context();r.drawPlayer(ctx,{outfit:'shorts',shirt:'#a04060',lowerColor:'#304080',...profile},{},0);return ctx.calls.find(c=>c[0]==='image'&&name(c)==='outfit-shorts.png')[1].pixels;}
+  const dark=legs({skin:'#704633'}),light=legs({skin:'#e5ad75'}),otherClothes=legs({skin:'#704633',shirt:'#48b8dd',lowerColor:'#decb82'});
+  assert.notDeepEqual(dark,light,'Changing skin must update exposed legs even when the outfit is unchanged');
+  assert.deepEqual(dark,otherClothes,'Clothing dyes must not recolor exposed skin');
+  assert.equal(dark[3],255);
+});

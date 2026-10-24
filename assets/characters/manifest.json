@@ -16,7 +16,45 @@
     "up",
     "right"
   ],
+  "clips": {
+    "idle": {
+      "offset": 0,
+      "frames": 2,
+      "fps": 2
+    },
+    "walk": {
+      "offset": 2,
+      "frames": 6,
+      "fps": 8
+    },
+    "wave": {
+      "offset": 8,
+      "frames": 4,
+      "fps": 8
+    },
+    "dance": {
+      "offset": 12,
+      "frames": 6,
+      "fps": 8
+    },
+    "interact": {
+      "offset": 18,
+      "frames": 4,
+      "fps": 6
+    },
+    "talk": {
+      "offset": 22,
+      "frames": 4,
+      "fps": 6
+    },
+    "sit": {
+      "offset": 26,
+      "frames": 2,
+      "fps": 2
+    }
+  },
   "artStyle": "original-atlas",
+  "sourcePolicy": "original-atlas-only",
   "targetHeight": 53,
   "originalHero": {
     "url": "../../coda_arcade_phase73_characters.png",
@@ -144,246 +182,347 @@
     }
   },
   "styleReference": "coda_arcade_phase73_characters.png",
-  "clips": {
-    "idle": {
-      "offset": 0,
-      "frames": 2,
-      "fps": 2
-    },
-    "walk": {
-      "offset": 2,
-      "frames": 6,
-      "fps": 8
-    },
-    "wave": {
-      "offset": 8,
-      "frames": 4,
-      "fps": 8
-    },
-    "dance": {
-      "offset": 12,
-      "frames": 6,
-      "fps": 8
-    },
-    "interact": {
-      "offset": 18,
-      "frames": 4,
-      "fps": 6
-    },
-    "talk": {
-      "offset": 22,
-      "frames": 4,
-      "fps": 6
-    },
-    "sit": {
-      "offset": 26,
-      "frames": 2,
-      "fps": 2
-    }
+  "sharedHead": {
+    "source": "coda_arcade_phase73_characters.png",
+    "method": "original atlas pixels fitted to the shared hero head",
+    "cell": [
+      80,
+      96
+    ],
+    "anchor": [
+      40,
+      88
+    ],
+    "directions": [
+      "down",
+      "left",
+      "up",
+      "right"
+    ],
+    "headWindows": [
+      {
+        "x": 17,
+        "y": 19,
+        "w": 47,
+        "h": 42
+      },
+      {
+        "x": 17,
+        "y": 19,
+        "w": 47,
+        "h": 36
+      },
+      {
+        "x": 17,
+        "y": 21,
+        "w": 47,
+        "h": 41
+      },
+      {
+        "x": 17,
+        "y": 19,
+        "w": 47,
+        "h": 30
+      }
+    ],
+    "faceWindows": [
+      {
+        "x": 26,
+        "y": 45,
+        "right": 54,
+        "bottom": 62
+      },
+      {
+        "x": 21,
+        "y": 38,
+        "right": 52,
+        "bottom": 56
+      },
+      null,
+      {
+        "x": 28,
+        "y": 31,
+        "right": 62,
+        "bottom": 50
+      }
+    ],
+    "hairPalette": [
+      [
+        20,
+        10,
+        62
+      ],
+      [
+        59,
+        42,
+        99
+      ],
+      [
+        61,
+        35,
+        134
+      ],
+      [
+        120,
+        102,
+        171
+      ],
+      [
+        98,
+        146,
+        209
+      ],
+      [
+        0,
+        195,
+        245
+      ]
+    ]
   },
+  "sourceArtwork": [
+    "coda_arcade_phase73_characters.png"
+  ],
   "layers": {
     "body": {
       "url": "body.png",
       "layout": "animated",
-      "material": "skin"
+      "material": "skin",
+      "source": "original-atlas"
     },
     "hair": {
       "short": {
         "url": "hair-short.png",
         "layout": "directional",
-        "material": "hair"
+        "material": "hair",
+        "source": "original-atlas"
       },
       "bob": {
         "url": "hair-bob.png",
         "layout": "directional",
-        "material": "hair"
+        "material": "hair",
+        "source": "original-atlas"
       },
       "long": {
         "url": "hair-long.png",
         "layout": "directional",
-        "material": "hair"
+        "material": "hair",
+        "source": "original-atlas"
       },
       "curly": {
         "url": "hair-curly.png",
         "layout": "directional",
-        "material": "hair"
+        "material": "hair",
+        "source": "original-atlas"
       },
       "ponytail": {
         "url": "hair-ponytail.png",
         "layout": "directional",
-        "material": "hair"
+        "material": "hair",
+        "source": "original-atlas"
       },
       "spiky": {
         "url": "hair-spiky.png",
         "layout": "directional",
-        "material": "hair"
+        "material": "hair",
+        "source": "original-atlas"
       },
       "bald": {
         "url": "hair-bald.png",
         "layout": "directional",
-        "material": "hair"
+        "material": "hair",
+        "source": "original-atlas"
       },
       "buns": {
         "url": "hair-buns.png",
         "layout": "directional",
-        "material": "hair"
+        "material": "hair",
+        "source": "original-atlas"
       }
     },
     "outfit": {
       "pants": {
         "url": "outfit-pants.png",
         "layout": "animated",
-        "material": "original-clothes"
+        "material": "original-clothes",
+        "source": "original-atlas"
       },
       "shorts": {
         "url": "outfit-shorts.png",
         "layout": "animated",
-        "material": "clothes"
+        "material": "clothes",
+        "source": "original-atlas"
       },
       "dress": {
         "url": "outfit-dress.png",
         "layout": "animated",
-        "material": "clothes"
+        "material": "clothes",
+        "source": "original-atlas"
       },
       "overalls": {
         "url": "outfit-overalls.png",
         "layout": "animated",
-        "material": "clothes"
+        "material": "clothes",
+        "source": "original-atlas"
       },
       "suit": {
         "url": "outfit-suit.png",
         "layout": "animated",
-        "material": "clothes"
+        "material": "clothes",
+        "source": "original-atlas"
       },
       "coat": {
         "url": "outfit-coat.png",
         "layout": "animated",
-        "material": "clothes"
+        "material": "clothes",
+        "source": "original-atlas"
       }
     },
     "headwear": {
       "cap": {
         "url": "headwear-cap.png",
         "layout": "directional",
-        "material": "none"
+        "material": "none",
+        "source": "original-atlas"
       },
       "beanie": {
         "url": "headwear-beanie.png",
         "layout": "directional",
-        "material": "none"
+        "material": "none",
+        "source": "original-atlas"
       },
       "bucket": {
         "url": "headwear-bucket.png",
         "layout": "directional",
-        "material": "none"
+        "material": "none",
+        "source": "original-atlas"
       },
       "crown": {
         "url": "headwear-crown.png",
         "layout": "directional",
-        "material": "none"
+        "material": "none",
+        "source": "original-atlas"
       },
       "headwrap": {
         "url": "headwear-headwrap.png",
         "layout": "directional",
-        "material": "none"
+        "material": "none",
+        "source": "original-atlas"
       }
     },
     "eyewear": {
       "glasses": {
         "url": "eyewear-glasses.png",
         "layout": "directional",
-        "material": "none"
+        "material": "none",
+        "source": "original-atlas"
       },
       "sunglasses": {
         "url": "eyewear-sunglasses.png",
         "layout": "directional",
-        "material": "none"
+        "material": "none",
+        "source": "original-atlas"
       },
       "partyglasses": {
         "url": "eyewear-partyglasses.png",
         "layout": "directional",
-        "material": "none"
+        "material": "none",
+        "source": "original-atlas"
       }
     },
     "accessory": {
       "bow": {
         "url": "accessory-bow.png",
         "layout": "directional",
-        "material": "none"
+        "material": "none",
+        "source": "original-atlas"
       },
       "bowtie": {
         "url": "accessory-bowtie.png",
         "layout": "directional",
-        "material": "none"
+        "material": "none",
+        "source": "original-atlas"
       },
       "starclip": {
         "url": "accessory-starclip.png",
         "layout": "directional",
-        "material": "none"
+        "material": "none",
+        "source": "original-atlas"
       },
       "halo": {
         "url": "accessory-halo.png",
         "layout": "directional",
-        "material": "none"
-      },
-      "headphones": {
-        "url": "accessory-headphones.png",
-        "layout": "directional",
-        "material": "none"
-      },
-      "pixelheadphones": {
-        "url": "accessory-pixelheadphones.png",
-        "layout": "directional",
-        "material": "none"
-      },
-      "trumpet": {
-        "url": "accessory-trumpet.png",
-        "layout": "directional",
-        "material": "none"
-      },
-      "microphone": {
-        "url": "accessory-microphone.png",
-        "layout": "directional",
-        "material": "none"
+        "material": "none",
+        "source": "original-atlas"
       },
       "earrings": {
         "url": "accessory-earrings.png",
         "layout": "directional",
-        "material": "none"
+        "material": "none",
+        "source": "original-atlas"
+      },
+      "headphones": {
+        "url": "accessory-headphones.png",
+        "layout": "directional",
+        "material": "none",
+        "source": "original-atlas"
+      },
+      "pixelheadphones": {
+        "url": "accessory-pixelheadphones.png",
+        "layout": "directional",
+        "material": "none",
+        "source": "original-atlas"
+      },
+      "trumpet": {
+        "url": "accessory-trumpet.png",
+        "layout": "directional",
+        "material": "none",
+        "source": "original-atlas"
+      },
+      "microphone": {
+        "url": "accessory-microphone.png",
+        "layout": "directional",
+        "material": "none",
+        "source": "original-atlas"
       }
     },
     "shoes": {
       "sneakers": {
         "url": "shoes-sneakers.png",
         "layout": "animated",
-        "material": "none"
+        "material": "none",
+        "source": "original-atlas"
       },
       "boots": {
         "url": "shoes-boots.png",
         "layout": "animated",
-        "material": "none"
+        "material": "none",
+        "source": "original-atlas"
       },
       "hightops": {
         "url": "shoes-hightops.png",
         "layout": "animated",
-        "material": "none"
+        "material": "none",
+        "source": "original-atlas"
       },
       "neon": {
         "url": "shoes-neon.png",
         "layout": "animated",
-        "material": "none"
+        "material": "none",
+        "source": "original-atlas"
       },
       "gold": {
         "url": "shoes-gold.png",
         "layout": "animated",
-        "material": "none"
+        "material": "none",
+        "source": "original-atlas"
       }
     },
     "original": {
       "hero": {
         "url": "original-hero.png",
         "layout": "animated",
-        "material": "none"
+        "material": "none",
+        "source": "original-atlas"
       }
     }
   },
@@ -391,898 +530,1570 @@
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
-      "headY": -0.7681159420289855,
+      "headY": -1,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
-      "bodyY": -0.7681159420289855,
+      "bodyY": -1,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": -0.7681159420289855
+      "handY": -1,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
-      "headY": -0.7681159420289855,
-      "bodyX": 0,
-      "bodyY": -0.7681159420289855,
-      "handX": 0,
-      "handY": -0.7681159420289855
+      "headX": 0.5000000000000036,
+      "headY": 0,
+      "headScaleX": 0.9722222222222223,
+      "headScaleY": 1,
+      "bodyX": 0.5000000000000036,
+      "bodyY": 0,
+      "bodyScaleX": 0.9722222222222223,
+      "bodyScaleY": 1,
+      "handX": 0.5000000000000036,
+      "handY": -1,
+      "handScaleX": 0.9722222222222223,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
-      "headY": -0.7681159420289855,
-      "bodyX": 0,
-      "bodyY": -0.7681159420289855,
-      "handX": 0,
-      "handY": -0.7681159420289855
+      "headX": 2.6645352591003757e-15,
+      "headY": 0,
+      "headScaleX": 0.9444444444444445,
+      "headScaleY": 1,
+      "bodyX": 2.6645352591003757e-15,
+      "bodyY": 0,
+      "bodyScaleX": 0.9444444444444445,
+      "bodyScaleY": 1,
+      "handX": 2.6645352591003757e-15,
+      "handY": 0,
+      "handScaleX": 0.9444444444444445,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
+      "headX": 8.881784197001252e-16,
       "headY": 0,
-      "bodyX": 0,
+      "headScaleX": 0.8888888888888888,
+      "headScaleY": 1,
+      "bodyX": 8.881784197001252e-16,
       "bodyY": 0,
-      "handX": 0,
-      "handY": 0
+      "bodyScaleX": 0.8888888888888888,
+      "bodyScaleY": 1,
+      "handX": 8.881784197001252e-16,
+      "handY": -1,
+      "handScaleX": 0.8888888888888888,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
-      "headY": -0.7681159420289855,
-      "bodyX": 0,
-      "bodyY": -0.7681159420289855,
-      "handX": 0,
-      "handY": -0.7681159420289855
+      "headX": 2.6645352591003757e-15,
+      "headY": 0,
+      "headScaleX": 0.9444444444444445,
+      "headScaleY": 1,
+      "bodyX": 2.6645352591003757e-15,
+      "bodyY": 0,
+      "bodyScaleX": 0.9444444444444445,
+      "bodyScaleY": 1,
+      "handX": 2.6645352591003757e-15,
+      "handY": 0,
+      "handScaleX": 0.9444444444444445,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
-      "headY": -0.7681159420289855,
-      "bodyX": 0,
-      "bodyY": -0.7681159420289855,
-      "handX": 0,
-      "handY": -0.7681159420289855
+      "headX": 0.5000000000000036,
+      "headY": 0,
+      "headScaleX": 0.9722222222222223,
+      "headScaleY": 1,
+      "bodyX": 0.5000000000000036,
+      "bodyY": 0,
+      "bodyScaleX": 0.9722222222222223,
+      "bodyScaleY": 1,
+      "handX": 0.5000000000000036,
+      "handY": -1,
+      "handScaleX": 0.9722222222222223,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
+      "headX": 8.881784197001252e-16,
       "headY": 0,
-      "bodyX": 0,
+      "headScaleX": 0.8888888888888888,
+      "headScaleY": 1,
+      "bodyX": 8.881784197001252e-16,
       "bodyY": 0,
-      "handX": -12.289855072463768,
-      "handY": -10.753623188405797
+      "bodyScaleX": 0.8888888888888888,
+      "bodyScaleY": 1,
+      "handX": 8.881784197001252e-16,
+      "handY": -1,
+      "handScaleX": 0.8888888888888888,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
+      "headX": 2.6645352591003757e-15,
       "headY": 0,
-      "bodyX": 0,
+      "headScaleX": 0.9444444444444445,
+      "headScaleY": 1,
+      "bodyX": 2.6645352591003757e-15,
       "bodyY": 0,
-      "handX": -12.289855072463768,
-      "handY": -10.753623188405797
+      "bodyScaleX": 0.9444444444444445,
+      "bodyScaleY": 1,
+      "handX": 2.6645352591003757e-15,
+      "handY": 0,
+      "handScaleX": 0.9444444444444445,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
+      "headX": 8.881784197001252e-16,
       "headY": 0,
-      "bodyX": 0,
+      "headScaleX": 0.8888888888888888,
+      "headScaleY": 1,
+      "bodyX": 8.881784197001252e-16,
       "bodyY": 0,
-      "handX": -12.289855072463768,
-      "handY": -10.753623188405797
+      "bodyScaleX": 0.8888888888888888,
+      "bodyScaleY": 1,
+      "handX": 8.881784197001252e-16,
+      "handY": -1,
+      "handScaleX": 0.8888888888888888,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
+      "headX": 0.5000000000000036,
       "headY": 0,
-      "bodyX": 0,
+      "headScaleX": 0.9722222222222223,
+      "headScaleY": 1,
+      "bodyX": 0.5000000000000036,
       "bodyY": 0,
-      "handX": -12.289855072463768,
-      "handY": -10.753623188405797
+      "bodyScaleX": 0.9722222222222223,
+      "bodyScaleY": 1,
+      "handX": 0.5000000000000036,
+      "handY": -1,
+      "handScaleX": 0.9722222222222223,
+      "handScaleY": 1
     },
     {
-      "headX": 1.536231884057971,
-      "headY": -1.536231884057971,
-      "bodyX": 1.536231884057971,
-      "bodyY": -1.536231884057971,
-      "handX": 1.536231884057971,
-      "handY": -1.536231884057971
+      "headX": 1.0000000000000009,
+      "headY": -1,
+      "headScaleX": 0.8888888888888888,
+      "headScaleY": 1,
+      "bodyX": 1.0000000000000009,
+      "bodyY": -1,
+      "bodyScaleX": 0.8888888888888888,
+      "bodyScaleY": 1,
+      "handX": 1.0000000000000009,
+      "handY": -2,
+      "handScaleX": 0.8888888888888888,
+      "handScaleY": 1
     },
     {
-      "headX": 1.536231884057971,
-      "headY": -1.536231884057971,
-      "bodyX": 1.536231884057971,
-      "bodyY": -1.536231884057971,
-      "handX": -10.753623188405797,
-      "handY": -12.289855072463768
+      "headX": 1.0000000000000027,
+      "headY": -1,
+      "headScaleX": 0.9444444444444445,
+      "headScaleY": 1,
+      "bodyX": 1.0000000000000027,
+      "bodyY": -1,
+      "bodyScaleX": 0.9444444444444445,
+      "bodyScaleY": 1,
+      "handX": 1.0000000000000027,
+      "handY": -1,
+      "handScaleX": 0.9444444444444445,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
+      "headX": 2.6645352591003757e-15,
       "headY": 0,
-      "bodyX": 0,
+      "headScaleX": 0.9444444444444445,
+      "headScaleY": 1,
+      "bodyX": 2.6645352591003757e-15,
       "bodyY": 0,
-      "handX": -12.289855072463768,
-      "handY": -10.753623188405797
+      "bodyScaleX": 0.9444444444444445,
+      "bodyScaleY": 1,
+      "handX": 2.6645352591003757e-15,
+      "handY": 0,
+      "handScaleX": 0.9444444444444445,
+      "handScaleY": 1
     },
     {
-      "headX": -1.536231884057971,
-      "headY": -1.536231884057971,
-      "bodyX": -1.536231884057971,
-      "bodyY": -1.536231884057971,
-      "handX": -1.536231884057971,
-      "handY": -1.536231884057971
+      "headX": -0.49999999999999645,
+      "headY": -1,
+      "headScaleX": 0.9722222222222223,
+      "headScaleY": 1,
+      "bodyX": -0.49999999999999645,
+      "bodyY": -1,
+      "bodyScaleX": 0.9722222222222223,
+      "bodyScaleY": 1,
+      "handX": -0.49999999999999645,
+      "handY": -2,
+      "handScaleX": 0.9722222222222223,
+      "handScaleY": 1
     },
     {
-      "headX": -1.536231884057971,
-      "headY": -1.536231884057971,
-      "bodyX": -1.536231884057971,
-      "bodyY": -1.536231884057971,
-      "handX": -13.826086956521738,
-      "handY": -12.289855072463768
+      "headX": -0.9999999999999991,
+      "headY": -1,
+      "headScaleX": 0.8888888888888888,
+      "headScaleY": 1,
+      "bodyX": -0.9999999999999991,
+      "bodyY": -1,
+      "bodyScaleX": 0.8888888888888888,
+      "bodyScaleY": 1,
+      "handX": -0.9999999999999991,
+      "handY": -2,
+      "handScaleX": 0.8888888888888888,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
+      "headX": 0.5000000000000036,
       "headY": 0,
-      "bodyX": 0,
+      "headScaleX": 0.9722222222222223,
+      "headScaleY": 1,
+      "bodyX": 0.5000000000000036,
       "bodyY": 0,
-      "handX": 0,
-      "handY": 0
+      "bodyScaleX": 0.9722222222222223,
+      "bodyScaleY": 1,
+      "handX": 0.5000000000000036,
+      "handY": -1,
+      "handScaleX": 0.9722222222222223,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
+      "headX": 2.6645352591003757e-15,
       "headY": 0,
-      "bodyX": 0,
+      "headScaleX": 0.9444444444444445,
+      "headScaleY": 1,
+      "bodyX": 2.6645352591003757e-15,
       "bodyY": 0,
-      "handX": 0,
-      "handY": 0
+      "bodyScaleX": 0.9444444444444445,
+      "bodyScaleY": 1,
+      "handX": 2.6645352591003757e-15,
+      "handY": 0,
+      "handScaleX": 0.9444444444444445,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
+      "headX": 8.881784197001252e-16,
       "headY": 0,
-      "bodyX": 0,
+      "headScaleX": 0.8888888888888888,
+      "headScaleY": 1,
+      "bodyX": 8.881784197001252e-16,
       "bodyY": 0,
-      "handX": -12.289855072463768,
-      "handY": -10.753623188405797
+      "bodyScaleX": 0.8888888888888888,
+      "bodyScaleY": 1,
+      "handX": 8.881784197001252e-16,
+      "handY": -1,
+      "handScaleX": 0.8888888888888888,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
+      "headX": 2.6645352591003757e-15,
       "headY": 0,
-      "bodyX": 0,
+      "headScaleX": 0.9444444444444445,
+      "headScaleY": 1,
+      "bodyX": 2.6645352591003757e-15,
       "bodyY": 0,
-      "handX": 0,
-      "handY": 0
+      "bodyScaleX": 0.9444444444444445,
+      "bodyScaleY": 1,
+      "handX": 2.6645352591003757e-15,
+      "handY": 0,
+      "handScaleX": 0.9444444444444445,
+      "handScaleY": 1
     },
     {
       "headX": 0,
-      "headY": 4.608695652173913,
+      "headY": 3,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
-      "bodyY": 4.608695652173913,
+      "bodyY": 3,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 4.608695652173913
+      "handY": 3,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
-      "headY": 4.608695652173913,
+      "headY": 3,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
-      "bodyY": 4.608695652173913,
+      "bodyY": 3,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 4.608695652173913
+      "handY": 3,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
-      "headY": -0.7681159420289855,
+      "headY": -1,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
-      "bodyY": -0.7681159420289855,
+      "bodyY": -1,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": -0.7681159420289855
+      "handY": -1,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
-      "headY": -0.7681159420289855,
+      "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
-      "bodyY": -0.7681159420289855,
+      "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": -0.7681159420289855
+      "handY": -1,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
-      "headY": -0.7681159420289855,
+      "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
-      "bodyY": -0.7681159420289855,
+      "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": -0.7681159420289855
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": -1,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
-      "headY": -0.7681159420289855,
+      "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
-      "bodyY": -0.7681159420289855,
+      "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": -0.7681159420289855
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
-      "headY": -0.7681159420289855,
+      "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
-      "bodyY": -0.7681159420289855,
+      "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": -0.7681159420289855
+      "handY": -1,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
-      "handX": -12.289855072463768,
-      "handY": -10.753623188405797
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
+      "handX": 0,
+      "handY": -1,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
-      "handX": -12.289855072463768,
-      "handY": -10.753623188405797
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
+      "handX": 0,
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
-      "handX": -12.289855072463768,
-      "handY": -10.753623188405797
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
+      "handX": 0,
+      "handY": -1,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
-      "handX": -12.289855072463768,
-      "handY": -10.753623188405797
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
+      "handX": 0,
+      "handY": -1,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
-      "headX": 1.536231884057971,
-      "headY": -1.536231884057971,
-      "bodyX": 1.536231884057971,
-      "bodyY": -1.536231884057971,
-      "handX": 1.536231884057971,
-      "handY": -1.536231884057971
+      "headX": 1,
+      "headY": -1,
+      "headScaleX": 1,
+      "headScaleY": 1,
+      "bodyX": 1,
+      "bodyY": -1,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
+      "handX": 1,
+      "handY": -2,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
-      "headX": 1.536231884057971,
-      "headY": -1.536231884057971,
-      "bodyX": 1.536231884057971,
-      "bodyY": -1.536231884057971,
-      "handX": -10.753623188405797,
-      "handY": -12.289855072463768
+      "headX": 1,
+      "headY": -1,
+      "headScaleX": 1,
+      "headScaleY": 1,
+      "bodyX": 1,
+      "bodyY": -1,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
+      "handX": 1,
+      "handY": -1,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
-      "handX": -12.289855072463768,
-      "handY": -10.753623188405797
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
+      "handX": 0,
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
-      "headX": -1.536231884057971,
-      "headY": -1.536231884057971,
-      "bodyX": -1.536231884057971,
-      "bodyY": -1.536231884057971,
-      "handX": -1.536231884057971,
-      "handY": -1.536231884057971
+      "headX": -1,
+      "headY": -1,
+      "headScaleX": 1,
+      "headScaleY": 1,
+      "bodyX": -1,
+      "bodyY": -1,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
+      "handX": -1,
+      "handY": -2,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
-      "headX": -1.536231884057971,
-      "headY": -1.536231884057971,
-      "bodyX": -1.536231884057971,
-      "bodyY": -1.536231884057971,
-      "handX": -13.826086956521738,
-      "handY": -12.289855072463768
+      "headX": -1,
+      "headY": -1,
+      "headScaleX": 1,
+      "headScaleY": 1,
+      "bodyX": -1,
+      "bodyY": -1,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
+      "handX": -1,
+      "handY": -2,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
-      "handX": -12.289855072463768,
-      "handY": -10.753623188405797
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
+      "handX": 0,
+      "handY": -1,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
-      "handX": -12.289855072463768,
-      "handY": -10.753623188405797
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
+      "handX": 0,
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
-      "handX": -12.289855072463768,
-      "handY": -10.753623188405797
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
+      "handX": 0,
+      "handY": -1,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
-      "headY": 4.608695652173913,
+      "headY": 3,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
-      "bodyY": 4.608695652173913,
+      "bodyY": 3,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 4.608695652173913
+      "handY": 3,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
-      "headY": 4.608695652173913,
+      "headY": 3,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
-      "bodyY": 4.608695652173913,
+      "bodyY": 3,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 4.608695652173913
+      "handY": 3,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
-      "headY": -0.7681159420289855,
+      "headY": -1,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
-      "bodyY": -0.7681159420289855,
+      "bodyY": -1,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": -0.7681159420289855
+      "handY": -1,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
-      "headY": -0.7681159420289855,
-      "bodyX": 0,
-      "bodyY": -0.7681159420289855,
-      "handX": 0,
-      "handY": -0.7681159420289855
+      "headX": 0.4864864864864886,
+      "headY": 0,
+      "headScaleX": 0.972972972972973,
+      "headScaleY": 1,
+      "bodyX": 0.4864864864864886,
+      "bodyY": 0,
+      "bodyScaleX": 0.972972972972973,
+      "bodyScaleY": 1,
+      "handX": 0.4864864864864886,
+      "handY": -1,
+      "handScaleX": 0.972972972972973,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
-      "headY": -0.7681159420289855,
-      "bodyX": 0,
-      "bodyY": -0.7681159420289855,
-      "handX": 0,
-      "handY": -0.7681159420289855
+      "headX": 0.9729729729729693,
+      "headY": 0,
+      "headScaleX": 0.9459459459459458,
+      "headScaleY": 1,
+      "bodyX": 0.9729729729729693,
+      "bodyY": 0,
+      "bodyScaleX": 0.9459459459459458,
+      "bodyScaleY": 1,
+      "handX": 0.9729729729729693,
+      "handY": 0,
+      "handScaleX": 0.9459459459459458,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
+      "headX": 0.4594594594594579,
       "headY": 0,
-      "bodyX": 0,
+      "headScaleX": 0.9189189189189189,
+      "headScaleY": 1,
+      "bodyX": 0.4594594594594579,
       "bodyY": 0,
-      "handX": 0,
-      "handY": 0
+      "bodyScaleX": 0.9189189189189189,
+      "bodyScaleY": 1,
+      "handX": 0.4594594594594579,
+      "handY": -1,
+      "handScaleX": 0.9189189189189189,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
-      "headY": -0.7681159420289855,
-      "bodyX": 0,
-      "bodyY": -0.7681159420289855,
-      "handX": 0,
-      "handY": -0.7681159420289855
+      "headX": -0.054054054054057055,
+      "headY": 0,
+      "headScaleX": 0.8918918918918918,
+      "headScaleY": 1,
+      "bodyX": -0.054054054054057055,
+      "bodyY": 0,
+      "bodyScaleX": 0.8918918918918918,
+      "bodyScaleY": 1,
+      "handX": -0.054054054054057055,
+      "handY": 0,
+      "handScaleX": 0.8918918918918918,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
-      "headY": -0.7681159420289855,
-      "bodyX": 0,
-      "bodyY": -0.7681159420289855,
-      "handX": 0,
-      "handY": -0.7681159420289855
+      "headX": 0.4864864864864886,
+      "headY": 0,
+      "headScaleX": 0.972972972972973,
+      "headScaleY": 1,
+      "bodyX": 0.4864864864864886,
+      "bodyY": 0,
+      "bodyScaleX": 0.972972972972973,
+      "bodyScaleY": 1,
+      "handX": 0.4864864864864886,
+      "handY": -1,
+      "handScaleX": 0.972972972972973,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
+      "headX": 0.4594594594594579,
       "headY": 0,
-      "bodyX": 0,
+      "headScaleX": 0.9189189189189189,
+      "headScaleY": 1,
+      "bodyX": 0.4594594594594579,
       "bodyY": 0,
-      "handX": 9.217391304347826,
-      "handY": -10.753623188405797
+      "bodyScaleX": 0.9189189189189189,
+      "bodyScaleY": 1,
+      "handX": 0.4594594594594579,
+      "handY": -1,
+      "handScaleX": 0.9189189189189189,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
+      "headX": -0.054054054054057055,
       "headY": 0,
-      "bodyX": 0,
+      "headScaleX": 0.8918918918918918,
+      "headScaleY": 1,
+      "bodyX": -0.054054054054057055,
       "bodyY": 0,
-      "handX": 9.217391304347826,
-      "handY": -10.753623188405797
+      "bodyScaleX": 0.8918918918918918,
+      "bodyScaleY": 1,
+      "handX": -0.054054054054057055,
+      "handY": 0,
+      "handScaleX": 0.8918918918918918,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
+      "headX": 0.4594594594594579,
       "headY": 0,
-      "bodyX": 0,
+      "headScaleX": 0.9189189189189189,
+      "headScaleY": 1,
+      "bodyX": 0.4594594594594579,
       "bodyY": 0,
-      "handX": 9.217391304347826,
-      "handY": -10.753623188405797
+      "bodyScaleX": 0.9189189189189189,
+      "bodyScaleY": 1,
+      "handX": 0.4594594594594579,
+      "handY": -1,
+      "handScaleX": 0.9189189189189189,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
+      "headX": 0.4864864864864886,
       "headY": 0,
-      "bodyX": 0,
+      "headScaleX": 0.972972972972973,
+      "headScaleY": 1,
+      "bodyX": 0.4864864864864886,
       "bodyY": 0,
-      "handX": 9.217391304347826,
-      "handY": -10.753623188405797
+      "bodyScaleX": 0.972972972972973,
+      "bodyScaleY": 1,
+      "handX": 0.4864864864864886,
+      "handY": -1,
+      "handScaleX": 0.972972972972973,
+      "handScaleY": 1
     },
     {
-      "headX": 1.536231884057971,
-      "headY": -1.536231884057971,
-      "bodyX": 1.536231884057971,
-      "bodyY": -1.536231884057971,
-      "handX": 1.536231884057971,
-      "handY": -1.536231884057971
+      "headX": 1.4594594594594579,
+      "headY": -1,
+      "headScaleX": 0.9189189189189189,
+      "headScaleY": 1,
+      "bodyX": 1.4594594594594579,
+      "bodyY": -1,
+      "bodyScaleX": 0.9189189189189189,
+      "bodyScaleY": 1,
+      "handX": 1.4594594594594579,
+      "handY": -2,
+      "handScaleX": 0.9189189189189189,
+      "handScaleY": 1
     },
     {
-      "headX": 1.536231884057971,
-      "headY": -1.536231884057971,
-      "bodyX": 1.536231884057971,
-      "bodyY": -1.536231884057971,
-      "handX": 10.753623188405797,
-      "handY": -12.289855072463768
+      "headX": 1.9729729729729693,
+      "headY": -1,
+      "headScaleX": 0.9459459459459458,
+      "headScaleY": 1,
+      "bodyX": 1.9729729729729693,
+      "bodyY": -1,
+      "bodyScaleX": 0.9459459459459458,
+      "bodyScaleY": 1,
+      "handX": 1.9729729729729693,
+      "handY": -1,
+      "handScaleX": 0.9459459459459458,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
+      "headX": -0.054054054054057055,
       "headY": 0,
-      "bodyX": 0,
+      "headScaleX": 0.8918918918918918,
+      "headScaleY": 1,
+      "bodyX": -0.054054054054057055,
       "bodyY": 0,
-      "handX": 9.217391304347826,
-      "handY": -10.753623188405797
+      "bodyScaleX": 0.8918918918918918,
+      "bodyScaleY": 1,
+      "handX": -0.054054054054057055,
+      "handY": 0,
+      "handScaleX": 0.8918918918918918,
+      "handScaleY": 1
     },
     {
-      "headX": -1.536231884057971,
-      "headY": -1.536231884057971,
-      "bodyX": -1.536231884057971,
-      "bodyY": -1.536231884057971,
-      "handX": -1.536231884057971,
-      "handY": -1.536231884057971
+      "headX": -0.5135135135135114,
+      "headY": -1,
+      "headScaleX": 0.972972972972973,
+      "headScaleY": 1,
+      "bodyX": -0.5135135135135114,
+      "bodyY": -1,
+      "bodyScaleX": 0.972972972972973,
+      "bodyScaleY": 1,
+      "handX": -0.5135135135135114,
+      "handY": -2,
+      "handScaleX": 0.972972972972973,
+      "handScaleY": 1
     },
     {
-      "headX": -1.536231884057971,
-      "headY": -1.536231884057971,
-      "bodyX": -1.536231884057971,
-      "bodyY": -1.536231884057971,
-      "handX": 7.681159420289855,
-      "handY": -12.289855072463768
+      "headX": -0.5405405405405421,
+      "headY": -1,
+      "headScaleX": 0.9189189189189189,
+      "headScaleY": 1,
+      "bodyX": -0.5405405405405421,
+      "bodyY": -1,
+      "bodyScaleX": 0.9189189189189189,
+      "bodyScaleY": 1,
+      "handX": -0.5405405405405421,
+      "handY": -2,
+      "handScaleX": 0.9189189189189189,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
+      "headX": 0.4864864864864886,
       "headY": 0,
-      "bodyX": 0,
+      "headScaleX": 0.972972972972973,
+      "headScaleY": 1,
+      "bodyX": 0.4864864864864886,
       "bodyY": 0,
-      "handX": 0,
-      "handY": 0
+      "bodyScaleX": 0.972972972972973,
+      "bodyScaleY": 1,
+      "handX": 0.4864864864864886,
+      "handY": -1,
+      "handScaleX": 0.972972972972973,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
+      "headX": 0.9729729729729693,
       "headY": 0,
-      "bodyX": 0,
+      "headScaleX": 0.9459459459459458,
+      "headScaleY": 1,
+      "bodyX": 0.9729729729729693,
       "bodyY": 0,
-      "handX": 0,
-      "handY": 0
+      "bodyScaleX": 0.9459459459459458,
+      "bodyScaleY": 1,
+      "handX": 0.9729729729729693,
+      "handY": 0,
+      "handScaleX": 0.9459459459459458,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
+      "headX": 0.4594594594594579,
       "headY": 0,
-      "bodyX": 0,
+      "headScaleX": 0.9189189189189189,
+      "headScaleY": 1,
+      "bodyX": 0.4594594594594579,
       "bodyY": 0,
-      "handX": 9.217391304347826,
-      "handY": -10.753623188405797
+      "bodyScaleX": 0.9189189189189189,
+      "bodyScaleY": 1,
+      "handX": 0.4594594594594579,
+      "handY": -1,
+      "handScaleX": 0.9189189189189189,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
-      "headX": 0,
+      "headX": -0.054054054054057055,
       "headY": 0,
-      "bodyX": 0,
+      "headScaleX": 0.8918918918918918,
+      "headScaleY": 1,
+      "bodyX": -0.054054054054057055,
       "bodyY": 0,
-      "handX": 0,
-      "handY": 0
+      "bodyScaleX": 0.8918918918918918,
+      "bodyScaleY": 1,
+      "handX": -0.054054054054057055,
+      "handY": 0,
+      "handScaleX": 0.8918918918918918,
+      "handScaleY": 1
     },
     {
       "headX": 0,
-      "headY": 4.608695652173913,
+      "headY": 3,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
-      "bodyY": 4.608695652173913,
+      "bodyY": 3,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 4.608695652173913
+      "handY": 3,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
-      "headY": 4.608695652173913,
+      "headY": 3,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
-      "bodyY": 4.608695652173913,
+      "bodyY": 3,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 4.608695652173913
+      "handY": 3,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
-      "headY": -0.7681159420289855,
+      "headY": -1,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
-      "bodyY": -0.7681159420289855,
+      "bodyY": -1,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": -0.7681159420289855
+      "handY": -1,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
-      "headY": -0.7681159420289855,
+      "headY": -0.8412698412698445,
+      "headScaleX": 1,
+      "headScaleY": 0.9841269841269841,
       "bodyX": 0,
-      "bodyY": -0.7681159420289855,
+      "bodyY": -0.8412698412698445,
+      "bodyScaleX": 1,
+      "bodyScaleY": 0.9841269841269841,
       "handX": 0,
-      "handY": -0.7681159420289855
+      "handY": -1.8412698412698445,
+      "handScaleX": 1,
+      "handScaleY": 0.9841269841269841
     },
     {
       "headX": 0,
-      "headY": -0.7681159420289855,
+      "headY": -0.8412698412698445,
+      "headScaleX": 1,
+      "headScaleY": 0.9841269841269841,
       "bodyX": 0,
-      "bodyY": -0.7681159420289855,
+      "bodyY": -0.8412698412698445,
+      "bodyScaleX": 1,
+      "bodyScaleY": 0.9841269841269841,
       "handX": 0,
-      "handY": -0.7681159420289855
+      "handY": -0.8412698412698445,
+      "handScaleX": 1,
+      "handScaleY": 0.9841269841269841
     },
     {
       "headX": 0,
-      "headY": 0,
+      "headY": -0.8412698412698445,
+      "headScaleX": 1,
+      "headScaleY": 0.9841269841269841,
       "bodyX": 0,
-      "bodyY": 0,
+      "bodyY": -0.8412698412698445,
+      "bodyScaleX": 1,
+      "bodyScaleY": 0.9841269841269841,
       "handX": 0,
-      "handY": 0
+      "handY": -1.8412698412698445,
+      "handScaleX": 1,
+      "handScaleY": 0.9841269841269841
     },
     {
       "headX": 0,
-      "headY": -0.7681159420289855,
+      "headY": -0.8412698412698445,
+      "headScaleX": 1,
+      "headScaleY": 0.9841269841269841,
       "bodyX": 0,
-      "bodyY": -0.7681159420289855,
+      "bodyY": -0.8412698412698445,
+      "bodyScaleX": 1,
+      "bodyScaleY": 0.9841269841269841,
       "handX": 0,
-      "handY": -0.7681159420289855
+      "handY": -0.8412698412698445,
+      "handScaleX": 1,
+      "handScaleY": 0.9841269841269841
     },
     {
       "headX": 0,
-      "headY": -0.7681159420289855,
+      "headY": -0.8412698412698445,
+      "headScaleX": 1,
+      "headScaleY": 0.9841269841269841,
       "bodyX": 0,
-      "bodyY": -0.7681159420289855,
+      "bodyY": -0.8412698412698445,
+      "bodyScaleX": 1,
+      "bodyScaleY": 0.9841269841269841,
       "handX": 0,
-      "handY": -0.7681159420289855
+      "handY": -1.8412698412698445,
+      "handScaleX": 1,
+      "handScaleY": 0.9841269841269841
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
-      "headY": 0,
+      "headY": -0.8412698412698445,
+      "headScaleX": 1,
+      "headScaleY": 0.9841269841269841,
       "bodyX": 0,
-      "bodyY": 0,
-      "handX": 9.217391304347826,
-      "handY": -10.753623188405797
+      "bodyY": -0.8412698412698445,
+      "bodyScaleX": 1,
+      "bodyScaleY": 0.9841269841269841,
+      "handX": 0,
+      "handY": -1.8412698412698445,
+      "handScaleX": 1,
+      "handScaleY": 0.9841269841269841
     },
     {
       "headX": 0,
-      "headY": 0,
+      "headY": -0.8412698412698445,
+      "headScaleX": 1,
+      "headScaleY": 0.9841269841269841,
       "bodyX": 0,
-      "bodyY": 0,
-      "handX": 9.217391304347826,
-      "handY": -10.753623188405797
+      "bodyY": -0.8412698412698445,
+      "bodyScaleX": 1,
+      "bodyScaleY": 0.9841269841269841,
+      "handX": 0,
+      "handY": -0.8412698412698445,
+      "handScaleX": 1,
+      "handScaleY": 0.9841269841269841
     },
     {
       "headX": 0,
-      "headY": 0,
+      "headY": -0.8412698412698445,
+      "headScaleX": 1,
+      "headScaleY": 0.9841269841269841,
       "bodyX": 0,
-      "bodyY": 0,
-      "handX": 9.217391304347826,
-      "handY": -10.753623188405797
+      "bodyY": -0.8412698412698445,
+      "bodyScaleX": 1,
+      "bodyScaleY": 0.9841269841269841,
+      "handX": 0,
+      "handY": -1.8412698412698445,
+      "handScaleX": 1,
+      "handScaleY": 0.9841269841269841
     },
     {
       "headX": 0,
-      "headY": 0,
+      "headY": -0.8412698412698445,
+      "headScaleX": 1,
+      "headScaleY": 0.9841269841269841,
       "bodyX": 0,
-      "bodyY": 0,
-      "handX": 9.217391304347826,
-      "handY": -10.753623188405797
+      "bodyY": -0.8412698412698445,
+      "bodyScaleX": 1,
+      "bodyScaleY": 0.9841269841269841,
+      "handX": 0,
+      "handY": -1.8412698412698445,
+      "handScaleX": 1,
+      "handScaleY": 0.9841269841269841
     },
     {
-      "headX": 1.536231884057971,
-      "headY": -1.536231884057971,
-      "bodyX": 1.536231884057971,
-      "bodyY": -1.536231884057971,
-      "handX": 1.536231884057971,
-      "handY": -1.536231884057971
+      "headX": 1,
+      "headY": -1.8412698412698445,
+      "headScaleX": 1,
+      "headScaleY": 0.9841269841269841,
+      "bodyX": 1,
+      "bodyY": -1.8412698412698445,
+      "bodyScaleX": 1,
+      "bodyScaleY": 0.9841269841269841,
+      "handX": 1,
+      "handY": -2.8412698412698445,
+      "handScaleX": 1,
+      "handScaleY": 0.9841269841269841
     },
     {
-      "headX": 1.536231884057971,
-      "headY": -1.536231884057971,
-      "bodyX": 1.536231884057971,
-      "bodyY": -1.536231884057971,
-      "handX": 10.753623188405797,
-      "handY": -12.289855072463768
+      "headX": 1,
+      "headY": -1.8412698412698445,
+      "headScaleX": 1,
+      "headScaleY": 0.9841269841269841,
+      "bodyX": 1,
+      "bodyY": -1.8412698412698445,
+      "bodyScaleX": 1,
+      "bodyScaleY": 0.9841269841269841,
+      "handX": 1,
+      "handY": -1.8412698412698445,
+      "handScaleX": 1,
+      "handScaleY": 0.9841269841269841
     },
     {
       "headX": 0,
-      "headY": 0,
+      "headY": -0.8412698412698445,
+      "headScaleX": 1,
+      "headScaleY": 0.9841269841269841,
       "bodyX": 0,
-      "bodyY": 0,
-      "handX": 9.217391304347826,
-      "handY": -10.753623188405797
+      "bodyY": -0.8412698412698445,
+      "bodyScaleX": 1,
+      "bodyScaleY": 0.9841269841269841,
+      "handX": 0,
+      "handY": -0.8412698412698445,
+      "handScaleX": 1,
+      "handScaleY": 0.9841269841269841
     },
     {
-      "headX": -1.536231884057971,
-      "headY": -1.536231884057971,
-      "bodyX": -1.536231884057971,
-      "bodyY": -1.536231884057971,
-      "handX": -1.536231884057971,
-      "handY": -1.536231884057971
+      "headX": -1,
+      "headY": -1.8412698412698445,
+      "headScaleX": 1,
+      "headScaleY": 0.9841269841269841,
+      "bodyX": -1,
+      "bodyY": -1.8412698412698445,
+      "bodyScaleX": 1,
+      "bodyScaleY": 0.9841269841269841,
+      "handX": -1,
+      "handY": -2.8412698412698445,
+      "handScaleX": 1,
+      "handScaleY": 0.9841269841269841
     },
     {
-      "headX": -1.536231884057971,
-      "headY": -1.536231884057971,
-      "bodyX": -1.536231884057971,
-      "bodyY": -1.536231884057971,
-      "handX": 7.681159420289855,
-      "handY": -12.289855072463768
+      "headX": -1,
+      "headY": -1.8412698412698445,
+      "headScaleX": 1,
+      "headScaleY": 0.9841269841269841,
+      "bodyX": -1,
+      "bodyY": -1.8412698412698445,
+      "bodyScaleX": 1,
+      "bodyScaleY": 0.9841269841269841,
+      "handX": -1,
+      "handY": -2.8412698412698445,
+      "handScaleX": 1,
+      "handScaleY": 0.9841269841269841
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
-      "headY": 0,
+      "headY": -0.8412698412698445,
+      "headScaleX": 1,
+      "headScaleY": 0.9841269841269841,
       "bodyX": 0,
-      "bodyY": 0,
-      "handX": 9.217391304347826,
-      "handY": -10.753623188405797
+      "bodyY": -0.8412698412698445,
+      "bodyScaleX": 1,
+      "bodyScaleY": 0.9841269841269841,
+      "handX": 0,
+      "handY": -1.8412698412698445,
+      "handScaleX": 1,
+      "handScaleY": 0.9841269841269841
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
-      "headY": 0,
+      "headY": -0.8412698412698445,
+      "headScaleX": 1,
+      "headScaleY": 0.9841269841269841,
       "bodyX": 0,
-      "bodyY": 0,
-      "handX": 9.217391304347826,
-      "handY": -10.753623188405797
+      "bodyY": -0.8412698412698445,
+      "bodyScaleX": 1,
+      "bodyScaleY": 0.9841269841269841,
+      "handX": 0,
+      "handY": -0.8412698412698445,
+      "handScaleX": 1,
+      "handScaleY": 0.9841269841269841
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
-      "headY": 0,
+      "headY": -0.8412698412698445,
+      "headScaleX": 1,
+      "headScaleY": 0.9841269841269841,
       "bodyX": 0,
-      "bodyY": 0,
-      "handX": 9.217391304347826,
-      "handY": -10.753623188405797
+      "bodyY": -0.8412698412698445,
+      "bodyScaleX": 1,
+      "bodyScaleY": 0.9841269841269841,
+      "handX": 0,
+      "handY": -1.8412698412698445,
+      "handScaleX": 1,
+      "handScaleY": 0.9841269841269841
     },
     {
       "headX": 0,
       "headY": 0,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
       "bodyY": 0,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 0
+      "handY": 0,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
-      "headY": 0,
+      "headY": -0.8412698412698445,
+      "headScaleX": 1,
+      "headScaleY": 0.9841269841269841,
       "bodyX": 0,
-      "bodyY": 0,
+      "bodyY": -0.8412698412698445,
+      "bodyScaleX": 1,
+      "bodyScaleY": 0.9841269841269841,
       "handX": 0,
-      "handY": 0
+      "handY": -0.8412698412698445,
+      "handScaleX": 1,
+      "handScaleY": 0.9841269841269841
     },
     {
       "headX": 0,
-      "headY": 4.608695652173913,
+      "headY": 3,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
-      "bodyY": 4.608695652173913,
+      "bodyY": 3,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 4.608695652173913
+      "handY": 3,
+      "handScaleX": 1,
+      "handScaleY": 1
     },
     {
       "headX": 0,
-      "headY": 4.608695652173913,
+      "headY": 3,
+      "headScaleX": 1,
+      "headScaleY": 1,
       "bodyX": 0,
-      "bodyY": 4.608695652173913,
+      "bodyY": 3,
+      "bodyScaleX": 1,
+      "bodyScaleY": 1,
       "handX": 0,
-      "handY": 4.608695652173913
+      "handY": 3,
+      "handScaleX": 1,
+      "handScaleY": 1
     }
   ],
   "artifacts": [
@@ -1367,6 +2178,31 @@
       "height": 1344
     },
     {
+      "file": "shoes-sneakers.png",
+      "width": 640,
+      "height": 1344
+    },
+    {
+      "file": "shoes-boots.png",
+      "width": 640,
+      "height": 1344
+    },
+    {
+      "file": "shoes-hightops.png",
+      "width": 640,
+      "height": 1344
+    },
+    {
+      "file": "shoes-neon.png",
+      "width": 640,
+      "height": 1344
+    },
+    {
+      "file": "shoes-gold.png",
+      "width": 640,
+      "height": 1344
+    },
+    {
       "file": "headwear-cap.png",
       "width": 320,
       "height": 96
@@ -1427,6 +2263,11 @@
       "height": 96
     },
     {
+      "file": "accessory-earrings.png",
+      "width": 320,
+      "height": 96
+    },
+    {
       "file": "accessory-headphones.png",
       "width": 320,
       "height": 96
@@ -1445,36 +2286,6 @@
       "file": "accessory-microphone.png",
       "width": 320,
       "height": 96
-    },
-    {
-      "file": "accessory-earrings.png",
-      "width": 320,
-      "height": 96
-    },
-    {
-      "file": "shoes-sneakers.png",
-      "width": 640,
-      "height": 1344
-    },
-    {
-      "file": "shoes-boots.png",
-      "width": 640,
-      "height": 1344
-    },
-    {
-      "file": "shoes-hightops.png",
-      "width": 640,
-      "height": 1344
-    },
-    {
-      "file": "shoes-neon.png",
-      "width": 640,
-      "height": 1344
-    },
-    {
-      "file": "shoes-gold.png",
-      "width": 640,
-      "height": 1344
     }
   ]
 }
