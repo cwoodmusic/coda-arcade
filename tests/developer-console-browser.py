@@ -295,6 +295,24 @@ class WorldEditorTests(unittest.TestCase):
         original=self.page.evaluate('CodaArcadeQA.worldObjects().find(o=>o.name==="cabinet_song_machine").game')
         self.assertEqual((original['x'],original['y']),(1064,315))
 
+    def test_clean_background_and_foreground_do_not_redraw_painted_characters(self):
+        samples=[[300,178],[379,199],[166,247],[230,284],[385,275],[516,395],
+                 [729,285],[844,285],[964,285],[1081,285],[1308,158],[1491,305],
+                 [1206,340],[915,380],[761,399],[1083,405],[1351,474],[1223,743],[1345,739],
+                 [392,610],[221,679],[295,697],[403,713],[495,691],[570,690],[661,715],
+                 [128,747],[211,735],[296,764],[403,795],[493,760],[626,774],[230,808]]
+        mismatches=self.page.evaluate('''async(samples)=>{
+          const image=new Image();image.src='coda_arcade_world_clean.png';await image.decode();
+          const canvas=document.createElement('canvas');canvas.width=1672;canvas.height=941;
+          const reference=canvas.getContext('2d');reference.drawImage(image,0,0);
+          const game=document.querySelector('#view').getContext('2d');
+          return samples.filter(([x,y])=>{const a=game.getImageData(x,y,1,1).data,b=reference.getImageData(x,y,1,1).data;return [0,1,2].some(i=>Math.abs(a[i]-b[i])>2)});
+        }''',samples)
+        self.assertEqual(mismatches,[],'Foreground masks must not put the old people back over the clean background')
+        # Fresh cabinet cutouts must include the reconstructed front, without customer holes.
+        self.page.locator('#devCatalog').select_option('cabinet_pitch_race');self.page.locator('#devLift').click()
+        self.assertGreater(self.page.locator('#devCatalogPreview').evaluate('(canvas)=>canvas.getContext("2d").getImageData(160,68,1,1).data[3]'),0)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

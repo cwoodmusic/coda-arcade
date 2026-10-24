@@ -24,7 +24,7 @@ Cabinet play prompts, NPC approach points, animated screens, and collision footp
 
 The room art is a flattened PNG: the original pixels beneath furniture and plants are unavailable. Moving or hiding an existing object covers its old silhouette with a tiled floor clone. Adjust **Floor sample X/Y**, or use **Pick floor sample on map**, to choose a clean patch matching that part of the room. This is an editable cleanup patch, not automatic recovery of hidden artwork. A lifted rectangular region includes all pixels inside that rectangle.
 
-Cabinet cutouts leave the painted customers at their original positions. Cabinet pixels hidden behind those customers are unavailable in the source image, so those small areas of a moved cabinet remain transparent. Existing painted light rays and halos outside a disco ball’s silhouette are also part of the flattened room art; the movable live effects are separate.
+The room now uses a cleaned background and foreground atlas with all 33 painted people removed. Reconstructed cabinet fronts no longer have customer-shaped holes. The live player and NPC sprites remain separate and active. Existing painted light rays and halos outside a disco ball’s silhouette are still part of the room art; the movable live effects are separate. Previously embedded custom image copies are preserved as user artwork.
 
 ## Collision
 
@@ -57,7 +57,10 @@ From the repository root:
 ```sh
 node --test tests/collision-editor.test.cjs
 node --test tests/world-object-runtime.test.cjs
+python3 tests/clean-world-art.py
 python3 tests/developer-console-browser.py
 ```
 
 The collision tests exercise override restoration, atomic rejection of invalid imports, and coordinate-aware interpolated pointer strokes. The browser runner requires Python Playwright and Chromium, starts its own temporary local server, and exercises the editor through its UI in disposable browser contexts. Existing local projects are preserved.
+
+The art checks require Pillow and verify that pixels outside the 33 repair regions are unchanged and that foreground atlas coordinates and alpha masks remain stable. To rebuild art from a new image-generated empty-room plate, run `node scripts/build-clean-world.cjs /path/to/empty-room-plate.png`. The plate must be exactly 1672 × 941. This uses Chromium to align repaired areas to surrounding pixels, feather their seams, and update only the affected foreground texels. The original images and live character atlas are retained.
