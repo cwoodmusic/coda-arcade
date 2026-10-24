@@ -11,7 +11,7 @@ class Element{
   replaceChildren(...nodes){for(const node of this.children)node.parentElement=null;this.children=[];this.append(...nodes);}
   dispatchEvent(){}
 }
-const defaults={name:'Guest',hairstyle:'short',outfit:'pants',skin:'#d49a76',hair:'#463145',shirt:'#a7f66f',lowerColor:'#424258',headwear:'none',eyewear:'none',accessory:'none',shoes:'sneakers',emote:'wave'};
+const defaults={name:'Guest',hairstyle:'bald',outfit:'pants',skin:'#e5ad75',hair:'#171424',shirt:'#999ca6',lowerColor:'#626875',headwear:'none',eyewear:'none',accessory:'none',shoes:'sneakers',emote:'wave'};
 function setup(options={}){
   const body=new Element('div'),profiles={player:{name:'Guest',collectedTokens:7,...options.player},miles:{name:'Miles Davis',skin:'#875b40',outfit:'suit'}};
   const calls=[];let preview,closed=0;
@@ -25,7 +25,7 @@ function setup(options={}){
     getPreviewUI:()=>({addPreview:getter=>{preview=getter;}}),unlocked:options.unlocked||(()=>true)
   });
   const all=()=>{const nodes=[];function visit(node){nodes.push(node);node.children.forEach(visit);}visit(body);return nodes;};
-  return {ui,body,profiles,calls,all,label:name=>all().find(node=>node.attributes['aria-label']===name),button:name=>all().find(node=>node.tagName==='button'&&node.textContent===name),get preview(){return preview();},get closed(){return closed;}};
+  return {ui,avatarDefaults:sandbox.window.CodaAvatarDefaults,body,profiles,calls,all,label:name=>all().find(node=>node.attributes['aria-label']===name),button:name=>all().find(node=>node.tagName==='button'&&node.textContent===name),get preview(){return preview();},get closed(){return closed;}};
 }
 
 test('legacy single-slot equipment migrates only when modern slots are absent',()=>{
@@ -47,19 +47,50 @@ test('player preview combines independent hats, glasses, accessories and colors 
   assert.equal(env.calls.length,1);assert.equal(env.calls[0].id,'player');assert.equal(env.profiles.player.headwear,'cap');assert.equal(env.profiles.player.eyewear,'sunglasses');assert.equal(env.profiles.player.accessory,'headphones');assert.equal(env.profiles.player.collectedTokens,7);assert.equal(env.closed,1);
 });
 
-test('original arcade look previews only a player draft until saved and preserves identity and progress',()=>{
+test('the plain base is bald and gray without changing a saved look until Save',()=>{
+  const env=setup({player:{name:'Improviser',avatarId:'player-42',headwear:'crown',hairstyle:'buns',shirt:'#abcdef',lowerColor:'#123456',accessory:'bow'}}),before=JSON.stringify(env.profiles.player);
+  env.ui.open();env.button('Plain base avatar').onclick();
+  assert.equal(env.preview.hairstyle,'bald');assert.equal(env.preview.headwear,'none');assert.equal(env.preview.eyewear,'none');assert.equal(env.preview.accessory,'none');
+  assert.equal(env.preview.shirt,'#999ca6');assert.equal(env.preview.lowerColor,'#626875');assert.equal(env.preview.name,'Improviser');
+  assert.equal(JSON.stringify(env.profiles.player),before);assert.equal(env.calls.length,0);
+  env.button('Save my look').onclick();assert.equal(env.profiles.player.hairstyle,'bald');assert.equal(env.profiles.player.headwear,'none');
+  assert.equal(env.profiles.player.avatarId,'player-42');assert.equal(env.profiles.player.collectedTokens,7);
+  env.ui.open('miles');assert.equal(env.button('Plain base avatar'),undefined);
+});
+
+test('only recognizable system defaults migrate; explicit hats and progress remain intact',()=>{
+  const env=setup(),{plain,classic,migrate}=env.avatarDefaults;
+  const old={...classic,customized:false,name:'Keeper',walked:860,collectedTokens:7,visited:[0,2]},before=JSON.stringify(old),next=migrate(old);
+  assert.equal(JSON.stringify(old),before,'Migration must not mutate a loaded profile');
+  for(const key of ['hairstyle','shirt','lowerColor','headwear','accessory'])assert.equal(next[key],plain[key]);
+  assert.equal(next.name,'Keeper');assert.equal(next.walked,860);assert.equal(next.collectedTokens,7);assert.equal(JSON.stringify(next.visited),'[0,2]');
+  assert.equal(migrate({...classic,customized:true}).headwear,'cap','Explicitly saved cap choice wins');
+  assert.equal(migrate({...classic}).headwear,'cap','An ambiguous explicit cap is preserved');
+  assert.equal(migrate({customized:false,headwear:'cap'}).headwear,'none','A partial old system-default record also loses its implicit cap');
+  assert.equal(JSON.stringify(migrate(next)),JSON.stringify(next),'Default migration is idempotent');
+  assert.equal(migrate({...old,headwear:'beanie'}).headwear,'beanie');
+  assert.equal(migrate({...old,shirt:'#abcdef'}).shirt,'#abcdef','A different costume is not an automatic default');
+  const guest={hairstyle:'short',outfit:'pants',skin:'#d49a76',hair:'#463145',shirt:'#a7f66f',accessory:'none',walked:125};
+  assert.equal(migrate(guest).hairstyle,'bald');assert.equal(migrate(guest).walked,125);
+  assert.equal(migrate({...guest,lowerColor:'#abcdef'}).lowerColor,'#abcdef','An explicit lower-clothing color is preserved');
+  assert.equal(migrate({...guest,accessory:'cap'}).accessory,'cap','Legacy single-slot equipment remains explicit');
+  assert.equal(migrate({...guest,accessory:'cap'}).headwear,'cap','A legacy cap remains equipped across partial profile merges');
+  assert.equal(migrate({accessory:'sunglasses'}).eyewear,'sunglasses');
+});
+
+test('classic cap look is an optional player draft and preserves identity and progress',()=>{
   const env=setup({player:{name:'Improviser',avatarId:'player-42',hairstyle:'buns',hair:'#abcdef',skin:'#704633',outfit:'dress',shirt:'#d69cff',lowerColor:'#34313a',headwear:'crown',eyewear:'glasses',accessory:'bow',shoes:'boots',emote:'dance'}});
   const before=JSON.stringify(env.profiles.player);
   const expected={hairstyle:'short',hair:'#171424',skin:'#e5ad75',outfit:'pants',shirt:'#e94038',lowerColor:'#235cb9',headwear:'cap',eyewear:'none',accessory:'none',shoes:'sneakers',emote:'wave'};
-  env.ui.open();env.label('Arcade nickname').value='New nickname';env.button('Original arcade look').onclick();
+  env.ui.open();env.label('Arcade nickname').value='New nickname';env.button('Classic cap look').onclick();
   for(const [key,value] of Object.entries(expected))assert.equal(env.preview[key],value,key);
   assert.equal(env.preview.name,'New nickname');assert.equal(env.calls.length,0);assert.equal(JSON.stringify(env.profiles.player),before);
   env.button('Cancel').onclick();env.ui.open();
   assert.equal(env.preview.name,'Improviser');assert.equal(env.preview.outfit,'dress');assert.equal(env.preview.headwear,'crown');
-  env.button('Original arcade look').onclick();env.button('Save my look').onclick();
+  env.button('Classic cap look').onclick();env.button('Save my look').onclick();
   for(const [key,value] of Object.entries(expected))assert.equal(env.profiles.player[key],value,key);
   assert.equal(env.calls.length,1);assert.equal(env.profiles.player.name,'Improviser');assert.equal(env.profiles.player.avatarId,'player-42');assert.equal(env.profiles.player.collectedTokens,7);
-  env.ui.open('miles');assert.equal(env.button('Original arcade look'),undefined);assert.equal(env.preview.name,'Miles Davis');assert.equal(env.preview.outfit,'suit');
+  env.ui.open('miles');assert.equal(env.button('Classic cap look'),undefined);assert.equal(env.preview.name,'Miles Davis');assert.equal(env.preview.outfit,'suit');
 });
 
 test('locked player equipment can be previewed but cannot be saved from any slot',()=>{

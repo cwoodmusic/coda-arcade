@@ -45,12 +45,20 @@ test('normalization migrates old hats/glasses while retaining independent new sl
   const legacy=r.normalizeProfile({name:' '.repeat(2)+'A'.repeat(40),skin:'url(javascript:bad)',hair:'#ABCDEF',shirt:'#102030',hairstyle:'unknown',outfit:'dress',accessory:'cap',shoes:'gold',emote:'spin'});
   assert.equal(legacy.name,'A'.repeat(18));assert.equal(legacy.skin,'#e5ad75');assert.equal(legacy.hair,'#abcdef');assert.equal(legacy.headwear,'cap');assert.equal(legacy.accessory,'none');
   assert.equal(r.normalizeProfile({accessory:'sunglasses'}).eyewear,'sunglasses');assert.equal(r.normalizeProfile({accessory:'partyglasses'}).eyewear,'partyglasses');
-  assert.equal(r.normalizeProfile({hat:true,walked:600,accessory:'none'}).accessory,'halo');
+  assert.equal(r.normalizeProfile({hat:true,walked:600,accessory:'none'}).accessory,'none','Unlocking a reward must not put equipment on a plain avatar');
   const explicit=r.normalizeProfile({headwear:'none',eyewear:'none',accessory:'cap',hat:true,walked:600});assert.equal(explicit.headwear,'none');assert.equal(explicit.eyewear,'none');assert.equal(explicit.accessory,'none');
   const combined=r.normalizeProfile({headwear:'beanie',eyewear:'glasses',accessory:'headphones',lowerColor:'#314159'});assert.equal(combined.headwear,'beanie');assert.equal(combined.eyewear,'glasses');assert.equal(combined.accessory,'headphones');assert.equal(combined.lowerColor,'#314159');
   assert.equal(r.normalizeProfile({accessory:'earrings'}).accessory,'earrings');
   for(const items of Object.values(r.catalog))for(const item of items){assert.equal(typeof item.id,'string');assert.equal(typeof item.label,'string');assert.ok(Object.isFrozen(item));}
   assert.doesNotThrow(()=>r.normalizeProfile(null));
+});
+
+test('a fresh avatar is bald in gray clothes without equipment',async()=>{
+  const r=renderer();await r.ready;const profile=r.normalizeProfile({});
+  for(const [key,value]of Object.entries({hairstyle:'bald',headwear:'none',eyewear:'none',accessory:'none',outfit:'pants',shirt:'#999ca6',lowerColor:'#626875',shoes:'sneakers'}))assert.equal(profile[key],value,key);
+  const ctx=context();r.drawPlayer(ctx,{}, {},0);
+  const names=ctx.calls.filter(c=>c[0]==='image').map(name);
+  assert.ok(!names.some(value=>/^(hair-|headwear-|eyewear-|accessory-)/.test(value)),'The base must not paint hair, a hat, glasses or accessories');
 });
 
 test('raster assets become ready before drawing, and malformed/undersized sheets fail explicitly',async()=>{
@@ -126,4 +134,23 @@ test('exposed legs follow skin color independently of clothing colors and cached
   assert.notDeepEqual(dark,light,'Changing skin must update exposed legs even when the outfit is unchanged');
   assert.deepEqual(dark,otherClothes,'Clothing dyes must not recolor exposed skin');
   assert.equal(dark[3],255);
+});
+
+
+test('gray base garments keep their exact neutral pixels and dye upper and lower clothing independently',async()=>{
+  const manifest=fixture();manifest.layers.outfit.pants.material='gray-clothes';
+  manifest.layers.outfit.pants.dyeRegions=directions.map(()=>({clothesTop:64,waist:77}));
+  const shirtAt=(66*80+40)*4,pantsAt=(80*80+40)*4;
+  const grayCanvas=(w,h)=>{
+    const value=canvas(w,h);
+    value.getContext().getImageData=()=>{const data=new Uint8ClampedArray(w*h*4);data.set([153,156,166,255],shirtAt);data.set([98,104,117,255],pantsAt);data.set([12,12,24,255],0);return {data};};
+    return value;
+  };
+  const r=renderer({manifest,createCanvas:grayCanvas});await r.ready;
+  const draw=profile=>{const ctx=context();r.drawPlayer(ctx,profile,{},0);return ctx.calls.find(c=>c[0]==='image'&&name(c)==='outfit-pants.png')[1].pixels;};
+  const neutral=draw({}),shirt=draw({shirt:'#e04040'}),pants=draw({lowerColor:'#4ea676'});
+  assert.deepEqual(neutral.slice(shirtAt,shirtAt+4),[153,156,166,255]);assert.deepEqual(neutral.slice(pantsAt,pantsAt+4),[98,104,117,255]);
+  assert.notDeepEqual(shirt.slice(shirtAt,shirtAt+3),neutral.slice(shirtAt,shirtAt+3));assert.deepEqual(shirt.slice(pantsAt,pantsAt+4),neutral.slice(pantsAt,pantsAt+4));
+  assert.notDeepEqual(pants.slice(pantsAt,pantsAt+3),neutral.slice(pantsAt,pantsAt+3));assert.deepEqual(pants.slice(shirtAt,shirtAt+4),neutral.slice(shirtAt,shirtAt+4));
+  assert.deepEqual(shirt.slice(0,4),[12,12,24,255]);assert.deepEqual(pants.slice(0,4),[12,12,24,255]);
 });

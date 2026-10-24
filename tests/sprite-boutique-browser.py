@@ -101,9 +101,46 @@ class SpriteBoutiqueTests(unittest.TestCase):
         self.assertTrue(any(resource.path.endswith('.png') for resource in sprites),'Raster sprite layers must be loaded')
         for resource in sprites:
             if resource.path.endswith(('/manifest.json','.png')):
-                self.assertEqual(parse_qs(resource.query).get('v'),['continuous-19'],resource.geturl())
+                self.assertEqual(parse_qs(resource.query).get('v'),['plain-base-20'],resource.geturl())
 
-    def test_original_arcade_look_previews_before_save_and_persists_after_reload(self):
+    def test_new_guests_start_bald_in_gray_without_automatically_equipped_items(self):
+        profile=self.appearance()
+        for field,value in {'hairstyle':'bald','headwear':'none','eyewear':'none','accessory':'none','shirt':'#999ca6','lowerColor':'#626875','outfit':'pants','shoes':'sneakers'}.items():
+            self.assertEqual(profile[field],value,field)
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.characters().spriteState.base'),'bald-gray')
+        self.open_boutique()
+        for label,value in {'Hairstyle':'bald','Hats':'none','Glasses':'none','Accessories':'none','Outfit color':'#999ca6','Lower clothing color':'#626875'}.items():
+            self.assertEqual(self.page.get_by_label(label,exact=True).input_value(),value,label)
+
+    def test_plain_base_preset_is_draft_only_then_saves_bald_gray_without_losing_progress(self):
+        self.page.emulate_media(reduced_motion='reduce')
+        self.page.evaluate('''localStorage.setItem("musicArcadeV1",JSON.stringify({name:"Base Keeper",walked:600,collectedTokens:7,customized:true,
+          hairstyle:"buns",hair:"#ece4d6",skin:"#704633",outfit:"overalls",shirt:"#4678ab",lowerColor:"#334c72",
+          headwear:"cap",eyewear:"sunglasses",accessory:"headphones",shoes:"boots",emote:"dance"}))''')
+        self.load();before=self.appearance();raw_before=self.page.evaluate('localStorage.getItem("musicArcadeV1")')
+        self.assertEqual(before['headwear'],'cap','A deliberate saved cap must survive the default migration')
+        self.open_boutique();self.page.get_by_role('button',name='Plain base avatar',exact=True).click()
+        for label,value in {'Hairstyle':'bald','Hats':'none','Glasses':'none','Accessories':'none','Outfit':'pants','Outfit color':'#999ca6','Lower clothing color':'#626875','Shoes':'sneakers'}.items():
+            self.assertEqual(self.page.get_by_label(label,exact=True).input_value(),value,label)
+        self.assertEqual(self.appearance(),before,'The plain base remains a draft before Save')
+        self.assertEqual(self.page.evaluate('localStorage.getItem("musicArcadeV1")'),raw_before)
+        self.page.get_by_role('button',name='Save my look',exact=True).click();saved=self.appearance()
+        for field,value in {'name':'Base Keeper','hairstyle':'bald','headwear':'none','eyewear':'none','accessory':'none','shirt':'#999ca6','lowerColor':'#626875','outfit':'pants','shoes':'sneakers'}.items():
+            self.assertEqual(saved[field],value,field)
+        self.assertEqual(self.page.evaluate('JSON.parse(localStorage.musicArcadeV1).collectedTokens'),7)
+        self.assertEqual(self.page.evaluate('JSON.parse(localStorage.musicArcadeV1).walked'),600)
+        self.load();self.assertEqual(self.appearance(),saved)
+
+    def test_old_automatic_cap_migrates_but_explicit_saved_hats_still_load(self):
+        old={'name':'Legacy Guest','skin':'#e5ad75','hair':'#171424','shirt':'#e94038','lowerColor':'#235cb9','hairstyle':'short','outfit':'pants','headwear':'cap','eyewear':'none','accessory':'none','shoes':'sneakers','emote':'wave','customized':False,'walked':710,'collectedTokens':9}
+        self.page.evaluate('(profile)=>localStorage.setItem("musicArcadeV1",JSON.stringify(profile))',old);self.load()
+        automatic=self.appearance();self.assertEqual(automatic['hairstyle'],'bald');self.assertEqual(automatic['headwear'],'none');self.assertEqual(automatic['shirt'],'#999ca6');self.assertEqual(automatic['name'],'Legacy Guest')
+        old['customized']=True
+        self.page.evaluate('(profile)=>localStorage.setItem("musicArcadeV1",JSON.stringify(profile))',old);self.load()
+        explicit=self.appearance();self.assertEqual(explicit['headwear'],'cap');self.assertEqual(explicit['hairstyle'],'short');self.assertEqual(explicit['shirt'],'#e94038')
+        self.assertEqual(self.page.evaluate('JSON.parse(localStorage.musicArcadeV1).collectedTokens'),9)
+
+    def test_optional_classic_cap_look_previews_before_save_and_persists_after_reload(self):
         self.page.emulate_media(reduced_motion='reduce')
         self.page.evaluate('''localStorage.setItem("musicArcadeV1",JSON.stringify({name:"Preset Keeper",walked:600,collectedTokens:7,
           hairstyle:"buns",hair:"#ece4d6",skin:"#704633",outfit:"overalls",shirt:"#4678ab",lowerColor:"#334c72",
@@ -115,7 +152,7 @@ class SpriteBoutiqueTests(unittest.TestCase):
         self.page.wait_for_function('''()=>{const canvas=document.querySelector('.avatar-preview-views canvas');
           return canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data.some((value,index)=>index%4===3&&value>0)}''')
         before_pixels=preview.evaluate('(canvas)=>canvas.toDataURL()')
-        self.page.get_by_role('button',name='Original arcade look',exact=True).click()
+        self.page.get_by_role('button',name='Classic cap look',exact=True).click()
         self.page.wait_for_function('''before=>document.querySelector('.avatar-preview-views canvas').toDataURL()!==before''',arg=before_pixels)
         for label,value in {'Hairstyle':'short','Hair color':'#171424','Skin color':'#e5ad75','Outfit':'pants','Outfit color':'#e94038',
                             'Lower clothing color':'#235cb9','Hats':'cap','Glasses':'none','Accessories':'none','Shoes':'sneakers','Emote':'wave'}.items():

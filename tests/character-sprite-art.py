@@ -95,6 +95,34 @@ class CharacterSpriteArtTests(unittest.TestCase):
                 self.assertTrue(anchor_y-3<=box[3]<=anchor_y+1,f'{variant} floats or drops below the character in frame {index}: {box}')
                 self.assertLessEqual(abs((box[0]+box[2])/2-anchor_x),10,'Shoes must stay centered on the same character rig')
 
+    def test_base_is_a_real_bald_gray_redraw_with_complete_scalps(self):
+        base=self.manifest['baseAvatar']
+        self.assertEqual(self.manifest['sourcePolicy'],'redrawn-base-and-original-cosmetics')
+        self.assertEqual(base['neutralColors'],{'shirt':'#999ca6','lowerColor':'#626875'})
+        self.assertEqual(base['url'],'source/base-avatar-gray.png')
+        with Image.open(ART/base['url']) as source:
+            self.assertEqual(source.mode,'RGBA');self.assertGreaterEqual(source.width,source.height*2)
+            self.assertEqual(source.getchannel('A').getextrema()[0],0)
+        with Image.open(ART/self.manifest['layers']['body']['url']) as source:
+            body=source.convert('RGBA')
+        for direction,frame in enumerate(base['frames']):
+            with self.subTest(direction=self.manifest['directions'][direction]):
+                neutral=self.frame(body,direction*self.manifest['framesPerDirection'])
+                pixels=neutral.load();scalp=[pixels[x,y] for y in range(40,48) for x in range(33,47) if pixels[x,y][3]>128]
+                self.assertGreater(len(scalp),80,'Bald must show a drawn scalp, not empty cap pixels')
+                warm=[p for p in scalp if p[0]>=p[1]*.98 and p[1]>p[2]*1.02 and p[0]>90]
+                self.assertGreater(len(warm)/len(scalp),.9,'The bare scalp must be skin rather than hair or cap colors')
+                shirt=[pixels[x,y] for y in range(frame['clothesTop']+3,frame['waist']) for x in range(35,45) if pixels[x,y][3]>128]
+                pants=[pixels[x,y] for y in range(frame['waist']+1,frame['shoeTop']) for x in range(33,38) if pixels[x,y][3]>128]
+                for name,samples in [('shirt',shirt),('pants',pants)]:
+                    self.assertGreater(len(samples),5,name)
+                    gray=[p for p in samples if max(p[:3])-min(p[:3])<50]
+                    self.assertGreater(len(gray)/len(samples),.8,f'The stripped-down {name} must be neutral gray')
+                self.assertEqual(frame['placement'][1]+frame['height'],88)
+        pants=self.manifest['layers']['outfit']['pants']
+        self.assertEqual(pants['material'],'gray-clothes')
+        self.assertEqual(len(pants['dyeRegions']),4)
+
     def test_original_generated_layer_sources_remain_available_and_transparent(self):
         expected={'body-poses.png','hair.png','outfits.png','headwear.png','accessories.png','shoes-props.png'}
         self.assertTrue(expected.issubset({file.name for file in (ART/'source').glob('*.png')}))

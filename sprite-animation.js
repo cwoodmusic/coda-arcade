@@ -67,7 +67,8 @@
     const pose={active:false,clip:sampled.clip,rootY:0,bodyAngle:0,arms:[part(),part()],legs:[part(),part()]};
     if(reducedMotion)return pose;
     const direction=sampled.direction,side=direction==='left'||direction==='right';
-    const definition=rigDefinition(direction==='right'?'left':direction);
+    const suppliedRig=motion.rig&&Array.isArray(motion.rig.arms)&&motion.rig.arms.length===2?motion.rig:null;
+    const definition=suppliedRig||rigDefinition(direction==='right'?'left':direction);
     const emote=typeof motion.emote==='string'?motion.emote:'';
     const t=Math.max(0,finite(motion.emoteTime,finite(time)));
     // Ease gestures into the neutral source pose instead of replacing the
@@ -120,7 +121,7 @@
         pose.legs[index].y=-.5*ease;
       }
     }
-    if(direction==='right'&&pose.active){
+    if(direction==='right'&&pose.active&&!suppliedRig){
       pose.bodyAngle=-pose.bodyAngle;
       for(const limb of [...pose.arms,...pose.legs]){limb.angle=-limb.angle;limb.x=-limb.x;}
     }

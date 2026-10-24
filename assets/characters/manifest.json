@@ -53,138 +53,15 @@
       "fps": 2
     }
   },
-  "artStyle": "original-atlas",
-  "sourcePolicy": "original-atlas-only",
+  "artStyle": "arcade-pixel-redraw",
+  "sourcePolicy": "redrawn-base-and-original-cosmetics",
   "targetHeight": 53,
-  "originalHero": {
-    "url": "../../coda_arcade_phase73_characters.png",
-    "frames": {
-      "hero_down_0": {
-        "x": 16,
-        "y": 5,
-        "w": 47,
-        "h": 69
-      },
-      "hero_down_1": {
-        "x": 97,
-        "y": 5,
-        "w": 45,
-        "h": 69
-      },
-      "hero_down_2": {
-        "x": 178,
-        "y": 5,
-        "w": 44,
-        "h": 69
-      },
-      "hero_down_3": {
-        "x": 259,
-        "y": 5,
-        "w": 42,
-        "h": 69
-      },
-      "hero_down_4": {
-        "x": 338,
-        "y": 5,
-        "w": 44,
-        "h": 69
-      },
-      "hero_left_0": {
-        "x": 816,
-        "y": 5,
-        "w": 47,
-        "h": 69
-      },
-      "hero_left_1": {
-        "x": 896,
-        "y": 5,
-        "w": 47,
-        "h": 69
-      },
-      "hero_left_2": {
-        "x": 16,
-        "y": 85,
-        "w": 47,
-        "h": 69
-      },
-      "hero_left_3": {
-        "x": 96,
-        "y": 85,
-        "w": 47,
-        "h": 69
-      },
-      "hero_left_4": {
-        "x": 176,
-        "y": 85,
-        "w": 47,
-        "h": 69
-      },
-      "hero_up_0": {
-        "x": 416,
-        "y": 6,
-        "w": 47,
-        "h": 67
-      },
-      "hero_up_1": {
-        "x": 497,
-        "y": 6,
-        "w": 45,
-        "h": 67
-      },
-      "hero_up_2": {
-        "x": 578,
-        "y": 6,
-        "w": 44,
-        "h": 67
-      },
-      "hero_up_3": {
-        "x": 658,
-        "y": 6,
-        "w": 43,
-        "h": 67
-      },
-      "hero_up_4": {
-        "x": 739,
-        "y": 6,
-        "w": 42,
-        "h": 67
-      },
-      "hero_right_0": {
-        "x": 256,
-        "y": 85,
-        "w": 47,
-        "h": 69
-      },
-      "hero_right_1": {
-        "x": 336,
-        "y": 85,
-        "w": 47,
-        "h": 69
-      },
-      "hero_right_2": {
-        "x": 416,
-        "y": 85,
-        "w": 47,
-        "h": 69
-      },
-      "hero_right_3": {
-        "x": 496,
-        "y": 85,
-        "w": 47,
-        "h": 69
-      },
-      "hero_right_4": {
-        "x": 576,
-        "y": 85,
-        "w": 47,
-        "h": 69
-      }
-    }
-  },
   "styleReference": "coda_arcade_phase73_characters.png",
-  "sharedHead": {
-    "source": "coda_arcade_phase73_characters.png",
-    "method": "original atlas pixels fitted to the shared hero head",
+  "baseAvatar": {
+    "url": "source/base-avatar-gray.png",
+    "source": "assets/characters/source/base-avatar-gray.png",
+    "method": "redrawn bald neutral with garments cloned from the same artwork",
+    "space": "fitted-cell",
     "cell": [
       80,
       96
@@ -199,87 +76,1182 @@
       "up",
       "right"
     ],
+    "sourceCrops": [
+      {
+        "x": 76,
+        "y": 49,
+        "w": 386,
+        "h": 633
+      },
+      {
+        "x": 634,
+        "y": 48,
+        "w": 354,
+        "h": 634
+      },
+      {
+        "x": 1157,
+        "y": 48,
+        "w": 390,
+        "h": 634
+      },
+      {
+        "x": 1732,
+        "y": 48,
+        "w": 351,
+        "h": 634
+      }
+    ],
     "headWindows": [
       {
-        "x": 17,
-        "y": 19,
-        "w": 47,
-        "h": 42
+        "x": 24,
+        "y": 35,
+        "w": 32,
+        "h": 28
       },
       {
-        "x": 17,
-        "y": 19,
-        "w": 47,
-        "h": 36
+        "x": 25,
+        "y": 35,
+        "w": 30,
+        "h": 28
       },
       {
-        "x": 17,
-        "y": 21,
-        "w": 47,
-        "h": 41
+        "x": 24,
+        "y": 35,
+        "w": 33,
+        "h": 27
       },
       {
-        "x": 16,
-        "y": 19,
-        "w": 47,
-        "h": 36
+        "x": 26,
+        "y": 35,
+        "w": 29,
+        "h": 28
       }
     ],
     "faceWindows": [
       {
-        "x": 26,
-        "y": 45,
-        "right": 54,
+        "x": 29,
+        "y": 48,
+        "right": 51,
         "bottom": 62
       },
       {
-        "x": 21,
-        "y": 38,
-        "right": 52,
-        "bottom": 56
+        "x": 27,
+        "y": 48,
+        "right": 46,
+        "bottom": 62
       },
       null,
       {
-        "x": 27,
-        "y": 38,
-        "right": 58,
-        "bottom": 56
+        "x": 35,
+        "y": 48,
+        "right": 54,
+        "bottom": 62
       }
     ],
-    "hairPalette": [
-      [
-        20,
-        10,
-        62
-      ],
-      [
-        59,
-        42,
-        99
-      ],
-      [
-        61,
-        35,
-        134
-      ],
-      [
-        120,
-        102,
-        171
-      ],
-      [
-        98,
-        146,
-        209
-      ],
-      [
-        0,
-        195,
-        245
-      ]
-    ]
+    "neck": [
+      63,
+      63,
+      62,
+      63
+    ],
+    "eyeY": [
+      53,
+      53,
+      52,
+      53
+    ],
+    "frames": [
+      {
+        "direction": "down",
+        "source": {
+          "x": 76,
+          "y": 49,
+          "w": 386,
+          "h": 633
+        },
+        "placement": [
+          24,
+          35
+        ],
+        "width": 32,
+        "height": 53,
+        "clothesTop": 63,
+        "waist": 75,
+        "shoeTop": 83,
+        "bottom": 87,
+        "groundStart": null,
+        "material": "gray-clothes",
+        "dyeRegions": {
+          "clothesTop": 63,
+          "waist": 75
+        }
+      },
+      {
+        "direction": "left",
+        "source": {
+          "x": 634,
+          "y": 48,
+          "w": 354,
+          "h": 634
+        },
+        "placement": [
+          25,
+          35
+        ],
+        "width": 30,
+        "height": 53,
+        "clothesTop": 63,
+        "waist": 75,
+        "shoeTop": 83,
+        "bottom": 87,
+        "groundStart": null,
+        "material": "gray-clothes",
+        "dyeRegions": {
+          "clothesTop": 63,
+          "waist": 75
+        }
+      },
+      {
+        "direction": "up",
+        "source": {
+          "x": 1157,
+          "y": 48,
+          "w": 390,
+          "h": 634
+        },
+        "placement": [
+          24,
+          35
+        ],
+        "width": 33,
+        "height": 53,
+        "clothesTop": 62,
+        "waist": 75,
+        "shoeTop": 83,
+        "bottom": 87,
+        "groundStart": null,
+        "material": "gray-clothes",
+        "dyeRegions": {
+          "clothesTop": 62,
+          "waist": 75
+        }
+      },
+      {
+        "direction": "right",
+        "source": {
+          "x": 1732,
+          "y": 48,
+          "w": 351,
+          "h": 634
+        },
+        "placement": [
+          26,
+          35
+        ],
+        "width": 29,
+        "height": 53,
+        "clothesTop": 63,
+        "waist": 75,
+        "shoeTop": 83,
+        "bottom": 87,
+        "groundStart": null,
+        "material": "gray-clothes",
+        "dyeRegions": {
+          "clothesTop": 63,
+          "waist": 75
+        }
+      }
+    ],
+    "rig": [
+      {
+        "direction": "down",
+        "neck": 63,
+        "hipY": 76,
+        "split": 40,
+        "arms": [
+          {
+            "pivot": [
+              29,
+              65
+            ],
+            "polygon": [
+              [
+                26,
+                63
+              ],
+              [
+                32,
+                64
+              ],
+              [
+                33,
+                69
+              ],
+              [
+                31,
+                77
+              ],
+              [
+                23,
+                78
+              ],
+              [
+                22,
+                71
+              ],
+              [
+                24,
+                67
+              ]
+            ]
+          },
+          {
+            "pivot": [
+              50,
+              65
+            ],
+            "polygon": [
+              [
+                47,
+                63
+              ],
+              [
+                53,
+                63
+              ],
+              [
+                58,
+                68
+              ],
+              [
+                58,
+                78
+              ],
+              [
+                48,
+                78
+              ],
+              [
+                46,
+                70
+              ]
+            ]
+          }
+        ],
+        "legs": [
+          {
+            "pivot": [
+              35,
+              76
+            ]
+          },
+          {
+            "pivot": [
+              45,
+              76
+            ]
+          }
+        ],
+        "nearArm": 1,
+        "nearLeg": 1,
+        "handArm": 1,
+        "mirrored": false
+      },
+      {
+        "direction": "left",
+        "neck": 63,
+        "hipY": 76,
+        "split": 40,
+        "arms": [
+          {
+            "pivot": [
+              30,
+              65
+            ],
+            "polygon": [
+              [
+                27,
+                63
+              ],
+              [
+                33,
+                64
+              ],
+              [
+                34,
+                69
+              ],
+              [
+                32,
+                77
+              ],
+              [
+                24,
+                78
+              ],
+              [
+                23,
+                71
+              ],
+              [
+                25,
+                67
+              ]
+            ]
+          },
+          {
+            "pivot": [
+              48,
+              65
+            ],
+            "polygon": [
+              [
+                45,
+                63
+              ],
+              [
+                51,
+                63
+              ],
+              [
+                57,
+                68
+              ],
+              [
+                57,
+                78
+              ],
+              [
+                46,
+                78
+              ],
+              [
+                44,
+                70
+              ]
+            ]
+          }
+        ],
+        "legs": [
+          {
+            "pivot": [
+              35,
+              76
+            ]
+          },
+          {
+            "pivot": [
+              45,
+              76
+            ]
+          }
+        ],
+        "nearArm": 1,
+        "nearLeg": 1,
+        "handArm": 0,
+        "mirrored": false
+      },
+      {
+        "direction": "up",
+        "neck": 62,
+        "hipY": 76,
+        "split": 40,
+        "arms": [
+          {
+            "pivot": [
+              29,
+              64
+            ],
+            "polygon": [
+              [
+                26,
+                62
+              ],
+              [
+                32,
+                63
+              ],
+              [
+                33,
+                68
+              ],
+              [
+                31,
+                77
+              ],
+              [
+                23,
+                78
+              ],
+              [
+                22,
+                70
+              ],
+              [
+                24,
+                66
+              ]
+            ]
+          },
+          {
+            "pivot": [
+              50,
+              64
+            ],
+            "polygon": [
+              [
+                47,
+                62
+              ],
+              [
+                53,
+                62
+              ],
+              [
+                59,
+                67
+              ],
+              [
+                59,
+                78
+              ],
+              [
+                48,
+                78
+              ],
+              [
+                46,
+                69
+              ]
+            ]
+          }
+        ],
+        "legs": [
+          {
+            "pivot": [
+              35,
+              76
+            ]
+          },
+          {
+            "pivot": [
+              45,
+              76
+            ]
+          }
+        ],
+        "nearArm": 0,
+        "nearLeg": 0,
+        "handArm": 0,
+        "mirrored": false
+      },
+      {
+        "direction": "right",
+        "neck": 63,
+        "hipY": 76,
+        "split": 40,
+        "arms": [
+          {
+            "pivot": [
+              30,
+              65
+            ],
+            "polygon": [
+              [
+                27,
+                63
+              ],
+              [
+                33,
+                64
+              ],
+              [
+                34,
+                69
+              ],
+              [
+                32,
+                77
+              ],
+              [
+                25,
+                78
+              ],
+              [
+                24,
+                71
+              ],
+              [
+                26,
+                67
+              ]
+            ]
+          },
+          {
+            "pivot": [
+              48,
+              65
+            ],
+            "polygon": [
+              [
+                45,
+                63
+              ],
+              [
+                51,
+                63
+              ],
+              [
+                57,
+                68
+              ],
+              [
+                57,
+                78
+              ],
+              [
+                46,
+                78
+              ],
+              [
+                44,
+                70
+              ]
+            ]
+          }
+        ],
+        "legs": [
+          {
+            "pivot": [
+              35,
+              76
+            ]
+          },
+          {
+            "pivot": [
+              45,
+              76
+            ]
+          }
+        ],
+        "nearArm": 1,
+        "nearLeg": 1,
+        "handArm": 1,
+        "mirrored": false
+      }
+    ],
+    "neutralColors": {
+      "shirt": "#999ca6",
+      "lowerColor": "#626875"
+    },
+    "materials": {
+      "pants": "gray-clothes",
+      "shorts": "clothes",
+      "dress": "clothes",
+      "overalls": "clothes",
+      "suit": "clothes",
+      "coat": "clothes"
+    }
+  },
+  "sharedHead": {
+    "source": "assets/characters/source/base-avatar-gray.png",
+    "method": "redrawn bald neutral with garments cloned from the same artwork",
+    "space": "fitted-cell",
+    "cell": [
+      80,
+      96
+    ],
+    "anchor": [
+      40,
+      88
+    ],
+    "directions": [
+      "down",
+      "left",
+      "up",
+      "right"
+    ],
+    "sourceCrops": [
+      {
+        "x": 76,
+        "y": 49,
+        "w": 386,
+        "h": 633
+      },
+      {
+        "x": 634,
+        "y": 48,
+        "w": 354,
+        "h": 634
+      },
+      {
+        "x": 1157,
+        "y": 48,
+        "w": 390,
+        "h": 634
+      },
+      {
+        "x": 1732,
+        "y": 48,
+        "w": 351,
+        "h": 634
+      }
+    ],
+    "headWindows": [
+      {
+        "x": 24,
+        "y": 35,
+        "w": 32,
+        "h": 28
+      },
+      {
+        "x": 25,
+        "y": 35,
+        "w": 30,
+        "h": 28
+      },
+      {
+        "x": 24,
+        "y": 35,
+        "w": 33,
+        "h": 27
+      },
+      {
+        "x": 26,
+        "y": 35,
+        "w": 29,
+        "h": 28
+      }
+    ],
+    "faceWindows": [
+      {
+        "x": 29,
+        "y": 48,
+        "right": 51,
+        "bottom": 62
+      },
+      {
+        "x": 27,
+        "y": 48,
+        "right": 46,
+        "bottom": 62
+      },
+      null,
+      {
+        "x": 35,
+        "y": 48,
+        "right": 54,
+        "bottom": 62
+      }
+    ],
+    "neck": [
+      63,
+      63,
+      62,
+      63
+    ],
+    "eyeY": [
+      53,
+      53,
+      52,
+      53
+    ],
+    "frames": [
+      {
+        "direction": "down",
+        "source": {
+          "x": 76,
+          "y": 49,
+          "w": 386,
+          "h": 633
+        },
+        "placement": [
+          24,
+          35
+        ],
+        "width": 32,
+        "height": 53,
+        "clothesTop": 63,
+        "waist": 75,
+        "shoeTop": 83,
+        "bottom": 87,
+        "groundStart": null,
+        "material": "gray-clothes",
+        "dyeRegions": {
+          "clothesTop": 63,
+          "waist": 75
+        }
+      },
+      {
+        "direction": "left",
+        "source": {
+          "x": 634,
+          "y": 48,
+          "w": 354,
+          "h": 634
+        },
+        "placement": [
+          25,
+          35
+        ],
+        "width": 30,
+        "height": 53,
+        "clothesTop": 63,
+        "waist": 75,
+        "shoeTop": 83,
+        "bottom": 87,
+        "groundStart": null,
+        "material": "gray-clothes",
+        "dyeRegions": {
+          "clothesTop": 63,
+          "waist": 75
+        }
+      },
+      {
+        "direction": "up",
+        "source": {
+          "x": 1157,
+          "y": 48,
+          "w": 390,
+          "h": 634
+        },
+        "placement": [
+          24,
+          35
+        ],
+        "width": 33,
+        "height": 53,
+        "clothesTop": 62,
+        "waist": 75,
+        "shoeTop": 83,
+        "bottom": 87,
+        "groundStart": null,
+        "material": "gray-clothes",
+        "dyeRegions": {
+          "clothesTop": 62,
+          "waist": 75
+        }
+      },
+      {
+        "direction": "right",
+        "source": {
+          "x": 1732,
+          "y": 48,
+          "w": 351,
+          "h": 634
+        },
+        "placement": [
+          26,
+          35
+        ],
+        "width": 29,
+        "height": 53,
+        "clothesTop": 63,
+        "waist": 75,
+        "shoeTop": 83,
+        "bottom": 87,
+        "groundStart": null,
+        "material": "gray-clothes",
+        "dyeRegions": {
+          "clothesTop": 63,
+          "waist": 75
+        }
+      }
+    ],
+    "rig": [
+      {
+        "direction": "down",
+        "neck": 63,
+        "hipY": 76,
+        "split": 40,
+        "arms": [
+          {
+            "pivot": [
+              29,
+              65
+            ],
+            "polygon": [
+              [
+                26,
+                63
+              ],
+              [
+                32,
+                64
+              ],
+              [
+                33,
+                69
+              ],
+              [
+                31,
+                77
+              ],
+              [
+                23,
+                78
+              ],
+              [
+                22,
+                71
+              ],
+              [
+                24,
+                67
+              ]
+            ]
+          },
+          {
+            "pivot": [
+              50,
+              65
+            ],
+            "polygon": [
+              [
+                47,
+                63
+              ],
+              [
+                53,
+                63
+              ],
+              [
+                58,
+                68
+              ],
+              [
+                58,
+                78
+              ],
+              [
+                48,
+                78
+              ],
+              [
+                46,
+                70
+              ]
+            ]
+          }
+        ],
+        "legs": [
+          {
+            "pivot": [
+              35,
+              76
+            ]
+          },
+          {
+            "pivot": [
+              45,
+              76
+            ]
+          }
+        ],
+        "nearArm": 1,
+        "nearLeg": 1,
+        "handArm": 1,
+        "mirrored": false
+      },
+      {
+        "direction": "left",
+        "neck": 63,
+        "hipY": 76,
+        "split": 40,
+        "arms": [
+          {
+            "pivot": [
+              30,
+              65
+            ],
+            "polygon": [
+              [
+                27,
+                63
+              ],
+              [
+                33,
+                64
+              ],
+              [
+                34,
+                69
+              ],
+              [
+                32,
+                77
+              ],
+              [
+                24,
+                78
+              ],
+              [
+                23,
+                71
+              ],
+              [
+                25,
+                67
+              ]
+            ]
+          },
+          {
+            "pivot": [
+              48,
+              65
+            ],
+            "polygon": [
+              [
+                45,
+                63
+              ],
+              [
+                51,
+                63
+              ],
+              [
+                57,
+                68
+              ],
+              [
+                57,
+                78
+              ],
+              [
+                46,
+                78
+              ],
+              [
+                44,
+                70
+              ]
+            ]
+          }
+        ],
+        "legs": [
+          {
+            "pivot": [
+              35,
+              76
+            ]
+          },
+          {
+            "pivot": [
+              45,
+              76
+            ]
+          }
+        ],
+        "nearArm": 1,
+        "nearLeg": 1,
+        "handArm": 0,
+        "mirrored": false
+      },
+      {
+        "direction": "up",
+        "neck": 62,
+        "hipY": 76,
+        "split": 40,
+        "arms": [
+          {
+            "pivot": [
+              29,
+              64
+            ],
+            "polygon": [
+              [
+                26,
+                62
+              ],
+              [
+                32,
+                63
+              ],
+              [
+                33,
+                68
+              ],
+              [
+                31,
+                77
+              ],
+              [
+                23,
+                78
+              ],
+              [
+                22,
+                70
+              ],
+              [
+                24,
+                66
+              ]
+            ]
+          },
+          {
+            "pivot": [
+              50,
+              64
+            ],
+            "polygon": [
+              [
+                47,
+                62
+              ],
+              [
+                53,
+                62
+              ],
+              [
+                59,
+                67
+              ],
+              [
+                59,
+                78
+              ],
+              [
+                48,
+                78
+              ],
+              [
+                46,
+                69
+              ]
+            ]
+          }
+        ],
+        "legs": [
+          {
+            "pivot": [
+              35,
+              76
+            ]
+          },
+          {
+            "pivot": [
+              45,
+              76
+            ]
+          }
+        ],
+        "nearArm": 0,
+        "nearLeg": 0,
+        "handArm": 0,
+        "mirrored": false
+      },
+      {
+        "direction": "right",
+        "neck": 63,
+        "hipY": 76,
+        "split": 40,
+        "arms": [
+          {
+            "pivot": [
+              30,
+              65
+            ],
+            "polygon": [
+              [
+                27,
+                63
+              ],
+              [
+                33,
+                64
+              ],
+              [
+                34,
+                69
+              ],
+              [
+                32,
+                77
+              ],
+              [
+                25,
+                78
+              ],
+              [
+                24,
+                71
+              ],
+              [
+                26,
+                67
+              ]
+            ]
+          },
+          {
+            "pivot": [
+              48,
+              65
+            ],
+            "polygon": [
+              [
+                45,
+                63
+              ],
+              [
+                51,
+                63
+              ],
+              [
+                57,
+                68
+              ],
+              [
+                57,
+                78
+              ],
+              [
+                46,
+                78
+              ],
+              [
+                44,
+                70
+              ]
+            ]
+          }
+        ],
+        "legs": [
+          {
+            "pivot": [
+              35,
+              76
+            ]
+          },
+          {
+            "pivot": [
+              45,
+              76
+            ]
+          }
+        ],
+        "nearArm": 1,
+        "nearLeg": 1,
+        "handArm": 1,
+        "mirrored": false
+      }
+    ],
+    "neutralColors": {
+      "shirt": "#999ca6",
+      "lowerColor": "#626875"
+    },
+    "materials": {
+      "pants": "gray-clothes",
+      "shorts": "clothes",
+      "dress": "clothes",
+      "overalls": "clothes",
+      "suit": "clothes",
+      "coat": "clothes"
+    }
   },
   "sourceArtwork": [
+    "assets/characters/source/base-avatar-gray.png",
     "coda_arcade_phase73_characters.png"
   ],
   "layers": {
@@ -287,7 +1259,7 @@
       "url": "body.png",
       "layout": "animated",
       "material": "skin",
-      "source": "original-atlas"
+      "source": "redrawn-base"
     },
     "hair": {
       "short": {
@@ -343,38 +1315,56 @@
       "pants": {
         "url": "outfit-pants.png",
         "layout": "animated",
-        "material": "original-clothes",
-        "source": "original-atlas"
+        "material": "gray-clothes",
+        "dyeRegions": [
+          {
+            "clothesTop": 63,
+            "waist": 75
+          },
+          {
+            "clothesTop": 63,
+            "waist": 75
+          },
+          {
+            "clothesTop": 62,
+            "waist": 75
+          },
+          {
+            "clothesTop": 63,
+            "waist": 75
+          }
+        ],
+        "source": "redrawn-base"
       },
       "shorts": {
         "url": "outfit-shorts.png",
         "layout": "animated",
         "material": "clothes",
-        "source": "original-atlas"
+        "source": "redrawn-base"
       },
       "dress": {
         "url": "outfit-dress.png",
         "layout": "animated",
         "material": "clothes",
-        "source": "original-atlas"
+        "source": "redrawn-base"
       },
       "overalls": {
         "url": "outfit-overalls.png",
         "layout": "animated",
         "material": "clothes",
-        "source": "original-atlas"
+        "source": "redrawn-base"
       },
       "suit": {
         "url": "outfit-suit.png",
         "layout": "animated",
         "material": "clothes",
-        "source": "original-atlas"
+        "source": "redrawn-base"
       },
       "coat": {
         "url": "outfit-coat.png",
         "layout": "animated",
         "material": "clothes",
-        "source": "original-atlas"
+        "source": "redrawn-base"
       }
     },
     "headwear": {
@@ -490,31 +1480,31 @@
         "url": "shoes-sneakers.png",
         "layout": "animated",
         "material": "none",
-        "source": "original-atlas"
+        "source": "redrawn-base"
       },
       "boots": {
         "url": "shoes-boots.png",
         "layout": "animated",
         "material": "none",
-        "source": "original-atlas"
+        "source": "redrawn-base"
       },
       "hightops": {
         "url": "shoes-hightops.png",
         "layout": "animated",
         "material": "none",
-        "source": "original-atlas"
+        "source": "redrawn-base"
       },
       "neon": {
         "url": "shoes-neon.png",
         "layout": "animated",
         "material": "none",
-        "source": "original-atlas"
+        "source": "redrawn-base"
       },
       "gold": {
         "url": "shoes-gold.png",
         "layout": "animated",
         "material": "none",
-        "source": "original-atlas"
+        "source": "redrawn-base"
       }
     },
     "original": {
@@ -522,7 +1512,7 @@
         "url": "original-hero.png",
         "layout": "animated",
         "material": "none",
-        "source": "original-atlas"
+        "source": "redrawn-base"
       }
     }
   },
@@ -2290,9 +3280,9 @@
   ],
   "motionRig": {
     "version": 1,
-    "method": "articulated-original-pixels",
-    "right": "mirrored left",
-    "template": "idle frame zero",
+    "method": "articulated-redrawn-pixels",
+    "right": "drawn right view",
+    "template": "bald gray neutral",
     "clock": "continuous distance phase"
   }
 }

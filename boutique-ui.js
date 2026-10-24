@@ -1,4 +1,26 @@
-/* Draft-only layered wardrobe controls shared by players and editable NPC looks. */
+/* Shared player defaults and draft-only wardrobe controls. */
+window.CodaAvatarDefaults=(()=>{
+  const plain=Object.freeze({hairstyle:'bald',hair:'#171424',skin:'#e5ad75',outfit:'pants',shirt:'#999ca6',lowerColor:'#626875',headwear:'none',eyewear:'none',accessory:'none',shoes:'sneakers',emote:'wave'});
+  const classic=Object.freeze({...plain,hairstyle:'short',shirt:'#e94038',lowerColor:'#235cb9',headwear:'cap'});
+  const matches=(profile,look)=>Object.entries(look).every(([key,value])=>profile[key]===undefined||(typeof value==='string'&&value.startsWith('#')?typeof profile[key]==='string'&&profile[key].toLowerCase()===value:profile[key]===value));
+  function migrate(raw){
+    const profile=raw&&typeof raw==='object'&&!Array.isArray(raw)?{...raw}:{};
+    // An explicit customized look is never a default, even when it happens to
+    // match the old preset. Old single-slot caps are deliberate equipment too.
+    const oldSystemCap=profile.customized===false&&profile.headwear==='cap'&&matches(profile,classic);
+    const oldGuest=profile.customized!==true&&profile.headwear===undefined&&
+      profile.hairstyle==='short'&&profile.outfit==='pants'&&
+      profile.skin==='#d49a76'&&profile.hair==='#463145'&&profile.shirt==='#a7f66f'&&
+      matches(profile,{lowerColor:'#424258',accessory:'none',eyewear:'none',shoes:'sneakers',emote:'wave'});
+    if(oldSystemCap||oldGuest)return {...profile,...plain,hat:false};
+    // Preserve explicit legacy equipment when a partial cloud profile is
+    // merged into a local profile that already has modern empty slots.
+    if(profile.headwear===undefined&&profile.accessory==='cap')profile.headwear='cap';
+    if(profile.eyewear===undefined&&['glasses','sunglasses','partyglasses'].includes(profile.accessory))profile.eyewear=profile.accessory;
+    return profile;
+  }
+  return Object.freeze({plain,classic,migrate});
+})();
 window.createCodaBoutiqueUI=function(api){
   'use strict';
   const DEFAULT_CATALOG={
@@ -10,7 +32,6 @@ window.createCodaBoutiqueUI=function(api){
     shoes:[['sneakers','Sneakers'],['boots','Boots'],['hightops','High tops'],['neon','Neon trainers'],['gold','Gold shoes']],
     emotes:[['wave','Wave'],['dance','Dance'],['spin','Spin'],['robot','Robot'],['disco','Disco point']]
   };
-  const ORIGINAL_LOOK={hairstyle:'short',hair:'#171424',skin:'#e5ad75',outfit:'pants',shirt:'#e94038',lowerColor:'#235cb9',headwear:'cap',eyewear:'none',accessory:'none',shoes:'sneakers',emote:'wave'};
   let targetId='player',current=null;
   const body=api.panelBody;
   const has=(object,key)=>Object.prototype.hasOwnProperty.call(object,key)&&typeof object[key]==='string';
@@ -50,7 +71,7 @@ window.createCodaBoutiqueUI=function(api){
   function open(id='player'){
     const available=targets();targetId=available.some(item=>item.id===id)?id:available[0].id;
     const target=available.find(item=>item.id===targetId),isPlayer=targetId==='player';
-    const source=getProfile(targetId)||{},profile=migrateProfile(source);
+    const source=getProfile(targetId)||{},profile=migrateProfile(isPlayer?window.CodaAvatarDefaults.migrate(source):source);
     api.openPanel(isPlayer?'Pip · Pixel Boutique':'Boutique · '+target.label);
     body.classList.add('boutique-panel');
     const intro=document.createElement('p');intro.className='muted';intro.textContent=isPlayer?'Build your layered sprite look. Hats, glasses, and accessories can be worn together.':'Customize '+target.label+'’s costume. Their name, musical identity, and behavior stay the same.';body.append(intro);
@@ -76,10 +97,12 @@ window.createCodaBoutiqueUI=function(api){
     const note=document.createElement('p');note.className='muted boutique-note';note.textContent=isPlayer?'Preview as much as you like. Save applies the complete look; closing leaves your saved look unchanged. Locked rewards unlock through arcade achievements.':'NPC costume changes are saved separately from your avatar. All clothing is available for NPC styling.';body.append(note);
     const actions=document.createElement('div');actions.className='boutique-actions';
     if(isPlayer){
-      const original=document.createElement('button');original.type='button';original.textContent='Original arcade look';original.id='boutiqueOriginalLook';
       const controls={hairstyle,hair,skin,outfit,shirt,lowerColor,headwear,eyewear,accessory,shoes,emote};
-      original.onclick=()=>{for(const [key,value] of Object.entries(ORIGINAL_LOOK))controls[key].value=value;message('');};
-      actions.append(original);
+      for(const [text,id,look]of [['Plain base avatar','boutiqueBaseLook',window.CodaAvatarDefaults.plain],['Classic cap look','boutiqueOriginalLook',window.CodaAvatarDefaults.classic]]){
+        const preset=document.createElement('button');preset.type='button';preset.textContent=text;preset.id=id;
+        preset.onclick=()=>{for(const [key,value]of Object.entries(look))controls[key].value=value;message('');};
+        actions.append(preset);
+      }
     }
     const save=document.createElement('button');save.type='button';save.textContent=isPlayer?'Save my look':'Save NPC look';save.id='boutiqueSave';
     const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Cancel';cancel.onclick=api.closePanel;
