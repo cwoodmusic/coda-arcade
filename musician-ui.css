@@ -4,7 +4,7 @@
 #dialog>small{display:block;margin:10px 0;color:#bbaccd;font-size:11px}
 #dialog #close{float:none;margin-top:8px}
 .musician-card{display:grid;grid-template-columns:64px 1fr auto;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #645075}
-.musician-card canvas{image-rendering:pixelated;background:#17152c;border-radius:7px}
+.musician-card canvas{width:64px;height:auto;image-rendering:pixelated;background:#17152c;border-radius:7px}
 .musician-card strong{color:#ffe5b2}.musician-card p{font-size:12px;line-height:1.4;margin:5px 0}.musician-card small{color:#a2f3d7}
 .musician-card button{padding:8px;font-size:12px}
 .avatar-live-preview{position:sticky;top:-20px;z-index:2;background:#16152a;padding:12px;border:1px solid #8d72a8;border-radius:8px;margin:14px 0}

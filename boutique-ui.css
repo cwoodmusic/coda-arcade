@@ -1,0 +1,11 @@
+.boutique-panel .boutique-field input[type=color]{height:38px;padding:3px;cursor:pointer}
+.boutique-swatches{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}
+.boutique-swatches button{width:26px;height:26px;min-height:0;padding:0;border:2px solid #a38ab6;border-radius:6px;box-shadow:inset 0 0 0 1px #ffffff20}
+.boutique-swatches button:hover{border-color:#d7fff2;transform:translateY(-1px)}
+.boutique-swatches button:focus-visible{outline:2px solid #adffe3;outline-offset:2px}
+.boutique-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;position:sticky;bottom:-20px;background:#231c3bf5;padding:10px 0;border-top:1px solid #66517f}
+.boutique-actions button{flex:1}
+.boutique-actions #boutiqueSave{background:#2d5e58;border-color:#8de5c8}
+.boutique-actions .panelMsg{flex:1 0 100%;margin:0;min-height:0;font-size:12px}
+.boutique-field input[readonly]{opacity:.8;border-style:dashed;cursor:default}
+.boutique-panel .boutique-note{line-height:1.5}

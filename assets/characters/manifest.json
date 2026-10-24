@@ -1,0 +1,1340 @@
+{
+  "version": 1,
+  "cell": [
+    80,
+    96
+  ],
+  "anchor": [
+    40,
+    88
+  ],
+  "columns": 8,
+  "framesPerDirection": 28,
+  "directions": [
+    "down",
+    "left",
+    "up",
+    "right"
+  ],
+  "clips": {
+    "idle": {
+      "offset": 0,
+      "frames": 2,
+      "fps": 2
+    },
+    "walk": {
+      "offset": 2,
+      "frames": 6,
+      "fps": 8
+    },
+    "wave": {
+      "offset": 8,
+      "frames": 4,
+      "fps": 8
+    },
+    "dance": {
+      "offset": 12,
+      "frames": 6,
+      "fps": 8
+    },
+    "interact": {
+      "offset": 18,
+      "frames": 4,
+      "fps": 6
+    },
+    "talk": {
+      "offset": 22,
+      "frames": 4,
+      "fps": 6
+    },
+    "sit": {
+      "offset": 26,
+      "frames": 2,
+      "fps": 2
+    }
+  },
+  "layers": {
+    "body": {
+      "url": "body.png",
+      "layout": "animated",
+      "material": "skin"
+    },
+    "hair": {
+      "short": {
+        "url": "hair-short.png",
+        "layout": "directional",
+        "material": "hair"
+      },
+      "bob": {
+        "url": "hair-bob.png",
+        "layout": "directional",
+        "material": "hair"
+      },
+      "long": {
+        "url": "hair-long.png",
+        "layout": "directional",
+        "material": "hair"
+      },
+      "curly": {
+        "url": "hair-curly.png",
+        "layout": "directional",
+        "material": "hair"
+      },
+      "ponytail": {
+        "url": "hair-ponytail.png",
+        "layout": "directional",
+        "material": "hair"
+      },
+      "spiky": {
+        "url": "hair-spiky.png",
+        "layout": "directional",
+        "material": "hair"
+      },
+      "bald": {
+        "url": "hair-bald.png",
+        "layout": "directional",
+        "material": "hair"
+      },
+      "buns": {
+        "url": "hair-buns.png",
+        "layout": "directional",
+        "material": "hair"
+      }
+    },
+    "outfit": {
+      "pants": {
+        "url": "outfit-pants.png",
+        "layout": "animated",
+        "material": "clothes"
+      },
+      "shorts": {
+        "url": "outfit-shorts.png",
+        "layout": "animated",
+        "material": "clothes"
+      },
+      "dress": {
+        "url": "outfit-dress.png",
+        "layout": "animated",
+        "material": "clothes"
+      },
+      "overalls": {
+        "url": "outfit-overalls.png",
+        "layout": "animated",
+        "material": "clothes"
+      },
+      "suit": {
+        "url": "outfit-suit.png",
+        "layout": "animated",
+        "material": "clothes"
+      },
+      "coat": {
+        "url": "outfit-coat.png",
+        "layout": "animated",
+        "material": "clothes"
+      }
+    },
+    "headwear": {
+      "cap": {
+        "url": "headwear-cap.png",
+        "layout": "directional",
+        "material": "none"
+      },
+      "beanie": {
+        "url": "headwear-beanie.png",
+        "layout": "directional",
+        "material": "none"
+      },
+      "bucket": {
+        "url": "headwear-bucket.png",
+        "layout": "directional",
+        "material": "none"
+      },
+      "crown": {
+        "url": "headwear-crown.png",
+        "layout": "directional",
+        "material": "none"
+      },
+      "headwrap": {
+        "url": "headwear-headwrap.png",
+        "layout": "directional",
+        "material": "none"
+      }
+    },
+    "eyewear": {
+      "glasses": {
+        "url": "eyewear-glasses.png",
+        "layout": "directional",
+        "material": "none"
+      },
+      "sunglasses": {
+        "url": "eyewear-sunglasses.png",
+        "layout": "directional",
+        "material": "none"
+      },
+      "partyglasses": {
+        "url": "eyewear-partyglasses.png",
+        "layout": "directional",
+        "material": "none"
+      }
+    },
+    "accessory": {
+      "bow": {
+        "url": "accessory-bow.png",
+        "layout": "directional",
+        "material": "none"
+      },
+      "bowtie": {
+        "url": "accessory-bowtie.png",
+        "layout": "directional",
+        "material": "none"
+      },
+      "starclip": {
+        "url": "accessory-starclip.png",
+        "layout": "directional",
+        "material": "none"
+      },
+      "halo": {
+        "url": "accessory-halo.png",
+        "layout": "directional",
+        "material": "none"
+      },
+      "headphones": {
+        "url": "accessory-headphones.png",
+        "layout": "directional",
+        "material": "none"
+      },
+      "pixelheadphones": {
+        "url": "accessory-pixelheadphones.png",
+        "layout": "directional",
+        "material": "none"
+      },
+      "trumpet": {
+        "url": "accessory-trumpet.png",
+        "layout": "directional",
+        "material": "none"
+      },
+      "microphone": {
+        "url": "accessory-microphone.png",
+        "layout": "directional",
+        "material": "none"
+      },
+      "earrings": {
+        "url": "accessory-earrings.png",
+        "layout": "directional",
+        "material": "none"
+      }
+    },
+    "shoes": {
+      "sneakers": {
+        "url": "shoes-sneakers.png",
+        "layout": "animated",
+        "material": "none"
+      },
+      "boots": {
+        "url": "shoes-boots.png",
+        "layout": "animated",
+        "material": "none"
+      },
+      "hightops": {
+        "url": "shoes-hightops.png",
+        "layout": "animated",
+        "material": "none"
+      },
+      "neon": {
+        "url": "shoes-neon.png",
+        "layout": "animated",
+        "material": "none"
+      },
+      "gold": {
+        "url": "shoes-gold.png",
+        "layout": "animated",
+        "material": "none"
+      }
+    }
+  },
+  "frameData": [
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": -1,
+      "bodyX": 0,
+      "bodyY": -1,
+      "handX": 0,
+      "handY": -1
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": -1,
+      "bodyX": 0,
+      "bodyY": -1,
+      "handX": 0,
+      "handY": -1
+    },
+    {
+      "headX": 0,
+      "headY": -1,
+      "bodyX": 0,
+      "bodyY": -1,
+      "handX": 0,
+      "handY": -1
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": -1,
+      "bodyX": 0,
+      "bodyY": -1,
+      "handX": 0,
+      "handY": -1
+    },
+    {
+      "headX": 0,
+      "headY": -1,
+      "bodyX": 0,
+      "bodyY": -1,
+      "handX": 0,
+      "handY": -1
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": 2,
+      "headY": -2,
+      "bodyX": 2,
+      "bodyY": -2,
+      "handX": 2,
+      "handY": -2
+    },
+    {
+      "headX": 2,
+      "headY": -2,
+      "bodyX": 2,
+      "bodyY": -2,
+      "handX": -15,
+      "handY": -22
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": -2,
+      "headY": -2,
+      "bodyX": -2,
+      "bodyY": -2,
+      "handX": -2,
+      "handY": -2
+    },
+    {
+      "headX": -2,
+      "headY": -2,
+      "bodyX": -2,
+      "bodyY": -2,
+      "handX": -19,
+      "handY": -22
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 10,
+      "bodyX": 0,
+      "bodyY": 10,
+      "handX": 0,
+      "handY": 10
+    },
+    {
+      "headX": 0,
+      "headY": 10,
+      "bodyX": 0,
+      "bodyY": 10,
+      "handX": 0,
+      "handY": 10
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": -1,
+      "bodyX": 0,
+      "bodyY": -1,
+      "handX": 0,
+      "handY": -1
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": -1,
+      "bodyX": 0,
+      "bodyY": -1,
+      "handX": 0,
+      "handY": -1
+    },
+    {
+      "headX": 0,
+      "headY": -1,
+      "bodyX": 0,
+      "bodyY": -1,
+      "handX": 0,
+      "handY": -1
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": -1,
+      "bodyX": 0,
+      "bodyY": -1,
+      "handX": 0,
+      "handY": -1
+    },
+    {
+      "headX": 0,
+      "headY": -1,
+      "bodyX": 0,
+      "bodyY": -1,
+      "handX": 0,
+      "handY": -1
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": 2,
+      "headY": -2,
+      "bodyX": 2,
+      "bodyY": -2,
+      "handX": 2,
+      "handY": -2
+    },
+    {
+      "headX": 2,
+      "headY": -2,
+      "bodyX": 2,
+      "bodyY": -2,
+      "handX": -15,
+      "handY": -22
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": -2,
+      "headY": -2,
+      "bodyX": -2,
+      "bodyY": -2,
+      "handX": -2,
+      "handY": -2
+    },
+    {
+      "headX": -2,
+      "headY": -2,
+      "bodyX": -2,
+      "bodyY": -2,
+      "handX": -19,
+      "handY": -22
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 10,
+      "bodyX": 0,
+      "bodyY": 10,
+      "handX": 0,
+      "handY": 10
+    },
+    {
+      "headX": 0,
+      "headY": 10,
+      "bodyX": 0,
+      "bodyY": 10,
+      "handX": 0,
+      "handY": 10
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": -1,
+      "bodyX": 0,
+      "bodyY": -1,
+      "handX": 0,
+      "handY": -1
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": -1,
+      "bodyX": 0,
+      "bodyY": -1,
+      "handX": 0,
+      "handY": -1
+    },
+    {
+      "headX": 0,
+      "headY": -1,
+      "bodyX": 0,
+      "bodyY": -1,
+      "handX": 0,
+      "handY": -1
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": -1,
+      "bodyX": 0,
+      "bodyY": -1,
+      "handX": 0,
+      "handY": -1
+    },
+    {
+      "headX": 0,
+      "headY": -1,
+      "bodyX": 0,
+      "bodyY": -1,
+      "handX": 0,
+      "handY": -1
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": 2,
+      "headY": -2,
+      "bodyX": 2,
+      "bodyY": -2,
+      "handX": 2,
+      "handY": -2
+    },
+    {
+      "headX": 2,
+      "headY": -2,
+      "bodyX": 2,
+      "bodyY": -2,
+      "handX": -15,
+      "handY": -22
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": -2,
+      "headY": -2,
+      "bodyX": -2,
+      "bodyY": -2,
+      "handX": -2,
+      "handY": -2
+    },
+    {
+      "headX": -2,
+      "headY": -2,
+      "bodyX": -2,
+      "bodyY": -2,
+      "handX": -19,
+      "handY": -22
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 10,
+      "bodyX": 0,
+      "bodyY": 10,
+      "handX": 0,
+      "handY": 10
+    },
+    {
+      "headX": 0,
+      "headY": 10,
+      "bodyX": 0,
+      "bodyY": 10,
+      "handX": 0,
+      "handY": 10
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": -1,
+      "bodyX": 0,
+      "bodyY": -1,
+      "handX": 0,
+      "handY": -1
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": -1,
+      "bodyX": 0,
+      "bodyY": -1,
+      "handX": 0,
+      "handY": -1
+    },
+    {
+      "headX": 0,
+      "headY": -1,
+      "bodyX": 0,
+      "bodyY": -1,
+      "handX": 0,
+      "handY": -1
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": -1,
+      "bodyX": 0,
+      "bodyY": -1,
+      "handX": 0,
+      "handY": -1
+    },
+    {
+      "headX": 0,
+      "headY": -1,
+      "bodyX": 0,
+      "bodyY": -1,
+      "handX": 0,
+      "handY": -1
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": 2,
+      "headY": -2,
+      "bodyX": 2,
+      "bodyY": -2,
+      "handX": 2,
+      "handY": -2
+    },
+    {
+      "headX": 2,
+      "headY": -2,
+      "bodyX": 2,
+      "bodyY": -2,
+      "handX": -15,
+      "handY": -22
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": -2,
+      "headY": -2,
+      "bodyX": -2,
+      "bodyY": -2,
+      "handX": -2,
+      "handY": -2
+    },
+    {
+      "headX": -2,
+      "headY": -2,
+      "bodyX": -2,
+      "bodyY": -2,
+      "handX": -19,
+      "handY": -22
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": -17,
+      "handY": -20
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 0,
+      "bodyX": 0,
+      "bodyY": 0,
+      "handX": 0,
+      "handY": 0
+    },
+    {
+      "headX": 0,
+      "headY": 10,
+      "bodyX": 0,
+      "bodyY": 10,
+      "handX": 0,
+      "handY": 10
+    },
+    {
+      "headX": 0,
+      "headY": 10,
+      "bodyX": 0,
+      "bodyY": 10,
+      "handX": 0,
+      "handY": 10
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "body.png",
+      "width": 640,
+      "height": 1344
+    },
+    {
+      "file": "hair-short.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "hair-bob.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "hair-long.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "hair-curly.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "hair-ponytail.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "hair-spiky.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "hair-bald.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "hair-buns.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "outfit-pants.png",
+      "width": 640,
+      "height": 1344
+    },
+    {
+      "file": "outfit-shorts.png",
+      "width": 640,
+      "height": 1344
+    },
+    {
+      "file": "outfit-dress.png",
+      "width": 640,
+      "height": 1344
+    },
+    {
+      "file": "outfit-overalls.png",
+      "width": 640,
+      "height": 1344
+    },
+    {
+      "file": "outfit-suit.png",
+      "width": 640,
+      "height": 1344
+    },
+    {
+      "file": "outfit-coat.png",
+      "width": 640,
+      "height": 1344
+    },
+    {
+      "file": "headwear-cap.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "headwear-beanie.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "headwear-bucket.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "headwear-crown.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "headwear-headwrap.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "eyewear-glasses.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "eyewear-sunglasses.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "eyewear-partyglasses.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "accessory-bow.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "accessory-bowtie.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "accessory-starclip.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "accessory-halo.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "accessory-headphones.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "accessory-pixelheadphones.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "accessory-trumpet.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "accessory-microphone.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "accessory-earrings.png",
+      "width": 320,
+      "height": 96
+    },
+    {
+      "file": "shoes-sneakers.png",
+      "width": 640,
+      "height": 1344
+    },
+    {
+      "file": "shoes-boots.png",
+      "width": 640,
+      "height": 1344
+    },
+    {
+      "file": "shoes-hightops.png",
+      "width": 640,
+      "height": 1344
+    },
+    {
+      "file": "shoes-neon.png",
+      "width": 640,
+      "height": 1344
+    },
+    {
+      "file": "shoes-gold.png",
+      "width": 640,
+      "height": 1344
+    }
+  ]
+}

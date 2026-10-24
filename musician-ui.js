@@ -22,7 +22,7 @@ window.createCodaMusicianUI=function(api){
     const intro=document.createElement('p');intro.className='muted';intro.textContent='Historic musicians reimagined as arcade regulars. Find them on the map to chat, get a music tip, or hear what they are playing.';api.panelBody.append(intro);
     for(const person of api.npcs){
       const data=api.getBrain().getConversation(person),card=document.createElement('article');card.className='musician-card';
-      const portrait=document.createElement('canvas');portrait.width=64;portrait.height=82;portrait.setAttribute('aria-label',person.name+' portrait');api.renderer.drawNPC(portrait.getContext('2d'),{...person,x:32,y:73,facing:'down',walking:false,activity:'idle'},0);
+      const portrait=document.createElement('canvas');portrait.width=80;portrait.height=100;portrait.setAttribute('aria-label',person.name+' portrait');api.renderer.drawNPC(portrait.getContext('2d'),{...person,x:40,y:93,facing:'down',walking:false,activity:'idle'},0);
       const body=document.createElement('div'),name=document.createElement('strong'),bio=document.createElement('p'),activity=document.createElement('small');
       name.textContent=person.name;bio.textContent=data.description;activity.textContent='Now: '+data.activity;body.append(name,bio,activity);
       const button=document.createElement('button');button.type='button';const near=api.distance(person)<100;button.textContent=near?'Chat':'Find on map';button.setAttribute('aria-label',(near?'Chat with ':'Find ')+person.name);
@@ -44,7 +44,7 @@ window.createCodaMusicianUI=function(api){
   function drawPreview(time){
     if(!preview?.section.isConnected||api.panelBody.parentElement.hidden)return;
     const profile=preview.getProfile();
-    for(const {facing,canvas}of preview.views){const ctx=canvas.getContext('2d');ctx.clearRect(0,0,100,104);ctx.save();ctx.scale(1.5,1.5);api.renderer.drawPlayer(ctx,profile,{x:100/3,y:58,facing,walking:preview.mode.value==='walk',phase:time*8,emote:preview.mode.value==='emote'?profile.emote:null,emoteTime:time},time);ctx.restore();}
+    for(const {facing,canvas}of preview.views){const ctx=canvas.getContext('2d');ctx.clearRect(0,0,100,104);ctx.save();api.renderer.drawPlayer(ctx,profile,{x:50,y:94,facing,walking:preview.mode.value==='walk',phase:time*8,emote:preview.mode.value==='emote'?profile.emote:null,emoteTime:time},time);ctx.restore();}
   }
   function update(time){
     if(selected&&!api.npcs.some(person=>person.id===selected&&!person.hidden&&person.conversation))closeConversation();

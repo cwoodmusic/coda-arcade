@@ -131,7 +131,8 @@ window.createCodaDeveloperConsole = function (api) {
   }
   function picture(origin) {
     const key=JSON.stringify([origin.name,origin.bounds]); if(pictures.has(key))return pictures.get(key);
-    if(!worldArt.naturalWidth||!foregroundArt.naturalWidth)return null;
+    // PNG headers expose naturalWidth before loading and pixel decoding finish.
+    if(!worldArt.complete||!worldArt.naturalWidth||!foregroundArt.complete||!foregroundArt.naturalWidth)return null;
     const [x,y,w,h]=origin.bounds,out=makeCanvas(w,h),ctx=out.getContext('2d'); ctx.imageSmoothingEnabled=false;
     const part=catalog.find(p=>p.name===origin.name);
     if(part?.source==='world'){
@@ -177,16 +178,19 @@ window.createCodaDeveloperConsole = function (api) {
     g.drawImage(cached.canvas,x,y);
   }
   function renderBase(g) {
+    if(!worldArt.complete||!worldArt.naturalWidth)return;
     const originals=studio.assets.filter(a=>a.origin);
     if(!originals.length) {g.drawImage(worldArt,0,0,W,H);return;}
     // Images load independently. Do not memoize an incomplete cleanup surface.
-    if(!foregroundArt.naturalWidth){g.drawImage(worldArt,0,0,W,H);return;}
+    if(!foregroundArt.complete||!foregroundArt.naturalWidth){g.drawImage(worldArt,0,0,W,H);return;}
     const key=JSON.stringify(originals.map(a=>a.origin));
     if(key!==baseKey||!baseCache) {
+      const sourcePictures=originals.map(a=>picture(a.origin));
+      if(sourcePictures.some(img=>!img)){g.drawImage(worldArt,0,0,W,H);return;}
       baseCache=makeCanvas(W,H); const bg=baseCache.getContext('2d');bg.drawImage(worldArt,0,0,W,H);
       cleanupCache=makeCanvas(W,H);const cleanup=cleanupCache.getContext('2d');
-      for(const a of originals) {
-        const o=a.origin,[x,y,w,h]=o.bounds,img=picture(o);if(!img)continue;
+      for(const [index,a] of originals.entries()) {
+        const o=a.origin,[x,y,w,h]=o.bounds,img=sourcePictures[index];
         const patch=makeCanvas(w,h),p=patch.getContext('2d'); p.imageSmoothingEnabled=false;
         for(let yy=0;yy<h;yy+=16)for(let xx=0;xx<w;xx+=16)p.drawImage(worldArt,o.sample[0],o.sample[1],16,16,xx,yy,16,16);
         p.globalCompositeOperation='destination-in';p.drawImage(img,0,0);bg.drawImage(patch,x,y);cleanup.drawImage(patch,x,y);

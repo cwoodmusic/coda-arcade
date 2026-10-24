@@ -48,7 +48,7 @@ class WorldEditorTests(unittest.TestCase):
         self.page.on('console', lambda msg: self.errors.append(msg.text) if 'Arcade frame error:' in msg.text else None)
         self.page.on('response', lambda response: self.local_failures.append(response.url) if response.status >= 400 and '127.0.0.1' in response.url and not response.url.endswith('favicon.ico') else None)
         self.page.goto(self.url, wait_until='domcontentloaded')
-        self.page.wait_for_function('window.CodaDeveloperConsole?.ready()')
+        self.page.wait_for_function('window.CodaDeveloperConsole?.ready() && window.CodaArcadeQA?.characters().spriteState.ready')
         self.page.wait_for_function('window.CodaArcadeQA?.foregroundPixelAlpha("dance_right_couch",625,650)!==null')
         # Use the shipped FX control to keep pixel assertions and CI timing stable.
         self.page.locator('#fxBtn').click()
@@ -133,7 +133,7 @@ class WorldEditorTests(unittest.TestCase):
         expected = self.project()
         self.assertTrue(self.page.evaluate('CodaDeveloperConsole.save()'))
         self.page.reload(wait_until='domcontentloaded')
-        self.page.wait_for_function('CodaDeveloperConsole.ready()')
+        self.page.wait_for_function('CodaDeveloperConsole.ready() && CodaArcadeQA.characters().spriteState.ready')
         self.assertEqual(self.project(), expected)
 
     def test_collision_layers_history_export_import_and_rejection(self):
@@ -266,7 +266,7 @@ class WorldEditorTests(unittest.TestCase):
         self.assertTrue(self.page.evaluate('CodaArcadeQA.worldObjects().find(o=>o.name==="disco_ball_dance").rays'))
         expected=self.project()
         self.assertTrue(self.page.evaluate('CodaDeveloperConsole.save()'))
-        self.page.reload(wait_until='domcontentloaded');self.page.wait_for_function('CodaDeveloperConsole.ready()')
+        self.page.reload(wait_until='domcontentloaded');self.page.wait_for_function('CodaDeveloperConsole.ready() && CodaArcadeQA.characters().spriteState.ready')
         self.assertEqual(self.project(),expected,'Catalog originals and light settings must survive reload')
 
     def test_four_cabinet_interactions_follow_moves_and_restoration(self):
@@ -307,7 +307,7 @@ class WorldEditorTests(unittest.TestCase):
           const reference=canvas.getContext('2d');reference.drawImage(image,0,0);
           const game=document.querySelector('#view').getContext('2d');
           const characters=CodaArcadeQA.characters(),actors=[characters.player,...characters.npcs.filter(p=>!p.hidden)];
-          return samples.filter(([x,y])=>!actors.some(p=>Math.abs(p.x-x)<38&&y>p.y-65&&y<p.y+8)).filter(([x,y])=>{const a=game.getImageData(x,y,1,1).data,b=reference.getImageData(x,y,1,1).data;return [0,1,2].some(i=>Math.abs(a[i]-b[i])>2)});
+          return samples.filter(([x,y])=>!actors.some(p=>Math.abs(p.x-x)<45&&y>p.y-90&&y<p.y+8)).filter(([x,y])=>{const a=game.getImageData(x,y,1,1).data,b=reference.getImageData(x,y,1,1).data;return [0,1,2].some(i=>Math.abs(a[i]-b[i])>2)});
         }''',samples)
         self.assertEqual(mismatches,[],'Foreground masks must not put the old people back over the clean background')
         # Fresh cabinet cutouts must include the reconstructed front, without customer holes.
@@ -381,7 +381,7 @@ class WorldEditorTests(unittest.TestCase):
     def test_avatar_preview_matches_saved_in_world_customization(self):
         self.page.emulate_media(reduced_motion='reduce')
         self.page.evaluate('localStorage.setItem("musicArcadeV1",JSON.stringify({name:"Guest",walked:600,collectedTokens:7}))')
-        self.page.reload(wait_until='domcontentloaded');self.page.wait_for_function('CodaDeveloperConsole.ready()')
+        self.page.reload(wait_until='domcontentloaded');self.page.wait_for_function('CodaDeveloperConsole.ready() && CodaArcadeQA.characters().spriteState.ready')
         self.page.locator('#avatarBtn').click()
         self.assertEqual(self.page.locator('.avatar-preview-views canvas').count(),4)
         self.page.locator('#avatarPreviewMode').select_option('idle')
@@ -401,7 +401,7 @@ class WorldEditorTests(unittest.TestCase):
         expected=self.page.evaluate('CodaArcadeQA.characters().player.appearance')
         self.assertEqual((expected['name'],expected['shirt'],expected['accessory'],expected['outfit']),('Jazz Explorer','#4678ab','headphones','overalls'))
         self.assertEqual(self.page.evaluate('JSON.parse(localStorage.musicArcadeV1).collectedTokens'),7)
-        self.page.reload(wait_until='domcontentloaded');self.page.wait_for_function('CodaDeveloperConsole.ready()')
+        self.page.reload(wait_until='domcontentloaded');self.page.wait_for_function('CodaDeveloperConsole.ready() && CodaArcadeQA.characters().spriteState.ready')
         self.assertEqual(self.page.evaluate('CodaArcadeQA.characters().player.appearance'),expected)
 
 

@@ -3,63 +3,117 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
-function renderer(options={}){const sandbox={window:{}};vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../character-renderer.js'),'utf8'),sandbox);return sandbox.window.createCodaCharacterRenderer(options);}
-function context(){
-  const calls=[];let color='',depth=0;
-  return {calls,get depth(){return depth;},set fillStyle(value){color=value;},get fillStyle(){return color;},
-    save(){depth++;calls.push(['save']);},restore(){depth--;calls.push(['restore']);},translate(...args){calls.push(['translate',...args]);},scale(...args){calls.push(['scale',...args]);},
-    fillRect(...args){calls.push(['rect',color,...args]);},beginPath(){},ellipse(...args){calls.push(['shadow',...args]);},fill(){}};
+const read=name=>fs.readFileSync(path.join(__dirname,'../'+name),'utf8');
+const directions=['down','left','up','right'];
+function fixture(){
+  const clips={idle:{offset:0,frames:2,fps:2},walk:{offset:2,frames:6,fps:8},wave:{offset:8,frames:4,fps:8},dance:{offset:12,frames:6,fps:8},interact:{offset:18,frames:4,fps:6},talk:{offset:22,frames:4,fps:6},sit:{offset:26,frames:2,fps:2}};
+  const descriptor=(name,layout,material)=>({url:name+'.png',layout,material});
+  const variants=(prefix,names,layout,material)=>Object.fromEntries(names.map(name=>[name,descriptor(prefix+'-'+name,layout,material)]));
+  return {version:1,cell:[80,96],anchor:[40,88],columns:8,framesPerDirection:28,clips,
+    frameData:Array.from({length:112},()=>({headX:2,headY:-1,bodyX:0,bodyY:1,handX:3,handY:2})),
+    layers:{body:descriptor('body','animated','skin'),
+      hair:variants('hair',['short','bob','long','curly','ponytail','spiky','buns'],'directional','hair'),
+      outfit:variants('outfit',['pants','shorts','dress','overalls','suit','coat'],'animated','clothes'),
+      shoes:variants('shoes',['sneakers','boots','hightops','neon','gold'],'animated','shoes'),
+      headwear:variants('headwear',['cap','beanie','bucket','crown','headwrap'],'directional',null),
+      eyewear:variants('eyewear',['glasses','sunglasses','partyglasses'],'directional',null),
+      accessory:variants('accessory',['bow','headphones','bowtie','starclip','halo','earrings','pixelheadphones','trumpet','microphone'],'directional',null)}};
 }
+function image(url){const name=new URL(url).pathname.split('/').pop(),animated=/^(body|outfit-|shoes-)/.test(name);return {name,naturalWidth:animated?640:320,naturalHeight:animated?1344:96};}
+function canvas(w,h){
+  const output={width:w,height:h,sourceFrame:null,pixels:null};
+  const ctx={imageSmoothingEnabled:false,drawImage(source,sx,sy,sw,sh){output.sourceFrame={source,sx,sy,sw,sh};},
+    getImageData(){return {data:new Uint8ClampedArray([208,153,107,255,12,12,24,255,250,250,250,255,204,40,166,255,45,85,180,255,220,174,60,255])};},
+    putImageData(pixels){output.pixels=Array.from(pixels.data);}};
+  output.getContext=()=>ctx;return output;
+}
+function renderer(options={}){
+  const sandbox={window:{location:{href:'http://localhost/world-preview.html'}},URL,Uint8ClampedArray};
+  vm.runInNewContext(read('sprite-animation.js'),sandbox);vm.runInNewContext(read('character-renderer.js'),sandbox);
+  return sandbox.window.createCodaCharacterRenderer({manifest:fixture(),loadImage:async url=>image(url),createCanvas:canvas,...options});
+}
+function context(){
+  const calls=[];let depth=0;
+  return {calls,get depth(){return depth;},save(){depth++;calls.push(['save']);},restore(){depth--;calls.push(['restore']);},
+    translate(...args){calls.push(['translate',...args]);},scale(...args){calls.push(['scale',...args]);},drawImage(...args){calls.push(['image',...args]);},
+    fillRect(){throw Error('Character bodies must come from raster assets, not procedural rectangles.');},beginPath(){},ellipse(...args){calls.push(['shadow',...args]);},fill(){}};
+}
+function name(call){return call[1].name||call[1].sourceFrame?.source.name;}
 
-test('normalization bounds untrusted saved cosmetics and preserves all requested choices',()=>{
-  const r=renderer(),p=r.normalizeProfile({name:' '.repeat(2)+'A'.repeat(40),skin:'url(javascript:bad)',hair:'#ABCDEF',shirt:'#102030',hairstyle:'unknown',outfit:'dress',accessory:'headphones',shoes:'gold',emote:'spin'});
-  assert.equal(p.name,'A'.repeat(18));assert.equal(p.skin,'#d49a76');assert.equal(p.hair,'#abcdef');assert.equal(p.shirt,'#102030');assert.equal(p.hairstyle,'short');
-  assert.equal(p.outfit,'dress');assert.equal(p.accessory,'headphones');assert.equal(p.shoes,'gold');assert.equal(p.emote,'spin');
-  assert.doesNotThrow(()=>r.normalizeProfile(null));assert.equal(r.normalizeProfile({hat:true,walked:450}).accessory,'halo');
+test('normalization migrates old hats/glasses while retaining independent new slots and bounded colors',async()=>{
+  const r=renderer();await r.ready;
+  const legacy=r.normalizeProfile({name:' '.repeat(2)+'A'.repeat(40),skin:'url(javascript:bad)',hair:'#ABCDEF',shirt:'#102030',hairstyle:'unknown',outfit:'dress',accessory:'cap',shoes:'gold',emote:'spin'});
+  assert.equal(legacy.name,'A'.repeat(18));assert.equal(legacy.skin,'#d49a76');assert.equal(legacy.hair,'#abcdef');assert.equal(legacy.headwear,'cap');assert.equal(legacy.accessory,'none');
+  assert.equal(r.normalizeProfile({accessory:'sunglasses'}).eyewear,'sunglasses');assert.equal(r.normalizeProfile({accessory:'partyglasses'}).eyewear,'partyglasses');
   assert.equal(r.normalizeProfile({hat:true,walked:600,accessory:'none'}).accessory,'halo');
-  for(const hairstyle of ['short','bob','long','curly','ponytail','spiky','bald','buns'])assert.equal(r.normalizeProfile({hairstyle}).hairstyle,hairstyle);
+  const explicit=r.normalizeProfile({headwear:'none',eyewear:'none',accessory:'cap',hat:true,walked:600});assert.equal(explicit.headwear,'none');assert.equal(explicit.eyewear,'none');assert.equal(explicit.accessory,'none');
+  const combined=r.normalizeProfile({headwear:'beanie',eyewear:'glasses',accessory:'headphones',lowerColor:'#314159'});assert.equal(combined.headwear,'beanie');assert.equal(combined.eyewear,'glasses');assert.equal(combined.accessory,'headphones');assert.equal(combined.lowerColor,'#314159');
+  assert.equal(r.normalizeProfile({accessory:'earrings'}).accessory,'earrings');
+  for(const items of Object.values(r.catalog))for(const item of items){assert.equal(typeof item.id,'string');assert.equal(typeof item.label,'string');assert.ok(Object.isFrozen(item));}
+  assert.doesNotThrow(()=>r.normalizeProfile(null));
 });
 
-test('the historic cast has nine distinct immutable appearances including Miles Davis',()=>{
-  const r=renderer(),ids=['bach','mozart','beethoven','clara','joplin','ellington','ella','nina','miles'];
-  const looks=ids.map(id=>r.appearanceFor(id));assert.equal(new Set(looks.map(p=>JSON.stringify(p))).size,9);
-  assert.equal(looks[8].name,'Miles Davis');assert.equal(looks[8].accessory,'sunglasses');assert.equal(looks[8].instrument,'trumpet');
-  assert.equal(r.appearanceFor('Clara Schumann').id,'clara');assert.equal(r.appearanceFor('unknown').id,'guest');
-  for(const look of looks)assert.ok(Object.isFrozen(look));
+test('raster assets become ready before drawing, and malformed/undersized sheets fail explicitly',async()=>{
+  const r=renderer(),ctx=context();assert.equal(r.isReady(),false);assert.equal(r.drawPlayer(ctx,{},{}),false);assert.equal(ctx.calls.length,0);
+  await r.ready;assert.equal(r.isReady(),true);assert.equal(r.getState().mode,'raster-sprites');assert.equal(r.getState().totalFrames,112);
+  const broken=renderer({loadImage:async()=>({naturalWidth:1,naturalHeight:1})});await assert.rejects(broken.ready,/too small/);assert.match(broken.error,/too small/);assert.equal(broken.drawPlayer(context(),{},{}),false);
+  const bad=fixture();bad.clips.walk.offset=3;const badRenderer=renderer({manifest:bad});await assert.rejects(badRenderer.ready,/clip layout mismatch/);
 });
 
-test('walking phase moves feet while idle and reduced-motion poses stay planted',()=>{
-  const r=renderer();assert.equal(r.sampleMotion({walking:false,phase:Math.PI/2},1).stride,0);
-  assert.equal(r.sampleMotion({walking:true,phase:Math.PI/2},1).stride,3);
-  assert.equal(r.sampleMotion({walking:true,phase:Math.PI*1.5},1).stride,-3);
-  const quiet=renderer({reducedMotion:()=>true}).sampleMotion({walking:true,phase:Math.PI/2,emote:'dance'},1);
-  assert.equal(quiet.stride,0);assert.equal(quiet.bob,0);assert.equal(quiet.dx,0);assert.equal(quiet.lift,0);assert.equal(quiet.blink,false);
-});
-
-test('all facing directions render saved colors, preserve the foot anchor and restore canvas state',()=>{
-  const r=renderer({reducedMotion:()=>true});
-  for(const facing of ['down','left','up','right']){
-    const ctx=context();r.drawPlayer(ctx,{skin:'#705030',hair:'#223344',shirt:'#4678ab',outfit:'overalls',accessory:'headphones'},{x:105,y:250,facing,walking:true,phase:1},3);
-    assert.equal(ctx.depth,0);assert.ok(ctx.calls.some(c=>c[0]==='translate'&&c[1]===105&&c[2]===250));
-    assert.ok(ctx.calls.some(c=>c[0]==='rect'&&c[1]==='#4678ab'));
-    assert.ok(ctx.calls.some(c=>c[0]==='rect'&&c[1]==='#705030'));
-    const rects=ctx.calls.filter(c=>c[0]==='rect');assert.ok(rects.every(c=>c[5]>0&&c[4]>0));
-    assert.ok(rects.every(c=>c[3]+c[5]<=0),'body/shoes must not extend below their gameplay foot anchor');
-    assert.equal(ctx.calls.some(c=>c[0]==='scale'&&c[1]===-1),facing==='left');
+test('all four directions use image frames and preserve the same gameplay foot anchor',async()=>{
+  const r=renderer({reducedMotion:()=>true});await r.ready;
+  for(const [index,facing]of directions.entries()){
+    const ctx=context();assert.equal(r.drawPlayer(ctx,{hairstyle:'short'},{x:105,y:250,facing,walking:true,phase:2},3),true);assert.equal(ctx.depth,0);
+    assert.ok(ctx.calls.some(c=>c[0]==='translate'&&c[1]===105&&c[2]===250));
+    const body=ctx.calls.find(c=>c[0]==='image'&&name(c)==='body.png'),source=body[1].sourceFrame;
+    assert.equal(source.sx,(index*28%8)*80);assert.equal(source.sy,Math.floor(index*28/8)*96);
+    assert.deepEqual(body.slice(6),[-40,-88,80,96]);
+    const hair=ctx.calls.find(c=>c[0]==='image'&&name(c)==='hair-short.png');assert.deepEqual(hair.slice(6),[-38,-89,80,96]);
   }
 });
 
-test('outfits and accessories produce visibly different sprites without mutating saved profiles',()=>{
-  const r=renderer({reducedMotion:()=>true}),p={name:'Guest',shirt:'#b34781',outfit:'pants',hairstyle:'short',accessory:'none'},before=JSON.stringify(p),a=context(),b=context();
-  r.drawPlayer(a,p,{x:0,y:0,facing:'down'},1);r.drawPlayer(b,{...p,outfit:'dress',hairstyle:'buns',accessory:'halo'},{x:0,y:0,facing:'down'},1);
-  assert.notDeepEqual(a.calls,b.calls);assert.equal(JSON.stringify(p),before);
+test('walk, conversation and environment interactions use different authored frame sequences',async()=>{
+  const r=renderer();await r.ready;
+  const samples=[];
+  for(const [walking,emote,phase]of [[true,null,0],[true,null,Math.PI],[false,'wave',0],[false,'talk',0],[false,'playing',0],[false,'sit',0]]){
+    const ctx=context();r.drawPlayer(ctx,{}, {x:0,y:0,facing:'down',walking,emote,phase,emoteTime:.3},1);
+    const image=ctx.calls.find(c=>c[0]==='image'&&name(c)==='body.png')[1];samples.push(image.sourceFrame.sx+':'+image.sourceFrame.sy);
+  }
+  assert.equal(new Set(samples).size,6);
+  assert.equal(r.sampleMotion({walking:true,phase:2},0).index,r.sampleMotion({walking:true,phase:2},100).index);
 });
 
-test('NPC activity changes poses and instrument details while retaining balanced rendering state',()=>{
-  const r=renderer(),idle=context(),playing=context();
-  r.drawNPC(idle,{id:'miles',x:10,y:20,facing:'down',walking:false,activity:'relaxing'},1);
-  r.drawNPC(playing,{id:'miles',x:10,y:20,facing:'down',walking:false,activity:'playing'},1);
-  assert.notDeepEqual(idle.calls,playing.calls);assert.ok(idle.calls.some(c=>c[0]==='rect'&&c[1]==='#f0ce6e'),'Miles carries a brass trumpet');
-  assert.equal(idle.depth,0);assert.equal(playing.depth,0);
-  const dance=r.sampleMotion({facing:'down',emote:'dance'},.25);assert.equal(dance.gesture,'dance');assert.notEqual(dance.dx,0);
+test('hats, eyewear and accessories draw together and maintain their head/hand attachment anchors',async()=>{
+  const r=renderer();await r.ready;const ctx=context();r.drawPlayer(ctx,{headwear:'cap',eyewear:'glasses',accessory:'headphones'},{x:0,y:0,facing:'down'},0);
+  const images=ctx.calls.filter(c=>c[0]==='image');
+  for(const expected of ['headwear-cap.png','eyewear-glasses.png','accessory-headphones.png']){const call=images.find(c=>name(c)===expected);assert.ok(call);assert.deepEqual(call.slice(6),[-38,-89,80,96]);}
+  const npc=context();r.drawNPC(npc,{id:'miles',x:10,y:20,facing:'down',activity:'chatting'},1);
+  assert.ok(npc.calls.some(c=>c[0]==='image'&&name(c)==='eyewear-sunglasses.png'));
+  const trumpet=npc.calls.find(c=>c[0]==='image'&&name(c)==='accessory-trumpet.png');assert.deepEqual(trumpet.slice(6),[-37,-86,80,96]);
+  const back=context();r.drawPlayer(back,{hairstyle:'long',eyewear:'glasses'},{facing:'up'},0);
+  const backImages=back.calls.filter(c=>c[0]==='image');assert.ok(backImages.findIndex(c=>name(c)==='eyewear-glasses.png')<backImages.findIndex(c=>name(c)==='hair-long.png'));
+});
+
+test('tinting preserves eye whites, outlines, unrelated trim and alpha while changing skin and clothing materials',async()=>{
+  const r=renderer();await r.ready;const ctx=context();r.drawPlayer(ctx,{skin:'#705030',shirt:'#4d9c62',lowerColor:'#9d4e7c'},{},0);
+  const body=ctx.calls.find(c=>c[0]==='image'&&name(c)==='body.png')[1].pixels;
+  assert.notDeepEqual(body.slice(0,3),[208,153,107]);assert.deepEqual(body.slice(4,12),[12,12,24,255,250,250,250,255]);
+  const outfit=ctx.calls.find(c=>c[0]==='image'&&name(c)==='outfit-pants.png')[1].pixels;
+  assert.notDeepEqual(outfit.slice(12,15),[204,40,166]);assert.notDeepEqual(outfit.slice(16,19),[45,85,180]);assert.deepEqual(outfit.slice(20,24),[220,174,60,255]);
+  assert.ok(body.filter((_,i)=>i%4===3).every(alpha=>alpha===255));
+});
+
+test('the historic cast remains distinct and NPC appearance overrides use the same real asset slots',async()=>{
+  const r=renderer();await r.ready;const ids=['bach','mozart','beethoven','clara','joplin','ellington','ella','nina','miles'];
+  assert.equal(new Set(ids.map(id=>JSON.stringify(r.appearanceFor(id)))).size,9);
+  assert.equal(r.appearanceFor('Miles Davis').eyewear,'sunglasses');assert.equal(r.appearanceFor('miles').accessory,'trumpet');
+  for(const id of ids)assert.ok(Object.isFrozen(r.appearanceFor(id)));
+  const ctx=context();r.drawNPC(ctx,{id:'miles',x:0,y:0,facing:'down',appearance:{outfit:'dress',headwear:'beanie',eyewear:'glasses',accessory:'none'}},0);
+  const names=ctx.calls.filter(c=>c[0]==='image').map(name);assert.ok(names.includes('outfit-dress.png'));assert.ok(names.includes('headwear-beanie.png'));assert.ok(names.includes('eyewear-glasses.png'));assert.ok(!names.includes('accessory-trumpet.png'));
+});
+
+test('per-frame tint cache stays bounded across many independently customized looks',async()=>{
+  const r=renderer({cacheLimit:32});await r.ready;
+  for(let i=0;i<90;i++)r.drawPlayer(context(),{skin:'#'+(0x704000+i*103).toString(16).padStart(6,'0')},{walking:true,phase:i/5},i);
+  assert.equal(r.getState().tintedFrames,32);assert.equal(r.getState().cacheLimit,32);
 });
