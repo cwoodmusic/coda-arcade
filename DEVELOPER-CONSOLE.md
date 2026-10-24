@@ -8,6 +8,8 @@ python3 -m http.server 8000 --bind 127.0.0.1
 
 Open `world-preview.html` from that server in your browser. Use the **Developer** button, **F2**, or **Shift+A** to open the editor. It edits scene data through controls; it does not evaluate JavaScript or require browser developer tools.
 
+For the live musician cast, conversations, and avatar customization, see [MUSICIANS.md](MUSICIANS.md). NPC routes use the same editable collision map and follow moved cabinet approach points.
+
 ## Objects
 
 Choose a named object from **Existing world objects**, then click **Edit existing object**. You can also click its visible pixels on the map. **Lift a region** lets you select artwork outside the named catalog.

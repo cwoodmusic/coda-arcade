@@ -17,7 +17,7 @@
 /* Coda Asset Studio v11: stays separate from collision + pixel masks. */
 #assetStudio{position:fixed;left:12px;top:80px;z-index:65;width:min(334px,calc(100vw - 24px));max-height:calc(100dvh - 99px);overflow:auto;background:#171529f5;border:1px solid #eac17d;box-shadow:0 12px 50px #05010de0,0 0 22px #fdac4a24;border-radius:12px;padding:13px;color:#f8efff;font:12px system-ui;backdrop-filter:blur(9px)}
 #assetStudio[hidden]{display:none}#assetStudio .studioHead{display:flex;align-items:center;justify-content:space-between;color:#ffe4a4;font-size:14px;gap:9px;margin-bottom:7px}#assetStudio .studioActions{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0}#assetStudio button{font:inherit;min-height:28px;padding:5px 7px}#assetStudio .studioActions button{flex:1 0 90px}#assetStudio button:disabled{opacity:.36;cursor:not-allowed}#assetStudio hr{border:0;border-top:1px solid #655374;margin:13px 0}#assetStudio .studioField{display:grid;gap:3px;margin:7px 0}#assetStudio .studioField>label{font-weight:650;color:#dccdf3}#assetStudio input:not([type=checkbox]),#assetStudio select{background:#131024;border:1px solid #866e9b;color:#fff;padding:7px;border-radius:5px;width:100%;font:inherit;min-width:0}#assetStudio input[type=checkbox]{accent-color:#f9c880}#assetStudio .studioGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}#assetStudio .studioTip{color:#c9b9d6;line-height:1.45;font-size:11px;margin:6px 0}#assetStudio #assetList{height:108px;padding:2px}#assetStudio #assetList option{padding:6px}#assetStudio #assetMessage{color:#bbf5e5;min-height:18px;overflow-wrap:anywhere}#assetStudio #assetSelection[hidden]{display:none}#assetStudio .studioCheck{display:inline-flex;align-items:center;gap:6px;margin:5px 11px 5px 0}#assetStudio .studioCollapsible{border:1px solid #655374;border-radius:7px;padding:8px}#assetStudio summary{cursor:pointer;color:#ffe4b1;font-weight:650}#assetToggle{border-color:#eecc7c}#view.asset-editing{cursor:crosshair;touch-action:none}#assetStudio #assetAdd{background:#675022;border-color:#e8b85c}#assetStudio #assetImport{border-color:#80d3ed}#assetStudio #assetExport{border-color:#80d3ed}#assetStudio #assetHelp{background:#271d3c}#assetStudio .studioHot{color:#ffcfa4}body.asset-console-open #layerEditor{display:none!important}@media(max-width:650px){#assetStudio{top:120px;max-height:calc(100dvh - 138px)}}
-</style><link rel="stylesheet" href="developer-console.css"><script src="collision-editor.js"></script><script src="world-object-catalog.js?v=clean-room-1"></script><script src="world-object-runtime.js"></script><script src="developer-console.js"></script><header><b>♫ CODA ARCADE · CONNECTED WORLD / WORLD BUILDER</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="assetToggle" type="button" title="Open Asset Studio (Shift+A)">✥ Assets</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · Wheel / + / − Zoom · 0 Reset · F2 Developer console · C Edit collision · Shift+L Edit layers · Right-drag to pan in editor &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 11 · asset studio · animations · layers · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
+</style><link rel="stylesheet" href="developer-console.css"><link rel="stylesheet" href="musician-ui.css"><script src="collision-editor.js"></script><script src="world-object-catalog.js?v=clean-room-1"></script><script src="world-object-runtime.js"></script><script src="developer-console.js"></script><script src="npc-behavior.js"></script><script src="character-renderer.js"></script><script src="musician-ui.js"></script><header><b>♫ CODA ARCADE · CONNECTED WORLD / WORLD BUILDER</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="assetToggle" type="button" title="Open Asset Studio (Shift+A)">✥ Assets</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · Wheel / + / − Zoom · 0 Reset · F2 Developer console · C Edit collision · Shift+L Edit layers · Right-drag to pan in editor &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 11 · asset studio · animations · layers · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
   <div class="editorbanner"><b>✎ FOREGROUND EDITOR</b><button id="editClose" type="button">✕</button></div>
   <div class="mini">Paint with pixels from the existing arcade artwork. Erase removes unwanted foreground coverage; the floor stays unchanged.</div>
   <div class="editorline"><button type="button" id="editPaint" class="current">🖌 Paint</button><button type="button" id="editErase">⌫ Erase</button></div>
@@ -77,7 +77,7 @@
  <p id="assetMessage" role="status">Your assets are saved in this browser. Export scene JSON to publish or move them to another computer.</p>
  <details><summary id="assetHelp">Help · shortcuts and storage</summary><p class="studioTip">Shift+A opens/closes. Delete removes. Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z redo. Arrows nudge selected asset (Shift = 8 px). Escape closes. GIF/APNG playback depends on browser support; sprite sheets offer deterministic frame animation. Crop selects a rectangular section of the *original art* (not the whole live canvas). Imported images are embedded in exported JSON. Browser storage is local to this page/origin; GitHub won't receive edits until you publish the export.</p></details>
 </aside><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><div id="pianoroom" hidden><div class="stage"><h2>♫ PIANO LAB ♫</h2><p>A quieter music space away from the arcade floor.</p><div class="keys"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p style="opacity:.7">Dedicated room preview — instruments and activities coming later.</p></div><button id="closepiano">← Return to Arcade</button></div><script>
-(()=>{'use strict';let developerConsole=null,worldObjects=null;const c=document.querySelector('#view'),g=c.getContext('2d',{alpha:false}),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}const W=1672,H=941,ART_SCALE=1,keys=new Set();let player={x:1180,y:388},cam={x:0,y:0,zoom:1,targetZoom:1},dest=null,emote=0,near=null,last=0,clock=0,walking=false,facing="down";const rooms=[{id:'lounge',name:'LOUNGE',x:95,y:145,w:350,h:235},{id:'dance',name:'DANCE',x:90,y:505,w:670,h:325},{id:'arcade',name:'ARCADE',x:648,y:220,w:900,h:580}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:718,y:313,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:831,y:314,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:951,y:315,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1064,y:315,url:'song-machine/index.html'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
+(()=>{'use strict';let developerConsole=null,worldObjects=null,npcBrain=null,characterRenderer=null,musicianUI=null,playerPhase=0,emoteStarted=0,followedMusician=null,followTimer=0;const c=document.querySelector('#view'),g=c.getContext('2d',{alpha:false}),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}const W=1672,H=941,ART_SCALE=1,keys=new Set();let player={x:1180,y:388},cam={x:0,y:0,zoom:1,targetZoom:1},dest=null,emote=0,near=null,last=0,clock=0,walking=false,facing="down";const rooms=[{id:'lounge',name:'LOUNGE',x:95,y:145,w:350,h:235},{id:'dance',name:'DANCE',x:90,y:505,w:670,h:325},{id:'arcade',name:'ARCADE',x:648,y:220,w:900,h:580}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:718,y:313,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:831,y:314,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:951,y:315,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1064,y:315,url:'song-machine/index.html'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
 
 // PHASE 9.8: World-space camera. Gameplay, collisions and editor masks stay in
 // their original 1672x941 coordinate system. Only the canvas view is scaled.
@@ -131,7 +131,7 @@ c.addEventListener('wheel',e=>{
 updateZoomControls();
 function runtimeGames(){return worldObjects?worldObjects.games(games):games.map((q,index)=>({...q,index}));}
 function cabinetApproach(index){const game=runtimeGames().find(g=>g.index===index)||runtimeGames()[0];return game?{x:game.npcX??game.x,y:game.npcY??323}:{x:1180,y:388};}
-const looks=[['#e5b48d','#ed8cbe','#171424','spiky'],['#85543b','#8ddde6','#e3c27d','long'],['#f4cba6','#c9a3f1','#402c4b','buns'],['#a56b48','#f4ae77','#1c172d','short'],['#f3c3a1','#b2f37b','#6c3159','bob'],['#704633','#a8b5fc','#eee6df','curly'],['#f0b79d','#ffd48c','#171424','ponytail']];const npc=[{name:'Ziggy',x:1450,y:752,mode:'enter',goal:0,wait:0,look:0},{name:'Nova',x:1450,y:752,mode:'enter',goal:1,wait:1.7,look:1},{name:'Byte',x:1450,y:752,mode:'enter',goal:2,wait:3.4,look:2},{name:'Mochi',x:1450,y:752,mode:'enter',goal:3,wait:5,look:3},{name:'Riff',x:1450,y:752,mode:'enter',goal:0,wait:7,look:4},{name:'Fizz',x:1450,y:752,mode:'enter',goal:1,wait:9,look:5},{name:'Dot',x:1450,y:752,mode:'enter',goal:2,wait:11,look:6}];const sofas=[{x:105,y:135,w:110,h:45},{x:240,y:135,w:110,h:45}];const seats=[{x:158,y:267},{x:370,y:262},{x:190,y:304},{x:390,y:296}];const spot=(p)=>p.mode==='cabinet'?cabinetApproach(p.goal%4):p.mode==='lounge'?seats[p.goal%4]:p.mode==='dance'?{x:205+(p.goal%4)*125,y:718+(p.goal%2)*65}:p.mode==='leave'?{x:1450,y:752}:{x:1450,y:752};const r=(x,y,w,h,color)=>{g.fillStyle=color;g.fillRect(Math.round(x),Math.round(y),w,h)};const t=(s,x,y,size=18,color='#e7e2ff')=>{g.fillStyle=color;g.font=`bold ${size}px monospace`;g.textAlign='center';g.fillText(s,x,y)};function sprite(x,y,look,walk=false,dance=false,scale=1){const [skin,shirt,hair,style]=look;g.save();g.translate(Math.round(x),Math.round(y));g.scale(scale,scale);const bob=dance?Math.sin(clock*8)*5:walk?Math.sin(clock*12)*2:0;r(-10,-38+bob,20,17,hair);if(style==='buns'){r(-15,-39+bob,6,7,hair);r(9,-39+bob,6,7,hair)}if(style==='long')r(-13,-30+bob,26,20,hair);r(-9,-32+bob,18,16,skin);r(-12,-16+bob,24,20,shirt);r(-16,-12+bob,4,13,skin);r(12,-12+bob,4,13,skin);r(-9,4+bob,7,11,'#695d99');r(2,4+bob,7,11,'#695d99');r(-10,14+bob,9,4,'#f8d56b');r(1,14+bob,9,4,'#f8d56b');r(-6,-24+bob,3,3,'#222033');r(4,-24+bob,3,3,'#222033');if(dance){const beat=Math.floor(clock*4+look[0].length)%4,up=beat%2===0;r(-18,-(up?29:13)+bob,5,up?16:11,skin);r(13,-(up?13:29)+bob,5,up?11:16,skin);r(-10+(up?-5:3),14+bob,9,5,'#f8d56b');r(1+(up?4:-4),14+bob,9,5,'#f8d56b')}g.restore()};
+const looks=[['#e5b48d','#ed8cbe','#171424','spiky'],['#85543b','#8ddde6','#e3c27d','long'],['#f4cba6','#c9a3f1','#402c4b','buns'],['#a56b48','#f4ae77','#1c172d','short'],['#f3c3a1','#b2f37b','#6c3159','bob'],['#704633','#a8b5fc','#eee6df','curly'],['#f0b79d','#ffd48c','#171424','ponytail']];const npc=window.CodaMusicianCast.map((person,index)=>({...person,x:1450,y:752,goal:index%4,wait:0,look:index}));const sofas=[{x:105,y:135,w:110,h:45},{x:240,y:135,w:110,h:45}];const seats=[{x:158,y:267},{x:370,y:262},{x:190,y:304},{x:390,y:296}];const spot=(p)=>p.mode==='cabinet'?cabinetApproach(p.goal%4):p.mode==='lounge'?seats[p.goal%4]:p.mode==='dance'?{x:205+(p.goal%4)*125,y:718+(p.goal%2)*65}:p.mode==='leave'?{x:1450,y:752}:{x:1450,y:752};const r=(x,y,w,h,color)=>{g.fillStyle=color;g.fillRect(Math.round(x),Math.round(y),w,h)};const t=(s,x,y,size=18,color='#e7e2ff')=>{g.fillStyle=color;g.font=`bold ${size}px monospace`;g.textAlign='center';g.fillText(s,x,y)};function sprite(x,y,look,walk=false,dance=false,scale=1){const [skin,shirt,hair,style]=look;g.save();g.translate(Math.round(x),Math.round(y));g.scale(scale,scale);const bob=dance?Math.sin(clock*8)*5:walk?Math.sin(clock*12)*2:0;r(-10,-38+bob,20,17,hair);if(style==='buns'){r(-15,-39+bob,6,7,hair);r(9,-39+bob,6,7,hair)}if(style==='long')r(-13,-30+bob,26,20,hair);r(-9,-32+bob,18,16,skin);r(-12,-16+bob,24,20,shirt);r(-16,-12+bob,4,13,skin);r(12,-12+bob,4,13,skin);r(-9,4+bob,7,11,'#695d99');r(2,4+bob,7,11,'#695d99');r(-10,14+bob,9,4,'#f8d56b');r(1,14+bob,9,4,'#f8d56b');r(-6,-24+bob,3,3,'#222033');r(4,-24+bob,3,3,'#222033');if(dance){const beat=Math.floor(clock*4+look[0].length)%4,up=beat%2===0;r(-18,-(up?29:13)+bob,5,up?16:11,skin);r(13,-(up?13:29)+bob,5,up?11:16,skin);r(-10+(up?-5:3),14+bob,9,5,'#f8d56b');r(1+(up?4:-4),14+bob,9,5,'#f8d56b')}g.restore()};
 // Phase 7.1: world-coordinate collision, small foot hitboxes, and A* navigation.
 // All dimensions refer to the original 1536×1024 background image.
 const COLLISION_CELL=10,FOOT_RADIUS=8;
@@ -361,56 +361,47 @@ for(let gy=64;gy<=74;gy++)for(let gx=79;gx<=85;gx++){
 function exportCollision(){const blob=new Blob([JSON.stringify([...edits],null,2)],{type:'application/json'});
  const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='coda-collision-edits.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
 
-function makeRoute(p,aim){return pathTo(p.x,p.y,aim.x,aim.y)}
-function go(p,dt){const aim=spot(p);const targetKey=p.mode+':'+p.goal;
- if(p.routeKey!==targetKey){p.routeKey=targetKey;p.route=makeRoute(p,aim)}
- if(!p.route||!p.route.length)return null;
- let target=p.route[0],dx=target.x-p.x,dy=target.y-p.y,dist=Math.hypot(dx,dy);
- if(dist<5){p.x=target.x;p.y=target.y;p.route.shift();return p.route.length>0}
- const step=Math.min(65*dt,dist),nx=p.x+dx/dist*step,ny=p.y+dy/dist*step;
- if(inside(nx,ny)){p.x=nx;p.y=ny;return true}
- // Rebuild a valid route instead of bypassing the collision boundary.
- p.route=makeRoute(p,aim);return p.route.length?true:null;
+function update(dt){
+ clock+=dt;
+ const frozen=developerConsole?developerConsole.isEditing():((layerState.active&&!layerState.preview)||assetStudio.active);
+ if(frozen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden){walking=false;return;}
+ const chatting=dialog.style.display==='block';
+ if(followedMusician&&!chatting){
+  const person=npc.find(p=>p.id===followedMusician&&!p.hidden);followTimer-=dt;
+  if(!person||Math.hypot(person.x-player.x,person.y-player.y)<72){followedMusician=null;dest=null;clickPath=[];}
+  else if(followTimer<=0&&(!dest||Math.hypot(person.x-dest.x,person.y-dest.y)>25)){
+   followTimer=.65;dest={x:person.x,y:person.y};clickPath=pathTo(player.x,player.y,person.x,person.y);
+   if(!clickPath.length){dest=null;followedMusician=null;}
+  }
+ }
+ let dx=chatting?0:(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0);
+ let dy=chatting?0:(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);
+ if(dx||dy){dest=null;clickPath=[];followedMusician=null;}
+ if(!chatting&&dest){
+  while(clickPath.length&&Math.hypot(clickPath[0].x-player.x,clickPath[0].y-player.y)<3)clickPath.shift();
+  if(!clickPath.length){dest=null;dx=dy=0;}else{dx=clickPath[0].x-player.x;dy=clickPath[0].y-player.y;}
+ }
+ const len=Math.hypot(dx,dy),before={x:player.x,y:player.y};
+ if(len){
+  facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');
+  const amount=dest?Math.min(230*dt,len):230*dt,mx=dx/len*amount,my=dy/len*amount,steps=Math.max(1,Math.ceil(amount/3));
+  for(let k=0;k<steps;k++){const nx=player.x+mx/steps,ny=player.y+my/steps;if(inside(nx,player.y))player.x=nx;if(inside(player.x,ny))player.y=ny;}
+ }
+ const moved=Math.hypot(player.x-before.x,player.y-before.y);walking=moved>.01;if(walking){playerPhase+=moved/14;avatar.walked=(avatar.walked||0)+moved/9;}
+ npcBrain?.update(dt);
+ near=null;let distance=Infinity;
+ for(const person of [...runtimeGames().map(q=>({...q,type:'game'})),...npc.filter(q=>!q.hidden).map(q=>({...q,type:'npc'})),{name:'Pip · Avatar Boutique',x:525,y:468,type:'shop'},{name:'Jukebox',x:1248,y:585,type:'jukebox'},{name:'Piano Lab',x:1290,y:247,type:'piano'}]){
+  const d=Math.hypot(person.x-player.x,person.y-player.y);if(d<94&&d<distance){near=person;distance=d;}
+ }
+ if(followedMusician&&near?.id===followedMusician)followedMusician=null;
+ status.textContent=chatting?'E · Finish conversation':near?'E · '+(near.type==='game'?'Play ':near.type==='shop'?'Visit ':near.type==='npc'?'Chat with ':'Open ')+near.name:'Explore · E interact · Q emote · Meet musicians to find a visitor';
 }
-function update(dt){clock+=dt;if(developerConsole?developerConsole.isEditing():((layerState.active&&!layerState.preview)||assetStudio.active))return;if(dialog.style.display==='block'||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;let dx=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),dy=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);if(dx||dy){dest=null;clickPath=[];facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');}if(dest){
- if(!clickPath.length){dest=null;dx=dy=0}
- else {
-  const waypoint=clickPath[0];dx=waypoint.x-player.x;dy=waypoint.y-player.y;
-  if(Math.hypot(dx,dy)<11){clickPath.shift();if(!clickPath.length){dest=null;dx=dy=0}}
-  if(dx||dy)facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');
- }
-}const len=Math.hypot(dx,dy);walking=!!len;if(len){const mx=dx/len*230*dt,my=dy/len*230*dt;
- const steps=Math.max(1,Math.ceil(Math.hypot(mx,my)/3));
- for(let k=0;k<steps;k++){
-  const nx=player.x+mx/steps,ny=player.y+my/steps;
-  if(inside(nx,player.y))player.x=nx;
-  if(inside(player.x,ny))player.y=ny;
- }
-}for(const p of npc.slice(0,2)){
-  if(p.hidden){p.wait-=dt;if(p.wait<=0){p.hidden=false;p.x=1450;p.y=752;p.mode='enter';p.routeKey='';p.arrived=false;p.wait=0.5;}continue;}
-  // Arrival and dwell are separate: NPCs must reach the dance floor before dancing.
-  if(p.wait>0){p.wait-=dt;continue;}
-  if(p.arrived){
-    p.arrived=false;
-    if(p.mode==='cabinet')p.mode='lounge';
-    else if(p.mode==='lounge')p.mode='dance';
-    else if(p.mode==='dance')p.mode='leave';
-    p.routeKey='';p.goal=(p.goal+1)%4;continue;
-  }
-  const moving=go(p,dt);
-  if(moving===null){p.wait=2;p.routeKey='';continue;}
-  if(!moving){
-    if(p.mode==='leave'){p.hidden=true;p.wait=6+(p.look%4)*3;p.routeKey='';continue;}
-    if(p.mode==='enter'){p.mode='cabinet';p.routeKey='';continue;}
-    p.arrived=true;
-    p.wait=p.mode==='cabinet'?7+(p.look%3)*2:p.mode==='lounge'?9+(p.look%3)*2:12+(p.look%4)*2;
-  }
-}near=null;let d=Infinity;for(const p of [...runtimeGames().map(q=>({...q,type:'game'})),...npc.slice(0,2).filter(q=>!q.hidden).map(q=>({...q,type:'npc'})),{name:'Pip · Avatar Boutique',x:525,y:468,type:'shop'},{name:'Jukebox',x:1248,y:585,type:'jukebox'},{name:'Piano Lab',x:1290,y:247,type:'piano'}]){const dd=Math.hypot(p.x-player.x,p.y-player.y);if(dd<94&&dd<d){near=p;d=dd}}status.textContent=near?'E · '+(near.type==='game'?'Play ':near.type==='shop'?'Talk to ':'Chat with ')+near.name:'Explore · E interact · C collision · L green occlusion masks · F foreground'}const gameoverlay=document.querySelector('#gameoverlay'),gameiframe=document.querySelector('#gameiframe');let gameOpen=false;
+const gameoverlay=document.querySelector('#gameoverlay'),gameiframe=document.querySelector('#gameiframe');let gameOpen=false;
 
 function openPiano(){keys.clear();dest=null;document.querySelector('#pianoroom').hidden=false;}
 function closePiano(){document.querySelector('#pianoroom').hidden=true;keys.clear();c.focus();}
 document.querySelector('#closepiano').addEventListener('click',closePiano);
-function openCabinet(game){stopSong();stopAmbientMusic();
+function openCabinet(game){musicianUI?.closeConversation();walking=false;followedMusician=null;stopSong();stopAmbientMusic();
   if(!game||!game.url)return;
   keys.clear();dest=null;dialog.style.display='none';
   document.querySelector('#activegame').textContent=game.name;
@@ -477,7 +468,16 @@ function neonDecoration(){
  for(const [x,y] of [[1020,640],[2250,640],[1020,1370],[2250,1370]]){r(x-20,y-24,40,48,'#244b54');r(x-12,y-45,24,40,'#5ebd9c')}
  r(1450,760,350,130,'#203950');r(1462,772,326,106,'#2c5165');t('✦ CODA ARCADE ✦',1625,838,27,'#b4f8ff');
 }
-function talk(){if(dialog.style.display==='block'){dialog.style.display='none';return}if(!near)return;if(near.type==='game'){openCabinet(near);return}if(near.type==='shop'){openBoutique();return}if(near.type==='jukebox'){openJukebox();return}if(near.type==='piano'){openPiano();return}document.querySelector('#who').textContent=near.name;document.querySelector('#words').textContent=near.type==='shop'?'Welcome to the Pixel Boutique! In the full arcade, I help you customize your avatar.':lines[Math.floor(Math.random()*lines.length)];dialog.style.display='block'}const worldArt=new Image();worldArt.src='coda_arcade_world_clean.png';
+function talk(){
+ if(dialog.style.display==='block'){musicianUI.closeConversation();return;}
+ if(!near)return;
+ if(near.type==='game'){openCabinet(near);return;}
+ if(near.type==='shop'){openBoutique();return;}
+ if(near.type==='jukebox'){openJukebox();return;}
+ if(near.type==='piano'){openPiano();return;}
+ musicianUI.talk(near.id);
+}
+const worldArt=new Image();worldArt.src='coda_arcade_world_clean.png';
 const actorsArt=new Image();actorsArt.src='coda_arcade_phase73_characters.png';
 const characterFrames={"hero_down_0":{"x":16,"y":5,"w":47,"h":69},"hero_down_1":{"x":97,"y":5,"w":45,"h":69},"hero_down_2":{"x":178,"y":5,"w":44,"h":69},"hero_down_3":{"x":259,"y":5,"w":42,"h":69},"hero_down_4":{"x":338,"y":5,"w":44,"h":69},"hero_up_0":{"x":416,"y":6,"w":47,"h":67},"hero_up_1":{"x":497,"y":6,"w":45,"h":67},"hero_up_2":{"x":578,"y":6,"w":44,"h":67},"hero_up_3":{"x":658,"y":6,"w":43,"h":67},"hero_up_4":{"x":739,"y":6,"w":42,"h":67},"hero_left_0":{"x":816,"y":5,"w":47,"h":69},"hero_left_1":{"x":896,"y":5,"w":47,"h":69},"hero_left_2":{"x":16,"y":85,"w":47,"h":69},"hero_left_3":{"x":96,"y":85,"w":47,"h":69},"hero_left_4":{"x":176,"y":85,"w":47,"h":69},"hero_right_0":{"x":256,"y":85,"w":47,"h":69},"hero_right_1":{"x":336,"y":85,"w":47,"h":69},"hero_right_2":{"x":416,"y":85,"w":47,"h":69},"hero_right_3":{"x":496,"y":85,"w":47,"h":69},"hero_right_4":{"x":576,"y":85,"w":47,"h":69},"pink_down_0":{"x":652,"y":84,"w":55,"h":71},"pink_up_0":{"x":735,"y":86,"w":50,"h":67},"pink_left_0":{"x":812,"y":86,"w":55,"h":67},"pink_right_0":{"x":892,"y":84,"w":55,"h":71},"blue_down_0":{"x":12,"y":164,"w":55,"h":71},"blue_up_0":{"x":94,"y":166,"w":52,"h":67},"blue_left_0":{"x":172,"y":166,"w":55,"h":67},"blue_right_0":{"x":252,"y":164,"w":55,"h":71},"brown_down_0":{"x":334,"y":164,"w":51,"h":71},"brown_up_0":{"x":412,"y":164,"w":55,"h":71},"brown_left_0":{"x":492,"y":164,"w":55,"h":71},"brown_right_0":{"x":572,"y":164,"w":55,"h":71},"hat_down_0":{"x":657,"y":164,"w":46,"h":71},"hat_up_0":{"x":732,"y":166,"w":55,"h":67},"hat_left_0":{"x":812,"y":166,"w":55,"h":67},"hat_right_0":{"x":892,"y":164,"w":55,"h":71},"green_down_0":{"x":12,"y":244,"w":55,"h":71},"green_up_0":{"x":92,"y":246,"w":55,"h":67},"green_left_0":{"x":172,"y":246,"w":55,"h":67},"green_right_0":{"x":252,"y":244,"w":55,"h":71},"orange_down_0":{"x":334,"y":244,"w":52,"h":71},"orange_up_0":{"x":412,"y":246,"w":55,"h":67},"orange_left_0":{"x":492,"y":246,"w":55,"h":67},"orange_right_0":{"x":572,"y":244,"w":55,"h":71}};
 const actorsArtReady=()=>actorsArt.complete&&actorsArt.naturalWidth;
@@ -895,7 +895,7 @@ async function loadAssetStudio(){let found=null;
 window.CodaAssetStudioQA={get:()=>({active:assetStudio.active,count:assetStudio.assets.length,selected:assetStudio.selected,assets:assetStudio.assets.map(a=>({id:a.id,name:a.name,kind:a.kind,x:a.x,y:a.y,w:a.w,h:a.h,layer:a.layer,anim:a.anim,frames:a.frames}))}),open:()=>toggleAssetStudio(true),close:()=>toggleAssetStudio(false),preset:()=>assetUI('assetPreset').click(),export:downloadAssetJSON,save:persistAssets};
 // --- END ASSET STUDIO ------------------------------------------------------
 
-window.CODA_BUILD="12.2-clean-room-art";
+window.CODA_BUILD="13.0-musician-routines";
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -1587,7 +1587,7 @@ function draw(){
  // Original floor remains beneath actors. Above them render only isolated
  // object silhouettes (plus precise facades for structural walls/door frames).
  const liveActors=[];
- for(const p of npc.slice(0,2))if(!p.hidden){
+ for(const p of npc)if(!p.hidden){
   liveActors.push({type:'npc',y:p.y,x:p.x,p});
  }
  liveActors.push({type:'player',y:player.y,x:player.x});
@@ -1606,11 +1606,9 @@ function draw(){
   if(item.type==='player'){
    g.save();g.globalCompositeOperation='screen';g.globalAlpha=.12;
    g.fillStyle='#7aefff';g.beginPath();g.ellipse(player.x,player.y+2,17,5,0,0,Math.PI*2);g.fill();g.restore();
-   drawActor('hero_'+facing+'_'+(walking?Math.floor(clock*8)%5:0),player.x,player.y,39,53,emote>clock?-Math.abs(Math.sin(clock*9)*3):0);
+   characterRenderer.drawPlayer(g,avatar,{x:player.x,y:player.y,facing,walking,phase:playerPhase,emote:emote>clock?(avatar.emote||'wave'):null,emoteTime:clock-emoteStarted},clock);
   }else{
-   const p=item.p,dancing=p.mode==='dance'&&p.arrived;
-   const kind=['pink','blue','orange','brown','green','hat'][p.look%6];
-   drawActor(kind+'_down_0',p.x,p.y,39,52,dancing?Math.sin(clock*7+p.look)*4:0);
+   characterRenderer.drawNPC(g,item.p,clock);
   }
  }
  renderAssetsOfLayer('front');
@@ -1628,7 +1626,13 @@ function draw(){
  }
  // Don't draw extra characters or arrows from the baked-in artwork.
  g.save();g.shadowColor='#030814';g.shadowBlur=5;
- t('YOU',player.x,player.y-59,12,'#e6ffac');g.restore();
+ t(avatar.name&&avatar.name!=='Guest'?avatar.name:'YOU',player.x,player.y-59,12,'#e6ffac');g.restore();
+ for(const p of npc){if(p.hidden)continue;const nearby=Math.hypot(p.x-player.x,p.y-player.y)<145,following=p.id===followedMusician,chatting=p.conversation;
+  g.save();g.shadowColor='#08091a';g.shadowBlur=4;
+  if(nearby||following||chatting){t((following?'↓ ':'')+p.name,p.x,p.y-59,11,chatting?'#ffe3ac':following?'#c4ffab':'#e8dfff');}
+  g.restore();
+ }
+
  if(collisionDebug){
   g.save();g.globalAlpha=.40;
   for(let yy=0;yy<GRID_H;yy++)for(let xx=0;xx<GRID_W;xx++){
@@ -1678,6 +1682,8 @@ function draw(){
 }
 window.CodaArcadeQA=Object.freeze({
   build:window.CODA_BUILD,
+  characters:()=>({player:{...player,facing,walking,phase:playerPhase,following:followedMusician,destination:dest?{...dest}:null,emote:emote>clock?(avatar.emote||'wave'):null,appearance:characterRenderer.normalizeProfile(avatar)},npcs:npcBrain.snapshot()}),
+  conversation:()=>({id:musicianUI?.selected()||null,open:dialog.style.display==='block'}),
   worldObjects:()=>window.CodaWorldObjectCatalog.map(part=>{const object=worldObjects.state(part.name),anchor=part.anchor||[part.bounds[0]+part.bounds[2]/2,part.bounds[1]+part.bounds[3]/2];return {name:part.name,visible:object.visible,opacity:object.opacity,anchor:worldObjects.point(object,...anchor),spin:object.asset?.discoSpin??part.spin,rays:object.visible&&object.asset?.discoRays!==false,game:part.gameIndex!==undefined?runtimeGames().find(g=>g.index===part.gameIndex)||null:null};}),
   camera:()=>({x:cam.x,y:cam.y,zoom:cam.zoom,targetZoom:cam.targetZoom,visibleWidth:W/cam.zoom,visibleHeight:H/cam.zoom}),
   cameraPoint:(x,y)=>({x:cam.x+x/cam.zoom,y:cam.y+y/cam.zoom}),
@@ -1702,15 +1708,15 @@ window.CodaArcadeQA=Object.freeze({
 });
 function frame(ms){const dt=Math.min(.05,(ms-last)/1000||0);last=ms;
  tickAmbientMusic();
- try{if(!gameOpen)update(dt);updateCamera(dt);draw()}catch(err){
+ try{if(!gameOpen)update(dt);updateCamera(dt);draw();musicianUI?.update(clock)}catch(err){
  console.error('Arcade frame error:',err);
  if(typeof g.reset==='function')g.reset();
  g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.globalCompositeOperation='source-over';
  g.fillStyle='#10142b';g.fillRect(0,0,W,H);
  g.fillStyle='#ffb9e5';g.font='bold 25px monospace';g.fillText('Arcade error: '+err.message,55,110);
- }requestAnimationFrame(frame)}window.addEventListener('keydown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const k=e.key.toLowerCase();if(k==='a'&&e.shiftKey&&!e.repeat&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();toggleAssetStudio();return;}if(assetStudio.active&&!developerConsole?.isPlaytest()){if(k==='escape'){e.preventDefault();if(assetStudio.capturing){assetStudio.capturing=null;studioMessage('Crop cancelled.')}else toggleAssetStudio(false);return;}if((e.ctrlKey||e.metaKey)&&k==='z'&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUndoRedo(!e.shiftKey);return;}if((e.ctrlKey||e.metaKey)&&k==='y'&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUndoRedo(false);return;}if(['delete','backspace'].includes(k)&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUI('assetRemove').click();return;}if(k.startsWith('arrow')&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();const a=assetSelected();if(a&&!a.locked){const before=assetSnapshot(),step=e.shiftKey?8:1;a.x=numberBound(a.x+(k==='arrowright'?step:k==='arrowleft'?-step:0),-1000,3000,a.x);a.y=numberBound(a.y+(k==='arrowdown'?step:k==='arrowup'?-step:0),-1000,2200,a.y);assetRecordHistory(before);}return;}if(!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)&&['+','=','-','_','0'].includes(k)){e.preventDefault();setCameraZoom(k==='0'?1:cam.targetZoom+((k==='+'||k==='=')?ZOOM_STEP:-ZOOM_STEP));return;}if(!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName))e.preventDefault();return;}if(k==='l'&&e.shiftKey&&!e.repeat){e.preventDefault();developerConsole.open('layers');return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='z'&&!e.repeat){e.preventDefault();editorEl(e.shiftKey?'editRedo':'editUndo').click();return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='y'&&!e.repeat){e.preventDefault();editorEl('editRedo').click();return;}if(layerState.active&&k==='escape'&&!e.repeat){e.preventDefault();toggleLayerEditor(false);return;}if(layerState.active&&!layerState.preview){if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k))e.preventDefault();return;}if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.repeat&&['=','+','-','_','0'].includes(k)&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){
+ }requestAnimationFrame(frame)}window.addEventListener('keydown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const k=e.key.toLowerCase();if(dialog.style.display==='block'){if((k==='e'||k==='escape')&&!e.repeat){e.preventDefault();musicianUI.closeConversation();}return;}if(k==='a'&&e.shiftKey&&!e.repeat&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();toggleAssetStudio();return;}if(assetStudio.active&&!developerConsole?.isPlaytest()){if(k==='escape'){e.preventDefault();if(assetStudio.capturing){assetStudio.capturing=null;studioMessage('Crop cancelled.')}else toggleAssetStudio(false);return;}if((e.ctrlKey||e.metaKey)&&k==='z'&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUndoRedo(!e.shiftKey);return;}if((e.ctrlKey||e.metaKey)&&k==='y'&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUndoRedo(false);return;}if(['delete','backspace'].includes(k)&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUI('assetRemove').click();return;}if(k.startsWith('arrow')&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();const a=assetSelected();if(a&&!a.locked){const before=assetSnapshot(),step=e.shiftKey?8:1;a.x=numberBound(a.x+(k==='arrowright'?step:k==='arrowleft'?-step:0),-1000,3000,a.x);a.y=numberBound(a.y+(k==='arrowdown'?step:k==='arrowup'?-step:0),-1000,2200,a.y);assetRecordHistory(before);}return;}if(!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)&&['+','=','-','_','0'].includes(k)){e.preventDefault();setCameraZoom(k==='0'?1:cam.targetZoom+((k==='+'||k==='=')?ZOOM_STEP:-ZOOM_STEP));return;}if(!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName))e.preventDefault();return;}if(k==='l'&&e.shiftKey&&!e.repeat){e.preventDefault();developerConsole.open('layers');return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='z'&&!e.repeat){e.preventDefault();editorEl(e.shiftKey?'editRedo':'editUndo').click();return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='y'&&!e.repeat){e.preventDefault();editorEl('editRedo').click();return;}if(layerState.active&&k==='escape'&&!e.repeat){e.preventDefault();toggleLayerEditor(false);return;}if(layerState.active&&!layerState.preview){if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k))e.preventDefault();return;}if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.repeat&&['=','+','-','_','0'].includes(k)&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){
  e.preventDefault();setCameraZoom(k==='0'?1:cam.targetZoom+((k==='+'||k==='=')?ZOOM_STEP:-ZOOM_STEP));return;}
- if(k==='c'&&!e.repeat){if(developerConsole){developerConsole.open('collision');return;}collisionDebug=!collisionDebug;return;}if(k==='l'&&!e.repeat){depthDebug=!depthDebug;return;}if(k==='f'&&!e.repeat){foregroundEnabled=!foregroundEnabled;return;}if(k==='x'&&collisionDebug&&!e.repeat){exportCollision();return;}if(k==='r'&&e.shiftKey&&collisionDebug&&!e.repeat){localStorage.removeItem('codaCollisionEditsV891');window.location.reload();return;}if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k)){e.preventDefault();keys.add(k);if(k==='e'&&!e.repeat)talk();if(k==='q')emote=clock+2}});window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>keys.clear());c.addEventListener('pointerdown',e=>{if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const b=c.getBoundingClientRect();
+ if(k==='c'&&!e.repeat){if(developerConsole){developerConsole.open('collision');return;}collisionDebug=!collisionDebug;return;}if(k==='l'&&!e.repeat){depthDebug=!depthDebug;return;}if(k==='f'&&!e.repeat){foregroundEnabled=!foregroundEnabled;return;}if(k==='x'&&collisionDebug&&!e.repeat){exportCollision();return;}if(k==='r'&&e.shiftKey&&collisionDebug&&!e.repeat){localStorage.removeItem('codaCollisionEditsV891');window.location.reload();return;}if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k)){e.preventDefault();keys.add(k);if(k==='e'&&!e.repeat)talk();if(k==='q'&&!e.repeat){emoteStarted=clock;emote=clock+2.4;avatar.emotesUsed=(avatar.emotesUsed||0)+1;}}});window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>keys.clear());c.addEventListener('pointerdown',e=>{if(dialog.style.display==='block')return;if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const b=c.getBoundingClientRect();
  if(developerConsole?.pointerDown(e))return;
  if((!developerConsole||developerConsole.isEditing())&&assetPointerStart(e))return;
  if(editorPointerDown(e))return;
@@ -1740,27 +1746,29 @@ const panel=document.querySelector('#panel'),panelBody=document.querySelector('#
 let firebaseApi=null,cloudAuth=null,cloudDb=null,cloudUser=null,profileReady=false,authMessage='Connecting…',songRecords={},songPlayer=null;
 const config=window.ARCADE_ACCOUNTS_CONFIG;
 function msg(s){const el=panelBody.querySelector('.panelMsg');if(el)el.textContent=s}
-function openPanel(title){keys.clear();dest=null;dialog.style.display='none';panelTitle.textContent=title;panel.hidden=false;panelBody.replaceChildren()}
+function openPanel(title){if(assetStudio.active)toggleAssetStudio(false);musicianUI?.closeConversation();walking=false;keys.clear();dest=null;dialog.style.display='none';panelTitle.textContent=title;panel.hidden=false;panelBody.replaceChildren()}
 function closePanel(){panel.hidden=true;keys.clear();c.focus()}
 document.querySelector('#panelClose').onclick=closePanel;
-function safeOption(field,items){const label=document.createElement('label');label.className='formRow';label.textContent=field;const select=document.createElement('select');for(const [value,text] of items){const opt=document.createElement('option');opt.value=value;opt.textContent=text;select.append(opt)}label.append(select);panelBody.append(label);return select}
-function safeInput(field,value,type='text'){const label=document.createElement('label');label.className='formRow';label.textContent=field;const input=document.createElement('input');input.type=type;input.value=value;label.append(input);panelBody.append(label);return input}
+function safeOption(field,items){const label=document.createElement('label');label.className='formRow';label.textContent=field;const select=document.createElement('select');select.setAttribute('aria-label',field);for(const [value,text] of items){const opt=document.createElement('option');opt.value=value;opt.textContent=text;select.append(opt)}label.append(select);panelBody.append(label);return select}
+function safeInput(field,value,type='text'){const label=document.createElement('label');label.className='formRow';label.textContent=field;const input=document.createElement('input');input.setAttribute('aria-label',field);input.type=type;input.value=value;label.append(input);panelBody.append(label);return input}
 function addAction(text,callback){const b=document.createElement('button');b.textContent=text;b.onclick=callback;panelBody.append(b);return b}
 function refreshAvatar(){try{avatar={...avatar,...JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}}catch{}}
-function storeAvatar(){localStorage.setItem('musicArcadeV1',JSON.stringify(avatar));refreshAvatar();syncProfile()}
+function storeAvatar(){try{localStorage.setItem('musicArcadeV1',JSON.stringify(avatar));syncProfile();return true;}catch(err){msg('Browser storage is unavailable. Your look is active for this visit; saving has not completed.');return false;}}
 function unlocked(item){return !item.unlock||Boolean(item.unlock(avatar))}
 const accessories=[['none','None'],['cap','Baseball cap'],['bow','Bow'],['sunglasses','Sunglasses'],['headphones','Headphones'],['bowtie','Bow tie'],['starclip','Neon star clip'],['partyglasses','Party glasses'],['halo','Neon halo'],['pixelheadphones','Pixel headphones']];
 const rewards={bowtie:a=>a.customized,starclip:a=>(a.jumps||0)>=10,partyglasses:a=>(a.emotesUsed||0)>=5,halo:a=>(a.walked||0)>=450};
 function openBoutique(){openPanel('Pip · Pixel Boutique');const p=document.createElement('p');p.textContent='Pip: “Welcome in! Want to try a new look? Your unlocked accessories are right here!”';panelBody.append(p);
- const name=safeInput('Arcade nickname',avatar.name||'Guest');name.maxLength=18;
- const hair=safeOption('Hairstyle',[['short','Short'],['bob','Bob'],['long','Long'],['curly','Curly'],['ponytail','Ponytail'],['spiky','Spiky'],['bald','Bald'],['buns','Space buns']]);hair.value=avatar.hairstyle||'short';
- const outfit=safeOption('Outfit',[['pants','Pants'],['shorts','Shorts'],['dress','Dress'],['overalls','Overalls']]);outfit.value=avatar.outfit||'pants';
- const skin=safeInput('Skin color',avatar.skin||'#d49a76','color'),hairColor=safeInput('Hair color',avatar.hair||'#463145','color'),shirt=safeInput('Outfit color',avatar.shirt||'#a7f66f','color');
- const accessory=safeOption('Accessories',accessories.map(([id,label])=>[id,(rewards[id]&&!unlocked({unlock:rewards[id]})?'🔒 ':'')+label]));accessory.value=avatar.accessory||'none';
- const shoes=safeOption('Shoes',[['sneakers','Sneakers'],['boots','Boots'],['hightops','High tops'],['neon','Neon trainers'],['gold','Gold kicks']]);shoes.value=avatar.shoes||'sneakers';
- const emoteChoice=safeOption('Emote',[['wave','Wave'],['dance','Dance'],['spin','Spin'],['robot','Robot'],['disco','Disco point']]);emoteChoice.value=avatar.emote||'wave';
+ const normalized=characterRenderer.normalizeProfile(avatar);
+ const name=safeInput('Arcade nickname',normalized.name);name.maxLength=18;
+ const hair=safeOption('Hairstyle',[['short','Short'],['bob','Bob'],['long','Long'],['curly','Curly'],['ponytail','Ponytail'],['spiky','Spiky'],['bald','Bald'],['buns','Space buns']]);hair.value=normalized.hairstyle||'short';
+ const outfit=safeOption('Outfit',[['pants','Pants'],['shorts','Shorts'],['dress','Dress'],['overalls','Overalls']]);outfit.value=normalized.outfit||'pants';
+ const skin=safeInput('Skin color',normalized.skin||'#d49a76','color'),hairColor=safeInput('Hair color',normalized.hair||'#463145','color'),shirt=safeInput('Outfit color',normalized.shirt||'#a7f66f','color');
+ const accessory=safeOption('Accessories',accessories.map(([id,label])=>[id,(rewards[id]&&!unlocked({unlock:rewards[id]})?'🔒 ':'')+label]));accessory.value=normalized.accessory||'none';
+ const shoes=safeOption('Shoes',[['sneakers','Sneakers'],['boots','Boots'],['hightops','High tops'],['neon','Neon trainers'],['gold','Gold kicks']]);shoes.value=normalized.shoes||'sneakers';
+ const emoteChoice=safeOption('Emote',[['wave','Wave'],['dance','Dance'],['spin','Spin'],['robot','Robot'],['disco','Disco point']]);emoteChoice.value=normalized.emote||'wave';
+ musicianUI.addPreview(()=>({...avatar,hat:false,name:name.value,hairstyle:hair.value,outfit:outfit.value,skin:skin.value,hair:hairColor.value,shirt:shirt.value,accessory:accessory.value,shoes:shoes.value,emote:emoteChoice.value}));
  const note=document.createElement('p');note.className='muted';note.textContent='Some rewards unlock through arcade achievements. Locked items cannot be equipped.';panelBody.append(note);
- addAction('Save my look',()=>{if(rewards[accessory.value]&&!rewards[accessory.value](avatar)){msg('That accessory is still locked.');return}Object.assign(avatar,{name:name.value.trim().slice(0,18)||'Guest',hairstyle:hair.value,outfit:outfit.value,skin:skin.value,hair:hairColor.value,shirt:shirt.value,accessory:accessory.value,shoes:shoes.value,emote:emoteChoice.value,customized:true});storeAvatar();closePanel()});const m=document.createElement('p');m.className='panelMsg';panelBody.append(m);
+ addAction('Save my look',()=>{if(rewards[accessory.value]&&!rewards[accessory.value](avatar)){msg('That accessory is still locked.');return}Object.assign(avatar,characterRenderer.normalizeProfile({name:name.value,hairstyle:hair.value,outfit:outfit.value,skin:skin.value,hair:hairColor.value,shirt:shirt.value,accessory:accessory.value,shoes:shoes.value,emote:emoteChoice.value}),{customized:true,hat:false});if(storeAvatar())closePanel()});const m=document.createElement('p');m.className='panelMsg';panelBody.append(m);
 }
 function openAccount(){openPanel('Arcade Passport');const p=document.createElement('p');p.textContent=cloudUser?(profileReady?'Signed in. Your avatar is linked to your existing profile.':'Signed in; profile is loading. Please wait before editing your avatar.'):'Play as a guest, or sign in to sync your avatar and achievements.';panelBody.append(p);const status=document.createElement('p');status.className='panelMsg';status.textContent=authMessage;panelBody.append(status);const b=addAction(cloudUser?'Sign out':'Continue with Google',async()=>{if(!firebaseApi||!cloudAuth)return msg('Google sign-in is still connecting.');try{if(cloudUser)await firebaseApi.signOut(cloudAuth);else await firebaseApi.signInWithPopup(cloudAuth,new firebaseApi.GoogleAuthProvider());closePanel()}catch(e){msg(e.code?.includes('popup-closed')?'Sign-in cancelled.':e.message||'Sign-in failed.')}});b.disabled=!firebaseApi||Boolean(cloudUser&&!profileReady)}
 async function syncProfile(){if(!cloudUser||!profileReady||!firebaseApi)return;try{await firebaseApi.set(firebaseApi.ref(cloudDb,'arcadeProfiles/'+cloudUser.uid),{profile:avatar,updatedAt:firebaseApi.serverTimestamp(),schemaVersion:1})}catch(e){authMessage='Could not save profile: '+e.message}}
@@ -1772,7 +1780,17 @@ function playSong(song){stopAmbientMusic();stopSong();const C=window.AudioContex
  for(const tr of song.tracks||[]){if(tr.mute)continue;for(const n of tr.notes||[])if(n.t<song.bars*steps(song.meter))note(n.p,start+n.t*beat,n.d*beat*.94,tr.sound,tr.volume)}for(let i=0;i<3;i++){const tr=song.drums?.[i];if(!tr||tr.mute)continue;for(const n of tr.notes||[])if(n.t<song.bars*steps(song.meter))note(i===0?45:i===1?57:88,start+n.t*beat,.12,i===0?3:1,tr.volume)}songPlayer={stop(){if(stopped)return;stopped=true;for(const o of oscillators)try{o.stop()}catch{}ctx.close().catch(()=>{})}};msg('Now playing your composition.');setTimeout(()=>{if(songPlayer&&!stopped){stopSong();msg('Playback finished.')}},(song.bars*steps(song.meter)*beat+.2)*1000)}
 async function openJukebox(){openPanel('♫ Jukebox · Your Songs');addAction('■ Stop playback',stopSong);const m=document.createElement('p');m.className='panelMsg';m.textContent='Loading saved compositions…';panelBody.append(m);if(!cloudUser||!profileReady){m.textContent='Sign in with Google to see your saved Song Machine compositions.';return}try{const snap=await firebaseApi.get(firebaseApi.ref(cloudDb,'songLibrary/'+cloudUser.uid));songRecords=snap.val()||{};const songs=Object.entries(songRecords).sort((a,b)=>(b[1].updatedAt||0)-(a[1].updatedAt||0));m.textContent=songs.length?songs.length+' saved composition(s)':'No saved compositions yet. Visit Song Machine to create one.';for(const [id,record] of songs){if(!record.composition)continue;const row=document.createElement('div');row.className='panelRow';const info=document.createElement('div');const strong=document.createElement('strong');strong.textContent=record.title||'Untitled';info.append(strong);const small=document.createElement('small');small.textContent=(record.composition.bpm||110)+' BPM';info.append(small);row.append(info);const play=document.createElement('button');play.textContent='▶ Play';play.onclick=()=>playSong(record.composition);row.append(play);const edit=document.createElement('button');edit.textContent='Edit ↗';edit.onclick=()=>{stopSong();closePanel();openCabinet({...games[3],url:'song-machine/index.html?song='+encodeURIComponent(id)})};row.append(edit);panelBody.append(row)}}catch(e){m.textContent='Could not load saved songs: '+e.message}}
 document.querySelector('#accountBtn').onclick=openAccount;document.querySelector('#jukeboxBtn').onclick=openJukebox;initCloud();
+characterRenderer=window.createCodaCharacterRenderer({image:actorsArt,frames:characterFrames,reducedMotion:()=>window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true});
 worldObjects=window.createCodaWorldObjects({catalog:window.CodaWorldObjectCatalog,getAssets:()=>assetStudio.assets,getAnimation:assetAnimTransform});
+npcBrain=window.createCodaNPCBehavior({npcs:npc,inside,route:pathTo,getGames:runtimeGames,getPlayer:()=>player});
+musicianUI=window.createCodaMusicianUI({
+ npcs:npc,getBrain:()=>npcBrain,renderer:characterRenderer,canvas:c,panelBody,
+ openPanel,closePanel,openWardrobe:openBoutique,
+ clearInput:()=>{keys.clear();dest=null;clickPath=[];walking=false;},
+ distance:person=>Math.hypot(person.x-player.x,person.y-player.y),
+ faceTo:person=>{const dx=person.x-player.x,dy=person.y-player.y;facing=Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'down':'up';},
+ walkTo:person=>{followedMusician=person.id;followTimer=.65;dest={x:person.x,y:person.y};clickPath=pathTo(player.x,player.y,person.x,person.y);if(!clickPath.length){dest=null;status.textContent='No walking route to '+person.name+'. Open Collision to inspect the path.';}c.focus();}
+});
 developerConsole=window.createCodaDeveloperConsole({
  W,H,c,studio:assetStudio,layer:layerState,parts:foregroundParts,catalog:window.CodaWorldObjectCatalog,worldArt,foregroundArt,
  cell:COLLISION_CELL,gridWidth:GRID_W,gridHeight:GRID_H,navGrid,baseGrid:defaultNavGrid,
@@ -1783,7 +1801,7 @@ developerConsole=window.createCodaDeveloperConsole({
  toggle:toggleAssetStudio,selected:assetSelected,prototype:assetPrototype,add:assetNew,
  assetAt,nearHandle:(a,p)=>{const ctl=assetControlPositions(a);return Math.min(Math.hypot(p.x-ctl.corner.x,p.y-ctl.corner.y),Math.hypot(p.x-ctl.rotator.x,p.y-ctl.rotator.y))<14/cam.zoom},
  assetPointerEnd,layerPointerDown:editorPointerDown,layerPointerMove:editorPointerMove,layerPointerEnd:editorPointerEnd,
- invalidateRoutes:()=>{keys.clear();dest=null;clickPath=[];for(const p of npc){p.routeKey=null;p.route=[]}},
+ invalidateRoutes:()=>{keys.clear();dest=null;clickPath=[];npcBrain?.invalidateRoutes();},
  invalidateArtwork:()=>{layerState.dirty=true;assetForegroundCompositeCache=null;greenMaskCache.clear()},
  db:assetDB,legacyStore:ASSET_STORE,validLegacy:validScene,validAsset:isValidAsset,validStroke:isEditorAction,
  maxAssets:ASSET_MAX,fileData:dataURLFromFile,imageDimensions:readImageDimensions
