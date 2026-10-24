@@ -8,7 +8,8 @@ Phones and tablets use the same page with touch movement, a compact menu, a foll
 
 - **Piano Lab:** approach the north doorway or use the header button. WASD/arrows walk, Space jumps. The 22 painted floor keys have individual perspective polygons. Free play sounds on entry; during a Chopin game, stand on the desired key and press **E**. The back wall shows the sounded pitch. **Show letter names on keys** is optional. Accessible piano buttons offer the same intentional note input.
 - **Chopin:** press E nearby or choose a challenge below the room. Melody games include Twinkle Twinkle Little Star, Mary Had a Little Lamb, and London Bridge. Fourteen interval games ask for a starting pitch, then a minor/major second or third, perfect fourth/fifth, or octave higher or lower. Timing is flexible. Each completed challenge awards 35 Notes once, plus quest XP. Free play, recording, and listening remain available.
-- **Music Classroom:** enter the east-wall doorway or use **Classroom**. Professor Haydn and three bookshelves open fourteen searchable topics, including guided **Note naming** and **Rhythm tree** activities written for ages 10–11. Note naming uses two/three black-key groups, keyboard questions, and treble-staff questions. The rhythm tree lets students split whole through sixteenth notes, compare values, and fill a four-beat bar. The guides explain the actual cabinet rules, including Music Triad's rhythm-card battles, Pitch Race's note-reading and holds, and Rhythm Room's listen/repeat patterns.
+- **Music Classroom:** enter the east-wall doorway or use **Classroom**. Professor Haydn and three bookshelves open fifteen searchable topics, including guided **Note naming**, **Rhythm tree**, and **Time signatures** activities written for ages 10–11. Note naming uses two/three black-key groups, keyboard questions, and treble-staff questions. The rhythm tree lets students split whole through sixteenth notes, compare values, and fill a four-beat bar. The time-signature lesson teaches 4/4, 6/8, and cut time through listening, pulse tapping, questions, and three bar-building recipes. In 6/8 the six eighth notes form two groups of three; cut time has two half-note beats. Classroom examples use the self-hosted Bravura music font with correctly aligned staff notes. The guides explain the actual cabinet rules, including Music Triad's rhythm-card battles, Pitch Race's note-reading and holds, and Rhythm Room's listen/repeat patterns.
+- **Rhythm Fishing:** use the floor trapdoor in the southwest corner of the main open arcade, left of the Entrance sign, or the header/menu button. Descend to the underground lake, talk to Captain Cadence, board the boat, and cast near fish shadows. Thirty species span five rarities; rarer fish have more advanced rhythms. Choose 4/4, 6/8, or cut time. Tap Space/Enter, the staff, or the large rhythm button as notes cross the gold line; correct taps raise progress, misses and extra taps lower it. Full progress catches the fish, zero lets it escape. Catches earn Notes and XP, with nine fishing achievements and a saved collection. See [RHYTHM-FISHING.md](RHYTHM-FISHING.md).
 - **Pip:** the boutique attendant opens the wardrobe. **Riff**, behind the main arcade counter, sells cosmetics. Both follow their counter's transform, visibility, and opacity. Header controls remain available for keyboard and touch access.
 
 Rooms use detailed pixel-art backgrounds, with live JavaScript characters, note displays, interactions, and lighting over the art. Escape releases room audio and returns to the arcade. Main-world movement pauses inside a room or full panel.
@@ -37,7 +38,7 @@ The dance floor has 78 measured quadrilateral tiles. Grounded footsteps illumina
 
 ## Storage and art
 
-New local keys: `codaNotesWalletV1`, `codaMusicianMissionsV1`, `codaPlayerProgressV1`, `codaHallOfFameV1`, `codaPianoTakeV1`, and `codaClassroomLessonsV1`. Existing avatar, NPC costume, and editor data keep their current keys. Currency, quests, levels, and records currently remain in this browser; existing avatar cloud sync is unchanged.
+New local keys: `codaNotesWalletV1`, `codaMusicianMissionsV1`, `codaPlayerProgressV1`, `codaHallOfFameV1`, `codaPianoTakeV1`, `codaClassroomLessonsV1`, and `codaRhythmFishingV1`. Existing avatar, NPC costume, and editor data keep their current keys. Currency, quests, levels, and records currently remain in this browser; existing avatar cloud sync is unchanged.
 
 The four pictured plants, including pots and shadows, were rebuilt in both world and foreground art. `scripts/build-plant-repairs.cjs` stitches the generated repair plate into the approved crop, rephases the floor grid, and retains the fifth plant outside the screenshot. It pins the already character-cleaned input revision for deterministic rebuilding. Legacy passage-plant project entries remain valid but render transparently, preventing old local layouts from repainting the permanently removed plant.
 
@@ -46,6 +47,10 @@ Relevant checks:
 ```sh
 node --test tests/*.test.cjs
 python3 tests/learning-world-browser.py
+python3 tests/fishing-world-browser.py
+python3 tests/rhythm-fishing-browser.py
+python3 tests/time-signature-lesson-browser.py
+python3 tests/music-notation-browser.py
 python3 tests/student-world-browser.py
 python3 tests/music-rewards-world-browser.py
 python3 tests/musician-trivia-browser.py

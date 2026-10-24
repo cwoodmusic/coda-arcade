@@ -5,6 +5,10 @@
  */
 window.CodaWorldObjectCatalog = [
   {
+    name:'rhythm_fishing_trapdoor',label:'Trapdoor · Rhythm Fishing cave',group:'Doorways & activities',source:'world',
+    bounds:[880,728,96,64],layer:'back',sortY:792,procedural:'fishing-trapdoor',anchor:[928,760]
+  },
+  {
     name: 'disco_ball_arcade', label: 'Disco ball · Arcade', group: 'Disco balls', source: 'world',
     bounds: [848, 89, 61, 71], layer: 'front', sortY: 971, ballIndex: 0,
     anchor: [878, 130], radius: 28, spin: .55,

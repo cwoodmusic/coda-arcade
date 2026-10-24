@@ -56,3 +56,6 @@
 }
 .classroom-heading .room-return-short,.classroom-room .room-touch-hint{display:none}
 @media(max-width:760px),(pointer:coarse){.classroom-heading .room-return-short{display:inline}.classroom-room .room-keyboard-hint{display:none}.classroom-room .room-touch-hint{display:inline}}
+
+@media(max-width:760px),(pointer:coarse){.classroom-lesson-shortcuts button:last-child:nth-child(odd){grid-column:1/-1}}
+.classroom-staff-example{margin:18px 0}.classroom-staff-example figcaption{font-size:13px;line-height:1.5;color:#5c4861}

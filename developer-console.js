@@ -150,6 +150,7 @@ window.createCodaDeveloperConsole = function (api) {
   }
   function picture(origin) {
     const key=JSON.stringify([origin.name,origin.bounds]); if(pictures.has(key))return pictures.get(key);
+    const native=api.getObjectPicture?.(origin.name);if(native){pictures.set(key,native);return native;}
     // PNG headers expose naturalWidth before loading and pixel decoding finish.
     if(!worldArt.complete||!worldArt.naturalWidth||!foregroundArt.complete||!foregroundArt.naturalWidth)return null;
     const [x,y,w,h]=origin.bounds,out=makeCanvas(w,h),ctx=out.getContext('2d'); ctx.imageSmoothingEnabled=false;
@@ -189,7 +190,7 @@ window.createCodaDeveloperConsole = function (api) {
   }
   function suppressOriginal(name) { return studio.assets.some(a=>a.origin?.name===name); }
   function drawUnliftedPixels(g, image, x, y) {
-    const originals=studio.assets.filter(a=>a.origin&&a.origin.bounds[0]<x+image.width&&a.origin.bounds[0]+a.origin.bounds[2]>x&&a.origin.bounds[1]<y+image.height&&a.origin.bounds[1]+a.origin.bounds[3]>y);
+    const originals=studio.assets.filter(a=>a.origin&&!catalog.find(part=>part.name===a.origin.name)?.procedural&&a.origin.bounds[0]<x+image.width&&a.origin.bounds[0]+a.origin.bounds[2]>x&&a.origin.bounds[1]<y+image.height&&a.origin.bounds[1]+a.origin.bounds[3]>y);
     if(!originals.length){g.drawImage(image,x,y);return;}
     const key=JSON.stringify(originals.map(a=>[a.origin.name,a.origin.bounds]));
     let cached=maskedLayers.get(image);
@@ -203,7 +204,7 @@ window.createCodaDeveloperConsole = function (api) {
   }
   function renderBase(g) {
     if(!worldArt.complete||!worldArt.naturalWidth)return;
-    const originals=studio.assets.filter(a=>a.origin);
+    const originals=studio.assets.filter(a=>a.origin&&!catalog.find(part=>part.name===a.origin.name)?.procedural);
     if(!originals.length) {g.drawImage(worldArt,0,0,W,H);return;}
     // Images load independently. Do not memoize an incomplete cleanup surface.
     if(!foregroundArt.complete||!foregroundArt.naturalWidth){g.drawImage(worldArt,0,0,W,H);return;}

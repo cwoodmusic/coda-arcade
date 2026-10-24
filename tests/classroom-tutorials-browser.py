@@ -14,7 +14,7 @@ class Handler(SimpleHTTPRequestHandler):
         html='''<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="/music-classroom.css"><link rel="stylesheet" href="/classroom-tutorials.css">
 <button id="enter">Classroom</button><section id="room" hidden></section>
-<script src="/character-renderer.js"></script><script src="/classroom-tutorials.js"></script><script src="/finger-follow.js"></script><script src="/music-classroom.js"></script>
+<script src="/character-renderer.js"></script><link rel="stylesheet" href="/music-notation.css"><script src="/music-notation.js"></script><link rel="stylesheet" href="/time-signature-lesson.css"><script src="/time-signature-lesson.js"></script><script src="/classroom-tutorials.js"></script><script src="/finger-follow.js"></script><script src="/music-classroom.js"></script>
 <script>window.writeFail=false;window.rewards=[];window.calls=[];
 const storage={getItem:key=>localStorage.getItem(key),setItem:(key,value)=>{if(writeFail)throw Error('quota');localStorage.setItem(key,value);}};
 window.roomUI=createCodaMusicClassroom({host:room,renderer:createCodaCharacterRenderer(),storage,onTutorialComplete:(id,details)=>{calls.push({id,details});const claimed=JSON.parse(localStorage.getItem('fixtureLessonClaims')||'[]');if(claimed.includes(id))return {ok:true,alreadyAwarded:true,amount:0};claimed.push(id);localStorage.setItem('fixtureLessonClaims',JSON.stringify(claimed));rewards.push({id,amount:50});return {ok:true,amount:50};}});enter.onclick=()=>roomUI.open();</script>'''

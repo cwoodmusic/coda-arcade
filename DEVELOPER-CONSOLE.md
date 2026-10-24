@@ -48,6 +48,10 @@ Erasing foreground also works on lifted original objects and their animated scre
 
 Layer painting changes occlusion, not walking collision. Painting existing room pixels also does not create or redraw an object; use Objects for that.
 
+## Fishing trapdoor
+
+**Objects → Existing world objects → Trapdoor · Rhythm Fishing cave** selects the new floor hatch. Lift it to move, resize, rotate, hide, or animate it. Its cave-entry interaction follows the same transform as the artwork. It starts in the main open room’s southwest corner, left of the Entrance sign. The native hatch is drawn above the existing floor, so lifting or restoring it preserves the underlying floor grid and painted collision. Its placement travels with the complete project export, just like edited cabinets.
+
 ## Musician dialogue
 
 Open **Dialogue** and choose a musician. Edit the biography, greetings, conversation button labels, and replies; add, remove, or reorder conversation choices. The preview shows your draft. **Apply dialogue** makes it active in the game. Leave the activity reply blank to keep the live description of what the musician is doing. **Revert draft** returns to the current applied dialogue; **Reset this musician to default** restores the authored lines and can be undone.

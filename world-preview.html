@@ -16,7 +16,7 @@
 /* Coda Asset Studio v11: stays separate from collision + pixel masks. */
 #assetStudio{position:fixed;left:12px;top:80px;z-index:65;width:min(334px,calc(100vw - 24px));max-height:calc(100dvh - 99px);overflow:auto;background:#171529f5;border:1px solid #eac17d;box-shadow:0 12px 50px #05010de0,0 0 22px #fdac4a24;border-radius:12px;padding:13px;color:#f8efff;font:12px system-ui;backdrop-filter:blur(9px)}
 #assetStudio[hidden]{display:none}#assetStudio .studioHead{display:flex;align-items:center;justify-content:space-between;color:#ffe4a4;font-size:14px;gap:9px;margin-bottom:7px}#assetStudio .studioActions{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0}#assetStudio button{font:inherit;min-height:28px;padding:5px 7px}#assetStudio .studioActions button{flex:1 0 90px}#assetStudio button:disabled{opacity:.36;cursor:not-allowed}#assetStudio hr{border:0;border-top:1px solid #655374;margin:13px 0}#assetStudio .studioField{display:grid;gap:3px;margin:7px 0}#assetStudio .studioField>label{font-weight:650;color:#dccdf3}#assetStudio input:not([type=checkbox]),#assetStudio select{background:#131024;border:1px solid #866e9b;color:#fff;padding:7px;border-radius:5px;width:100%;font:inherit;min-width:0}#assetStudio input[type=checkbox]{accent-color:#f9c880}#assetStudio .studioGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}#assetStudio .studioTip{color:#c9b9d6;line-height:1.45;font-size:11px;margin:6px 0}#assetStudio #assetList{height:108px;padding:2px}#assetStudio #assetList option{padding:6px}#assetStudio #assetMessage{color:#bbf5e5;min-height:18px;overflow-wrap:anywhere}#assetStudio #assetSelection[hidden]{display:none}#assetStudio .studioCheck{display:inline-flex;align-items:center;gap:6px;margin:5px 11px 5px 0}#assetStudio .studioCollapsible{border:1px solid #655374;border-radius:7px;padding:8px}#assetStudio summary{cursor:pointer;color:#ffe4b1;font-weight:650}#assetToggle{border-color:#eecc7c}#view.asset-editing{cursor:crosshair;touch-action:none}#assetStudio #assetAdd{background:#675022;border-color:#e8b85c}#assetStudio #assetImport{border-color:#80d3ed}#assetStudio #assetExport{border-color:#80d3ed}#assetStudio #assetHelp{background:#271d3c}#assetStudio .studioHot{color:#ffcfa4}body.asset-console-open #layerEditor{display:none!important}@media(max-width:650px){#assetStudio{top:120px;max-height:calc(100dvh - 138px)}}
-</style><link rel="stylesheet" href="mobile-controls.css?v=student-29"><link rel="stylesheet" href="world-mobile.css?v=music-30"><script src="mobile-controls.js?v=mobile-28"></script><script src="finger-follow.js?v=student-29"></script><link rel="stylesheet" href="reward-notifications.css?v=music-30"><script src="reward-notifications.js?v=music-30"></script><link rel="stylesheet" href="developer-console.css?v=music-30"><link rel="stylesheet" href="musician-ui.css?v=mobile-28"><link rel="stylesheet" href="boutique-ui.css?v=mobile-28"><script src="collision-editor.js?v=mobile-28"></script><script src="world-object-catalog.js?v=mobile-28"></script><script src="world-object-runtime.js"></script><script src="world-lighting.js?v=mobile-28"></script><script src="dance-floor.js?v=mobile-28"></script><script src="dj-library.js?v=mobile-28"></script><link rel="stylesheet" href="dialogue-editor.css?v=music-30"><script src="dialogue-editor.js?v=music-30"></script><link rel="stylesheet" href="pixel-editor.css?v=music-30"><script src="pixel-editor.js?v=music-30"></script><script src="developer-console.js?v=music-30"></script><script src="npc-behavior.js?v=music-30"></script><script src="character-renderer.js?v=music-30"></script><link rel="stylesheet" href="musician-trivia.css?v=music-30"><script src="musician-trivia.js?v=music-30"></script><script src="musician-ui.js?v=music-30"></script><script src="boutique-ui.js?v=mobile-28"></script><link rel="stylesheet" href="notes-shop.css?v=mobile-28"><link rel="stylesheet" href="piano-lab.css?v=mobile-28"><link rel="stylesheet" href="music-classroom.css?v=student-29"><script src="notes-shop.js?v=mobile-28"></script><script src="piano-lab.js?v=music-30"></script><link rel="stylesheet" href="classroom-tutorials.css?v=student-29"><script src="classroom-tutorials.js?v=student-29"></script><script src="music-classroom.js?v=student-29"></script><link rel="stylesheet" href="player-progression.css?v=mobile-28"><link rel="stylesheet" href="hall-of-fame.css?v=mobile-28"><script src="player-progression.js?v=student-29"></script><link rel="stylesheet" href="player-profile.css?v=student-29"><script src="player-profile.js?v=student-29"></script><script src="hall-of-fame.js?v=mobile-28"></script><script src="musician-missions.js?v=student-29"></script><script src="song-machine/sound-library.js?v=mobile-28"></script><header><b>♫ CODA ARCADE · CONNECTED WORLD / WORLD BUILDER</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="levelBtn" type="button" aria-label="Your profile">Profile · Level 1</button> <button id="hallFameBtn" type="button">Hall of Fame</button> <button id="notesBtn" type="button" aria-label="Open Notes shop">♫ 150 Notes</button> <button id="pianoLabBtn" type="button">Piano Lab</button> <button id="classroomBtn" type="button">Classroom</button> <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="assetToggle" type="button" title="Open Asset Studio (Shift+A)">✥ Assets</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><main id="worldStage" aria-label="Arcade world"><canvas id="view" width="1672" height="941" tabindex="0" aria-label="Connected arcade. Move with WASD or arrow keys. Press Space to jump and E to interact."></canvas></main><footer><span>WASD / arrows · Walk · Space · Jump · Wheel / + / − Zoom · 0 Reset · F2 Developer console · C Edit collision · Shift+L Edit layers · Right-drag to pan in editor &nbsp; E · Interact &nbsp; Q · Emote · Click to walk · Touch and drag to steer</span><span id="status">Phase 11 · asset studio · animations · layers · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
+</style><link rel="stylesheet" href="mobile-controls.css?v=student-29"><link rel="stylesheet" href="world-mobile.css?v=music-30"><script src="mobile-controls.js?v=mobile-28"></script><script src="finger-follow.js?v=student-29"></script><link rel="stylesheet" href="reward-notifications.css?v=music-30"><script src="reward-notifications.js?v=music-30"></script><link rel="stylesheet" href="developer-console.css?v=music-30"><link rel="stylesheet" href="musician-ui.css?v=mobile-28"><link rel="stylesheet" href="boutique-ui.css?v=mobile-28"><script src="collision-editor.js?v=mobile-28"></script><script src="world-object-catalog.js?v=fishing-31"></script><script src="fishing-entrance.js?v=fishing-31"></script><script src="world-object-runtime.js"></script><script src="world-lighting.js?v=mobile-28"></script><script src="dance-floor.js?v=mobile-28"></script><script src="dj-library.js?v=mobile-28"></script><link rel="stylesheet" href="dialogue-editor.css?v=music-30"><script src="dialogue-editor.js?v=music-30"></script><link rel="stylesheet" href="pixel-editor.css?v=music-30"><script src="pixel-editor.js?v=music-30"></script><script src="developer-console.js?v=fishing-31"></script><script src="npc-behavior.js?v=music-30"></script><script src="character-renderer.js?v=music-30"></script><link rel="stylesheet" href="musician-trivia.css?v=music-30"><script src="musician-trivia.js?v=music-30"></script><script src="musician-ui.js?v=music-30"></script><script src="boutique-ui.js?v=mobile-28"></script><link rel="stylesheet" href="notes-shop.css?v=mobile-28"><link rel="stylesheet" href="music-notation.css?v=fishing-31"><script src="music-notation.js?v=fishing-31"></script><link rel="stylesheet" href="rhythm-fishing.css?v=fishing-31"><script src="rhythm-fishing-engine.js?v=fishing-31"></script><script src="fishing-progress.js?v=fishing-31"></script><script src="rhythm-fishing.js?v=fishing-31"></script><link rel="stylesheet" href="piano-lab.css?v=mobile-28"><link rel="stylesheet" href="music-classroom.css?v=fishing-31"><script src="notes-shop.js?v=mobile-28"></script><script src="piano-lab.js?v=music-30"></script><link rel="stylesheet" href="classroom-tutorials.css?v=fishing-31"><link rel="stylesheet" href="time-signature-lesson.css?v=fishing-31"><script src="time-signature-lesson.js?v=fishing-31"></script><script src="classroom-tutorials.js?v=fishing-31"></script><script src="music-classroom.js?v=fishing-31"></script><link rel="stylesheet" href="player-progression.css?v=mobile-28"><link rel="stylesheet" href="hall-of-fame.css?v=mobile-28"><script src="player-progression.js?v=student-29"></script><link rel="stylesheet" href="player-profile.css?v=student-29"><script src="player-profile.js?v=student-29"></script><script src="hall-of-fame.js?v=mobile-28"></script><script src="musician-missions.js?v=student-29"></script><script src="song-machine/sound-library.js?v=mobile-28"></script><header><b>♫ CODA ARCADE · CONNECTED WORLD / WORLD BUILDER</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="levelBtn" type="button" aria-label="Your profile">Profile · Level 1</button> <button id="hallFameBtn" type="button">Hall of Fame</button> <button id="notesBtn" type="button" aria-label="Open Notes shop">♫ 150 Notes</button> <button id="pianoLabBtn" type="button">Piano Lab</button> <button id="classroomBtn" type="button">Classroom</button> <button id="fishingBtn" type="button">Rhythm Fishing</button> <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="assetToggle" type="button" title="Open Asset Studio (Shift+A)">✥ Assets</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><main id="worldStage" aria-label="Arcade world"><canvas id="view" width="1672" height="941" tabindex="0" aria-label="Connected arcade. Move with WASD or arrow keys. Press Space to jump and E to interact."></canvas></main><footer><span>WASD / arrows · Walk · Space · Jump · Wheel / + / − Zoom · 0 Reset · F2 Developer console · C Edit collision · Shift+L Edit layers · Right-drag to pan in editor &nbsp; E · Interact &nbsp; Q · Emote · Click to walk · Touch and drag to steer</span><span id="status">Phase 11 · asset studio · animations · layers · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
   <div class="editorbanner"><b>✎ FOREGROUND EDITOR</b><button id="editClose" type="button">✕</button></div>
   <div class="mini">Paint with pixels from the existing arcade artwork. Erase removes unwanted foreground coverage; the floor stays unchanged.</div>
   <div class="editorline"><button type="button" id="editPaint" class="current">🖌 Paint</button><button type="button" id="editErase">⌫ Erase</button></div>
@@ -75,8 +75,8 @@
  <input id="assetImportFile" type="file" accept="application/json,.json" hidden>
  <p id="assetMessage" role="status">Your assets are saved in this browser. Export scene JSON to publish or move them to another computer.</p>
  <details><summary id="assetHelp">Help · shortcuts and storage</summary><p class="studioTip">Shift+A opens/closes. Delete removes. Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z redo. Arrows nudge selected asset (Shift = 8 px). Escape closes. GIF/APNG playback depends on browser support; sprite sheets offer deterministic frame animation. Crop selects a rectangular section of the *original art* (not the whole live canvas). Imported images are embedded in exported JSON. Browser storage is local to this page/origin; GitHub won't receive edits until you publish the export.</p></details>
-</aside><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><section id="pianoroom" hidden aria-label="Piano Lab"></section><section id="musicClassroom" hidden aria-label="Music Classroom"></section><script>
-(()=>{'use strict';let mobileControls=null,fingerWalk=null,rewardNotifications=null,developerConsole=null,worldObjects=null,worldLighting=null,danceFloor=null,npcBrain=null,characterRenderer=null,musicianUI=null,boutiqueUI=null,notesWallet=null,notesShop=null,pianoLab=null,musicClassroom=null,progression=null,missions=null,hallFame=null,playerProfile=null,musicianTrivia=null,playerPhase=0,emoteStarted=0,followedMusician=null,followTimer=0;const c=document.querySelector('#view'),worldContext=c.getContext('2d',{alpha:false}),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}avatar=window.CodaAvatarDefaults.migrate(avatar);const W=1672,H=941,ART_SCALE=1,keys=new Set(),touchKeys=new Set();let player={x:1180,y:388},cam={x:0,y:0,zoom:1,targetZoom:1},dest=null,emote=0,near=null,last=0,clock=0,walking=false,facing="down";const rooms=[{id:'lounge',name:'LOUNGE',x:95,y:145,w:350,h:235},{id:'dance',name:'DANCE',x:90,y:505,w:670,h:325},{id:'arcade',name:'ARCADE',x:648,y:220,w:900,h:580}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:718,y:313,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:831,y:314,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:951,y:315,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1064,y:315,url:'song-machine/index.html?v=student-29'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
+</aside><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><section id="pianoroom" hidden aria-label="Piano Lab"></section><section id="musicClassroom" hidden aria-label="Music Classroom"></section><section id="rhythmFishing" hidden aria-label="Rhythm Fishing cave"></section><script>
+(()=>{'use strict';let mobileControls=null,fingerWalk=null,rewardNotifications=null,developerConsole=null,worldObjects=null,worldLighting=null,danceFloor=null,npcBrain=null,characterRenderer=null,musicianUI=null,boutiqueUI=null,notesWallet=null,notesShop=null,pianoLab=null,musicClassroom=null,progression=null,missions=null,hallFame=null,playerProfile=null,musicianTrivia=null,fishingRoom=null,fishingProgress=null,fishingDoorPicture=null,playerPhase=0,emoteStarted=0,followedMusician=null,followTimer=0;const c=document.querySelector('#view'),worldContext=c.getContext('2d',{alpha:false}),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}avatar=window.CodaAvatarDefaults.migrate(avatar);const W=1672,H=941,ART_SCALE=1,keys=new Set(),touchKeys=new Set();let player={x:1180,y:388},cam={x:0,y:0,zoom:1,targetZoom:1},dest=null,emote=0,near=null,last=0,clock=0,walking=false,facing="down";const rooms=[{id:'lounge',name:'LOUNGE',x:95,y:145,w:350,h:235},{id:'dance',name:'DANCE',x:90,y:505,w:670,h:325},{id:'arcade',name:'ARCADE',x:648,y:220,w:900,h:580}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:718,y:313,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:831,y:314,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:951,y:315,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1064,y:315,url:'song-machine/index.html?v=student-29'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
 
 let g=worldContext;
 
@@ -477,8 +477,8 @@ function update(dt){
  const moved=Math.hypot(player.x-before.x,player.y-before.y);walking=moved>.01;if(walking){playerPhase+=moved/14;avatar.walked=(avatar.walked||0)+moved/9;}
  npcBrain?.update(dt);recordAvatarAchievements();
  near=null;let distance=Infinity;
- const dj=djState();
- for(const person of [...runtimeGames().map(q=>({...q,type:'game'})),...npc.filter(q=>!q.hidden).map(q=>({...q,type:'npc'})),...(dj.visible?[{name:dj.name,x:dj.approachX,y:dj.approachY,type:'dj'}]:[]),...shopkeeperStates().filter(person=>person.visible).flatMap(person=>person.approaches.map(point=>({name:person.name,...point,type:person.type}))),{name:'Piano Lab',x:1290,y:185,type:'piano'},{name:'Music Classroom',x:1555,y:415,type:'classroom'},{name:'Hall of Fame',x:1460,y:318,type:'fame'}]){
+ const dj=djState(),fishingDoor=fishingDoorState();
+ for(const person of [...runtimeGames().map(q=>({...q,type:'game'})),...npc.filter(q=>!q.hidden).map(q=>({...q,type:'npc'})),...(dj.visible?[{name:dj.name,x:dj.approachX,y:dj.approachY,type:'dj'}]:[]),...shopkeeperStates().filter(person=>person.visible).flatMap(person=>person.approaches.map(point=>({name:person.name,...point,type:person.type}))),{name:'Piano Lab',x:1290,y:185,type:'piano'},{name:'Music Classroom',x:1555,y:415,type:'classroom'},{name:'Hall of Fame',x:1460,y:318,type:'fame'},...(fishingDoor?.visible?[fishingDoor]:[])]){
   const d=Math.hypot(person.x-player.x,person.y-player.y);if(d<94&&d<distance){near=person;distance=d;}
  }
  if(followedMusician&&near?.id===followedMusician)followedMusician=null;
@@ -486,17 +486,19 @@ function update(dt){
 }
 const gameoverlay=document.querySelector('#gameoverlay'),gameiframe=document.querySelector('#gameiframe');let gameOpen=false;
 
-function learningRoomOpen(){return !document.querySelector('#pianoroom').hidden||!document.querySelector('#musicClassroom').hidden;}
+function learningRoomOpen(){return !document.querySelector('#pianoroom').hidden||!document.querySelector('#musicClassroom').hidden||!document.querySelector('#rhythmFishing').hidden;}
 window.addEventListener('keydown',event=>{if(learningRoomOpen()&&event.key==='F2'){event.preventDefault();event.stopImmediatePropagation();}},{capture:true});
 function prepareLearningRoom(){
  if(assetStudio.active)toggleAssetStudio(false);
  musicianUI?.closeConversation();closePanel();stopSong();stopAmbientMusic();
  clearHeldKeys();dest=null;clickPath=[];walking=false;followedMusician=null;dialog.style.display='none';
 }
-function openPiano(){if(!pianoLab)return;musicClassroom?.close();prepareLearningRoom();pianoLab.open();}
+function openPiano(){if(!pianoLab)return;fishingRoom?.close();musicClassroom?.close();prepareLearningRoom();pianoLab.open();}
 function closePiano(){pianoLab?.close();clearHeldKeys();c.focus({preventScroll:true});}
-function openClassroom(){if(!musicClassroom)return;pianoLab?.close();prepareLearningRoom();musicClassroom.open();}
+function openClassroom(){if(!musicClassroom)return;fishingRoom?.close();pianoLab?.close();prepareLearningRoom();musicClassroom.open();}
 function closeClassroom(){musicClassroom?.close();clearHeldKeys();c.focus({preventScroll:true});}
+function openFishing(){if(!fishingRoom)return;pianoLab?.close();musicClassroom?.close();prepareLearningRoom();fishingRoom.open();}
+function fishingDoorState(){return window.CodaFishingEntrance.state(worldObjects);}
 function openCabinet(game){musicianUI?.closeConversation();walking=false;followedMusician=null;stopSong();stopAmbientMusic();
   if(!game||!game.url)return;
   clearHeldKeys();dest=null;dialog.style.display='none';
@@ -575,6 +577,7 @@ function talk(){
  if(near.type==='jukebox'||near.type==='dj'){openJukebox();return;}
  if(near.type==='piano'){openPiano();return;}
  if(near.type==='classroom'){openClassroom();return;}
+ if(near.type==='fishing'){openFishing();return;}
  if(near.type==='fame'){hallFame?.open();return;}
  musicianUI.talk(near.id);
 }
@@ -1031,7 +1034,7 @@ async function loadAssetStudio(){let found=null;
 window.CodaAssetStudioQA={get:()=>({active:assetStudio.active,count:assetStudio.assets.length,selected:assetStudio.selected,assets:assetStudio.assets.map(a=>({id:a.id,name:a.name,kind:a.kind,x:a.x,y:a.y,w:a.w,h:a.h,layer:a.layer,anim:a.anim,frames:a.frames}))}),open:()=>toggleAssetStudio(true),close:()=>toggleAssetStudio(false),preset:()=>assetUI('assetPreset').click(),export:downloadAssetJSON,save:persistAssets};
 // --- END ASSET STUDIO ------------------------------------------------------
 
-window.CODA_BUILD="30.0-trivia-and-creative-tools";
+window.CODA_BUILD="31.0-underground-rhythm-fishing";
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -1607,14 +1610,20 @@ function renderArcadeAtmosphere(){
 // =======================================================================
 
 function drawLearningDoors(){
- // A permanent, readable entrance on the east wall. The walking interaction
- // stays on the existing floor at the left side of the doorway.
+ // The classroom opens westward through the east wall. The floor remains
+ // continuous up to its small arrow; the doorway does not face into the room.
  g.save();g.shadowBlur=0;
- r(1556,358,57,85,'#080e24');r(1559,361,51,79,'#465a83');r(1563,365,43,71,'#123952');
- r(1567,369,35,63,'#13233e');r(1568,370,2,60,'#67e4fa');r(1598,370,2,60,'#67e4fa');
- r(1574,378,19,14,'#416f97');r(1577,381,13,2,'#e7e0a9');r(1577,385,13,2,'#e7e0a9');
- r(1592,406,4,4,'#f1cc78');r(1562,433,46,4,'#89d8e9');
- r(1532,339,106,17,'#171b37');r(1534,341,102,1,'#b7a5ec');t('CLASSROOM',1585,352,11,'#c7f7ff');
+ r(1592,365,25,82,'#080e24');r(1594,369,21,75,'#253752');
+ r(1597,373,17,68,'#0b182c');r(1607,376,6,63,'#123245');
+ r(1589,364,27,4,'#8e75b7');r(1590,368,3,76,'#58c6dc');
+ r(1593,373,2,66,'#b7fff1');r(1595,440,20,4,'#467b9d');r(1591,444,25,3,'#213c5b');
+ g.save();g.translate(1628,405);g.rotate(-Math.PI/2);t('CLASSROOM',0,0,10,'#c7f7ff');g.restore();
+ g.restore();
+}
+function drawClassroomFloorArrow(){
+ g.save();g.globalAlpha=(reduceMotion||!effectsOn()) ? .84 : .74+Math.sin(clock*3)*.12;
+ r(1539,413,23,4,'#133b58');r(1541,414,19,2,'#6ce8e1');
+ for(let step=0;step<5;step++){r(1558+step*3,405+step*2,3,2,'#9df8e7');r(1558+step*3,423-step*2,3,2,'#9df8e7');}
  g.restore();
 }
 function draw(){
@@ -1637,8 +1646,10 @@ function draw(){
  // A faint post-process club wash adds atmosphere without changing object depth.
  renderArcadeAtmosphere();
  developerConsole?.renderCleanup(g);
+ if(!developerConsole?.suppressOriginal(window.CodaFishingEntrance.NAME))g.drawImage(fishingDoorPicture,880,728,96,64);
  renderAssetsOfLayer('back');
  worldLighting?.drawFloorPins(g);danceFloor?.draw(g);
+ drawClassroomFloorArrow();
  // Erasing foreground changes occlusion, not the visible object artwork.
  // Draw erased fragments behind actors, then the remainder at object depth.
  for(const a of assetStudio.assets)if(a.origin&&a.visible&&a.layer!=='back')drawPlacedAsset(a,'behind');
@@ -1745,7 +1756,7 @@ function draw(){
   g.restore();
  }
  if(near&&!layerState.active){const promptY=near.y-(near.type==='npc'?98:93);g.globalAlpha=.91;r(near.x-62,promptY,124,25,'#18132e');g.globalAlpha=1;
-  t('E · '+(near.type==='game'?'PLAY':['piano','classroom'].includes(near.type)?'ENTER':'INTERACT'),near.x,promptY+17,11,'#c8fff6');}
+  t('E · '+(near.type==='game'?'PLAY':['piano','classroom','fishing'].includes(near.type)?'ENTER':'INTERACT'),near.x,promptY+17,11,'#c8fff6');}
  drawEditorOverlay();
  if(!developerConsole||!developerConsole.isPlaytest())drawAssetEditorOverlay();
  developerConsole?.drawOverlay(g,cam);
@@ -1773,7 +1784,10 @@ window.CodaArcadeQA=Object.freeze({
   hallFame:()=>hallFame?.snapshot()||null,
   piano:()=>pianoLab?.getState()||null,
   classroom:()=>musicClassroom?.getState()||null,
-  entrances:()=>[{name:'Piano Lab',x:1290,y:185,approach:{x:1290,y:235}},{name:'Music Classroom',x:1583,y:400,approach:{x:1555,y:415}}],
+  fishing:()=>fishingRoom?.getState()||null,
+  fishingEntrance:fishingDoorState,
+  fishingAchievements:()=>fishingProgress?.getAchievements()||[],
+  entrances:()=>[{name:'Piano Lab',x:1290,y:185,approach:{x:1290,y:235}},{name:'Music Classroom',x:1583,y:400,approach:{x:1555,y:415}},...(fishingDoorState()?.visible?[{...fishingDoorState(),approach:{x:fishingDoorState().x,y:fishingDoorState().y}}]:[])],
   lighting:()=>worldLighting?.snapshot()||null,
   danceFloor:()=>danceFloor?.snapshot()||null,
   jukebox:()=>({playing:!!songPlayer||musicEngine.active,title:jukeboxTitle,source:jukeboxSource,audioState:songPlayer?.ctx.state||musicEngine.ctx?.state||'closed',bpm:jukeboxVisual?.bpm||musicEngine.bpm}),
@@ -1825,9 +1839,10 @@ function installMobileWorld(){
  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.body.classList.contains('world-menu-open')){event.preventDefault();closeMenu();toggle.focus();}});
  let initialMobile=true;
  mobileControls=window.createCodaMobileControls({host,getContext:()=>{
+  const fishingControls=fishingRoom?.getControlState();if(fishingControls?.open){const state=fishingControls;return {id:'fishing',enabled:state.mobileView==='room'&&['shore','explore'].includes(state.phase),canJump:false,canEmote:false,interactLabel:state.near==='captain'?'Talk':state.phase==='shore'?'Board boat':'Cast',key:(key,down)=>fishingRoom.control(key,down),release:()=>fishingRoom.releaseControls()};}
   if(pianoLab?.getState().open){const state=pianoLab.getState();return {id:'piano',enabled:!state.mobileView||state.mobileView==='room',canJump:true,canEmote:false,interactLabel:state.challengeMode==='free'?'Talk':'Play note',key:(key,down)=>pianoLab.control(key,down),release:()=>pianoLab.releaseControls()};}
   if(musicClassroom?.getState().open){const state=musicClassroom.getState();return {id:'classroom',enabled:!state.mobileView||state.mobileView==='room',canJump:false,canEmote:false,interactLabel:'Talk / Read',key:(key,down)=>musicClassroom.control(key,down),release:()=>musicClassroom.releaseControls()};}
-  return {id:'world',enabled:!gameOpen&&panel.hidden&&!developerConsole?.isEditing()&&!document.body.classList.contains('world-menu-open'),canJump:dialog.style.display!=='block',canEmote:dialog.style.display!=='block',interactLabel:dialog.style.display==='block'?'Continue':near?(near.type==='game'?'Play':near.type==='piano'||near.type==='classroom'?'Enter':'Interact'):'Interact',key:touchWorldKey,release:()=>touchKeys.clear()};
+  return {id:'world',enabled:!gameOpen&&panel.hidden&&!developerConsole?.isEditing()&&!document.body.classList.contains('world-menu-open'),canJump:dialog.style.display!=='block',canEmote:dialog.style.display!=='block',interactLabel:dialog.style.display==='block'?'Continue':near?(near.type==='game'?'Play':['piano','classroom','fishing'].includes(near.type)?'Enter':'Interact'):'Interact',key:touchWorldKey,release:()=>touchKeys.clear()};
  },onMobileChange:active=>{
   document.body.classList.toggle('coda-mobile-world',active);brand.textContent=active?'♫ CODA ARCADE':fullBrand;
   pinchHint.hidden=!active;
@@ -2044,6 +2059,7 @@ async function openJukebox(){
 document.querySelector('#accountBtn').onclick=openAccount;document.querySelector('#jukeboxBtn').onclick=openJukebox;initCloud();
 characterRenderer=window.createCodaCharacterRenderer({reducedMotion:()=>window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true});
 loadNPCLooks();
+fishingDoorPicture=window.CodaFishingEntrance.createPicture(document);
 worldObjects=window.createCodaWorldObjects({catalog:[...window.CodaWorldObjectCatalog,...foregroundParts.filter(part=>!window.CodaWorldObjectCatalog.some(original=>original.name===part.name))],getAssets:()=>assetStudio.assets,getAnimation:assetAnimTransform});
 worldLighting=window.createCodaWorldLighting({
  width:W,height:H,getTime:()=>clock,getQuality:()=>fxMode,getBeat:beatInfo,isWalkable:inside,getBeamRaster:()=>({width:ambientLightCanvas.width,height:ambientLightCanvas.height,refreshHz:24}),getMapRevision:()=>navigationRevision,reducedMotion:()=>reduceMotion,
@@ -2087,7 +2103,7 @@ notesWallet.subscribe(updateNotesBalance);updateNotesBalance(notesWallet.snapsho
 document.querySelector('#notesBtn').onclick=openNotesShop;
 function canCollectMission(id){const giver=npc.find(person=>person.id===id&&!person.hidden);return !!giver&&!gameOpen&&!learningRoomOpen()&&Math.hypot(giver.x-player.x,giver.y-player.y)<94;}
 function findQuestGiver(id){const giver=npc.find(person=>person.id===id&&!person.hidden);if(!giver)return;closePanel();followedMusician=id;followTimer=0;dest=null;clickPath=[];c.focus({preventScroll:true});}
-function achievementTitle(id,reason){const titles={'first-pitch-result':'Your first Pitch Race','first-triad-result':'Your first Music Triad match','first-rhythm-result':'Your first Rhythm Room round','triad-first-win':'Your first Music Triad win','pitch-ten-correct':'Ten notes right!','pitch-ten-streak':'Ten notes in a row!','pitch-perfect-run':'A perfect Pitch Race run','rhythm-perfect-round':'A perfect rhythm round','classroom-note-naming':'You know your note names!','classroom-rhythm-tree':'You grew a rhythm tree!'};return titles[id.replace(/^achievement:/,'')]||reason.replace(/^Achievement: /,'');}
+function achievementTitle(id,reason){const titles={'first-pitch-result':'Your first Pitch Race','first-triad-result':'Your first Music Triad match','first-rhythm-result':'Your first Rhythm Room round','triad-first-win':'Your first Music Triad win','pitch-ten-correct':'Ten notes right!','pitch-ten-streak':'Ten notes in a row!','pitch-perfect-run':'A perfect Pitch Race run','rhythm-perfect-round':'A perfect rhythm round','classroom-note-naming':'You know your note names!','classroom-rhythm-tree':'You grew a rhythm tree!'};return (id==='achievement:classroom-time-signatures'?'You know your time signatures!':null)||window.CodaFishingProgress?.ACHIEVEMENTS.find(item=>item.id===id.replace(/^achievement:/,''))?.title||titles[id.replace(/^achievement:/,'')]||reason.replace(/^Achievement: /,'');}
 missions=window.CodaMusicianMissions.create({wallet:notesWallet,frame:gameiframe,panelBody,openPanel,
  openGame:key=>{const index={pitch:0,triad:1,rhythm:2}[key];const game=runtimeGames().find(game=>game.index===index);if(game){closePanel();openCabinet(game);}},
  onVerifiedResult:(game,id,result)=>{progression.recordGameEvent(game,id,result);hallFame.record(game,id,result);const bonus=window.CodaNotesShop.gameReward(game,result);if(bonus)notesWallet.grantReward('game:'+game+':'+id,bonus);},
@@ -2098,13 +2114,15 @@ missions=window.CodaMusicianMissions.create({wallet:notesWallet,frame:gameiframe
 });
 pianoLab=window.createCodaPianoLab({host:document.querySelector('#pianoroom'),backgroundUrl:'assets/world/piano-lab-room.png?v=mobile-28',renderer:characterRenderer,getAvatar:()=>avatar,onClose:()=>{clearHeldKeys();walking=false;c.focus({preventScroll:true});},onReward:(reason,amount)=>{const result=notesWallet.grantReward(reason,amount);if(result.ok)progression.recordQuest(reason);return result;}});
 function rewardClassroomLesson(id){
- if(!['note-naming','rhythm-tree'].includes(id))return {ok:false,error:'Choose a classroom lesson.'};
- const result=progression.awardXP('achievement:classroom-'+id,50,id==='note-naming'?'Learned note names':'Learned the rhythm tree');playerProfile?.refresh();return result;
+ if(!['note-naming','rhythm-tree','time-signatures'].includes(id))return {ok:false,error:'Choose a classroom lesson.'};
+ const result=progression.awardXP('achievement:classroom-'+id,50,({'note-naming':'Learned note names','rhythm-tree':'Learned the rhythm tree','time-signatures':'Learned time signatures'})[id]);playerProfile?.refresh();return result;
 }
 musicClassroom=window.createCodaMusicClassroom({host:document.querySelector('#musicClassroom'),backgroundSrc:'assets/world/music-classroom-room.png?v=mobile-28',renderer:characterRenderer,getAvatar:()=>avatar,onTutorialComplete:rewardClassroomLesson,onClose:()=>{clearHeldKeys();walking=false;c.focus({preventScroll:true});}});
 // Lesson completion and XP are saved separately; restore a missed XP write
 // from an already completed lesson without paying it a second time.
 for(const id of window.CodaClassroomTutorials.readProgress().completed)rewardClassroomLesson(id);
+fishingProgress=window.CodaFishingProgress.create({wallet:notesWallet,progression,catalog:window.CodaRhythmFishing.FISH,getCatches:()=>fishingRoom?.getState().catches||[]});
+fishingRoom=window.createCodaRhythmFishing({host:document.querySelector('#rhythmFishing'),renderer:characterRenderer,getAvatar:()=>avatar,backgroundSrc:'assets/world/rhythm-fishing-cave.png?v=fishing-31',getAchievements:()=>fishingProgress.getAchievements(),onCatch:(fish,result)=>fishingProgress.reward(fish,result),onClose:()=>{clearHeldKeys();walking=false;c.focus({preventScroll:true});}});
 playerProfile=window.createCodaPlayerProfile({renderer:characterRenderer,panelBody,openPanel,
  getAvatar:()=>avatar,getProgression:()=>progression.refresh(),getMissions:()=>missions.snapshot(),getNotes:()=>notesWallet.snapshot(),
  getTutorials:()=>musicClassroom.getState().tutorials,getMusicians:()=>npc,
@@ -2112,8 +2130,8 @@ playerProfile=window.createCodaPlayerProfile({renderer:characterRenderer,panelBo
  openMission:id=>missions.open(npc.find(person=>person.id===id)||id),findQuestGiver,
  openGame:key=>{const index={pitch:0,triad:1,rhythm:2}[key],game=runtimeGames().find(game=>game.index===index);if(game){closePanel();openCabinet(game);}}
 });
-rewardNotifications=window.createCodaRewardNotifications({getTouchState:()=>mobileControls?.snapshot(),onAction:action=>{if(action.id==='profile'){if(gameOpen)closeCabinet();pianoLab?.close();musicClassroom?.close();playerProfile?.open();}else if(action.id.startsWith('mission:')){const id=action.id.slice(8);if(gameOpen)closeCabinet();pianoLab?.close();musicClassroom?.close();missions.open(npc.find(person=>person.id===id)||id);}}});
-document.querySelector('#pianoLabBtn').onclick=openPiano;document.querySelector('#classroomBtn').onclick=openClassroom;
+rewardNotifications=window.createCodaRewardNotifications({getTouchState:()=>mobileControls?.snapshot(),onAction:action=>{if(action.id==='profile'){if(gameOpen)closeCabinet();pianoLab?.close();musicClassroom?.close();fishingRoom?.close();playerProfile?.open();}else if(action.id.startsWith('mission:')){const id=action.id.slice(8);if(gameOpen)closeCabinet();pianoLab?.close();musicClassroom?.close();fishingRoom?.close();missions.open(npc.find(person=>person.id===id)||id);}}});
+document.querySelector('#fishingBtn').onclick=openFishing;document.querySelector('#pianoLabBtn').onclick=openPiano;document.querySelector('#classroomBtn').onclick=openClassroom;
 boutiqueUI=window.createCodaBoutiqueUI({
  renderer:characterRenderer,panelBody,openPanel,closePanel,getPreviewUI:()=>musicianUI,
  getTargets:()=>[{id:'player',label:'Your avatar'},...npc.map(person=>({id:person.id,label:person.name})),{id:'dj',label:'DJ Coda'}],
@@ -2127,6 +2145,7 @@ characterRenderer.ready.then(()=>{
  for(const id of ['avatarBtn','musiciansBtn'])document.getElementById(id).disabled=false;
 }).catch(error=>{status.textContent='Character renderer unavailable. Reload to retry.';console.error('Character sprite loading failed:',error);});
 developerConsole=window.createCodaDeveloperConsole({
+ getObjectPicture:name=>name===window.CodaFishingEntrance.NAME?fishingDoorPicture:null,
  dialogueDefaults:window.CodaNPCDialogueDefaults,renderer:characterRenderer,
  getPixelProfile:id=>id==='player'?avatar:{...characterRenderer.appearanceFor(id),...(id==='dj'?npcLooks.dj:npc.find(person=>person.id===id)?.appearance)},
  getPixelTargets:()=>[{id:'player',name:'Your avatar'},...npc.map(person=>({id:person.id,name:person.name})),{id:'dj',name:'DJ Coda'}],

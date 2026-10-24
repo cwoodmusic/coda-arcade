@@ -1,0 +1,329 @@
+"""Real cave, boat, rhythm input, and saved catches in Chromium.
+
+The browser clock advances the production RAF loop; catches still require real
+keyboard/touch input at the engine's published note times.
+"""
+import functools
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+import threading
+from pathlib import Path
+import unittest
+
+from playwright.sync_api import sync_playwright
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+class Handler(SimpleHTTPRequestHandler):
+    def log_message(self, *args):
+        pass
+
+    def do_GET(self):
+        if self.path != '/fishing-fixture':
+            return super().do_GET()
+        html = '''<!doctype html><html lang="en"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rhythm Fishing browser checks</title>
+<link rel="stylesheet" href="/rhythm-fishing.css">
+<link rel="stylesheet" href="/music-notation.css">
+<style>*{box-sizing:border-box}body{margin:0;background:#0c1329;color:#fff;font:15px system-ui}#enter{min-height:44px} :root{--coda-touch-controls-height:190px}</style>
+<button id="enter">Enter the cave</button><section id="fishing" hidden></section>
+<script src="/character-renderer.js"></script><script src="/finger-follow.js"></script>
+<script src="/music-notation.js"></script>
+<script src="/rhythm-fishing-engine.js"></script><script src="/rhythm-fishing.js"></script>
+<script>
+window.rewards=[];window.rewardCalls=[];window.exits=0;window.failReward=false;
+window.failStorage=false;
+window.fishingInk=[];
+const originalFillText=CanvasRenderingContext2D.prototype.fillText;
+CanvasRenderingContext2D.prototype.fillText=function(value,x,y,...rest){
+ const first=String(value).codePointAt(0);
+ if(this.canvas.id==='fishingRhythmCanvas'&&/CodaBravura/.test(this.font)
+    &&first>=0xe1d2&&first<=0xe1da){
+  fishingInk.push({time:performance.now(),x,y,glyph:first});
+  if(fishingInk.length>2000)fishingInk.splice(0,1000);
+ }
+ return originalFillText.call(this,value,x,y,...rest);
+};
+window.lab=createCodaRhythmFishing({host:document.querySelector('#fishing'),
+ renderer:createCodaCharacterRenderer(),getAvatar:()=>({}),random:()=>0.01,
+ backgroundSrc:'/assets/world/rhythm-fishing-cave.png',
+ storage:{getItem:key=>localStorage.getItem(key),setItem:(key,value)=>{
+  if(failStorage)throw Error('Storage unavailable for this check');localStorage.setItem(key,value);
+ }},
+ onClose:()=>exits++,onCatch:(fish,result)=>{
+  rewardCalls.push({fish:fish.id,result});
+  if(failReward)return {ok:false,error:'Reward saving is temporarily unavailable.'};
+  const ledger=JSON.parse(localStorage.getItem('fixtureFishingRewards')||'[]');
+  const id=result.id;
+  if(ledger.includes(id))return {ok:true,alreadyAwarded:true,amount:0};
+  ledger.push(id);localStorage.setItem('fixtureFishingRewards',JSON.stringify(ledger));
+  const amount=fish.notes||fish.reward||result.notes||0;rewards.push({id,fish:fish.id,amount});
+  return {ok:true,amount};
+ }});
+document.querySelector('#enter').onclick=()=>lab.open();
+</script></html>'''
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.end_headers()
+        self.wfile.write(html.encode())
+
+
+class RhythmFishingTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.server = ThreadingHTTPServer(
+            ('127.0.0.1', 0), functools.partial(Handler, directory=str(ROOT)))
+        threading.Thread(target=cls.server.serve_forever, daemon=True).start()
+        cls.playwright = sync_playwright().start()
+        cls.browser = cls.playwright.chromium.launch(
+            executable_path='/usr/bin/chromium', args=['--no-sandbox'])
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.browser.close()
+        cls.playwright.stop()
+        cls.server.shutdown()
+        cls.server.server_close()
+
+    def setUp(self):
+        self.context = self.browser.new_context(
+            viewport={'width': 1300, 'height': 1000}, accept_downloads=True)
+        self.page = self.context.new_page()
+        self.errors, self.failures = [], []
+        self.page.on('pageerror', lambda error: self.errors.append(str(error)))
+        self.page.on('response', lambda response: self.failures.append(response.url)
+                     if response.status >= 400 and not response.url.endswith('favicon.ico') else None)
+        self.page.set_default_timeout(6000)
+        self.url = f'http://127.0.0.1:{self.server.server_port}/fishing-fixture'
+        self.load()
+
+    def load(self):
+        self.page.goto(self.url, wait_until='domcontentloaded')
+        self.page.wait_for_function('window.lab && window.CodaRhythmFishing')
+        self.assertTrue(self.page.evaluate('CodaMusicNotation.load()'),
+                        'Fishing notation must use the real bundled music font')
+        self.page.clock.install()
+        self.page.locator('#enter').click()
+        self.page.clock.run_for(50)
+
+    def tearDown(self):
+        if self.page and not self.page.is_closed():
+            self.page.evaluate('lab.destroy()')
+        self.context.close()
+        self.assertEqual(self.errors, [], 'Fishing must not raise browser errors')
+        self.assertEqual(self.failures, [], 'Local fishing resources must load')
+
+    def state(self):
+        return self.page.evaluate('lab.getState()')
+
+    def board(self):
+        self.page.locator('#fishingBoatBoard').click()
+        self.page.clock.run_for(40)
+
+    def cast(self):
+        if self.state()['phase'] == 'shore':
+            self.board()
+        self.page.locator('#fishingCast').click()
+        self.page.clock.run_for(2400)
+        state = self.state()
+        self.assertIsNotNone(state.get('challenge'), state)
+        self.page.locator('#fishingRhythmCanvas').focus()
+        return state
+
+    def advance_to(self, target):
+        clock = self.state()['clock']
+        # Deliver slightly after the strike line so the previous RAF cannot
+        # leave the first onset a fraction of a frame inside its count-in.
+        self.page.clock.run_for(max(1, round((target+.025-clock)*1000)))
+
+    def finish_with_hits(self):
+        for _ in range(100):
+            state = self.state()
+            challenge = state.get('challenge')
+            if not challenge or challenge['phase'] in ['caught', 'escaped']:
+                return state
+            notes = [note for note in challenge['notes']
+                     if not note.get('rest') and note.get('judgement') in [None, 'pending']
+                     and note['time'] >= state['clock']-.03]
+            self.assertTrue(notes, state)
+            self.advance_to(notes[0]['time'])
+            self.page.keyboard.press('Space')
+            self.page.clock.run_for(1)
+        self.fail('A common fish must be catchable by its actual rhythm')
+
+    def test_cast_bite_count_in_and_real_rhythm_progress_then_escape(self):
+        self.assertEqual(self.state()['phase'], 'shore')
+        self.board()
+        self.assertEqual(self.state()['phase'], 'explore')
+        state = self.cast()
+        initial = state['challenge']['progress']
+        before_ink = self.page.evaluate('''()=>{
+          const time=fishingInk.at(-1)?.time;
+          return fishingInk.filter(item=>item.time===time).map(item=>item.x);
+        }''')
+        self.page.clock.run_for(150)
+        after_ink = self.page.evaluate('''()=>{
+          const time=fishingInk.at(-1)?.time;
+          return fishingInk.filter(item=>item.time===time).map(item=>item.x);
+        }''')
+        self.assertTrue(before_ink and after_ink, 'The staff must draw real note glyphs')
+        self.assertLess(after_ink[0], before_ink[0], 'Music notation must scroll left toward the strike line')
+        self.page.keyboard.press('Space')
+        self.assertEqual(self.state()['challenge']['progress'], initial,
+                         'The count-in is a preparation period, not a penalty')
+        note = next(note for note in state['challenge']['notes'] if not note.get('rest'))
+        self.advance_to(note['time'])
+        self.page.keyboard.press('Space')
+        self.assertGreater(self.state()['challenge']['progress'], initial)
+        after_hit = self.state()['challenge']['progress']
+        self.page.keyboard.press('Space')
+        self.assertLess(self.state()['challenge']['progress'], after_hit,
+                        'Extra taps must lower the reel progress')
+        self.page.clock.run_for(16000)
+        self.assertEqual(self.state()['challenge']['phase'], 'escaped')
+        self.assertEqual(self.page.evaluate('rewards'), [])
+
+    def test_clean_catch_pays_once_and_collection_survives_reload(self):
+        self.cast()
+        state = self.finish_with_hits()
+        self.assertEqual(state['challenge']['phase'], 'caught')
+        self.assertEqual(len(self.page.evaluate('rewards')), 1)
+        self.assertGreater(self.page.evaluate('rewards[0].amount'), 0)
+        self.page.evaluate('lab.control(" ",true);lab.control(" ",false)')
+        self.assertEqual(len(self.page.evaluate('rewards')), 1)
+        self.page.locator('#fishingReturnLake').click()
+        self.page.locator('#fishingCollection').click()
+        self.assertEqual(self.page.locator('[data-fish-id]').count(), 30)
+        self.assertIn('1', self.page.locator('#fishing').inner_text())
+        self.page.reload(wait_until='domcontentloaded')
+        self.page.wait_for_function('window.lab')
+        self.page.locator('#enter').click()
+        self.assertEqual(self.page.evaluate('rewardCalls.length'), 0,
+                         'Opening a saved collection must not replay a reward')
+        self.page.locator('#fishingCollection').click()
+        self.assertEqual(self.page.locator('[data-fish-id]').count(), 30)
+
+    def test_failed_reward_can_retry_same_catch_without_repeating_payment(self):
+        self.page.evaluate('failReward=true')
+        self.cast()
+        state = self.finish_with_hits()
+        self.assertEqual(state['challenge']['phase'], 'caught')
+        self.assertEqual(self.page.evaluate('rewards.length'), 0)
+        self.page.locator('#fishingRewardRetry').wait_for(state='visible')
+        original = self.page.evaluate('rewardCalls[0].result.id')
+        self.page.evaluate('failReward=false')
+        self.page.locator('#fishingRewardRetry').click()
+        self.assertEqual(self.page.evaluate('rewards.length'), 1)
+        self.assertEqual(self.page.evaluate('rewards[0].id'), original)
+        self.page.locator('#fishingClose').click()
+        self.page.locator('#enter').click()
+        self.assertEqual(self.page.evaluate('rewards.length'), 1)
+
+    def test_unavailable_journal_never_pays_an_unsaved_catch_and_can_retry(self):
+        self.page.evaluate('failStorage=true')
+        self.cast()
+        state=self.finish_with_hits()
+        self.assertEqual(state['challenge']['phase'],'caught')
+        self.assertEqual(self.page.evaluate('rewardCalls.length'),0,
+                         'A catch must reach its journal before a reward is requested')
+        self.assertEqual(state['collection']['total'],0)
+        self.page.locator('#fishingRewardRetry').wait_for(state='visible')
+        self.page.evaluate('failStorage=false')
+        self.page.locator('#fishingRewardRetry').click()
+        self.assertEqual(self.page.evaluate('rewards.length'),1)
+        self.assertEqual(self.state()['collection']['total'],1)
+
+    def test_boat_keyboard_collision_and_close_clear_controls(self):
+        self.board()
+        start = self.state()['boat']
+        self.page.locator('#fishingLakeCanvas').focus()
+        self.page.keyboard.down('d')
+        self.page.clock.run_for(250)
+        self.page.keyboard.up('d')
+        moved = self.state()['boat']
+        self.assertGreater(moved['x'], start['x']+15)
+        self.page.keyboard.down('d')
+        self.page.clock.run_for(10000)
+        self.page.keyboard.up('d')
+        edge = self.state()['boat']
+        self.assertLess(edge['x'], 920)
+        self.page.clock.run_for(500)
+        self.assertAlmostEqual(self.state()['boat']['x'], edge['x'], delta=.01)
+        self.page.keyboard.press('Escape')
+        self.assertFalse(self.state()['open'])
+        self.assertEqual(self.page.evaluate('exits'), 1)
+        self.assertEqual(self.state()['voiceCount'],0)
+
+    def test_captain_teaches_meter_and_the_selected_meter_reaches_the_challenge(self):
+        self.page.locator('#fishingMeter').select_option('6/8')
+        self.page.locator('#fishingTalkCaptain').click()
+        self.page.locator('[data-captain-topic="meters"]').click()
+        self.assertIn('three eighth notes', self.page.locator('#fishingCaptainWords').inner_text())
+        self.page.locator('#fishingCaptainClose').click()
+        state = self.cast()
+        meter = state.get('meter', state['challenge'].get('meter'))
+        if isinstance(meter, dict):
+            meter = meter.get('id', meter.get('meter'))
+        self.assertEqual(meter, '6/8')
+
+    def test_hiding_the_page_pauses_a_hooked_fish_and_escape_stops_audio(self):
+        self.cast()
+        before = self.state()
+        self.page.evaluate('''()=>{
+          Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});
+          document.dispatchEvent(new Event('visibilitychange'));
+        }''')
+        self.page.clock.run_for(7000)
+        hidden = self.state()
+        self.assertEqual(hidden['challenge']['progress'], before['challenge']['progress'])
+        self.assertEqual(hidden['challenge']['phase'], before['challenge']['phase'])
+        self.page.evaluate('''()=>{
+          delete document.hidden;document.dispatchEvent(new Event('visibilitychange'));
+        }''')
+        self.page.clock.run_for(100)
+        self.assertNotEqual(self.state()['challenge']['phase'], 'escaped')
+        self.page.keyboard.press('Escape')
+        self.assertFalse(self.state()['open'])
+        self.assertEqual(self.page.evaluate('rewards'), [])
+        self.assertEqual(self.state()['voiceCount'],0)
+
+    def test_phone_touch_boat_and_layout_and_large_rhythm_tap_target(self):
+        self.context.close()
+        self.context = self.browser.new_context(
+            viewport={'width':390,'height':844}, is_mobile=True, has_touch=True)
+        self.page = self.context.new_page()
+        self.page.on('pageerror', lambda error: self.errors.append(str(error)))
+        self.load()
+        self.board()
+        canvas = self.page.locator('#fishingLakeCanvas')
+        box = canvas.bounding_box()
+        client = self.context.new_cdp_session(self.page)
+        before = self.state()['boat']
+        point = {'id':1,'x':box['x']+680/1000*box['width'],
+                 'y':box['y']+390/620*box['height']}
+        client.send('Input.dispatchTouchEvent', {'type':'touchStart','touchPoints':[point]})
+        self.page.clock.run_for(500)
+        client.send('Input.dispatchTouchEvent', {'type':'touchEnd','touchPoints':[]})
+        self.assertGreater(self.state()['boat']['x'], before['x']+10)
+        after = self.state()['boat']
+        self.page.clock.run_for(300)
+        self.assertAlmostEqual(self.state()['boat']['x'], after['x'], delta=.01)
+        client.detach()
+        self.page.screenshot(path='/tmp/coda-rhythm-fishing-lake-phone.png',full_page=True)
+        self.cast()
+        tap_box=self.page.locator('#fishingTap').bounding_box()
+        self.assertGreaterEqual(tap_box['height'],72,'Rhythm tapping needs a large mobile target')
+        for size in [{'width':390,'height':844},{'width':844,'height':390}]:
+            self.page.set_viewport_size(size)
+            self.page.clock.run_for(100)
+            self.assertLessEqual(self.page.locator('#fishing').evaluate('(host)=>host.scrollWidth'),size['width']+1)
+            targets=self.page.locator('#fishing button:visible').evaluate_all(
+                '(buttons)=>buttons.map(b=>({label:b.textContent,h:b.getBoundingClientRect().height,w:b.getBoundingClientRect().width}))')
+            self.assertTrue(all(item['h']>=44 and item['w']>=44 for item in targets),targets)
+        self.page.screenshot(path='/tmp/coda-rhythm-fishing-phone.png',full_page=True)
+
+
+if __name__ == '__main__':
+    unittest.main(verbosity=2)
