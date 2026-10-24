@@ -2,6 +2,7 @@
 window.createCodaDeveloperConsole = function (api) {
   'use strict';
   const {W, H, c, studio, layer, parts, worldArt, foregroundArt} = api;
+  const catalog = [...(api.catalog || []), ...parts];
   const FORMAT = 'CodaArcadeWorldProject', VERSION = 1, STORE = 'codaWorldProjectV1';
   const $ = id => document.getElementById(id);
   const clone = value => JSON.parse(JSON.stringify(value));
@@ -28,17 +29,23 @@ window.createCodaDeveloperConsole = function (api) {
   head.after(nav);
   objects.id = 'dev-objects';
   objects.querySelector('.studioTip').textContent = 'Select an existing object, lift a region, or add artwork. Drag objects and gold handles to move, resize and rotate.';
-  const catalog = document.createElement('div'); catalog.className = 'dev-original';
-  catalog.innerHTML = `<label class="studioField">Existing world objects<select id="devCatalog" aria-label="Existing world objects"></select></label>
+  const catalogUI = document.createElement('div'); catalogUI.className = 'dev-original';
+  catalogUI.innerHTML = `<label class="studioField">Existing world objects<select id="devCatalog" aria-label="Existing world objects"></select></label>
     <canvas id="devCatalogPreview" class="dev-preview" width="320" height="85" aria-label="Selected existing object preview"></canvas>
     <div class="dev-toolbar"><button type="button" id="devLift">Edit existing object</button><button type="button" id="devLiftRegion">Lift a region</button></div>
     <p class="studioTip">Click an original object on the map to select it, or choose its name here. Lift a region for artwork outside this catalog.</p>`;
-  objects.children[0].after(catalog);
-  for (const part of parts) { const option = new Option(part.name.replaceAll('_',' '),part.name); $('devCatalog').append(option); }
+  objects.children[0].after(catalogUI);
+  const groups = new Map();
+  for (const part of catalog) {
+    const label=part.group || 'Furniture, plants & walls';
+    if(!groups.has(label)){const group=document.createElement('optgroup');group.label=label;groups.set(label,group);$('devCatalog').append(group);}
+    groups.get(label).append(new Option(part.label || part.name.replaceAll('_',' '),part.name));
+  }
   const extra = document.createElement('details'); extra.className = 'studioCollapsible'; extra.open = true;
   extra.innerHTML = `<summary>Artwork, source patch & collision</summary>
     <div class="dev-toolbar"><button id="devReplace" type="button">Replace image</button><button id="devRestore" type="button">Restore original</button></div>
     <input type="file" id="devReplaceFile" accept="image/png,image/jpeg,image/webp,image/gif,image/apng" hidden>
+    <div id="devDisco" hidden><label class="studioField">Disco ball spin speed<input id="devDiscoSpin" type="number" min="0" max="4" step="0.05"></label><label class="studioCheck"><input id="devDiscoRays" type="checkbox">Project disco light rays</label></div>
     <div id="devSource" hidden><p class="studioTip">The room is a flattened PNG. A clone patch covers the old silhouette. Pick a clean floor sample to improve the patch; hidden artwork cannot be recovered automatically.</p>
       <div class="studioGrid"><label class="studioField">Floor sample X<input type="number" id="devSampleX" min="0" step="1"></label><label class="studioField">Floor sample Y<input type="number" id="devSampleY" min="0" step="1"></label></div>
       <button type="button" id="devPickSample">Pick floor sample on map</button>
@@ -126,22 +133,33 @@ window.createCodaDeveloperConsole = function (api) {
     const key=JSON.stringify([origin.name,origin.bounds]); if(pictures.has(key))return pictures.get(key);
     if(!worldArt.naturalWidth||!foregroundArt.naturalWidth)return null;
     const [x,y,w,h]=origin.bounds,out=makeCanvas(w,h),ctx=out.getContext('2d'); ctx.imageSmoothingEnabled=false;
-    const part=parts.find(p=>p.name===origin.name);
-    if(part)ctx.drawImage(foregroundArt,...part.atlas,0,0,w,h); else ctx.drawImage(worldArt,x,y,w,h,0,0,w,h);
+    const part=catalog.find(p=>p.name===origin.name);
+    if(part?.source==='world'){
+      ctx.save();ctx.translate(-x,-y);ctx.beginPath();
+      const polygons=[part.polygon || [[x,y],[x+w,y],[x+w,y+h],[x,y+h]],...(part.holes||[])];
+      for(const polygon of polygons){ctx.moveTo(...polygon[0]);for(const point of polygon.slice(1))ctx.lineTo(...point);ctx.closePath();}
+      ctx.clip('evenodd');ctx.drawImage(worldArt,0,0);ctx.restore();
+    } else if(part)ctx.drawImage(foregroundArt,...part.atlas,0,0,w,h); else ctx.drawImage(worldArt,x,y,w,h,0,0,w,h);
     pictures.set(key,out); return out;
   }
   function catalogPreview() {
-    const part=parts.find(p=>p.name===$('devCatalog').value); if(!part)return;
+    const part=catalog.find(p=>p.name===$('devCatalog').value); if(!part)return;
     const ctx=$('devCatalogPreview').getContext('2d');ctx.clearRect(0,0,320,85);
     const img=picture({name:part.name,bounds:part.bounds}); if(!img)return;
     const scale=Math.min(300/img.width,80/img.height); ctx.imageSmoothingEnabled=false; ctx.drawImage(img,(320-img.width*scale)/2,(85-img.height*scale)/2,img.width*scale,img.height*scale);
   }
+  worldArt.addEventListener('load',catalogPreview);
+  foregroundArt.addEventListener('load',catalogPreview);
   function lift(origin, focus=true) {
     const existing=studio.assets.find(a=>a.origin?.name===origin.name);
     if(existing) { studio.selected=existing.id;api.refresh();refresh();message('Selected '+existing.name);return existing; }
-    const [x,y,w,h]=origin.bounds,a=api.prototype(origin.name.replaceAll('_',' '),'builtin');
+    const part=catalog.find(p=>p.name===origin.name);
+    const [x,y,w,h]=origin.bounds,a=api.prototype(part?.label || origin.name.replaceAll('_',' '),'builtin');
     a.ref='foreground'; a.crop=[0,0,w,h]; a.origin={...origin,sample:defaultSample(origin.bounds)};
-    a.x=x+w/2;a.y=y+h/2;a.w=w;a.h=h;a.anim='none';a.depthOffset=(parts.find(p=>p.name===origin.name)?.sortY??y+h)-(y+h);a.layer='world';
+    a.x=x+w/2;a.y=y+h/2;a.w=w;a.h=h;a.anim='none';a.depthOffset=(part?.sortY??y+h)-(y+h);a.layer=part?.layer || 'world';
+    if(part?.sample)a.origin.sample=part.sample.slice();
+    if(part?.collision){const [cx,cy,cw,ch]=part.collision;a.releaseCollision=true;a.collider={x:(cx-a.x)/w*100,y:(cy-a.y)/h*100,w:cw/w*100,h:ch/h*100};}
+    if(part?.ballIndex!==undefined){a.discoSpin=part.spin;a.discoRays=true;}
     if(api.add(a)) { if(focus)api.focusWorld(a.x,a.y);refresh();message('Original object lifted. Tune the floor sample if its old position needs cleanup.');return a; }
   }
   function suppressOriginal(name) { return studio.assets.some(a=>a.origin?.name===name); }
@@ -181,7 +199,7 @@ window.createCodaDeveloperConsole = function (api) {
   function validateOrigin(o) {
     if(!o||typeof o.name!=='string'||!Array.isArray(o.bounds)||o.bounds.length!==4||!o.bounds.every(Number.isInteger))return false;
     const [x,y,w,h]=o.bounds;if(x<0||y<0||w<3||h<3||x+w>W||y+h>H)return false;
-    const part=parts.find(p=>p.name===o.name);
+    const part=catalog.find(p=>p.name===o.name);
     if(part&&JSON.stringify(part.bounds)!==JSON.stringify(o.bounds))return false;
     if(!part&&!/^region-[a-z0-9-]+$/.test(o.name))return false;
     return Array.isArray(o.sample)&&o.sample.length===2&&o.sample.every(Number.isInteger)&&o.sample[0]>=0&&o.sample[0]<=W-16&&o.sample[1]>=0&&o.sample[1]<=H-16;
@@ -189,6 +207,8 @@ window.createCodaDeveloperConsole = function (api) {
   function validateAssetExtension(a) {
     if(a.origin!==undefined&&!validateOrigin(a.origin))return false;
     if(a.releaseCollision!==undefined&&typeof a.releaseCollision!=='boolean')return false;
+    if(a.discoSpin!==undefined&&(!Number.isFinite(a.discoSpin)||a.discoSpin<0||a.discoSpin>4))return false;
+    if(a.discoRays!==undefined&&typeof a.discoRays!=='boolean')return false;
     if(a.depthOffset!==undefined&&(!Number.isFinite(a.depthOffset)||Math.abs(a.depthOffset)>H))return false;
     if(a.collider!==undefined) { const b=a.collider;if(!b||!['x','y','w','h'].every(k=>Number.isFinite(b[k])))return false;if(b.x< -100||b.x>100||b.y< -100||b.y>100||b.w<1||b.w>200||b.h<1||b.h>200)return false; }
     return true;
@@ -232,7 +252,11 @@ window.createCodaDeveloperConsole = function (api) {
   }
   function dynamicOverride(x,y) {
     if (x>=0&&y>=0&&x<W&&y<H&&colliderCells[Math.floor(y/api.cell)*api.gridWidth+Math.floor(x/api.cell)]) return false;
-    for(const a of studio.assets)if(a.origin&&a.releaseCollision){const [bx,by,bw,bh]=a.origin.bounds;if(x>=bx&&x<bx+bw&&y>=by&&y<by+bh)return true;}
+    for(const a of studio.assets)if(a.origin&&a.releaseCollision){
+      const part=catalog.find(p=>p.name===a.origin.name),box=part?.collision;
+      const [bx,by,bw,bh]=box?[box[0]-8,box[1]-8,box[2]+16,box[3]+16]:a.origin.bounds;
+      if(x>=bx&&x<bx+bw&&y>=by&&y<by+bh)return true;
+    }
     return undefined;
   }
   function walkableOverride(x,y) { const manual=collision.overrideAt(x,y);return manual===undefined?dynamicOverride(x,y):manual; }
@@ -285,6 +309,8 @@ window.createCodaDeveloperConsole = function (api) {
   }
   function refresh() {
     const a=api.selected(); $('devUndo').disabled=!studio.undo.length;$('devRedo').disabled=!studio.redo.length;
+    const part=catalog.find(p=>p.name===a?.origin?.name);$('devDisco').hidden=part?.ballIndex===undefined;
+    if(part?.ballIndex!==undefined){$('devDiscoSpin').value=a.discoSpin??part.spin;$('devDiscoRays').checked=a.discoRays!==false;}
     $('devSource').hidden=!a?.origin;$('devRestore').disabled=!a?.origin;
     if(a?.origin){$('devSampleX').value=a.origin.sample[0];$('devSampleY').value=a.origin.sample[1];$('devRelease').checked=!!a.releaseCollision;}
     $('devSolid').checked=!!a?.collider; $('devCollider').hidden=!a?.collider;
@@ -311,7 +337,7 @@ window.createCodaDeveloperConsole = function (api) {
       // Preserve control-handle priority and placed-object selection.
       if(api.selected()&&api.nearHandle(api.selected(),p))return false;
       if(!api.assetAt(p.x,p.y)) {
-        const part=parts.slice().reverse().find(part=>{if(suppressOriginal(part.name))return false;const [x,y,w,h]=part.bounds; if(p.x<x||p.x>=x+w||p.y<y||p.y>=y+h)return false;const image=picture({name:part.name,bounds:part.bounds});return image?.getContext('2d').getImageData(Math.floor(p.x-x),Math.floor(p.y-y),1,1).data[3]>30;});
+        const part=catalog.slice().reverse().find(part=>{if(suppressOriginal(part.name))return false;const [x,y,w,h]=part.bounds; if(p.x<x||p.x>=x+w||p.y<y||p.y>=y+h)return false;const image=picture({name:part.name,bounds:part.bounds});return image?.getContext('2d').getImageData(Math.floor(p.x-x),Math.floor(p.y-y),1,1).data[3]>30;});
         if(part){$('devCatalog').value=part.name;catalogPreview();lift({name:part.name,bounds:part.bounds.slice()},false);}
       }
     }
@@ -325,7 +351,9 @@ window.createCodaDeveloperConsole = function (api) {
   }
   function liftedRegion(bounds) { return lift({name:'region-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),bounds}); }
   for(const name of ['objects','collision','layers','project'])$('devTab-'+name).onclick=()=>setTab(name);
-  $('devCatalog').onchange=catalogPreview;$('devLift').onclick=()=>{const part=parts.find(p=>p.name===$('devCatalog').value);lift({name:part.name,bounds:part.bounds.slice()});};
+  $('devCatalog').onchange=catalogPreview;$('devLift').onclick=()=>{const part=catalog.find(p=>p.name===$('devCatalog').value);lift({name:part.name,bounds:part.bounds.slice()});};
+  $('devDiscoSpin').onchange=()=>editSelected(a=>{a.discoSpin=api.bound($('devDiscoSpin').value,0,4,1);});
+  $('devDiscoRays').onchange=()=>editSelected(a=>{a.discoRays=$('devDiscoRays').checked;});
   $('devLiftRegion').onclick=()=>{studio.capturing={which:'lift',start:null,end:null};message('Drag a rectangle around existing artwork to lift it. Its old position receives a floor patch.');c.focus();};
   $('devSampleX').max=W-16;$('devSampleY').max=H-16;
   for(const [id,index]of [['devSampleX',0],['devSampleY',1]])$(id).onchange=()=>editSelected(a=>{if(a.origin)a.origin.sample[index]=Math.round(api.bound($(id).value,0,index?H-16:W-16,a.origin.sample[index]));});

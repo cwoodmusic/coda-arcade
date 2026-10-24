@@ -17,7 +17,7 @@
 /* Coda Asset Studio v11: stays separate from collision + pixel masks. */
 #assetStudio{position:fixed;left:12px;top:80px;z-index:65;width:min(334px,calc(100vw - 24px));max-height:calc(100dvh - 99px);overflow:auto;background:#171529f5;border:1px solid #eac17d;box-shadow:0 12px 50px #05010de0,0 0 22px #fdac4a24;border-radius:12px;padding:13px;color:#f8efff;font:12px system-ui;backdrop-filter:blur(9px)}
 #assetStudio[hidden]{display:none}#assetStudio .studioHead{display:flex;align-items:center;justify-content:space-between;color:#ffe4a4;font-size:14px;gap:9px;margin-bottom:7px}#assetStudio .studioActions{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0}#assetStudio button{font:inherit;min-height:28px;padding:5px 7px}#assetStudio .studioActions button{flex:1 0 90px}#assetStudio button:disabled{opacity:.36;cursor:not-allowed}#assetStudio hr{border:0;border-top:1px solid #655374;margin:13px 0}#assetStudio .studioField{display:grid;gap:3px;margin:7px 0}#assetStudio .studioField>label{font-weight:650;color:#dccdf3}#assetStudio input:not([type=checkbox]),#assetStudio select{background:#131024;border:1px solid #866e9b;color:#fff;padding:7px;border-radius:5px;width:100%;font:inherit;min-width:0}#assetStudio input[type=checkbox]{accent-color:#f9c880}#assetStudio .studioGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}#assetStudio .studioTip{color:#c9b9d6;line-height:1.45;font-size:11px;margin:6px 0}#assetStudio #assetList{height:108px;padding:2px}#assetStudio #assetList option{padding:6px}#assetStudio #assetMessage{color:#bbf5e5;min-height:18px;overflow-wrap:anywhere}#assetStudio #assetSelection[hidden]{display:none}#assetStudio .studioCheck{display:inline-flex;align-items:center;gap:6px;margin:5px 11px 5px 0}#assetStudio .studioCollapsible{border:1px solid #655374;border-radius:7px;padding:8px}#assetStudio summary{cursor:pointer;color:#ffe4b1;font-weight:650}#assetToggle{border-color:#eecc7c}#view.asset-editing{cursor:crosshair;touch-action:none}#assetStudio #assetAdd{background:#675022;border-color:#e8b85c}#assetStudio #assetImport{border-color:#80d3ed}#assetStudio #assetExport{border-color:#80d3ed}#assetStudio #assetHelp{background:#271d3c}#assetStudio .studioHot{color:#ffcfa4}body.asset-console-open #layerEditor{display:none!important}@media(max-width:650px){#assetStudio{top:120px;max-height:calc(100dvh - 138px)}}
-</style><link rel="stylesheet" href="developer-console.css"><script src="collision-editor.js"></script><script src="developer-console.js"></script><header><b>♫ CODA ARCADE · CONNECTED WORLD / WORLD BUILDER</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="assetToggle" type="button" title="Open Asset Studio (Shift+A)">✥ Assets</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · Wheel / + / − Zoom · 0 Reset · F2 Developer console · C Edit collision · Shift+L Edit layers · Right-drag to pan in editor &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 11 · asset studio · animations · layers · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
+</style><link rel="stylesheet" href="developer-console.css"><script src="collision-editor.js"></script><script src="world-object-catalog.js"></script><script src="world-object-runtime.js"></script><script src="developer-console.js"></script><header><b>♫ CODA ARCADE · CONNECTED WORLD / WORLD BUILDER</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="assetToggle" type="button" title="Open Asset Studio (Shift+A)">✥ Assets</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0"></canvas><footer><span>WASD / arrows · Walk · Wheel / + / − Zoom · 0 Reset · F2 Developer console · C Edit collision · Shift+L Edit layers · Right-drag to pan in editor &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 11 · asset studio · animations · layers · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
   <div class="editorbanner"><b>✎ FOREGROUND EDITOR</b><button id="editClose" type="button">✕</button></div>
   <div class="mini">Paint with pixels from the existing arcade artwork. Erase removes unwanted foreground coverage; the floor stays unchanged.</div>
   <div class="editorline"><button type="button" id="editPaint" class="current">🖌 Paint</button><button type="button" id="editErase">⌫ Erase</button></div>
@@ -77,7 +77,7 @@
  <p id="assetMessage" role="status">Your assets are saved in this browser. Export scene JSON to publish or move them to another computer.</p>
  <details><summary id="assetHelp">Help · shortcuts and storage</summary><p class="studioTip">Shift+A opens/closes. Delete removes. Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z redo. Arrows nudge selected asset (Shift = 8 px). Escape closes. GIF/APNG playback depends on browser support; sprite sheets offer deterministic frame animation. Crop selects a rectangular section of the *original art* (not the whole live canvas). Imported images are embedded in exported JSON. Browser storage is local to this page/origin; GitHub won't receive edits until you publish the export.</p></details>
 </aside><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><div id="pianoroom" hidden><div class="stage"><h2>♫ PIANO LAB ♫</h2><p>A quieter music space away from the arcade floor.</p><div class="keys"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p style="opacity:.7">Dedicated room preview — instruments and activities coming later.</p></div><button id="closepiano">← Return to Arcade</button></div><script>
-(()=>{'use strict';let developerConsole=null;const c=document.querySelector('#view'),g=c.getContext('2d',{alpha:false}),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}const W=1672,H=941,ART_SCALE=1,keys=new Set();let player={x:1180,y:388},cam={x:0,y:0,zoom:1,targetZoom:1},dest=null,emote=0,near=null,last=0,clock=0,walking=false,facing="down";const rooms=[{id:'lounge',name:'LOUNGE',x:95,y:145,w:350,h:235},{id:'dance',name:'DANCE',x:90,y:505,w:670,h:325},{id:'arcade',name:'ARCADE',x:648,y:220,w:900,h:580}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:718,y:313,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:831,y:314,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:951,y:315,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1064,y:315,url:'song-machine/index.html'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
+(()=>{'use strict';let developerConsole=null,worldObjects=null;const c=document.querySelector('#view'),g=c.getContext('2d',{alpha:false}),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}const W=1672,H=941,ART_SCALE=1,keys=new Set();let player={x:1180,y:388},cam={x:0,y:0,zoom:1,targetZoom:1},dest=null,emote=0,near=null,last=0,clock=0,walking=false,facing="down";const rooms=[{id:'lounge',name:'LOUNGE',x:95,y:145,w:350,h:235},{id:'dance',name:'DANCE',x:90,y:505,w:670,h:325},{id:'arcade',name:'ARCADE',x:648,y:220,w:900,h:580}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:718,y:313,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:831,y:314,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:951,y:315,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1064,y:315,url:'song-machine/index.html'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
 
 // PHASE 9.8: World-space camera. Gameplay, collisions and editor masks stay in
 // their original 1672x941 coordinate system. Only the canvas view is scaled.
@@ -129,7 +129,9 @@ c.addEventListener('wheel',e=>{
  e.preventDefault();setCameraZoom(cam.targetZoom+(e.deltaY<0?ZOOM_STEP:-ZOOM_STEP));
 },{passive:false});
 updateZoomControls();
-const looks=[['#e5b48d','#ed8cbe','#171424','spiky'],['#85543b','#8ddde6','#e3c27d','long'],['#f4cba6','#c9a3f1','#402c4b','buns'],['#a56b48','#f4ae77','#1c172d','short'],['#f3c3a1','#b2f37b','#6c3159','bob'],['#704633','#a8b5fc','#eee6df','curly'],['#f0b79d','#ffd48c','#171424','ponytail']];const npc=[{name:'Ziggy',x:1450,y:752,mode:'enter',goal:0,wait:0,look:0},{name:'Nova',x:1450,y:752,mode:'enter',goal:1,wait:1.7,look:1},{name:'Byte',x:1450,y:752,mode:'enter',goal:2,wait:3.4,look:2},{name:'Mochi',x:1450,y:752,mode:'enter',goal:3,wait:5,look:3},{name:'Riff',x:1450,y:752,mode:'enter',goal:0,wait:7,look:4},{name:'Fizz',x:1450,y:752,mode:'enter',goal:1,wait:9,look:5},{name:'Dot',x:1450,y:752,mode:'enter',goal:2,wait:11,look:6}];const sofas=[{x:105,y:135,w:110,h:45},{x:240,y:135,w:110,h:45}];const seats=[{x:158,y:267},{x:370,y:262},{x:190,y:304},{x:390,y:296}];const spot=(p)=>p.mode==='cabinet'?{x:games[p.goal%4].x,y:323}:p.mode==='lounge'?seats[p.goal%4]:p.mode==='dance'?{x:205+(p.goal%4)*125,y:718+(p.goal%2)*65}:p.mode==='leave'?{x:1450,y:752}:{x:1450,y:752};const r=(x,y,w,h,color)=>{g.fillStyle=color;g.fillRect(Math.round(x),Math.round(y),w,h)};const t=(s,x,y,size=18,color='#e7e2ff')=>{g.fillStyle=color;g.font=`bold ${size}px monospace`;g.textAlign='center';g.fillText(s,x,y)};function sprite(x,y,look,walk=false,dance=false,scale=1){const [skin,shirt,hair,style]=look;g.save();g.translate(Math.round(x),Math.round(y));g.scale(scale,scale);const bob=dance?Math.sin(clock*8)*5:walk?Math.sin(clock*12)*2:0;r(-10,-38+bob,20,17,hair);if(style==='buns'){r(-15,-39+bob,6,7,hair);r(9,-39+bob,6,7,hair)}if(style==='long')r(-13,-30+bob,26,20,hair);r(-9,-32+bob,18,16,skin);r(-12,-16+bob,24,20,shirt);r(-16,-12+bob,4,13,skin);r(12,-12+bob,4,13,skin);r(-9,4+bob,7,11,'#695d99');r(2,4+bob,7,11,'#695d99');r(-10,14+bob,9,4,'#f8d56b');r(1,14+bob,9,4,'#f8d56b');r(-6,-24+bob,3,3,'#222033');r(4,-24+bob,3,3,'#222033');if(dance){const beat=Math.floor(clock*4+look[0].length)%4,up=beat%2===0;r(-18,-(up?29:13)+bob,5,up?16:11,skin);r(13,-(up?13:29)+bob,5,up?11:16,skin);r(-10+(up?-5:3),14+bob,9,5,'#f8d56b');r(1+(up?4:-4),14+bob,9,5,'#f8d56b')}g.restore()};
+function runtimeGames(){return worldObjects?worldObjects.games(games):games.map((q,index)=>({...q,index}));}
+function cabinetApproach(index){const game=runtimeGames().find(g=>g.index===index)||runtimeGames()[0];return game?{x:game.npcX??game.x,y:game.npcY??323}:{x:1180,y:388};}
+const looks=[['#e5b48d','#ed8cbe','#171424','spiky'],['#85543b','#8ddde6','#e3c27d','long'],['#f4cba6','#c9a3f1','#402c4b','buns'],['#a56b48','#f4ae77','#1c172d','short'],['#f3c3a1','#b2f37b','#6c3159','bob'],['#704633','#a8b5fc','#eee6df','curly'],['#f0b79d','#ffd48c','#171424','ponytail']];const npc=[{name:'Ziggy',x:1450,y:752,mode:'enter',goal:0,wait:0,look:0},{name:'Nova',x:1450,y:752,mode:'enter',goal:1,wait:1.7,look:1},{name:'Byte',x:1450,y:752,mode:'enter',goal:2,wait:3.4,look:2},{name:'Mochi',x:1450,y:752,mode:'enter',goal:3,wait:5,look:3},{name:'Riff',x:1450,y:752,mode:'enter',goal:0,wait:7,look:4},{name:'Fizz',x:1450,y:752,mode:'enter',goal:1,wait:9,look:5},{name:'Dot',x:1450,y:752,mode:'enter',goal:2,wait:11,look:6}];const sofas=[{x:105,y:135,w:110,h:45},{x:240,y:135,w:110,h:45}];const seats=[{x:158,y:267},{x:370,y:262},{x:190,y:304},{x:390,y:296}];const spot=(p)=>p.mode==='cabinet'?cabinetApproach(p.goal%4):p.mode==='lounge'?seats[p.goal%4]:p.mode==='dance'?{x:205+(p.goal%4)*125,y:718+(p.goal%2)*65}:p.mode==='leave'?{x:1450,y:752}:{x:1450,y:752};const r=(x,y,w,h,color)=>{g.fillStyle=color;g.fillRect(Math.round(x),Math.round(y),w,h)};const t=(s,x,y,size=18,color='#e7e2ff')=>{g.fillStyle=color;g.font=`bold ${size}px monospace`;g.textAlign='center';g.fillText(s,x,y)};function sprite(x,y,look,walk=false,dance=false,scale=1){const [skin,shirt,hair,style]=look;g.save();g.translate(Math.round(x),Math.round(y));g.scale(scale,scale);const bob=dance?Math.sin(clock*8)*5:walk?Math.sin(clock*12)*2:0;r(-10,-38+bob,20,17,hair);if(style==='buns'){r(-15,-39+bob,6,7,hair);r(9,-39+bob,6,7,hair)}if(style==='long')r(-13,-30+bob,26,20,hair);r(-9,-32+bob,18,16,skin);r(-12,-16+bob,24,20,shirt);r(-16,-12+bob,4,13,skin);r(12,-12+bob,4,13,skin);r(-9,4+bob,7,11,'#695d99');r(2,4+bob,7,11,'#695d99');r(-10,14+bob,9,4,'#f8d56b');r(1,14+bob,9,4,'#f8d56b');r(-6,-24+bob,3,3,'#222033');r(4,-24+bob,3,3,'#222033');if(dance){const beat=Math.floor(clock*4+look[0].length)%4,up=beat%2===0;r(-18,-(up?29:13)+bob,5,up?16:11,skin);r(13,-(up?13:29)+bob,5,up?11:16,skin);r(-10+(up?-5:3),14+bob,9,5,'#f8d56b');r(1+(up?4:-4),14+bob,9,5,'#f8d56b')}g.restore()};
 // Phase 7.1: world-coordinate collision, small foot hitboxes, and A* navigation.
 // All dimensions refer to the original 1536×1024 background image.
 const COLLISION_CELL=10,FOOT_RADIUS=8;
@@ -403,7 +405,7 @@ function update(dt){clock+=dt;if(developerConsole?developerConsole.isEditing():(
     p.arrived=true;
     p.wait=p.mode==='cabinet'?7+(p.look%3)*2:p.mode==='lounge'?9+(p.look%3)*2:12+(p.look%4)*2;
   }
-}near=null;let d=Infinity;for(const p of [...games.map((q,i)=>({...q,type:'game',index:i})),...npc.slice(0,2).filter(q=>!q.hidden).map(q=>({...q,type:'npc'})),{name:'Pip · Avatar Boutique',x:525,y:468,type:'shop'},{name:'Jukebox',x:1248,y:585,type:'jukebox'},{name:'Piano Lab',x:1290,y:247,type:'piano'}]){const dd=Math.hypot(p.x-player.x,p.y-player.y);if(dd<94&&dd<d){near=p;d=dd}}status.textContent=near?'E · '+(near.type==='game'?'Play ':near.type==='shop'?'Talk to ':'Chat with ')+near.name:'Explore · E interact · C collision · L green occlusion masks · F foreground'}const gameoverlay=document.querySelector('#gameoverlay'),gameiframe=document.querySelector('#gameiframe');let gameOpen=false;
+}near=null;let d=Infinity;for(const p of [...runtimeGames().map(q=>({...q,type:'game'})),...npc.slice(0,2).filter(q=>!q.hidden).map(q=>({...q,type:'npc'})),{name:'Pip · Avatar Boutique',x:525,y:468,type:'shop'},{name:'Jukebox',x:1248,y:585,type:'jukebox'},{name:'Piano Lab',x:1290,y:247,type:'piano'}]){const dd=Math.hypot(p.x-player.x,p.y-player.y);if(dd<94&&dd<d){near=p;d=dd}}status.textContent=near?'E · '+(near.type==='game'?'Play ':near.type==='shop'?'Talk to ':'Chat with ')+near.name:'Explore · E interact · C collision · L green occlusion masks · F foreground'}const gameoverlay=document.querySelector('#gameoverlay'),gameiframe=document.querySelector('#gameiframe');let gameOpen=false;
 
 function openPiano(){keys.clear();dest=null;document.querySelector('#pianoroom').hidden=false;}
 function closePiano(){document.querySelector('#pianoroom').hidden=true;keys.clear();c.focus();}
@@ -720,7 +722,15 @@ function drawPlacedAsset(a){if(!a.visible)return;
    g.shadowColor='#65f5ff';g.shadowBlur=12;g.fillStyle='#83efff';g.fillText('♫',0,0);
  }else if(p&&(p instanceof HTMLCanvasElement||(p.complete&&p.naturalWidth&&p.naturalHeight))){const [sx,sy,sw,sh]=assetBoundsFrame(a,p);
    if(sw>0&&sh>0&&sx>=0&&sy>=0&&sx+sw<=(p.naturalWidth||p.width)+.001&&sy+sh<=(p.naturalHeight||p.height)+.001)g.drawImage(p,sx,sy,sw,sh,-a.w/2,-a.h/2,a.w,a.h);
- }g.restore();}
+ }drawWorldObjectEffects(a);g.restore();}
+function drawWorldObjectEffects(a){
+ if(a.kind!=='builtin'||!a.origin||!effectsOn())return;
+ const part=window.CodaWorldObjectCatalog.find(p=>p.name===a.origin.name);if(!part)return;
+ const [x,y,w,h]=part.bounds;g.save();g.scale(a.w/w,a.h/h);g.translate(-x-w/2,-y-h/2);
+ if(part.ballIndex!==undefined)spinningDiscoBall({...DISCO_BALLS[part.ballIndex],spin:a.discoSpin??part.spin,time:assetStudio.animate?clock:0},beatInfo());
+ if(part.gameIndex!==undefined)drawCabinetScreen(cabinetScreen(part),beatInfo(),assetStudio.animate?clock:0);
+ g.restore();
+}
 function renderAssetsOfLayer(layer){for(const a of assetStudio.assets){if(a.layer===layer)drawPlacedAsset(a);}}
 function assetControlPositions(a){const ang=a.rotation*Math.PI/180,cs=Math.cos(ang),sn=Math.sin(ang);
  const rotate=(lx,ly)=>({x:a.x+lx*cs-ly*sn,y:a.y+lx*sn+ly*cs});
@@ -885,7 +895,7 @@ async function loadAssetStudio(){let found=null;
 window.CodaAssetStudioQA={get:()=>({active:assetStudio.active,count:assetStudio.assets.length,selected:assetStudio.selected,assets:assetStudio.assets.map(a=>({id:a.id,name:a.name,kind:a.kind,x:a.x,y:a.y,w:a.w,h:a.h,layer:a.layer,anim:a.anim,frames:a.frames}))}),open:()=>toggleAssetStudio(true),close:()=>toggleAssetStudio(false),preset:()=>assetUI('assetPreset').click(),export:downloadAssetJSON,save:persistAssets};
 // --- END ASSET STUDIO ------------------------------------------------------
 
-window.CODA_BUILD="12.0-world-developer-console";
+window.CODA_BUILD="12.1-disco-cabinet-editor";
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -1044,11 +1054,11 @@ function danceFloorLight(beat){
 // Precise centers of the disco-ball sprites painted into the original world art.
 // All highlights, rotating facets, and projected beams use THESE shared anchors.
 const DISCO_BALLS=[
- {x:866,y:125,r:25,spin:.55,seed:0,beams:[
+ {x:878,y:130,r:28,spin:.55,seed:0,beams:[
   {color:'#66dcff',len:238,spread:18,alpha:.105},
   {color:'#ff63ef',len:214,spread:16,alpha:.099},
   {color:'#fff7bd',len:178,spread:12,alpha:.075}]},
- {x:390,y:539,r:27,spin:.82,seed:3,club:true,beams:[
+ {x:392,y:548,r:29,spin:.82,seed:3,club:true,beams:[
   {color:'#36c8ff',len:465,spread:24,alpha:.105},
   {color:'#e360ff',len:360,spread:20,alpha:.090},
   {color:'#fff4c1',len:286,spread:16,alpha:.068}]}
@@ -1110,23 +1120,23 @@ function buildDiscoFrames(radius,seed){
 }
 function spinningDiscoBall(ball,beat){
  if(!effectsOn())return;
- const {x,y,r,seed}=ball;
- const t=clock*(beat.on?2.30:.78)*ball.spin+seed;
+ const {x,y,r,seed}=ball,opacity=g.globalAlpha;
+ const t=(ball.time??clock)*(beat.on?2.30:.78)*ball.spin+seed;
  const size=r*2+6;
  const key=r+':'+seed;
  if(!discoAtlas.has(key))discoAtlas.set(key,buildDiscoFrames(r,seed));
  const frames=discoAtlas.get(key);
  const f=Math.floor((((t/(Math.PI*2))%1+1)%1)*DISCO_FRAMES)%DISCO_FRAMES;
  // Show the rotating facet asset over the exact original globe (not its rays).
- g.save();g.globalAlpha=fxMode==='full'?.88:.73;
+ g.save();g.globalAlpha=opacity*(fxMode==='full'?.88:.73);
  g.drawImage(frames[f],Math.round(x-size/2),Math.round(y-size/2));g.restore();
- bloom(x,y,r*1.7,'#7bdcff',.054+(beat.on?.035:0)+thump(beat)*.022);
+ bloom(x,y,r*1.7,'#7bdcff',opacity*(.054+(beat.on?.035:0)+thump(beat)*.022));
  if(fxMode==='full'){
   // Restrained rotating pinprick highlights stay ON the spherical surface.
   for(let j=0;j<2;j++){
    const a=t*1.8+j*Math.PI;
    const px=x+Math.cos(a)*r*.55,py=y+Math.sin(a)*r*.45;
-   g.save();g.globalCompositeOperation='screen';g.globalAlpha=.38;
+   g.save();g.globalCompositeOperation='screen';g.globalAlpha=opacity*.38;
    g.fillStyle='#ffffff';g.fillRect(Math.round(px)-1,Math.round(py)-1,3,3);g.restore();
   }
  }
@@ -1134,17 +1144,22 @@ function spinningDiscoBall(ball,beat){
 function discoReflections(beat){
  if(!effectsOn())return;
  const active=beat.on?1:.46;
- for(const ball of DISCO_BALLS){
-  const {x,y,spin}=ball;
+ for(const [index,original] of DISCO_BALLS.entries()){
+  const part=window.CodaWorldObjectCatalog.find(p=>p.ballIndex===index),object=worldObjects?.state(part.name),asset=object?.asset;
+  if(object&&!object.visible||asset?.discoRays===false)continue;
+  const ball={...original,spin:asset?.discoSpin??original.spin};
+  const {x,y,spin}=ball,opacity=object?.opacity??1,point=object?worldObjects.point(object,x,y):{x,y};
   g.save();g.globalCompositeOperation='screen';
   // The club rays stop at the nightclub walls, rather than shining through them.
-  if(ball.club)clubRoomClip();
-  const spinBase=clock*(beat.on?1.8:.67)*spin;
+  if(ball.club&&point.x>=40&&point.x<850&&point.y>=470&&point.y<880)clubRoomClip();
+  if(asset)g.transform(...object.matrix);
+  const effectTime=asset&&!assetStudio.animate?0:clock;
+  const spinBase=effectTime*(beat.on?1.8:.67)*spin;
   const count=fxMode==='full'?7:4;
   for(let i=0;i<count;i++)for(const ray of ball.beams){
    const angle=spinBase+i*Math.PI*2/count+(ray.color==='#fff4c1'?.08:0);
    const dx=Math.cos(angle),dy=Math.sin(angle),nx=-dy,ny=dx;
-   const len=ray.len*(.94+.06*Math.sin(clock*.95+i));
+   const len=ray.len*(.94+.06*Math.sin(effectTime*.95+i));
    const ex=x+dx*len,ey=y+dy*len,spread=ray.spread;
    // Both projected cones begin at the center of the sphere. The rotating
    // sprite is drawn afterward and masks their tiny center join.
@@ -1156,7 +1171,7 @@ function discoReflections(beat){
    fog.addColorStop(.08,ray.color+'65');
    fog.addColorStop(.42,ray.color+'32');
    fog.addColorStop(1,ray.color+'00');
-   g.globalAlpha=ray.alpha*active*(.8+.2*thump(beat));g.fillStyle=fog;g.fill();
+   g.globalAlpha=opacity*ray.alpha*active*(.8+.2*thump(beat));g.fillStyle=fog;g.fill();
    g.beginPath();g.moveTo(x,y);
    g.lineTo(ex+nx*spread*.19,ey+ny*spread*.19);
    g.lineTo(ex-nx*spread*.19,ey-ny*spread*.19);g.closePath();
@@ -1165,21 +1180,21 @@ function discoReflections(beat){
    core.addColorStop(.07,'rgba(255,255,255,.45)');
    core.addColorStop(.42,ray.color+'45');
    core.addColorStop(1,ray.color+'00');
-   g.globalAlpha=ray.alpha*.82*active;g.fillStyle=core;g.fill();
+   g.globalAlpha=opacity*ray.alpha*.82*active;g.fillStyle=core;g.fill();
   }
   g.restore();
  }
 }
 
 function animatedCabinets(beat){
- const t=clock*(beat.on?3.6:1.65);
- const cabinets=[
-  {x:696,y:207,w:52,h:45,c:'#44d8ff',kind:0},
-  {x:802,y:208,w:59,h:44,c:'#fb54f4',kind:1},
-  {x:916,y:208,w:59,h:44,c:'#b2ff39',kind:2},
-  {x:1033,y:205,w:63,h:42,c:'#ffa83f',kind:3}
- ];
- for(const box of cabinets){
+ for(const part of window.CodaWorldObjectCatalog.filter(p=>p.gameIndex!==undefined)){
+  if(worldObjects?.state(part.name)?.asset)continue;
+  drawCabinetScreen(cabinetScreen(part),beat);
+ }
+}
+function cabinetScreen(part){const [x,y,w,h]=part.screen;return {x,y,w,h,kind:part.gameIndex,c:['#44d8ff','#fb54f4','#b2ff39','#ffa83f'][part.gameIndex]};}
+function drawCabinetScreen(box,beat,effectTime=clock){
+ const t=effectTime*(beat.on?3.6:1.65),opacity=g.globalAlpha;
   g.save();g.beginPath();g.rect(box.x+2,box.y+3,box.w-4,box.h-7);g.clip();
   g.globalCompositeOperation='screen';
   const frame=Math.floor(t*1.25)%16;
@@ -1187,30 +1202,29 @@ function animatedCabinets(beat){
    for(let k=0;k<4;k++){
     const xx=box.x+(k*19+Math.floor(t*8))%(box.w+12);
     const yy=box.y+12+(k*9)%24;
-    g.fillStyle=box.c;g.globalAlpha=.18+.25*pulse(t+k,2);
+    g.fillStyle=box.c;g.globalAlpha=opacity*(.18+.25*pulse(t+k,2));
     g.fillRect(xx,yy,6,3);g.fillRect(xx+4,yy-6,2,9);
    }
   }else if(box.kind===1){
    for(let k=0;k<5;k++){
     const h=5+Math.floor((.5+.5*Math.sin(t*.9+k*1.2))*21);
-    g.globalAlpha=.24;g.fillStyle=k%2?'#64d7ff':'#ff6be7';g.fillRect(box.x+7+k*10,box.y+box.h-6-h,6,h);
+    g.globalAlpha=opacity*(.24);g.fillStyle=k%2?'#64d7ff':'#ff6be7';g.fillRect(box.x+7+k*10,box.y+box.h-6-h,6,h);
    }
   }else if(box.kind===2){
    for(let k=0;k<8;k++){
     const h=3+Math.floor((.5+.5*Math.sin(t*1.1+k*.73))*27);
-    g.globalAlpha=.28;g.fillStyle=k%3?'#cbff47':'#71fa83';g.fillRect(box.x+5+k*6,box.y+box.h-5-h,4,h);
+    g.globalAlpha=opacity*(.28);g.fillStyle=k%3?'#cbff47':'#71fa83';g.fillRect(box.x+5+k*6,box.y+box.h-5-h,4,h);
    }
   }else{
    for(let k=0;k<8;k++){
-    g.fillStyle=ambientPalette[(k+frame)%5];g.globalAlpha=.35;
+    g.fillStyle=ambientPalette[(k+frame)%5];g.globalAlpha=opacity*(.35);
     g.fillRect(box.x+6+k*6,box.y+13+((k+Math.floor(t))%3)*7,4,4);
    }
   }
   const sheen=box.x+(Math.floor(t*6)%(box.w+12))-10;
-  g.globalAlpha=.055;g.fillStyle='#ffffff';g.fillRect(sheen,box.y+2,3,box.h-4);
+  g.globalAlpha=opacity*(.055);g.fillStyle='#ffffff';g.fillRect(sheen,box.y+2,3,box.h-4);
   g.restore();
-  if(fxMode==='full')bloom(box.x+box.w/2,box.y-7,39,box.c,.04+.042*pulse(clock+box.kind,1.4));
- }
+  if(fxMode==='full')bloom(box.x+box.w/2,box.y-7,39,box.c,opacity*(.04+.042*pulse(effectTime+box.kind,1.4)));
 }
 // Tiny vector-pixel music notes travel OUT of speaker cabinets on each beat.
 // They animate quietly even with sound off, so the world preview feels alive.
@@ -1546,7 +1560,7 @@ function renderArcadeAtmosphere(){
  pulseWarmLamps(beat);
  neonSigns(beat);
  animatedCabinets(beat);
- for(const ball of DISCO_BALLS)spinningDiscoBall(ball,beat);
+ for(const [index,ball] of DISCO_BALLS.entries()){const part=window.CodaWorldObjectCatalog.find(p=>p.ballIndex===index);if(!worldObjects?.state(part.name)?.asset)spinningDiscoBall(ball,beat);}
  speakerLife(beat);
 }
 // =======================================================================
@@ -1664,6 +1678,7 @@ function draw(){
 }
 window.CodaArcadeQA=Object.freeze({
   build:window.CODA_BUILD,
+  worldObjects:()=>window.CodaWorldObjectCatalog.map(part=>{const object=worldObjects.state(part.name),anchor=part.anchor||[part.bounds[0]+part.bounds[2]/2,part.bounds[1]+part.bounds[3]/2];return {name:part.name,visible:object.visible,opacity:object.opacity,anchor:worldObjects.point(object,...anchor),spin:object.asset?.discoSpin??part.spin,rays:object.visible&&object.asset?.discoRays!==false,game:part.gameIndex!==undefined?runtimeGames().find(g=>g.index===part.gameIndex)||null:null};}),
   camera:()=>({x:cam.x,y:cam.y,zoom:cam.zoom,targetZoom:cam.targetZoom,visibleWidth:W/cam.zoom,visibleHeight:H/cam.zoom}),
   cameraPoint:(x,y)=>({x:cam.x+x/cam.zoom,y:cam.y+y/cam.zoom}),
   setZoom:setCameraZoom,
@@ -1757,8 +1772,9 @@ function playSong(song){stopAmbientMusic();stopSong();const C=window.AudioContex
  for(const tr of song.tracks||[]){if(tr.mute)continue;for(const n of tr.notes||[])if(n.t<song.bars*steps(song.meter))note(n.p,start+n.t*beat,n.d*beat*.94,tr.sound,tr.volume)}for(let i=0;i<3;i++){const tr=song.drums?.[i];if(!tr||tr.mute)continue;for(const n of tr.notes||[])if(n.t<song.bars*steps(song.meter))note(i===0?45:i===1?57:88,start+n.t*beat,.12,i===0?3:1,tr.volume)}songPlayer={stop(){if(stopped)return;stopped=true;for(const o of oscillators)try{o.stop()}catch{}ctx.close().catch(()=>{})}};msg('Now playing your composition.');setTimeout(()=>{if(songPlayer&&!stopped){stopSong();msg('Playback finished.')}},(song.bars*steps(song.meter)*beat+.2)*1000)}
 async function openJukebox(){openPanel('♫ Jukebox · Your Songs');addAction('■ Stop playback',stopSong);const m=document.createElement('p');m.className='panelMsg';m.textContent='Loading saved compositions…';panelBody.append(m);if(!cloudUser||!profileReady){m.textContent='Sign in with Google to see your saved Song Machine compositions.';return}try{const snap=await firebaseApi.get(firebaseApi.ref(cloudDb,'songLibrary/'+cloudUser.uid));songRecords=snap.val()||{};const songs=Object.entries(songRecords).sort((a,b)=>(b[1].updatedAt||0)-(a[1].updatedAt||0));m.textContent=songs.length?songs.length+' saved composition(s)':'No saved compositions yet. Visit Song Machine to create one.';for(const [id,record] of songs){if(!record.composition)continue;const row=document.createElement('div');row.className='panelRow';const info=document.createElement('div');const strong=document.createElement('strong');strong.textContent=record.title||'Untitled';info.append(strong);const small=document.createElement('small');small.textContent=(record.composition.bpm||110)+' BPM';info.append(small);row.append(info);const play=document.createElement('button');play.textContent='▶ Play';play.onclick=()=>playSong(record.composition);row.append(play);const edit=document.createElement('button');edit.textContent='Edit ↗';edit.onclick=()=>{stopSong();closePanel();openCabinet({...games[3],url:'song-machine/index.html?song='+encodeURIComponent(id)})};row.append(edit);panelBody.append(row)}}catch(e){m.textContent='Could not load saved songs: '+e.message}}
 document.querySelector('#accountBtn').onclick=openAccount;document.querySelector('#jukeboxBtn').onclick=openJukebox;initCloud();
+worldObjects=window.createCodaWorldObjects({catalog:window.CodaWorldObjectCatalog,getAssets:()=>assetStudio.assets,getAnimation:assetAnimTransform});
 developerConsole=window.createCodaDeveloperConsole({
- W,H,c,studio:assetStudio,layer:layerState,parts:foregroundParts,worldArt,foregroundArt,
+ W,H,c,studio:assetStudio,layer:layerState,parts:foregroundParts,catalog:window.CodaWorldObjectCatalog,worldArt,foregroundArt,
  cell:COLLISION_CELL,gridWidth:GRID_W,gridHeight:GRID_H,navGrid,baseGrid:defaultNavGrid,
  legacyCollision:[...edits].filter(([i,v])=>Number.isInteger(i)&&i>=0&&i<navGrid.length&&(v===0||v===1)),
  panByScreen:(dx,dy)=>{const b=c.getBoundingClientRect();cam.x=Math.max(0,Math.min(W-W/cam.zoom,cam.x+dx*W/b.width/cam.zoom));cam.y=Math.max(0,Math.min(H-H/cam.zoom,cam.y+dy*H/b.height/cam.zoom));},

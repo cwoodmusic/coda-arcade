@@ -12,6 +12,10 @@ Open `world-preview.html` from that server in your browser. Use the **Developer*
 
 Choose a named object from **Existing world objects**, then click **Edit existing object**. You can also click its visible pixels on the map. **Lift a region** lets you select artwork outside the named catalog.
 
+The list starts with **Disco balls** (Arcade and Dance floor) and **Arcade cabinets** (Pitch Race, Music Triad, Rhythm Room, and Song Machine). Moving or resizing a disco ball carries its animated sphere and projected rays; its spin speed and rays checkbox appear in the artwork controls. Hiding a ball hides its live effects. The global FX control still sets the overall effect quality.
+
+Cabinet play prompts, NPC approach points, animated screens, and collision footprints follow the edited cabinet. Hiding an original cabinet removes its prompt; **Restore original** restores its original location and interaction. Duplicates are decorative copies and do not create additional game portals.
+
 - Drag an object to move it. Drag its gold corner to resize or its round handle to rotate. Numeric fields provide precise position, size, rotation, and opacity.
 - Use **Lock aspect** to preserve proportions, **Lock** to prevent canvas dragging, and **Visible** to hide artwork. Arrows nudge the selected object; Shift increases the nudge distance. Shift-drag bypasses the snap grid.
 - **Add image(s)** uploads artwork. **Replace image** changes a selected object's appearance while retaining placement. **Duplicate** creates an independent copy.
@@ -19,6 +23,8 @@ Choose a named object from **Existing world objects**, then click **Edit existin
 - **Restore original** removes an original object's edits and reveals its published artwork again. Deleting an edited original hides it while retaining its source cleanup; deleting a newly placed object removes it.
 
 The room art is a flattened PNG: the original pixels beneath furniture and plants are unavailable. Moving or hiding an existing object covers its old silhouette with a tiled floor clone. Adjust **Floor sample X/Y**, or use **Pick floor sample on map**, to choose a clean patch matching that part of the room. This is an editable cleanup patch, not automatic recovery of hidden artwork. A lifted rectangular region includes all pixels inside that rectangle.
+
+Cabinet cutouts leave the painted customers at their original positions. Cabinet pixels hidden behind those customers are unavailable in the source image, so those small areas of a moved cabinet remain transparent. Existing painted light rays and halos outside a disco ball’s silhouette are also part of the flattened room art; the movable live effects are separate.
 
 ## Collision
 
@@ -50,6 +56,7 @@ From the repository root:
 
 ```sh
 node --test tests/collision-editor.test.cjs
+node --test tests/world-object-runtime.test.cjs
 python3 tests/developer-console-browser.py
 ```
 

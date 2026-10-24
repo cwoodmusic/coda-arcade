@@ -233,6 +233,68 @@ class WorldEditorTests(unittest.TestCase):
         self.assertIsNotNone(self.page.evaluate('CodaAssetStudioQA.get().selected'))
         self.assertAlmostEqual(self.page.evaluate('CodaArcadeQA.camera().x'), camera_before['x'], delta=2, msg='Canvas selection must not recenter before its drag begins')
 
+    def test_disco_catalog_lighting_controls_and_saved_transforms(self):
+        options=self.page.locator('#devCatalog option').evaluate_all('(options)=>options.map(o=>o.value)')
+        for name in ['disco_ball_arcade','disco_ball_dance','cabinet_pitch_race','cabinet_music_triad','cabinet_rhythm_room','cabinet_song_machine']:
+            self.assertIn(name,options)
+        before=self.page.locator('#view').evaluate('(c)=>Array.from(c.getContext("2d").getImageData(860,114,32,30).data)')
+        for index,name in enumerate(['disco_ball_arcade','disco_ball_dance']):
+            self.page.locator('#devCatalog').select_option(name)
+            self.page.locator('#devLift').click()
+            self.field('assetX',1000+index*200)
+            self.field('assetY',420)
+            self.field('assetW',100)
+            self.field('assetRotate',25)
+            self.field('devDiscoSpin',0.25+index)
+            self.page.locator('#devDiscoRays').uncheck()
+            state=self.page.evaluate('(name)=>CodaArcadeQA.worldObjects().find(o=>o.name===name)',name)
+            self.assertAlmostEqual(state['spin'],0.25+index)
+            self.assertFalse(state['rays'])
+            self.assertGreater(state['anchor']['x'],900)
+            self.assertGreater(state['anchor']['y'],380)
+        self.page.wait_for_timeout(100)
+        after=self.page.locator('#view').evaluate('(c)=>Array.from(c.getContext("2d").getImageData(860,114,32,30).data)')
+        self.assertGreater(sum(a!=b for a,b in zip(before,after)),500,'Moving a disco ball must clear its original sphere')
+        self.page.locator('#devDiscoRays').check()
+        # Exercise the actual transformed light/sphere renderers at the shipped Lite setting.
+        self.page.locator('#fxBtn').click();self.page.locator('#fxBtn').click()
+        self.page.wait_for_timeout(150)
+        self.page.locator('#assetVisible').uncheck()
+        state=self.page.evaluate('CodaArcadeQA.worldObjects().find(o=>o.name==="disco_ball_dance")')
+        self.assertFalse(state['visible']);self.assertFalse(state['rays'])
+        self.page.locator('#devUndo').click()
+        self.assertTrue(self.page.evaluate('CodaArcadeQA.worldObjects().find(o=>o.name==="disco_ball_dance").rays'))
+        expected=self.project()
+        self.assertTrue(self.page.evaluate('CodaDeveloperConsole.save()'))
+        self.page.reload(wait_until='domcontentloaded');self.page.wait_for_function('CodaDeveloperConsole.ready()')
+        self.assertEqual(self.project(),expected,'Catalog originals and light settings must survive reload')
+
+    def test_four_cabinet_interactions_follow_moves_and_restoration(self):
+        names=['cabinet_pitch_race','cabinet_music_triad','cabinet_rhythm_room','cabinet_song_machine']
+        game_names=['Pitch Race','Music Triad','Rhythm Room','Song Machine']
+        for index,name in enumerate(names):
+            self.page.locator('#devCatalog').select_option(name);self.page.locator('#devLift').click()
+            self.field('assetX',950+index*145);self.field('assetY',610);self.field('assetW',120)
+            self.assertTrue(self.page.locator('#devRelease').is_checked())
+            self.assertTrue(self.page.locator('#devSolid').is_checked())
+            state=self.page.evaluate('(name)=>CodaArcadeQA.worldObjects().find(o=>o.name===name)',name)
+            game=state['game'];self.assertGreater(game['y'],650)
+            self.assertGreater(game['npcY'],game['y'])
+            self.page.locator('#devPlaytest').click()
+            self.assertTrue(self.page.evaluate('([x,y])=>CodaArcadeQA.place(x,y)',[game['x'],game['y']]))
+            self.page.wait_for_timeout(100);self.page.keyboard.press('e')
+            self.assertTrue(self.page.locator('#gameoverlay').is_visible())
+            self.assertEqual(self.page.locator('#activegame').inner_text(),game_names[index])
+            self.assertIn(game['url'],self.page.locator('#gameiframe').get_attribute('src'))
+            self.page.locator('#returnworld').click();self.page.locator('#devPlaytest').click()
+        # A hidden cabinet must lose its game prompt; restoring must restore the original anchor.
+        self.page.locator('#assetVisible').uncheck()
+        self.assertIsNone(self.page.evaluate('CodaArcadeQA.worldObjects().find(o=>o.name==="cabinet_song_machine").game'))
+        self.page.locator('#devUndo').click()
+        self.page.locator('#devRestore').click()
+        original=self.page.evaluate('CodaArcadeQA.worldObjects().find(o=>o.name==="cabinet_song_machine").game')
+        self.assertEqual((original['x'],original['y']),(1064,315))
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
