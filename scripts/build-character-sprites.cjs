@@ -1,5 +1,5 @@
-/* Bake the original arcade atlas into aligned, customizable animation layers.
- * Runtime characters only select, tint and blit these PNG frames. */
+/* Bake the original arcade atlas into aligned, customizable neutral layers.
+ * Runtime characters tint, assemble and articulate the same original pixels. */
 const fs=require('node:fs/promises'),path=require('node:path'),os=require('node:os'),http=require('node:http');
 const {spawn}=require('node:child_process');
 async function main(){
@@ -39,7 +39,7 @@ async function bake(){
  const originalRects={down:[[16,5,47,69],[97,5,45,69],[178,5,44,69],[259,5,42,69],[338,5,44,69]],left:[[816,5,47,69],[896,5,47,69],[16,85,47,69],[96,85,47,69],[176,85,47,69]],up:[[416,6,47,67],[497,6,45,67],[578,6,44,67],[658,6,43,67],[739,6,42,67]],right:[[256,85,47,69],[336,85,47,69],[416,85,47,69],[496,85,47,69],[576,85,47,69]]},heroFrames={};
  for(const direction of directions)originalRects[direction].forEach(([x,y,w,h],index)=>heroFrames['hero_'+direction+'_'+index]={x,y,w,h});
  const head=window.buildOriginalSpriteLayers({atlas:original,cell:[W,H],anchor,heroFrames});
- const wardrobe=Array.from({length:5},(_,frameIndex)=>window.buildOriginalWardrobeLayers({atlas:original,cell:[W,H],anchor,heroFrames,frameIndex}));
+ const wardrobe=Array.from({length:1},(_,frameIndex)=>window.buildOriginalWardrobeLayers({atlas:original,cell:[W,H],anchor,heroFrames,frameIndex}));
  const props=window.buildOriginalAccessoryLayers({atlas:original,cell:[W,H],anchor,heroFrames,headLayers:head});
  const clips={idle:{offset:0,frames:2,fps:2},walk:{offset:2,frames:6,fps:8},wave:{offset:8,frames:4,fps:8},dance:{offset:12,frames:6,fps:8},interact:{offset:18,frames:4,fps:6},talk:{offset:22,frames:4,fps:6},sit:{offset:26,frames:2,fps:2}};
  const manifest={version:1,cell:[W,H],anchor,columns:COLS,framesPerDirection:PERDIR,directions,clips,artStyle:'original-atlas',sourcePolicy:'original-atlas-only',targetHeight:53,originalHero:{url:'../../coda_arcade_phase73_characters.png',frames:heroFrames},styleReference:'coda_arcade_phase73_characters.png',sharedHead:head.metadata,sourceArtwork:['coda_arcade_phase73_characters.png'],layers:{body:{url:'body.png',layout:'animated',material:'skin',source:'original-atlas'},hair:{},outfit:{},headwear:{},eyewear:{},accessory:{},shoes:{},original:{hero:{url:'original-hero.png',layout:'animated',material:'none',source:'original-atlas'}}},frameData:[],artifacts:[]};
@@ -55,7 +55,7 @@ async function bake(){
  const referenceSkin=ctx(nativeFrame(0,0)).getImageData(0,0,W,H).data,defaultSkinPalette=[];
  for(let y=45;y<62;y++)for(let x=26;x<55;x++){const at=(y*W+x)*4,r=referenceSkin[at],green=referenceSkin[at+1],b=referenceSkin[at+2];if(referenceSkin[at+3]&&r>green*1.15&&green>b*1.12&&green>70&&r<green*1.9)defaultSkinPalette.push([r,green,b]);}
  defaultSkinPalette.sort((a,b)=>Math.max(...a)-Math.max(...b));
- const rawBodies=Array.from({length:5},(_,index)=>directions.map((_,dir)=>{
+ const rawBodies=Array.from({length:1},(_,index)=>directions.map((_,dir)=>{
   const info=wardrobe[index].metadata.frames[dir],f=info.source,source=nativeFrame(index,dir),out=copy(source),g=ctx(out),top=info.placement[1];
   if(info.groundStart!==null)g.clearRect(0,info.groundStart,W,H-info.groundStart);
   g.clearRect(0,0,W,top+capEnds[dir]);
@@ -85,77 +85,24 @@ async function bake(){
   g.putImageData(basePixels,0,0);
   if(info.groundStart!==null)g.clearRect(0,info.groundStart,W,H-info.groundStart);return out;
  }));
- const steps=[0,1,2,0,-1,-2];
- manifest.walkCycle={phases:steps,head:'fixed',scale:'fixed per facing',right:'mirrored left',method:'alternating original limb pixels'};
- const sourcePose={idle:[0,0],walk:[0,0,0,0,0,0],wave:[0,3,4,3],talk:[0,3,0,4],dance:[1,3,2,4,1,3],interact:[0,1,0,2],sit:[0,0]},rig=[];
- for(let dir=0;dir<4;dir++)for(const [clip,definition]of Object.entries(clips))for(let frame=0;frame<definition.frames;frame++){
-  const sourceIndex=sourcePose[clip][frame],info=wardrobe[sourceIndex].metadata.frames[dir],matrix=poseFit(info,dir);
-  const dx=clip==='dance'?Math.round(Math.sin(frame/6*Math.PI*2)):0,dy=clip==='dance'?-Math.round(Math.abs(Math.sin(frame/6*Math.PI*2))):clip==='idle'&&frame===1?-1:0;
-  const offsetY=dy+(clip==='sit'?3:0),swing=clip==='walk'?Math.sign(steps[frame]):sourceIndex%2?-1:0;
-  manifest.frameData.push({headX:dx,headY:offsetY,headScaleX:1,headScaleY:1,bodyX:dx,bodyY:offsetY,bodyScaleX:1,bodyScaleY:1,handX:dx,handY:offsetY+(dir===1||dir===2?swing:-swing),handScaleX:1,handScaleY:1});
-  rig.push({dir,clip,frame,sourceIndex,info,matrix,dx,dy});
- }
- const walkMasks=[];
- function walkMask(dir){
-  if(walkMasks[dir])return walkMasks[dir];
-  const idle=wardrobe[0].metadata.frames[dir],matrix=idleFits[dir],reference=ctx(fit(cleanOriginal(0,dir),idle,dir)).getImageData(0,0,W,H).data;
-  const neck=Math.round(idle.clothesTop*matrix.sy+matrix.ty),hips=Math.round(idle.waist*matrix.sy+matrix.ty)+2,arms=neck+2,shoeTop=Math.round(idle.shoeTop*matrix.sy+matrix.ty),mask=new Uint8Array(W*H);
-  const hand=(x,y)=>{if(x<0||x>=W||y<arms||y>=shoeTop)return false;const at=(y*W+x)*4,r=reference[at],g=reference[at+1],b=reference[at+2];return reference[at+3]&&r>g*1.1&&g>b*1.1&&g>15&&r>70;};
-  for(let y=arms;y<H;y++)for(let x=0;x<W;x++){
-   let nearHand=false;if(y<shoeTop&&(x<35||x>=45))for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)if(hand(x+dx,y+dy))nearHand=true;
-   // Low hands and their ink outlines stay on the arm even below the hips.
-   // The same mask is used for skin, sleeves, garments and footwear.
-   mask[y*W+x]=((x<32||x>=48)&&y<hips)||nearHand?x<40?1:2:y>=hips?x<40?3:4:0;
-  }
-  return walkMasks[dir]=mask;
- }
- function walk(source,r){
-  const out=make(),g=ctx(out),pixels=ctx(source).getImageData(0,0,W,H),result=g.createImageData(W,H),mask=walkMask(r.dir),step=steps[r.frame],swing=Math.sign(step);
-  const shifts=[0,swing,-swing,-Math.max(0,step),-Math.max(0,-step)];
-  // Composite arms last so cuffs and hands remain in front of the legs.
-  for(const part of [0,3,4,1,2])for(let at=0;at<W*H;at++){
-   if(mask[at]!==part||!pixels.data[at*4+3])continue;
-   const y=Math.floor(at/W)+shifts[part];if(y<0||y>=H)continue;const target=(y*W+at%W)*4;
-   for(let channel=0;channel<4;channel++)result.data[target+channel]=pixels.data[at*4+channel];
-  }
-  g.putImageData(result,0,0);return out;
- }
- function posed(native,r,idleHead){const source=fit(native,r.info,r.dir),out=make(),g=ctx(out);g.imageSmoothingEnabled=false;
-  if(r.clip==='walk')return walk(source,r);
-  if(idleHead){const idle=wardrobe[0].metadata.frames[r.dir],matrix=idleFits[r.dir],neck=Math.round(idle.clothesTop*matrix.sy+matrix.ty);const sg=ctx(source);sg.clearRect(0,0,W,neck);sg.drawImage(idleHead,0,0,W,neck,0,0,W,neck);}
-  if(r.clip==='sit'){const split=Math.min(82,Math.round(r.info.waist*r.matrix.sy+r.matrix.ty)+2);g.drawImage(source,0,0,W,split,0,3,W,split);g.drawImage(source,0,split,W,88-split,0,split+3,W,85-split);}
-  else g.drawImage(source,r.dx,r.dy);return out;
- }
+ // Runtime articulates one assembled neutral raster per facing. Retain the
+ // 112-cell transport format for saved integrations, without swapping faces or
+ // deforming garments in baked animation frames.
+ manifest.motionRig={version:1,method:'articulated-original-pixels',right:'mirrored left',template:'idle frame zero',clock:'continuous distance phase'};
+ manifest.frameData=Array.from({length:112},()=>({headX:0,headY:0,headScaleX:1,headScaleY:1,bodyX:0,bodyY:0,bodyScaleX:1,bodyScaleY:1,handX:0,handY:0,handScaleX:1,handScaleY:1}));
  async function write(name,canvas){const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png')),response=await fetch('/output/'+name+'.png',{method:'POST',body:blob});if(!response.ok)throw Error('Cannot save '+name);manifest.artifacts.push({file:name+'.png',width:canvas.width,height:canvas.height});}
- async function animated(name,cells){const out=make(W*COLS,H*14),g=ctx(out);cells.forEach((cell,index)=>{const direction=Math.floor(index/PERDIR);if(direction===3)cell=mirror(cells[PERDIR+index%PERDIR]);g.drawImage(cell,index%COLS*W,Math.floor(index/COLS)*H);});await write(name,out);}
- async function directional(name,cells){const out=make(W*4,H),g=ctx(out),fitted=cells.map((cell,dir)=>fit(cell,wardrobe[0].metadata.frames[dir],dir));fitted[3]=mirror(fitted[1]);fitted.forEach((cell,dir)=>g.drawImage(cell,dir*W,0));await write(name,out);}
- const idleBodies=rawBodies[0].map((cell,dir)=>fit(cell,wardrobe[0].metadata.frames[dir],dir));
- const bodyCells=rig.map(r=>posed(rawBodies[r.sourceIndex][r.dir],r,idleBodies[r.dir]));
- await animated('body',bodyCells);
- function preserveHands(cell,r,index){
-  if(r.clip!=='walk')return cell;
-  const g=ctx(cell),pixels=g.getImageData(0,0,W,H),body=ctx(bodyCells[index]).getImageData(0,0,W,H).data,idle=wardrobe[0].metadata.frames[r.dir],matrix=idleFits[r.dir];
-  const top=Math.round(idle.clothesTop*matrix.sy+matrix.ty)+2,bottom=Math.ceil(idle.shoeTop*matrix.sy+matrix.ty)-2;
-  // Moving trouser/skirt ink must not paint over an exposed hand when its
-  // leg travels upward. Skin remains in front of clothing and footwear.
-  for(let y=top;y<bottom;y++)for(let x=0;x<W;x++){
-   if(x>=35&&x<45)continue;const at=(y*W+x)*4,r=body[at],green=body[at+1],b=body[at+2];
-   if(body[at+3]&&r>green*1.1&&green>b*1.1&&green>15&&r>70)pixels.data[at+3]=0;
-  }
-  g.putImageData(pixels,0,0);return cell;
- }
- function cleanOriginal(index,dir){const out=nativeFrame(index,dir),info=wardrobe[index].metadata.frames[dir];if(info.groundStart!==null)ctx(out).clearRect(0,info.groundStart,W,H-info.groundStart);return out;}
- const idleOriginal=directions.map((_,dir)=>fit(cleanOriginal(0,dir),wardrobe[0].metadata.frames[dir],dir));
- const originalActions=rig.map(r=>posed(cleanOriginal(r.sourceIndex,r.dir),r,idleOriginal[r.dir]));
- await animated('original-hero',originalActions);
+ function fitted(cells){const views=cells.map((cell,dir)=>fit(cell,wardrobe[0].metadata.frames[dir],dir));views[3]=mirror(views[1]);return views;}
+ async function animated(name,cells){const views=fitted(cells),out=make(W*COLS,H*14),g=ctx(out);for(let index=0;index<112;index++)g.drawImage(views[Math.floor(index/PERDIR)],index%COLS*W,Math.floor(index/COLS)*H);await write(name,out);}
+ async function directional(name,cells){const out=make(W*4,H),g=ctx(out);fitted(cells).forEach((cell,dir)=>g.drawImage(cell,dir*W,0));await write(name,out);}
+ await animated('body',rawBodies[0]);
+ const originals=directions.map((_,dir)=>{const out=nativeFrame(0,dir),info=wardrobe[0].metadata.frames[dir];if(info.groundStart!==null)ctx(out).clearRect(0,info.groundStart,W,H-info.groundStart);return out;});
+ await animated('original-hero',originals);
  for(const [id,views]of Object.entries(head.hair)){manifest.layers.hair[id]={url:'hair-'+id+'.png',layout:'directional',material:'hair',source:'original-atlas'};await directional('hair-'+id,views);}
- for(const id of Object.keys(wardrobe[0].outfit)){manifest.layers.outfit[id]={url:'outfit-'+id+'.png',layout:'animated',material:id==='pants'?'original-clothes':'clothes',source:'original-atlas'};await animated('outfit-'+id,rig.map((r,index)=>preserveHands(posed(wardrobe[r.sourceIndex].outfit[id][r.dir],r),r,index)));}
- for(const id of Object.keys(wardrobe[0].shoes)){manifest.layers.shoes[id]={url:'shoes-'+id+'.png',layout:'animated',material:'none',source:'original-atlas'};await animated('shoes-'+id,rig.map((r,index)=>preserveHands(posed(wardrobe[r.sourceIndex].shoes[id][r.dir],r),r,index)));}
+ for(const [id,views]of Object.entries(wardrobe[0].outfit)){manifest.layers.outfit[id]={url:'outfit-'+id+'.png',layout:'animated',material:id==='pants'?'original-clothes':'clothes',source:'original-atlas'};await animated('outfit-'+id,views);}
+ for(const [id,views]of Object.entries(wardrobe[0].shoes)){manifest.layers.shoes[id]={url:'shoes-'+id+'.png',layout:'animated',material:'none',source:'original-atlas'};await animated('shoes-'+id,views);}
  for(const category of ['headwear','eyewear','accessory'])for(const [id,views]of Object.entries(props[category])){manifest.layers[category][id]={url:category+'-'+id+'.png',layout:'directional',material:'none',source:'original-atlas'};await directional(category+'-'+id,views);}
- // The atlas' original right dome is truncated. All right-facing runtime
- // layers mirror the complete left artwork, including attachment geometry.
- for(let frame=0;frame<PERDIR;frame++){const left=manifest.frameData[PERDIR+frame];manifest.frameData[3*PERDIR+frame]={...left,headX:-left.headX,bodyX:-left.bodyX,handX:-left.handX};}
  for(const key of ['headWindows','faceWindows']){const left=manifest.sharedHead[key][1];manifest.sharedHead[key][3]=left&&(key==='headWindows'?{...left,x:W-left.x-left.w}:{...left,x:W-1-left.right,right:W-1-left.x});}
+
  return manifest;
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});

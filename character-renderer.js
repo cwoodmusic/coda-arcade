@@ -1,4 +1,4 @@
-/* Layered raster sprites: authored image frames, shared feet, independent cosmetics. */
+/* Original raster artwork, shared joints, and independent cosmetics. */
 window.createCodaCharacterRenderer=function(api){
   'use strict';
   api=api||{};
@@ -46,12 +46,12 @@ window.createCodaCharacterRenderer=function(api){
   const choices=ids=>Object.freeze(ids.map(id=>Object.freeze({id,label:labels[id]})));
   const catalog=Object.freeze({hairstyles:choices(HAIR),outfits:choices(OUTFITS),headwear:choices(HEADWEAR),eyewear:choices(EYEWEAR),accessories:choices(ACCESSORIES),shoes:choices(SHOES),emotes:choices(EMOTES)});
   let manifest=null,loaded=false,loadError=null,originalHero=null;
-  const entries=new Map(),imagePromises=new Map(),tinted=new Map();
+  const entries=new Map(),imagePromises=new Map(),tinted=new Map(),rigged=new Map();
   const cacheLimit=Math.max(32,Math.min(1024,Math.round(finite(api.cacheLimit,256))));
   const worldScale=Math.max(.125,Math.min(4,finite(api.worldScale,1)));
   const locationURL=()=>window.location?.href||'http://localhost/';
   const url=(value,base)=>new URL(value,base).href;
-  const artVersion=api.artVersion===false?'':typeof api.artVersion==='string'?api.artVersion:'motion-18';
+  const artVersion=api.artVersion===false?'':typeof api.artVersion==='string'?api.artVersion:'continuous-19';
   function artURL(value,base){
     const resolved=new URL(value,base);
     // A new art revision refreshes the manifest and every raster layer together.
@@ -98,7 +98,11 @@ window.createCodaCharacterRenderer=function(api){
     if(data.originalHero?.url&&data.originalHero.frames){
       originalHero={...data.originalHero,image:await image(artURL(data.originalHero.url,base))};
     }
-    loaded=true;return data;
+    loaded=true;
+    if(data.motionRig?.version===1&&animation.rigPose&&api.prewarm!==false){
+      for(const profile of [normalizeProfile({}),...Object.values(appearances)])for(let direction=0;direction<4;direction++)buildRig(profile,direction);
+    }
+    return data;
   }
   const ready=load().catch(error=>{loadError=error;throw error;});
   ready.catch(()=>{});
@@ -175,6 +179,67 @@ window.createCodaCharacterRenderer=function(api){
     return [finite(frame[bone+'X']),finite(frame[bone+'Y']),finite(frame[bone+'ScaleX'],1),finite(frame[bone+'ScaleY'],1)];
   }
   function originalLook(p){return ['skin','hair','shirt','lowerColor','hairstyle','outfit','headwear','eyewear','accessory','shoes'].every(key=>p[key]===DEFAULTS[key]);}
+  function buildRig(p,direction){
+    const key=JSON.stringify([direction,p.skin,p.hair,p.shirt,p.lowerColor,p.hairstyle,p.outfit,p.headwear,p.eyewear,p.accessory,p.shoes,p.headwearColor,p.eyewearColor]);
+    if(rigged.has(key)){const cached=rigged.get(key);rigged.delete(key);rigged.set(key,cached);return cached;}
+    const [w,h]=manifest.cell,definition=animation.rigDefinition(animation.directions[direction]),pose={index:direction*manifest.framesPerDirection,directionIndex:direction};
+    const canvas=()=>createCanvas(w,h),base=canvas(),adorn=canvas(),held=canvas();
+    const paint=(destination,layer)=>{if(!layer)return;const frame=sprite(layer,pose,p),g=destination.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(frame.source,frame.sx,frame.sy,w,h,0,0,w,h);};
+    const canonical=originalLook(p)&&entries.has('original/hero');
+    if(canonical)paint(base,entries.get('original/hero'));
+    else{
+      paint(base,entry('body'));paint(base,entry('outfit',p.outfit));paint(base,entry('shoes',p.shoes));
+      if(direction===2)paint(adorn,entry('eyewear',p.eyewear));
+      paint(adorn,entry('hair',p.hairstyle));paint(adorn,entry('headwear',p.headwear));
+      paint(['trumpet','microphone'].includes(p.accessory)?held:adorn,entry('accessory',p.accessory));
+      if(direction!==2)paint(adorn,entry('eyewear',p.eyewear));
+    }
+    const pixels=base.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h),parts=Array.from({length:5},canvas),images=parts.map(c=>c.getContext('2d').createImageData(w,h));
+    const inside=(x,y,polygon)=>{let hit=false;for(let i=0,j=polygon.length-1;i<polygon.length;j=i++){
+      const [ax,ay]=polygon[i],[bx,by]=polygon[j];if((ay>y)!==(by>y)&&x<(bx-ax)*(y-ay)/(by-ay)+ax)hit=!hit;
+    }return hit;};
+    // Assemble garments, skin and shoes before moving a limb. A single mask
+    // prevents clothing ink and old limb pixels from colliding in later layers.
+    const coveredLegs=['dress','coat'].includes(p.outfit),hipY=definition.hipY??definition.hips,legY=coveredLegs?83:hipY;
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      const at=(y*w+x)*4;if(!pixels.data[at+3])continue;let part=0;
+      if(y>=definition.neck){
+        if(inside(x+.5,y+.5,definition.arms[0].polygon))part=1;
+        else if(inside(x+.5,y+.5,definition.arms[1].polygon))part=2;
+        else if(y>=legY)part=(x<40)!==definition.mirrored?3:4;
+      }
+      for(let channel=0;channel<4;channel++)images[part].data[at+channel]=pixels.data[at+channel];
+    }
+    // Extend the existing shirt pixels underneath the joints, hidden in the
+    // neutral pose. These small overlaps keep shoulders and hips connected.
+    for(let y=definition.neck;y<legY+2;y++)for(let x=31;x<49;x++){
+      const at=(y*w+x)*4;if(images[0].data[at+3])continue;
+      const shoulder=y<definition.neck+5&&(x<35||x>45),hip=y>=legY;
+      if(!shoulder&&!hip)continue;
+      const from=(y*w+(shoulder?Math.max(35,Math.min(44,x)):x))*4;
+      if(!pixels.data[from+3])continue;for(let c=0;c<4;c++)images[0].data[at+c]=pixels.data[from+c];
+    }
+    parts.forEach((part,index)=>part.getContext('2d').putImageData(images[index],0,0));
+    const legs=definition.legs.map(leg=>({...leg,pivot:[leg.pivot[0],coveredLegs?83:leg.pivot[1]]}));
+    const value={base,adorn,held,parts,definition:{...definition,legs},coveredLegs};
+    if(rigged.size>=Math.min(cacheLimit,96))rigged.delete(rigged.keys().next().value);rigged.set(key,value);return value;
+  }
+  function drawRig(ctx,p,motion,time,pose){
+    const rig=buildRig(p,pose.directionIndex),state=animation.rigPose({...motion,facing:pose.direction},time,reduced()),[w,h]=manifest.cell,[ax,ay]=manifest.anchor;
+    const scale=Math.max(.25,Math.min(8,finite(motion.scale,1)))*worldScale;
+    ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(finite(motion.x),finite(motion.y));ctx.scale(scale,scale);
+    ctx.translate(0,state.rootY);ctx.rotate(state.bodyAngle);
+    const plain=source=>ctx.drawImage(source,-ax,-ay,w,h);
+    if(!state.active){plain(rig.base);plain(rig.adorn);plain(rig.held);ctx.restore();return true;}
+    const limb=(source,part,transform)=>{
+      const [px,py]=part.pivot;ctx.save();ctx.translate(px-ax+transform.x,py-ay+transform.y);ctx.rotate(transform.angle);ctx.scale(1,transform.scaleY);
+      ctx.drawImage(source,-px,-py,w,h);ctx.restore();
+    };
+    const {definition:d,parts}=rig,farArm=1-d.nearArm,farLeg=1-d.nearLeg;
+    limb(parts[3+farLeg],d.legs[farLeg],state.legs[farLeg]);limb(parts[1+farArm],d.arms[farArm],state.arms[farArm]);
+    plain(parts[0]);limb(parts[3+d.nearLeg],d.legs[d.nearLeg],state.legs[d.nearLeg]);limb(parts[1+d.nearArm],d.arms[d.nearArm],state.arms[d.nearArm]);
+    plain(rig.adorn);limb(rig.held,d.arms[d.handArm],state.arms[d.handArm]);ctx.restore();return true;
+  }
   function drawOriginal(ctx,motion,time){
     const action=entries.get('original/hero');if(!action)return false;
     const pose=animation.sample(motion,time,reduced()),scale=Math.max(.25,Math.min(8,finite(motion.scale,1)))*worldScale;
@@ -184,6 +249,7 @@ window.createCodaCharacterRenderer=function(api){
   }
   function render(ctx,p,motion,time){
     if(!loaded)return false;
+    if(manifest.motionRig?.version===1&&animation.rigPose)return drawRig(ctx,p,motion,time,animation.sample(motion,time,reduced()));
     if(originalHero&&originalLook(p))return drawOriginal(ctx,motion,time);
     const pose=animation.sample(motion,time,reduced()),[w,h]=manifest.cell,[ax,ay]=manifest.anchor;
     const scale=Math.max(.25,Math.min(8,finite(motion.scale,1)))*worldScale;
@@ -210,5 +276,5 @@ window.createCodaCharacterRenderer=function(api){
     return render(ctx,appearance,{x:p.x,y:p.y,facing:p.facing,walking:p.walking,phase:p.phase,emote,emoteTime:p.emoteTime,seed:base.id.length},time);
   }
   return {drawPlayer,drawNPC,normalizeProfile,appearanceFor,sampleMotion,ready,catalog,isReady:()=>loaded,
-    get error(){return loadError?.message||null;},getState:()=>({ready:loaded,mode:'raster-sprites',artStyle:manifest?.artStyle||'layered-raster',sourcePolicy:manifest?.sourcePolicy||null,layers:entries.size,tintedFrames:tinted.size,cacheLimit,cell:manifest?.cell||null,totalFrames:112})};
+    get error(){return loadError?.message||null;},getState:()=>({ready:loaded,mode:'raster-sprites',motion:manifest?.motionRig?.version===1?'continuous-rig':'raster-frames',riggedLooks:rigged.size,artStyle:manifest?.artStyle||'layered-raster',sourcePolicy:manifest?.sourcePolicy||null,layers:entries.size,tintedFrames:tinted.size,cacheLimit,cell:manifest?.cell||null,totalFrames:112})};
 };

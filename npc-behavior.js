@@ -140,7 +140,9 @@
         if(wall||state.blocked>1.6){p.route=[];p.routeKey='';state.replanIn=.45+state.index*.09;state.blocked=0;state.retries++;if(state.retries>=3)releaseTarget(p,1);}
       }else state.blocked=0;
       p.walking=moved>.01;p.activity=p.walking?'walking':'waiting';
-      if(p.walking){facing(p,p.x-before.x,p.y-before.y);p.phase+=moved/7;p.walked=(p.walked||0)+moved;}
+      // Brief avoidance steps should not flash a different facing before
+      // immediately turning back. Keep looking along the intended route.
+      if(p.walking){facing(p,dx,dy);p.phase+=moved/7;p.walked=(p.walked||0)+moved;}
       if(p.route.length&&distance(p,p.route[0])<1)p.route.shift();
       if(distance(p,target)<=ARRIVAL)arrive(p);
     }

@@ -82,6 +82,18 @@ test('the player and other visitors are never shoved through or overlapped while
   const p=env.npcs[0];assert.ok(p.phase>0);assert.equal(Number.isFinite(p.x),true);
 });
 
+test('yielding sidesteps keep a musician facing their route instead of flashing a side view',()=>{
+  const env=setup({player:{x:145,y:100}}),p=env.npcs[0];let sidesteps=0;
+  for(let frame=0;frame<120;frame++){
+    const before={x:p.x,y:p.y,phase:p.phase};env.engine.update(.05);
+    if(Math.abs(p.x-before.x)<1e-8&&Math.abs(p.y-before.y)>.1){
+      sidesteps++;assert.equal(p.facing,'right','A short crowd-avoidance step must not turn the character for one frame');
+      assert.equal(p.walking,true);assert.ok(p.phase>before.phase,'The sidestep still advances movement animation');
+    }
+  }
+  assert.ok(sidesteps>0,'The scenario must actually exercise crowd avoidance');
+});
+
 test('route invalidation preserves positions and respects the shared pathfinding budget',()=>{
   const env=setup({npcs:IDS.map((id,i)=>({id,x:100+i*30,y:100+i*20})),route:()=>[]});run(env.engine,.4);
   const before=env.npcs.map(p=>({x:p.x,y:p.y}));env.calls.length=0;env.engine.invalidateRoutes();env.engine.update(.1);

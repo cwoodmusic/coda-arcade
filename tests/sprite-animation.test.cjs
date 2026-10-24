@@ -44,3 +44,47 @@ test('invalid saved motion and negative times never select out-of-range frames',
     const pose=animation.sample(raw,-100);assert.ok(Number.isInteger(pose.index)&&pose.index>=0&&pose.index<112);
   }
 });
+
+const joints=pose=>[pose.rootY,pose.bodyAngle,...pose.arms.flatMap(part=>[part.angle,part.x,part.y,part.scaleY]),...pose.legs.flatMap(part=>[part.angle,part.x,part.y,part.scaleY])];
+
+test('continuous walking interpolates joints between the old six frame boundaries',()=>{
+  for(const facing of animation.directions){
+    const poses=Array.from({length:120},(_,slot)=>animation.rigPose({facing,walking:true,phase:slot/120*Math.PI*2},0));
+    assert.ok(new Set(poses.map(pose=>JSON.stringify(joints(pose)))).size>60,'A stride needs continuous intermediate poses');
+    for(let i=0;i<poses.length;i++){
+      const a=joints(poses[i]),b=joints(poses[(i+1)%poses.length]);
+      assert.ok(a.every(Number.isFinite),'Every transform must stay finite');
+      assert.ok(a.every((value,j)=>Math.abs(value-b[j])<.2),'The stride must wrap without a snapping joint');
+    }
+    const a=animation.rigPose({facing,walking:true,phase:.123},0),b=animation.rigPose({facing,walking:true,phase:.123},1000);
+    assert.deepEqual(joints(a),joints(b),'Walking follows traveled distance rather than wall-clock time');
+  }
+});
+
+test('continuous rig uses an exact neutral pose for idle and reduced motion',()=>{
+  for(const facing of animation.directions){
+    const idle=animation.rigPose({facing},123),quiet=animation.rigPose({facing,walking:true,phase:2,emote:'dance',emoteTime:3},123,true);
+    assert.equal(idle.active,false);assert.equal(quiet.active,false);
+    for(const pose of [idle,quiet]){
+      assert.equal(pose.rootY,0);assert.equal(pose.bodyAngle,0);
+      for(const part of [...pose.arms,...pose.legs]){
+        assert.equal(part.angle,0);assert.equal(part.x,0);assert.equal(part.y,0);assert.equal(part.scaleY,1);
+      }
+    }
+  }
+});
+
+test('continuous emotes retain finite joints and interpolate without pose swaps',()=>{
+  for(const emote of ['wave','dance','talk','playing','sit','robot','disco']){
+    let previous;
+    for(let slot=0;slot<120;slot++){
+      const pose=animation.rigPose({facing:'down',emote,emoteTime:slot/60},slot/60),values=joints(pose);
+      assert.ok(values.every(Number.isFinite));
+      if(previous)assert.ok(values.every((value,i)=>Math.abs(value-previous[i])<.3),emote+' must not jump between unrelated raster poses');
+      previous=values;
+    }
+  }
+  for(const raw of [null,{}, {facing:'invalid',phase:Infinity}, {walking:true,phase:-200}, {emote:'dance',emoteTime:-3}]){
+    assert.ok(joints(animation.rigPose(raw,-100)).every(Number.isFinite));
+  }
+});

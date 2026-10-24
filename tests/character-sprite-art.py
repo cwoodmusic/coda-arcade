@@ -60,21 +60,22 @@ class CharacterSpriteArtTests(unittest.TestCase):
                         self.assertTrue(box[0]>0 and box[1]>0 and box[2]<self.width and box[3]<self.height,
                                         f'Frame {index} reaches a cell edge and may be clipped or leak neighboring artwork: {box}')
 
-    def test_directional_walk_and_wave_frames_contain_real_distinct_raster_poses(self):
+    def test_continuous_rig_has_detailed_distinct_neutral_views(self):
+        self.assertEqual(self.manifest.get('motionRig',{}).get('version'),1,
+                         'Runtime motion must use the continuous original-pixel rig')
         with Image.open(ART/self.manifest['layers']['body']['url']) as source:
             body=source.convert('RGBA')
-        strip=self.manifest['framesPerDirection']
-        idle_frames=[]
+        views=[]
         for direction in range(4):
-            idle=self.frame(body,direction*strip+self.manifest['clips']['idle']['offset'])
-            idle_frames.append(idle.tobytes())
-            for clip_name,minimum in [('walk',3),('wave',2)]:
-                clip=self.manifest['clips'][clip_name]
-                frames=[self.frame(body,direction*strip+clip['offset']+index) for index in range(clip['frames'])]
-                self.assertGreaterEqual(len({frame.tobytes() for frame in frames}),minimum,
-                                        f'{clip_name} in {self.manifest["directions"][direction]} must use distinct authored poses')
-                self.assertTrue(any(frame.tobytes()!=idle.tobytes() for frame in frames),'Animation cannot be only a repeated idle frame')
-        self.assertEqual(len(set(idle_frames)),4,'The four facing directions must be different raster artwork')
+            neutral=self.frame(body,direction*self.manifest['framesPerDirection'])
+            views.append(neutral.tobytes())
+            pixels=neutral.load()
+            colors={pixels[x,y] for y in range(self.height) for x in range(self.width) if pixels[x,y][3]>128}
+            self.assertGreater(len(colors),24,'The neutral templates must retain original shading and facial detail')
+            box=neutral.getchannel('A').getbbox()
+            self.assertIsNotNone(box)
+            self.assertTrue(40<=box[3]-box[1]<=55,'Each facing must retain the compact original standing proportions')
+        self.assertEqual(len(set(views)),4,'All four facing views must contain direction-specific artwork')
 
     def test_animated_body_and_shoes_share_the_gameplay_foot_anchor(self):
         anchor_x,anchor_y=self.manifest['anchor']
