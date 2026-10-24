@@ -43,7 +43,7 @@ function name(call){return call[1].name||call[1].sourceFrame?.source.name;}
 test('normalization migrates old hats/glasses while retaining independent new slots and bounded colors',async()=>{
   const r=renderer();await r.ready;
   const legacy=r.normalizeProfile({name:' '.repeat(2)+'A'.repeat(40),skin:'url(javascript:bad)',hair:'#ABCDEF',shirt:'#102030',hairstyle:'unknown',outfit:'dress',accessory:'cap',shoes:'gold',emote:'spin'});
-  assert.equal(legacy.name,'A'.repeat(18));assert.equal(legacy.skin,'#d49a76');assert.equal(legacy.hair,'#abcdef');assert.equal(legacy.headwear,'cap');assert.equal(legacy.accessory,'none');
+  assert.equal(legacy.name,'A'.repeat(18));assert.equal(legacy.skin,'#e5ad75');assert.equal(legacy.hair,'#abcdef');assert.equal(legacy.headwear,'cap');assert.equal(legacy.accessory,'none');
   assert.equal(r.normalizeProfile({accessory:'sunglasses'}).eyewear,'sunglasses');assert.equal(r.normalizeProfile({accessory:'partyglasses'}).eyewear,'partyglasses');
   assert.equal(r.normalizeProfile({hat:true,walked:600,accessory:'none'}).accessory,'halo');
   const explicit=r.normalizeProfile({headwear:'none',eyewear:'none',accessory:'cap',hat:true,walked:600});assert.equal(explicit.headwear,'none');assert.equal(explicit.eyewear,'none');assert.equal(explicit.accessory,'none');
@@ -106,7 +106,7 @@ test('tinting preserves eye whites, outlines, unrelated trim and alpha while cha
 test('the historic cast remains distinct and NPC appearance overrides use the same real asset slots',async()=>{
   const r=renderer();await r.ready;const ids=['bach','mozart','beethoven','clara','joplin','ellington','ella','nina','miles'];
   assert.equal(new Set(ids.map(id=>JSON.stringify(r.appearanceFor(id)))).size,9);
-  assert.equal(r.appearanceFor('Miles Davis').eyewear,'sunglasses');assert.equal(r.appearanceFor('miles').accessory,'trumpet');
+  assert.equal(r.appearanceFor('bach').headwear,'none');assert.equal(r.appearanceFor('miles').headwear,'none');assert.equal(r.appearanceFor('Miles Davis').eyewear,'sunglasses');assert.equal(r.appearanceFor('miles').accessory,'trumpet');
   for(const id of ids)assert.ok(Object.isFrozen(r.appearanceFor(id)));
   const ctx=context();r.drawNPC(ctx,{id:'miles',x:0,y:0,facing:'down',appearance:{outfit:'dress',headwear:'beanie',eyewear:'glasses',accessory:'none'}},0);
   const names=ctx.calls.filter(c=>c[0]==='image').map(name);assert.ok(names.includes('outfit-dress.png'));assert.ok(names.includes('headwear-beanie.png'));assert.ok(names.includes('eyewear-glasses.png'));assert.ok(!names.includes('accessory-trumpet.png'));

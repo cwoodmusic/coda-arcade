@@ -101,7 +101,7 @@ class SpriteBoutiqueTests(unittest.TestCase):
         self.assertTrue(any(resource.path.endswith('.png') for resource in sprites),'Raster sprite layers must be loaded')
         for resource in sprites:
             if resource.path.endswith(('/manifest.json','.png')):
-                self.assertEqual(parse_qs(resource.query).get('v'),['classic-15'],resource.geturl())
+                self.assertEqual(parse_qs(resource.query).get('v'),['original-16'],resource.geturl())
 
     def test_original_arcade_look_previews_before_save_and_persists_after_reload(self):
         self.page.emulate_media(reduced_motion='reduce')
@@ -134,7 +134,7 @@ class SpriteBoutiqueTests(unittest.TestCase):
     def test_player_can_save_hat_glasses_accessory_and_colors_together(self):
         self.page.emulate_media(reduced_motion='reduce')
         self.page.evaluate('localStorage.setItem("musicArcadeV1",JSON.stringify({name:"Guest",walked:600,collectedTokens:7}))')
-        self.load();self.open_boutique()
+        self.load();before=self.appearance();self.open_boutique()
         self.page.get_by_label('Arcade nickname',exact=True).fill('Layered Player')
         self.page.get_by_label('Hairstyle',exact=True).select_option('buns')
         self.page.get_by_label('Outfit',exact=True).select_option('overalls')
@@ -143,7 +143,7 @@ class SpriteBoutiqueTests(unittest.TestCase):
         self.page.get_by_label('Accessories',exact=True).select_option('headphones')
         self.set_color('Skin color','#704633');self.set_color('Hair color','#ece4d6')
         self.set_color('Outfit color','#4678ab');self.set_color('Lower clothing color','#334c72')
-        self.assertNotEqual(self.appearance()['headwear'],'cap','Draft equipment must not apply before Save')
+        self.assertEqual(self.appearance(),before,'Draft equipment must not apply before Save')
         self.page.get_by_role('button',name='Save my look',exact=True).click()
         saved=self.appearance()
         for field,value in {'name':'Layered Player','hairstyle':'buns','outfit':'overalls','headwear':'cap','eyewear':'sunglasses','accessory':'headphones','skin':'#704633','hair':'#ece4d6','shirt':'#4678ab','lowerColor':'#334c72'}.items():

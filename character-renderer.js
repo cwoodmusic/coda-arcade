@@ -11,7 +11,7 @@ window.createCodaCharacterRenderer=function(api){
   const ACCESSORIES=['none','bow','headphones','bowtie','starclip','halo','earrings','pixelheadphones','trumpet','microphone'];
   const SHOES=['sneakers','boots','hightops','neon','gold'];
   const EMOTES=['wave','dance','spin','robot','disco'];
-  const DEFAULTS={name:'Guest',skin:'#d49a76',hair:'#463145',shirt:'#a7f66f',lowerColor:'#4d6f91',hairstyle:'short',outfit:'pants',headwear:'none',eyewear:'none',accessory:'none',shoes:'sneakers',emote:'wave',headwearColor:'#db687f',eyewearColor:'#30374b'};
+  const DEFAULTS={name:'Guest',skin:'#e5ad75',hair:'#171424',shirt:'#e94038',lowerColor:'#235cb9',hairstyle:'short',outfit:'pants',headwear:'cap',eyewear:'none',accessory:'none',shoes:'sneakers',emote:'wave',headwearColor:'#db687f',eyewearColor:'#30374b'};
   const own=(object,key)=>Object.prototype.hasOwnProperty.call(object,key);
   const finite=(value,fallback=0)=>Number.isFinite(value)?value:fallback;
   const choose=(value,choices,fallback)=>choices.includes(value)?value:fallback;
@@ -19,7 +19,7 @@ window.createCodaCharacterRenderer=function(api){
   const reduced=()=>typeof api.reducedMotion==='function'&&!!api.reducedMotion();
   function normalizeProfile(raw){
     const p=raw&&typeof raw==='object'?raw:{};
-    const headwear=own(p,'headwear')?choose(p.headwear,HEADWEAR,'none'):p.accessory==='cap'?'cap':'none';
+    const headwear=own(p,'headwear')?choose(p.headwear,HEADWEAR,'none'):p.accessory==='cap'?'cap':p.customized===true?'none':DEFAULTS.headwear;
     const eyewear=own(p,'eyewear')?choose(p.eyewear,EYEWEAR,'none'):choose(p.accessory,EYEWEAR,'none');
     let accessory=choose(p.accessory,ACCESSORIES,'none');
     if(!own(p,'headwear')&&p.hat===true&&finite(p.walked)>=450&&(!p.accessory||p.accessory==='none'))accessory='halo';
@@ -38,20 +38,20 @@ window.createCodaCharacterRenderer=function(api){
     nina:{name:'Nina Simone',skin:'#754a35',hair:'#221c26',shirt:'#ad793d',hairstyle:'bald',outfit:'dress',shoes:'gold',headwear:'headwrap',headwearColor:'#3c7b87'},
     miles:{name:'Miles Davis',skin:'#875b40',hair:'#211e28',shirt:'#2a3e5a',lowerColor:'#293343',hairstyle:'short',outfit:'suit',shoes:'boots',eyewear:'sunglasses',accessory:'trumpet',instrument:'trumpet'}
   };
-  const appearances=Object.fromEntries(Object.entries(historical).map(([id,p])=>[id,Object.freeze({...normalizeProfile(p),id,...(p.instrument?{instrument:p.instrument}:{})})]));
+  const appearances=Object.fromEntries(Object.entries(historical).map(([id,p])=>[id,Object.freeze({...normalizeProfile({headwear:'none',...p}),id,...(p.instrument?{instrument:p.instrument}:{})})]));
   const aliases={'j. s. bach':'bach','johann sebastian bach':'bach','wolfgang amadeus mozart':'mozart','ludwig van beethoven':'beethoven','clara schumann':'clara','scott joplin':'joplin','duke ellington':'ellington','ella fitzgerald':'ella','nina simone':'nina','miles davis':'miles'};
   const fallback=Object.freeze({...normalizeProfile({}),id:'guest'});
   function appearanceFor(id){const key=String(id||'').toLowerCase();return appearances[aliases[key]||key]||fallback;}
   const labels={none:'None',short:'Short',bob:'Bob',long:'Long',curly:'Curly',ponytail:'Ponytail',spiky:'Spiky',bald:'No hair',buns:'Space buns',pants:'Shirt and pants',shorts:'Shirt and shorts',dress:'Dress',overalls:'Overalls',suit:'Suit',coat:'Long coat',cap:'Baseball cap',beanie:'Beanie',bucket:'Bucket hat',crown:'Crown',headwrap:'Headwrap',glasses:'Everyday glasses',sunglasses:'Sunglasses',partyglasses:'Party glasses',bow:'Bow',headphones:'Headphones',bowtie:'Bow tie',starclip:'Neon star clip',halo:'Neon halo',earrings:'Earrings',pixelheadphones:'Pixel headphones',trumpet:'Trumpet',microphone:'Microphone',sneakers:'Sneakers',boots:'Boots',hightops:'High tops',neon:'Neon trainers',gold:'Gold shoes',wave:'Wave',dance:'Dance',spin:'Spin',robot:'Robot',disco:'Disco point'};
   const choices=ids=>Object.freeze(ids.map(id=>Object.freeze({id,label:labels[id]})));
   const catalog=Object.freeze({hairstyles:choices(HAIR),outfits:choices(OUTFITS),headwear:choices(HEADWEAR),eyewear:choices(EYEWEAR),accessories:choices(ACCESSORIES),shoes:choices(SHOES),emotes:choices(EMOTES)});
-  let manifest=null,loaded=false,loadError=null;
+  let manifest=null,loaded=false,loadError=null,originalHero=null;
   const entries=new Map(),imagePromises=new Map(),tinted=new Map();
   const cacheLimit=Math.max(32,Math.min(1024,Math.round(finite(api.cacheLimit,256))));
   const worldScale=Math.max(.125,Math.min(4,finite(api.worldScale,1)));
   const locationURL=()=>window.location?.href||'http://localhost/';
   const url=(value,base)=>new URL(value,base).href;
-  const artVersion=api.artVersion===false?'':typeof api.artVersion==='string'?api.artVersion:'classic-15';
+  const artVersion=api.artVersion===false?'':typeof api.artVersion==='string'?api.artVersion:'original-16';
   function artURL(value,base){
     const resolved=new URL(value,base);
     // A new art revision refreshes the manifest and every raster layer together.
@@ -95,6 +95,9 @@ window.createCodaCharacterRenderer=function(api){
       if(descriptor.backUrl)entry.back={...entry,key:key+'/back',image:await image(artURL(descriptor.backUrl,base))};
       entries.set(key,entry);
     }));
+    if(data.originalHero?.url&&data.originalHero.frames){
+      originalHero={...data.originalHero,image:await image(artURL(data.originalHero.url,base))};
+    }
     loaded=true;return data;
   }
   const ready=load().catch(error=>{loadError=error;throw error;});
@@ -120,7 +123,7 @@ window.createCodaCharacterRenderer=function(api){
     const material=layer.material;
     if(material==='skin')return p.skin;
     if(material==='hair')return p.hair;
-    if(material==='clothes')return p.shirt+':'+p.lowerColor;
+    if(material==='clothes'||material==='original-clothes')return p.shirt+':'+p.lowerColor;
     if(material==='headwear')return p.headwearColor;
     if(material==='eyewear')return p.eyewearColor;
     if(material==='shoes')return {sneakers:'#e8e4ef',boots:'#765342',hightops:'#c4789c',neon:'#78d9c4',gold:'#e2bc60'}[p.shoes];
@@ -137,11 +140,14 @@ window.createCodaCharacterRenderer=function(api){
       const source=hsv(data[i],data[i+1],data[i+2]);
       if(source.v<.15||source.s<.12)continue;
       let hex=null,base=.75;
-      if(material==='skin'&&source.h>=5&&source.h<=58){hex=p.skin;base=.8;}
-      else if(material==='hair'){hex=p.hair;base=.53;}
+      if(material==='skin'&&source.h>=5&&source.h<=58){if(manifest?.artStyle==='original-atlas'&&p.skin===DEFAULTS.skin)continue;hex=p.skin;base=.8;}
+      else if(material==='hair'){hex=p.hair;base=manifest?.artStyle==='original-atlas'?.95:.53;}
       else if(material==='clothes'){
         if(source.h>=275&&source.h<=335){hex=p.shirt;base=.8;}
         else if(source.h>=185&&source.h<=265){hex=p.lowerColor;base=.68;}
+      }else if(material==='original-clothes'){
+        if((source.h<=18||source.h>=330)&&p.shirt!==DEFAULTS.shirt){hex=p.shirt;base=.95;}
+        else if(source.h>=185&&source.h<=265&&p.lowerColor!==DEFAULTS.lowerColor){hex=p.lowerColor;base=.95;}
       }else if(material==='headwear'){hex=p.headwearColor;base=.8;}
       else if(material==='eyewear'){hex=p.eyewearColor;base=.65;}
       else if(material==='shoes'){hex=tintKey({material:'shoes'},p);base=.72;}
@@ -167,13 +173,31 @@ window.createCodaCharacterRenderer=function(api){
     const bone=layer.bone||(category==='hair'||category==='headwear'||category==='eyewear'||category==='accessory'&&['bow','headphones','starclip','halo','earrings','pixelheadphones'].includes(variant)?'head':category==='accessory'&&['trumpet','microphone'].includes(variant)?'hand':'body');
     return [finite(frame[bone+'X']),finite(frame[bone+'Y'])];
   }
+  function originalLook(p){return ['skin','hair','shirt','lowerColor','hairstyle','outfit','headwear','eyewear','accessory','shoes'].every(key=>p[key]===DEFAULTS[key]);}
+  function drawOriginal(ctx,motion,time){
+    const pose=animation.sample(motion,time,reduced()),map=[0,1,2,3,4,1];
+    const walking=pose.clip==='walk',frame=walking?map[pose.frame]:0;
+    const part=originalHero.frames['hero_'+pose.direction+'_'+frame];if(!part)return false;
+    const scale=Math.max(.25,Math.min(8,finite(motion.scale,1)))*worldScale,h=Math.round(53*scale),width=Math.min(39*scale,h*part.w/part.h);
+    const action=entries.get('original/hero');
+    if(!walking&&pose.clip!=='idle'&&action){
+      const [cw,ch]=manifest.cell,sx=pose.index%action.columns*cw,sy=Math.floor(pose.index/action.columns)*ch;
+      ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(Math.round(finite(motion.x)),Math.round(finite(motion.y)));ctx.scale(scale,scale);
+      ctx.drawImage(action.image,sx,sy,cw,ch,-40,-88,cw,ch);ctx.restore();return true;
+    }
+    let bob=0;if(!reduced()&&!walking&&['wave','dance','interact','talk','sit'].includes(pose.clip))bob=pose.clip==='sit'?3*scale:-Math.abs(Math.sin(pose.actionTime*9)*3*scale);
+    ctx.save();ctx.imageSmoothingEnabled=false;
+    ctx.drawImage(originalHero.image,part.x,part.y,part.w,part.h,Math.round(finite(motion.x)-width/2),Math.round(finite(motion.y)-h+bob),Math.round(width),h);
+    ctx.restore();return true;
+  }
   function render(ctx,p,motion,time){
     if(!loaded)return false;
+    if(originalHero&&originalLook(p))return drawOriginal(ctx,motion,time);
     const pose=animation.sample(motion,time,reduced()),[w,h]=manifest.cell,[ax,ay]=manifest.anchor;
     const scale=Math.max(.25,Math.min(8,finite(motion.scale,1)))*worldScale;
     const blit=(layer,category,variant)=>{if(!layer)return;const frame=sprite(layer,pose,p),[dx,dy]=offset(layer,category,variant,pose);ctx.drawImage(frame.source,frame.sx,frame.sy,w,h,-ax+dx,-ay+dy,w,h);};
     ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(Math.round(finite(motion.x)),Math.round(finite(motion.y)));ctx.scale(scale,scale);
-    ctx.fillStyle='#080b214f';ctx.beginPath();ctx.ellipse(0,1,14,3,0,0,Math.PI*2);ctx.fill();
+    if(manifest.artStyle!=='original-atlas'){ctx.fillStyle='#080b214f';ctx.beginPath();ctx.ellipse(0,1,14,3,0,0,Math.PI*2);ctx.fill();}
     const hair=entry('hair',p.hairstyle);blit(hair?.back,'hair',p.hairstyle);
     blit(entry('body'),'body','default');blit(entry('outfit',p.outfit),'outfit',p.outfit);blit(entry('shoes',p.shoes),'shoes',p.shoes);
     if(pose.direction==='up')blit(entry('eyewear',p.eyewear),'eyewear',p.eyewear);
