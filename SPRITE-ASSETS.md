@@ -10,11 +10,17 @@ The plain base is bald, with a gray shirt (`#999ca6`), gray trousers (`#626875`)
 
 The nine musicians keep their identities, default costume cues, dialogue, navigation, and activities. Player and NPC wardrobes share the same drawing functions. Four facings, distance-based walking, gestures, sitting, and reduced-motion preferences are supported. Feet remain anchored at the gameplay position; boutique portraits use a larger display scale.
 
+## Keyboard movement
+
+Move with **WASD** or the arrow keys and press **Space** for one hop. Horizontal movement continues in the air, with the usual wall collision and grounded depth order. The body and name label rise while the shadow stays on the floor. Another jump requires landing and a new press; holding Space does not repeat it. Explicit jumps still work with reduced motion enabled.
+
+Typing, dialogs, cabinets, and editing keep their own controls. Space activates a focused toolbar button normally; a movement key returns focus to the canvas. Blur and hidden tabs clear held movement keys. Successful jumps increment the existing local jump-progress counter.
+
 ## Renderer API
 
 `createCodaCharacterRenderer()` exposes `drawPlayer`, `drawNPC`, `normalizeProfile`, `appearanceFor`, `sampleMotion`, `catalog`, `ready`, `isReady`, `error`, and `getState`. Readiness is immediate because character art needs no downloads. QA reports `mode: javascript-characters`, `base: bald-gray`, and `sourcePolicy: javascript-drawn`. A bounded palette cache avoids repeated color calculations.
 
-The implementation restores the procedural style from the version before image sprites, with the current independent cosmetic slots and saved-profile compatibility. The world loads it with revision `js-boys-21` so returning browsers fetch the restored renderer.
+The implementation restores the procedural style from the version before image sprites, with the current independent cosmetic slots and saved-profile compatibility. The world loads it with revision `wasd-jump-22` so returning browsers fetch the restored renderer.
 
 ## World rendering
 
@@ -32,6 +38,7 @@ python3 tests/clean-world-art.py
 python3 tests/developer-console-browser.py
 python3 tests/sprite-boutique-browser.py
 python3 tests/javascript-characters-browser.py
+python3 tests/player-controls-browser.py
 python3 tests/world-animation-performance.py
 ```
 

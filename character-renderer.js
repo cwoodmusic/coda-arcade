@@ -70,7 +70,8 @@ window.createCodaCharacterRenderer=function(api){
         else if(emote==='sit'){sit=true;clip='sit';bob=-2;}
       }
     }
-    return {facing,walking,phase,stride,dx,lift,bob,gesture,clip,sit,actionTime,blink:!quiet&&((t+finite(m.seed)*.37)%5.3+5.3)%5.3>5.13,quiet};
+    const jumpHeight=Math.max(0,Math.min(160,finite(m.jumpHeight)));
+    return {facing,walking,phase,stride,dx,lift,bob,gesture,clip,sit,actionTime,jumpHeight,blink:!quiet&&((t+finite(m.seed)*.37)%5.3+5.3)%5.3>5.13,quiet};
   }
   function drawHair(r,p,c,side,back){
     if(p.hairstyle==='bald')return;
@@ -148,8 +149,9 @@ window.createCodaCharacterRenderer=function(api){
     const pose=sampleMotion(motion,time),c=palette(p),side=pose.facing==='left'||pose.facing==='right',back=pose.facing==='up';
     const x=finite(motion.x),y=finite(motion.y),scale=Math.max(.25,Math.min(8,finite(motion.scale,1)))*worldScale;
     ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(Math.round(x),Math.round(y));ctx.scale(scale,scale);
-    ctx.fillStyle='#080b214f';ctx.beginPath();ctx.ellipse(0,1,13,3,0,0,Math.PI*2);ctx.fill();
-    ctx.translate(pose.dx,-pose.lift);if(pose.facing==='left')ctx.scale(-1,1);
+    const shadowScale=1-Math.min(.35,pose.jumpHeight/110);
+    ctx.fillStyle='#080b214f';ctx.beginPath();ctx.ellipse(0,1,13*shadowScale,3*shadowScale,0,0,Math.PI*2);ctx.fill();
+    ctx.translate(pose.dx,-pose.lift-pose.jumpHeight);if(pose.facing==='left')ctx.scale(-1,1);
     const r=(x,y,w,h,col)=>{ctx.fillStyle=col;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));};
     const stride=pose.stride,dress=p.outfit==='dress';
     for(let leg=0;leg<2;leg++){

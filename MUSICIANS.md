@@ -22,6 +22,8 @@ Player cosmetics stay in `musicArcadeV1`; musician overrides stay in `codaNPCOut
 
 Press **Q** for the selected player emote. Musicians choose their own gestures through talking, cabinet play, sitting, and dancing activities. Miles's trumpet and Ella's microphone remain available as accessories.
 
+Move with **WASD** or arrows and press **Space** to jump. You can steer during the hop; walls and object depth still follow your floor position. Keyboard controls stay out of text entry, menus, conversations, and the editor.
+
 ## Implementation and checks
 
 - `npc-behavior.js` owns cast metadata, dialogue, activity states, reservations, and routing.

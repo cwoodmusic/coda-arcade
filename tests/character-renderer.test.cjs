@@ -19,7 +19,7 @@ function context(){
     rotate(angle){assert.ok(Number.isFinite(angle));const c=Math.cos(angle),s=Math.sin(angle);matrix=multiply(matrix,[c,s,-s,c,0,0]);},
     fillRect(x,y,w,h){assert.ok([x,y,w,h].every(Number.isFinite));assert.ok(w>0&&h>0);calls.push(['rect',x,y,w,h,fillStyle,...matrix]);},
     drawImage(){throw Error('Restored JavaScript characters must draw their own pixels');},
-    beginPath(){},ellipse(...args){assert.ok(args.every(Number.isFinite));calls.push(['shadow',...args]);},fill(){}};
+    beginPath(){},ellipse(...args){assert.ok(args.every(Number.isFinite));calls.push(['shadow',...args,{matrix:matrix.slice()}]);},fill(){}};
 }
 const rectangles=ctx=>ctx.calls.filter(call=>call[0]==='rect');
 const signature=ctx=>JSON.stringify(rectangles(ctx));
@@ -70,6 +70,28 @@ test('movement follows traveled phase, while emotes and reduced motion remain pr
   const idle=signature(draw(r,{}, {},.6));for(const emote of ['wave','dance','robot','disco','playing','sit'])assert.notEqual(signature(draw(r,{}, {emote,emoteTime:.6},.6)),idle,emote+' must have a visible pose');
   const {value:still}=renderer({reducedMotion:()=>true}),quiet=signature(draw(still,{}, {walking:true,phase:0,emote:'wave',emoteTime:0},0));
   assert.equal(signature(draw(still,{}, {walking:true,phase:5,emote:'wave',emoteTime:8},8)),quiet);
+});
+test('jumping raises the character drawing while its shadow remains at the ground anchor',()=>{
+  const {value:r}=renderer({reducedMotion:()=>true});
+  const ground=draw(r,{}, {x:100,y:150,jumpHeight:0}),air=draw(r,{}, {x:100,y:150,jumpHeight:24});
+  const bounds=ctx=>{
+    let minY=Infinity,maxY=-Infinity;
+    for(const rect of rectangles(ctx)){
+      const [,x,y,w,h,,a,b,c,d,e,f]=rect;
+      for(const [xx,yy]of [[x,y],[x+w,y],[x,y+h],[x+w,y+h]]){
+        const worldY=b*xx+d*yy+f;minY=Math.min(minY,worldY);maxY=Math.max(maxY,worldY);
+      }
+    }
+    return {minY,maxY};
+  };
+  const grounded=bounds(ground),jumping=bounds(air);
+  assert.equal(jumping.minY,grounded.minY-24,'The head must visibly rise with jump height');
+  assert.equal(jumping.maxY,grounded.maxY-24,'The feet must lift away from the walking plane');
+  const shadow=ctx=>{const call=ctx.calls.find(call=>call[0]==='shadow'),m=call.at(-1).matrix;
+    return {x:m[0]*call[1]+m[2]*call[2]+m[4],y:m[1]*call[1]+m[3]*call[2]+m[5],radius:call[3]};};
+  assert.equal(shadow(air).x,shadow(ground).x);assert.equal(shadow(air).y,shadow(ground).y);
+  assert.ok(shadow(air).radius<shadow(ground).radius,'The grounded shadow should shrink as the player rises');
+  assert.doesNotThrow(()=>draw(r,{}, {jumpHeight:Infinity}));
 });
 test('all musicians keep their identity while appearance overrides affect the drawing',()=>{
   const {value:r}=renderer({reducedMotion:()=>true}),ids=['bach','mozart','beethoven','clara','joplin','ellington','ella','nina','miles'];assert.equal(new Set(ids.map(id=>JSON.stringify(r.appearanceFor(id)))).size,9);
