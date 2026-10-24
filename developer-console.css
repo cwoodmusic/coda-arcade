@@ -41,3 +41,18 @@
   #assetStudio > :last-child .dev-toolbar { margin:4px 0; }
   #assetStudio .dev-status { min-height:2em; max-height:32px; overflow:auto; font-size:10px; }
 }
+
+/* The editor camera stays available in every tab. Its scale never resizes the
+ * DOM canvas, so paint coordinates and fine brushes remain in world pixels. */
+#assetStudio .dev-camera { display:grid;grid-template-columns:44px minmax(66px,1fr) 44px 86px;gap:4px;position:sticky;top:128px;z-index:3;background:#171529;padding:5px 0; }
+#assetStudio .dev-camera button { min-height:40px;min-width:0;padding:6px; }
+#assetStudio .dev-camera small { grid-column:1/-1;font-size:10px;line-height:1.35;color:#c9b9d6; }
+#view.dev-pan-ready { cursor:grab;touch-action:none; }
+#view.dev-panning { cursor:grabbing;touch-action:none; }
+@media(max-width:650px) and (orientation:portrait) { #assetStudio .dev-camera { position:static; } }
+@media(max-height:550px) and (orientation:landscape) { #assetStudio .dev-camera { top:85px;grid-template-columns:36px minmax(55px,1fr) 36px 70px; }#assetStudio .dev-camera button { min-height:32px; }#assetStudio .dev-camera small { font-size:9px; } }
+
+/* Keep the same map framing when entering the phone editor. A compact camera
+ * strip stays on the map while the remaining tools live below it. */
+.coda-mobile-world.asset-console-open #assetStudio .dev-camera { position:fixed;top:calc(var(--coda-world-header-height) + 5px);left:50%;transform:translateX(-50%);width:min(338px,calc(100vw - 20px));padding:5px 8px;background:#171529f5;border:1px solid #786b9a;border-radius:8px;box-shadow:0 5px 16px #0008; }
+.coda-mobile-world.asset-console-open #assetStudio { backdrop-filter:none; }

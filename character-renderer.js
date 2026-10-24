@@ -358,7 +358,7 @@ window.createCodaCharacterRenderer=function(api){
     // Loafers have a broad toe, low vamp, and a gold penny bar.
     r(x,y-2,9,4,'#655044');r(x,y+1,10,1,'#302938');r(x+1,y-2,6,1,'#aa7b5a');r(x+3,y-1,4,1,'#e2ba76');
   }
-  const pixelTargets=['player','bach','mozart','beethoven','clara','joplin','ellington','ella','nina','miles','dj'];
+  const pixelTargets=['player','bach','mozart','beethoven','clara','joplin','ellington','ella','nina','miles','dj','chopin','captain-cadence'];
   let pixelEdits={},pixelTops={},pixelSurface=null;
   const pixelCopy=value=>JSON.parse(JSON.stringify(value));
   function validPixelEdits(data){

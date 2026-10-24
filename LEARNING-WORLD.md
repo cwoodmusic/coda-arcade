@@ -14,6 +14,8 @@ Phones and tablets use the same page with touch movement, a compact menu, a foll
 
 Rooms use detailed pixel-art backgrounds, with live JavaScript characters, note displays, interactions, and lighting over the art. Escape releases room audio and returns to the arcade. Main-world movement pauses inside a room or full panel.
 
+The Piano Lab and fishing cave have contextual **Developer / F2** consoles for room artwork, collision, layers, and character/fish placement. Their cameras support close zoom and panning without resetting when switching tools. Cave fish also have editable species, size, colors, and visibility. Edited rooms travel with the complete world project export; see [DEVELOPER-CONSOLE.md](DEVELOPER-CONSOLE.md).
+
 ## Notes and wardrobe
 
 Notes are integer units. The purse makes exact change using whole notes worth 16, half notes 8, quarter notes 4, eighth notes 2, and sixteenth notes 1. New guests receive 150 Notes. Completed cabinet rounds provide repeatable income: Triad awards 16 for a win or 4 for a completed loss; Pitch Race with correct notes awards 16 for a win or 8 otherwise; Rhythm Room awards 1–16 based on tap accuracy. Each run pays once. Quests add larger rewards, so buying cosmetics remains possible after all authored quests are complete. Purchases debit once and remain owned after reload. Previously equipped items are retained when loading older profiles.

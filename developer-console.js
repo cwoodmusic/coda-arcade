@@ -14,6 +14,7 @@ window.createCodaDeveloperConsole = function (api) {
   let pickSample = false, baseCache = null, baseKey = '', cleanupCache = null, loadFailed = false, pan = null;
   let publishedProject = null, publishedError = null, loadError = null, projectSource = 'base';
   let dialogue={}, sprites={}, dialogueEditor=null, pixelEditor=null;
+  let panTool=false, spaceHeld=false;
   const dialogueDefaults=api.dialogueDefaults||window.CodaNPCDialogueDefaults||{};
   const TABS=['objects','collision','layers','dialogue','pixels','project'];
   const pictures = new Map();
@@ -34,6 +35,22 @@ window.createCodaDeveloperConsole = function (api) {
   const nav = document.createElement('div'); nav.className = 'dev-tabs'; nav.setAttribute('role','tablist'); nav.setAttribute('aria-label','Developer tools');
   nav.innerHTML = TABS.map(name => `<button type="button" role="tab" id="devTab-${name}" aria-controls="dev-${name}">${name==='pixels'?'Sprites':name[0].toUpperCase()+name.slice(1)}</button>`).join('');
   head.after(nav);
+  const cameraTools=document.createElement('div');cameraTools.className='dev-camera';
+  cameraTools.setAttribute('role','group');cameraTools.setAttribute('aria-label','Editor camera');
+  cameraTools.innerHTML='<button id="devZoomOut" type="button" aria-label="Zoom editor out">−</button><button id="devZoomReset" type="button" aria-label="Reset editor zoom to 100%">100%</button><button id="devZoomIn" type="button" aria-label="Zoom editor in">+</button><button id="devPan" type="button" aria-pressed="false" title="Drag the canvas to pan without editing">✥ Pan</button><small>Wheel or + / − zoom · right-drag or Space + drag pans</small>';
+  nav.after(cameraTools);
+  function refreshCamera(){
+    const camera=api.getCamera?.()||{targetZoom:1,min:1,max:8,step:.25};
+    $('devZoomReset').textContent=Math.round(camera.targetZoom*100)+'%';
+    $('devZoomOut').disabled=camera.targetZoom<=camera.min;
+    $('devZoomIn').disabled=camera.targetZoom>=camera.max;
+    $('devPan').setAttribute('aria-pressed',String(panTool));
+    c.classList.toggle('dev-pan-ready',studio.active&&!playtest&&(panTool||spaceHeld));
+    c.classList.toggle('dev-panning',!!pan);
+  }
+  function zoomBy(direction){const camera=api.getCamera?.();if(camera)api.setCameraZoom?.(direction===0?1:camera.targetZoom+direction*camera.step);refreshCamera();}
+  $('devZoomOut').onclick=()=>zoomBy(-1);$('devZoomIn').onclick=()=>zoomBy(1);$('devZoomReset').onclick=()=>zoomBy(0);
+  $('devPan').onclick=()=>{finishGesture();panTool=!panTool;refreshCamera();c.focus({preventScroll:true});};
   objects.id = 'dev-objects';
   objects.querySelector('.studioTip').textContent = 'Select an existing object, lift a region, or add artwork. Drag objects and gold handles to move, resize and rotate.';
   const catalogUI = document.createElement('div'); catalogUI.className = 'dev-original';
@@ -97,9 +114,25 @@ window.createCodaDeveloperConsole = function (api) {
 
   function pane(name, html) { const el=document.createElement('section'); el.id='dev-'+name; el.className='dev-pane'; el.hidden=true; el.setAttribute('role','tabpanel');el.setAttribute('aria-labelledby','devTab-'+name);el.innerHTML=html; panel.append(el); return el; }
   function message(text) { $('devStatus').textContent=text; }
-  function snapshot() { return JSON.stringify({assets:studio.assets,collision:collision.get(),strokes:layer.actions,...(Object.keys(dialogue).length?{dialogue}:{}),...(Object.keys(sprites).length?{sprites}:{})}); }
+  function snapshot() { const rooms=api.getRooms?.();return JSON.stringify({assets:studio.assets,collision:collision.get(),strokes:layer.actions,...(Object.keys(dialogue).length?{dialogue}:{}),...(Object.keys(sprites).length?{sprites}:{}),...(rooms&&Object.keys(rooms).length?{rooms}:{})}); }
   function documentData() { return {format:FORMAT,version:VERSION,world:{width:W,height:H},...JSON.parse(snapshot())}; }
   function changed(before) { api.record(before); }
+  function recordRoomChange(id,before) {
+    if(loading||!api.getRooms)return;
+    const prior=JSON.parse(snapshot());prior.rooms=prior.rooms||{};
+    if(before.assets.length||before.collision.length||before.strokes.length||Object.keys(before.entities).length)prior.rooms[id]=clone(before);else delete prior.rooms[id];
+    if(!Object.keys(prior.rooms).length)delete prior.rooms;
+    recordChange(JSON.stringify(prior));
+    // A room also keeps its own immediate save. Journal the complete project
+    // synchronously so reloading before the IndexedDB debounce cannot replace
+    // that newer room edit with an older complete-project snapshot.
+    journalFallback();
+  }
+  function journalFallback(){try{localStorage.setItem(STORE,JSON.stringify({...documentData(),savedAt:Date.now()}));}catch{}}
+  function setSprites(next) {
+    if(!window.CodaPixelEditor?.validate(next))return false;
+    const before=snapshot();sprites=clone(next);api.renderer?.setPixelEdits(sprites);recordChange(before);journalFallback();return true;
+  }
   function invalidate(layersChanged=true) { if(layersChanged)api.invalidateArtwork(); syncNavigation(); }
   function recordChange(before) {
     if (before !== snapshot()) { studio.undo.push(before); if(studio.undo.length>40)studio.undo.shift();studio.redo=[];projectSource='local'; }
@@ -110,11 +143,12 @@ window.createCodaDeveloperConsole = function (api) {
   function undoRedo(undo) {
     finishGesture();
     const from=undo?studio.undo:studio.redo, to=undo?studio.redo:studio.undo;
-    if(!from.length)return; to.push(snapshot()); applyState(JSON.parse(from.pop()));
+    if(!from.length)return; to.push(snapshot()); applyState(JSON.parse(from.pop()),{clearRooms:true});
     studio.dirty=true; scheduleSave(); message(undo?'Undid last edit.':'Redid last edit.');
   }
-  function applyState(data) {
+  function applyState(data,options={}) {
     pixelEditor?.cancelGesture?.();
+    if(data.rooms!==undefined||options.clearRooms)api.applyRooms?.(clone(data.rooms||{}));
     dialogue=clone(data.dialogue||{});sprites=clone(data.sprites||{});api.renderer?.setPixelEdits?.(sprites);
     studio.assets=clone(data.assets); layer.actions=clone(data.strokes); layer.redo=[]; layer.drawing=null; layer.dirty=true;
     collision.apply(data.collision); studio.nextId=Math.max(1,...studio.assets.map(a=>Number(a.id.match(/^asset-(\d+)$/)?.[1]||0)+1));
@@ -128,15 +162,15 @@ window.createCodaDeveloperConsole = function (api) {
     layer.active=studio.active&&tab==='layers'&&!playtest; layer.preview=false;
     collision.setActive(studio.active&&tab==='collision'&&!playtest);
     studio.showGuides=tab==='objects'&&!playtest&&$('assetGuides').checked;
-    c.classList.toggle('layer-editing',layer.active);panel.scrollTop=0; refresh();
+    c.classList.toggle('layer-editing',layer.active);panel.scrollTop=0; refreshCamera();refresh();
   }
-  function open(name='objects') { api.toggle(true); setTab(name); c.focus(); }
+  function open(name='objects') { api.toggle(true); setTab(name); c.focus({preventScroll:true}); }
   function onToggle() {
-    if(!studio.active) { playtest=false; panel.classList.remove('dev-playtest'); $('devPlaytest').textContent='▶ Playtest'; $('devPlaytest').setAttribute('aria-pressed','false'); }
+    if(!studio.active) { spaceHeld=false; playtest=false; panel.classList.remove('dev-playtest'); $('devPlaytest').textContent='▶ Playtest'; $('devPlaytest').setAttribute('aria-pressed','false'); }
     setTab(tab); if(studio.active)message(loadFailed&&loadError?loadError:'Developer console active. Changes save locally; export a project backup.'+(publishedError?' '+publishedError:''));
   }
   function togglePlaytest() {
-    finishGesture(); playtest=!playtest; panel.classList.toggle('dev-playtest',playtest); $('devPlaytest').setAttribute('aria-pressed',String(playtest)); $('devPlaytest').textContent=playtest?'■ Stop playtest':'▶ Playtest';
+    finishGesture(); spaceHeld=false; playtest=!playtest; panel.classList.toggle('dev-playtest',playtest); $('devPlaytest').setAttribute('aria-pressed',String(playtest)); $('devPlaytest').textContent=playtest?'■ Stop playtest':'▶ Playtest';
     api.invalidateRoutes(); setTab(tab); message(playtest?'Playtest: WASD or click the world to walk. Stop playtest to continue editing.':'Editing resumed.'); c.focus();
   }
   function defaultSample(bounds) {
@@ -257,7 +291,7 @@ window.createCodaDeveloperConsole = function (api) {
     return true;
   }
   function validate(data) {
-    return data?.format===FORMAT&&data.version===VERSION&&data.world?.width===W&&data.world?.height===H&&Array.isArray(data.assets)&&data.assets.length<=api.maxAssets&&data.assets.every(a=>api.validAsset(a)&&validateAssetExtension(a))&&new Set(data.assets.map(a=>a.id)).size===data.assets.length&&new Set(data.assets.filter(a=>a.origin).map(a=>a.origin.name)).size===data.assets.filter(a=>a.origin).length&&collision.validate(data.collision)&&Array.isArray(data.strokes)&&data.strokes.length<=1000&&data.strokes.every(api.validStroke)&&(data.dialogue===undefined||window.CodaDialogueEditor?.validate(data.dialogue,dialogueDefaults))&&(data.sprites===undefined||window.CodaPixelEditor?.validate(data.sprites));
+    return data?.format===FORMAT&&data.version===VERSION&&data.world?.width===W&&data.world?.height===H&&Array.isArray(data.assets)&&data.assets.length<=api.maxAssets&&data.assets.every(a=>api.validAsset(a)&&validateAssetExtension(a))&&new Set(data.assets.map(a=>a.id)).size===data.assets.length&&new Set(data.assets.filter(a=>a.origin).map(a=>a.origin.name)).size===data.assets.filter(a=>a.origin).length&&collision.validate(data.collision)&&Array.isArray(data.strokes)&&data.strokes.length<=1000&&data.strokes.every(api.validStroke)&&(data.dialogue===undefined||window.CodaDialogueEditor?.validate(data.dialogue,dialogueDefaults))&&(data.sprites===undefined||window.CodaPixelEditor?.validate(data.sprites))&&(data.rooms===undefined||api.validateRooms?.(data.rooms)===true);
   }
   // Movement and A* share conservative collision cells. A footprint thinner than
   // one navigation cell must still block every cell its rotated rectangle enters.
@@ -334,6 +368,10 @@ window.createCodaDeveloperConsole = function (api) {
       const [w,h]=await api.imageDimensions(a.data);
       if(w<1||h<1||w>8192||h>8192)throw Error('Invalid embedded image dimensions.');
     }
+    for(const room of Object.values(data.rooms||{}))for(const asset of room.assets||[])if(asset.data){
+      const [w,h]=await api.imageDimensions(asset.data);
+      if(w<1||h<1||w>8192||h>8192)throw Error('Invalid embedded room image dimensions.');
+    }
   }
   async function published() {
     if(!api.publishedProjectUrl)return {project:null,error:null};
@@ -403,15 +441,20 @@ window.createCodaDeveloperConsole = function (api) {
   function editSelected(fn) {const a=api.selected();if(!a)return;const before=snapshot();fn(a);changed(before);api.refresh();refresh();}
   function finishGesture() {
     pixelEditor?.finishGesture?.();
-    pan=null;
+    endPan();
     if(studio.drag||studio.capturing?.start)api.assetPointerEnd();
     if(strokeBefore!==null){api.layerPointerEnd();const before=strokeBefore;strokeBefore=null;changed(before);}
     collision.pointerEnd();
   }
+  function endPan(){
+    if(pan){try{if(c.hasPointerCapture(pan.id))c.releasePointerCapture(pan.id);}catch{}}
+    pan=null;refreshCamera();
+  }
   function pointerDown(e) {
     if(!studio.active||playtest)return false;
     if(loading){message('Wait for the saved project to load.');return true;}
-    if(e.button===1||e.button===2){e.preventDefault();pan={x:e.clientX,y:e.clientY,id:e.pointerId};c.setPointerCapture(e.pointerId);return true;}
+    if(pan)return true;
+    if(e.button===1||e.button===2||e.button===0&&(panTool||spaceHeld)){finishGesture();e.preventDefault();c.focus({preventScroll:true});pan={x:e.clientX,y:e.clientY,id:e.pointerId};try{c.setPointerCapture(e.pointerId);}catch{}refreshCamera();return true;}
     if(tab==='collision')return collision.pointerDown(e);
     if(tab==='layers'){strokeBefore=snapshot();api.layerPointerDown(e);return true;}
     if(tab!=='objects')return true;
@@ -428,8 +471,8 @@ window.createCodaDeveloperConsole = function (api) {
     }
     return false;
   }
-  function pointerMove(e) {if(!studio.active||playtest)return; if(pan){api.panByScreen(pan.x-e.clientX,pan.y-e.clientY);pan.x=e.clientX;pan.y=e.clientY;return;}if(tab==='collision')collision.pointerMove(e);if(tab==='layers')api.layerPointerMove(e);}
-  function pointerEnd() {pan=null;if(!studio.active||playtest)return; if(tab==='collision')collision.pointerEnd();if(tab==='layers'&&strokeBefore!==null){api.layerPointerEnd();const before=strokeBefore;strokeBefore=null;changed(before);}}
+  function pointerMove(e) {if(!studio.active||playtest)return; if(pan){if(e.pointerId!==pan.id)return;api.panByScreen(pan.x-e.clientX,pan.y-e.clientY);pan.x=e.clientX;pan.y=e.clientY;return;}if(tab==='collision')collision.pointerMove(e);if(tab==='layers')api.layerPointerMove(e);}
+  function pointerEnd(e) {if(pan){if(e&&e.pointerId!==pan.id)return;endPan();return;}if(!studio.active||playtest)return; if(tab==='collision')collision.pointerEnd();if(tab==='layers'&&strokeBefore!==null){api.layerPointerEnd();const before=strokeBefore;strokeBefore=null;changed(before);}}
   function drawOverlay(g,cam) {
     if(!studio.active||playtest)return;collision.draw(g,cam);
     if(tab==='objects'){const a=api.selected();if(a?.collider){const b=a.collider;g.save();g.translate(a.x,a.y);g.rotate(a.rotation*Math.PI/180);g.fillStyle='#ff56764d';g.strokeStyle='#ff8aab';g.lineWidth=2/cam.zoom;g.fillRect(b.x*a.w/100,b.y*a.h/100,b.w*a.w/100,b.h*a.h/100);g.strokeRect(b.x*a.w/100,b.y*a.h/100,b.w*a.w/100,b.h*a.h/100);g.restore();}}
@@ -457,7 +500,7 @@ window.createCodaDeveloperConsole = function (api) {
   $('devReset').onclick=()=>{
     if(api.publishedProjectUrl&&!publishedProject){message('The published layout is unavailable. Your current project has been kept. Reload to retry before resetting.');return;}
     if(!confirm(publishedProject?'Reset your local project to the published world layout? Undo is available.':'Reset all objects, collision and local foreground edits? Published artwork stays intact. Undo is available.'))return;
-    const before=snapshot();applyState(publishedProject||{assets:[],collision:[],strokes:[]});loadFailed=false;loadError=null;changed(before);
+    const before=snapshot();applyState({... (publishedProject||{assets:[],collision:[],strokes:[]}),...(api.getRooms?{rooms:publishedProject?.rooms||{}}:{})});loadFailed=false;loadError=null;changed(before);
     message(publishedProject?'Restored the published world layout. Undo is available.':'Restored the original world layout. Undo is available.');
   };
   $('editorToggle').onclick=()=>open('layers');
@@ -466,6 +509,12 @@ window.createCodaDeveloperConsole = function (api) {
     if(e.key==='F2'&&!typing){e.preventDefault();e.stopImmediatePropagation();api.toggle(!studio.active);return;}
     if(!studio.active)return;
     if(typing){e.stopImmediatePropagation();return;}
+    if(!playtest&&tab==='pixels'&&e.target?.id==='pixelEditCanvas'&&[' ','Enter','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;
+    if(!playtest&&!e.ctrlKey&&!e.metaKey&&!e.altKey){
+      const key=e.key.toLowerCase();
+      if(['+','=','-','_','0'].includes(key)){e.preventDefault();e.stopImmediatePropagation();zoomBy(key==='0'?0:key==='+'||key==='='?1:-1);return;}
+      if((key===' '||e.code==='Space')&&!e.target?.closest?.('button,a,[role=button],summary')){e.preventDefault();e.stopImmediatePropagation();spaceHeld=true;refreshCamera();return;}
+    }
     if(!e.repeat&&!e.ctrlKey&&!e.metaKey&&!e.altKey){
       const key=e.key.toLowerCase(),destination=key==='c'?'collision':key==='l'&&e.shiftKey?'layers':null;
       if(destination){
@@ -483,10 +532,14 @@ window.createCodaDeveloperConsole = function (api) {
       e.preventDefault();e.stopImmediatePropagation();if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z')undoRedo(!e.shiftKey);if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y')undoRedo(false);
     }
   },true);
+  window.addEventListener('keyup',e=>{if(e.key===' '||e.code==='Space'){spaceHeld=false;refreshCamera();}},true);
+  window.addEventListener('blur',()=>{spaceHeld=false;endPan();});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){spaceHeld=false;endPan();}});
+  c.addEventListener('lostpointercapture',e=>{if(pan&&e.pointerId===pan.id){pan=null;refreshCamera();}});
   c.addEventListener('contextmenu',e=>{if(studio.active&&!playtest)e.preventDefault();});
   panel.addEventListener('click',e=>{if(loading){e.preventDefault();e.stopImmediatePropagation();message('Wait for project restoration to finish.');}},true);
   setTab('objects');load();
-  return {snapshot,recordChange,undoRedo,save,refresh,onToggle,open,renderBase,renderCleanup,suppressOriginal,drawUnliftedPixels,originalPicture:a=>a.origin?picture(a.origin):null,validateAssetExtension,walkableOverride,pointerDown,pointerMove,pointerEnd,drawOverlay,liftedRegion,finishGesture,isPlaytest:()=>playtest,isEditing:()=>studio.active&&!playtest,exportProject,loadReady:()=>!loading,validate,
+  return {snapshot,recordChange,recordRoomChange,setSprites,undoRedo,save,refresh,refreshCamera,onToggle,open,renderBase,renderCleanup,suppressOriginal,drawUnliftedPixels,originalPicture:a=>a.origin?picture(a.origin):null,validateAssetExtension,walkableOverride,pointerDown,pointerMove,pointerEnd,drawOverlay,liftedRegion,finishGesture,isPlaytest:()=>playtest,isEditing:()=>studio.active&&!playtest,exportProject,loadReady:()=>!loading,validate,
     // Data-only inspection supports repeatable browser integration checks.
     getProject:()=>clone(documentData()),getPublishedProject:()=>publishedProject?clone(publishedProject):null,getProjectSource:()=>projectSource,
     getDialogue:id=>id===undefined?clone(dialogue):dialogue[id]?clone(dialogue[id]):null,getSprites:()=>clone(sprites)};

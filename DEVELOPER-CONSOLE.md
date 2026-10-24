@@ -12,6 +12,19 @@ Open `world-preview.html` from that server in your browser. Use the **Developer*
 
 For the live musician cast, conversations, and avatar customization, see [MUSICIANS.md](MUSICIANS.md). NPC routes use the same editable collision map and follow moved cabinet approach points.
 
+## Piano Lab and fishing cave
+
+Each room has its own **Developer** button. **F2** opens or closes the console for the room you are currently in. Room editors keep their own camera and selection; opening Layers or switching tools retains the zoom and pan. The arcade layout remains separate from room edits.
+
+- **Objects:** move Chopin or Captain Cadence, lift a rectangular region of existing room art, or add an image. Move and resize artwork with its handles or numeric fields, choose its background/actor-depth/foreground layer, and adjust the clean source sample used to cover its original position.
+- **Fish:** in the cave’s Objects tab, click a fish shadow or choose a numbered fish from the character/fish list. Change its species, position, size, body/accent colors, or visibility. Drag its gold corner to resize. Editing freezes swimming. The edited species is the one used by its fishing challenge; changing appearance does not grant catches or rewards. Restore returns a fish to its defaults.
+- **Collision:** paint red blocking cells, green open cells, or restore original cells. Piano walking and cave walking/boating use these edits during playtest and after closing the console. The cave retains the distinction between shore and boat water.
+- **Layers:** paint room pixels in front of characters, erase their foreground coverage, and inspect the mask. Artwork layers and collision are separate controls.
+- **Sprites:** edit your avatar or the room’s musician pixel by pixel. These details use the shared character sprite journal, so avatar changes follow you between rooms and complete world exports include them.
+- **Project:** save, export/import the room, reset its edits, undo/redo, and playtest. The arcade’s complete world export also includes edited rooms and their fish. Older world files without room data preserve existing local room edits.
+
+Fishing edits are available on shore or while exploring the lake. Finish or cancel an active fishing round first. Editing pauses room movement and releases held sound/input; playtest resumes it. Room saves remain browser-local, so export a backup before clearing browser data.
+
 ## Objects
 
 Choose a named object from **Existing world objects**, then click **Edit existing object**. You can also click its visible pixels on the map. **Lift a region** lets you select artwork outside the named catalog.
@@ -66,7 +79,7 @@ Pixel details follow the animated body while the JavaScript character keeps walk
 
 ## Playtest, undo, and saving
 
-**Playtest** resumes normal WASD/arrow movement and click-to-walk with editor overlays hidden. Click **Stop playtest** to resume editing. Zoom with the wheel or +/− up to **800%** for detail work; reset with 0. Wheel zoom keeps the point under the cursor in place when map bounds allow it. Playtest and closing the console return to the 300% gameplay limit. Right-drag pans the editor when zoomed. Use the ⇄ button to dock the console on the other side when it covers artwork.
+**Playtest** resumes normal WASD/arrow movement and click-to-walk with editor overlays hidden. Click **Stop playtest** to resume editing. Every tab has camera controls: **−**, the zoom percentage/reset button, **+**, and **Pan**. Zoom with the wheel or +/− up to **800%** for detail work; reset with 0. Wheel zoom keeps the point under the cursor in place when map bounds allow it. Opening Layers retains the current camera. Right-drag, middle-drag, or hold Space and left-drag to pan; enable **Pan** to drag with the left mouse button or one finger. Panning does not paint or change the project history. Use the ⇄ button to dock the console on the other side when it covers artwork. The arcade returns to its 300% gameplay limit when leaving editing; room cameras retain their editing view for the next visit.
 
 Undo and redo apply to complete project edits, including objects, collision, layer strokes, applied musician dialogue, and completed pixel strokes. Use the buttons, Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, or Ctrl/Cmd+Y. Escape cancels a pending selection or closes the console.
 
@@ -89,6 +102,10 @@ node --test tests/collision-editor.test.cjs
 node --test tests/world-object-runtime.test.cjs
 python3 tests/clean-world-art.py
 python3 tests/developer-console-browser.py
+python3 tests/editor-camera-browser.py
+python3 tests/room-developer-browser.py
+python3 tests/room-editor-input-browser.py
+node --test tests/room-developer-editor.test.cjs
 python3 tests/dialogue-editor-browser.py
 python3 tests/pixel-editor-browser.py
 python3 tests/published-world-browser.py

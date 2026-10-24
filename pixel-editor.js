@@ -2,7 +2,7 @@
 (function(root,factory){const value=factory();if(typeof module==='object'&&module.exports)module.exports=value;if(root)root.CodaPixelEditor=value;})(typeof window==='undefined'?null:window,function(){
  'use strict';
  const WIDTH=80,HEIGHT=96,ORIGIN={x:40,y:80},DIRECTIONS=['down','left','up','right'];
- const TARGETS=['player','bach','mozart','beethoven','clara','joplin','ellington','ella','nina','miles','dj'];
+ const TARGETS=['player','bach','mozart','beethoven','clara','joplin','ellington','ella','nina','miles','dj','chopin','captain-cadence'];
  const copy=value=>JSON.parse(JSON.stringify(value));
  const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
  function validate(data){

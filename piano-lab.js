@@ -40,8 +40,8 @@
   const doc=host.ownerDocument,win=doc.defaultView||root;
   let opened=false,octave=4,volume=.55,sustain=false,context=null,master=null,voices=new Map(),held=new Map(),pointerKeys=new Map(),computerKeys=new Map();
   let recording=false,recordStart=0,recorded=[],recordHeld=new Map(),playing=false,playTimers=[],recordTimer=null,lesson=null,lessonStep=0,completed=new Set(),priorFocus=null,destroyed=false;
-  let roomFinger=null,roomFrame=0,frameTime=0,roomClock=0,roomKeys=new Set(),roomDest=null,roomPlayer={x:500,y:310,facing:'down',phase:0,jump:0,velocity:0},floorNote=null,showNames=false,keyboardMode='walk',lastWallNote=null;
-  let challengeMode='free',interval=null,intervalStep=0,mobileView='room';const touchHeld=new Set();
+  let roomEditor=null,roomFinger=null,roomFrame=0,frameTime=0,roomClock=0,roomKeys=new Set(),roomDest=null,roomPlayer={x:500,y:310,facing:'down',phase:0,jump:0,velocity:0},floorNote=null,showNames=false,keyboardMode='walk',lastWallNote=null;
+  let challengeMode='free',interval=null,intervalStep=0,mobileView='room';const touchHeld=new Set(),roomChopin={x:860,y:306,visible:true};
   const mobileLayout=()=>win.matchMedia?.('(max-width:760px), (pointer:coarse)').matches===true;
   const renderer=api.renderer||(typeof win.createCodaCharacterRenderer==='function'?win.createCodaCharacterRenderer({}):null),ROOM={width:1000,height:620,keyX:130,keyY:370,keyW:740,keyH:185};
   const now=()=>win.performance.now()/1000;
@@ -112,7 +112,7 @@
   function stopVoice(midi,immediate=false){const voice=voices.get(midi);if(!voice)return;voices.delete(midi);win.clearTimeout(voice.timer);if(context?.state!=='closed'){const at=context.currentTime;try{voice.envelope.gain.cancelScheduledValues(at);voice.envelope.gain.setTargetAtTime(.0001,at,immediate?.008:.09);for(const oscillator of voice.oscillators)oscillator.stop(at+(immediate?.04:.4));}catch{}}win.setTimeout(()=>{try{voice.envelope.disconnect();}catch{}},immediate?60:450);}
   function captureRelease(midi){const entry=recordHeld.get(midi);if(!entry)return;entry.duration=clamp(now()-recordStart-entry.at,.04,60-entry.at);recordHeld.delete(midi);}
   function press(midi,source='external',playback=false){
-   if(!opened||destroyed||!Number.isInteger(midi))return;
+   if(!opened||destroyed||roomEditor?.isEditing()||!Number.isInteger(midi))return;
    let sources=held.get(midi);if(!sources){sources=new Set();held.set(midi,sources);startVoice(midi);if(recording&&!playback&&recorded.length<1024){const at=clamp(now()-recordStart,0,59.96),entry={midi,at,duration:.04};recorded.push(entry);recordHeld.set(midi,entry);}if(!playback){if(challengeMode==='interval')advanceInterval(midi);else advanceLesson(midi);}}
    sources.add(source);lastWallNote=midi;el('pianoWallNote').textContent='Back wall: '+noteLetter(midi);el('pianoNoteDisplay').textContent=Array.from(held.keys()).sort((a,b)=>a-b).map(noteLetter).join(' · ');updateKeyHighlights();
   }
@@ -121,8 +121,8 @@
   function setSustain(value){sustain=!!value;el('pianoSustain').setAttribute('aria-pressed',String(sustain));el('pianoSustain').textContent='Sustain: '+(sustain?'On':'Off');if(!sustain)for(const midi of voices.keys())if(!held.has(midi))stopVoice(midi);}
   function stopPlayback(){for(const timer of playTimers)win.clearTimeout(timer);playTimers=[];playing=false;releaseAll();updateRecordingUI();}
   function stopRecording(){if(!recording)return;for(const midi of recordHeld.keys())captureRelease(midi);recording=false;win.clearInterval(recordTimer);recordTimer=null;persistTake();updateRecordingUI();message(recorded.length?'Take saved. Press Play take to hear it.':'No notes recorded. Try another take.');}
-  function toggleRecording(){if(recording){stopRecording();return;}stopPlayback();releaseAll();recorded=[];recordHeld.clear();recordStart=now();recording=true;updateRecordingUI();message('Recording started. Play anything you like.');recordTimer=win.setInterval(()=>{if(now()-recordStart>=60)stopRecording();else updateRecordingUI();},200);}
-  function togglePlayback(){if(playing){stopPlayback();message('Playback stopped.');return;}if(!recorded.length||recording)return;releaseAll();audio();playing=true;el('pianoModeDisplay').textContent='PLAYING TAKE';updateRecordingUI();for(let index=0;index<recorded.length;index++){const note=recorded[index],source='take:'+index;playTimers.push(win.setTimeout(()=>{if(playing)press(note.midi,source,true);},note.at*1000),win.setTimeout(()=>release(note.midi,source),(note.at+note.duration)*1000));}const duration=Math.max(...recorded.map(note=>note.at+note.duration));playTimers.push(win.setTimeout(()=>{stopPlayback();el('pianoModeDisplay').textContent=lesson?'GUIDED MELODY':'FREE PLAY';message('Playback finished.');},duration*1000+100));}
+  function toggleRecording(){if(roomEditor?.isEditing())return;if(recording){stopRecording();return;}stopPlayback();releaseAll();recorded=[];recordHeld.clear();recordStart=now();recording=true;updateRecordingUI();message('Recording started. Play anything you like.');recordTimer=win.setInterval(()=>{if(now()-recordStart>=60)stopRecording();else updateRecordingUI();},200);}
+  function togglePlayback(){if(roomEditor?.isEditing())return;if(playing){stopPlayback();message('Playback stopped.');return;}if(!recorded.length||recording)return;releaseAll();audio();playing=true;el('pianoModeDisplay').textContent='PLAYING TAKE';updateRecordingUI();for(let index=0;index<recorded.length;index++){const note=recorded[index],source='take:'+index;playTimers.push(win.setTimeout(()=>{if(playing)press(note.midi,source,true);},note.at*1000),win.setTimeout(()=>release(note.midi,source),(note.at+note.duration)*1000));}const duration=Math.max(...recorded.map(note=>note.at+note.duration));playTimers.push(win.setTimeout(()=>{stopPlayback();el('pianoModeDisplay').textContent=lesson?'GUIDED MELODY':'FREE PLAY';message('Playback finished.');},duration*1000+100));}
   function renderLesson(){
    el('pianoLessonDescription').textContent=lesson?lesson.description:'Explore the keys, build a chord, or choose a guided melody.';el('pianoLessonRestart').hidden=!lesson;
    el('pianoModeDisplay').textContent=playing?'PLAYING TAKE':lesson?'GUIDED MELODY':'FREE PLAY';
@@ -140,12 +140,14 @@
   function floorKeyAt(x,y){if(backdropReady){for(let at=paintedKeys.length-1;at>=0;at--)if(polygonContains(paintedKeys[at].polygon,x,y))return (octave+1)*12+paintedKeys[at].offset;return null;}if(x<ROOM.keyX||x>=ROOM.keyX+ROOM.keyW||y<ROOM.keyY||y>ROOM.keyY+ROOM.keyH)return null;const width=ROOM.keyW/8;if(y<ROOM.keyY+112)for(const [offset,index] of BLACK_KEYS){const left=ROOM.keyX+(index-.31)*width;if(x>=left&&x<left+width*.62)return (octave+1)*12+offset;}return (octave+1)*12+WHITE_OFFSETS[Math.min(7,Math.floor((x-ROOM.keyX)/width))];}
   function syncFloorNote(){const next=roomPlayer.jump>1?null:floorKeyAt(roomPlayer.x,roomPlayer.y);if(next===floorNote)return;if(floorNote!==null){release(floorNote,'floor');release(floorNote,'floor-intent');}floorNote=next;if(next!==null&&challengeMode==='free')press(next,'floor');}
   function talkChopin(){if(challengeMode==='free'){el('pianoLesson').value='twinkle';chooseLesson('twinkle');}else message('Chopin: “'+(challengeMode==='interval'?'Start on the pitch I asked for, then play the interval.':'Play '+lesson.name+' for me. Follow the glowing key.')+' Walk onto each key and press E.”');}
-  function roomPointer(event){if(event.button!==0||roomFinger&&event.pointerType==='touch'&&mobileLayout())return;el('pianoRoomCanvas').focus();const box=event.currentTarget.getBoundingClientRect();roomDest={x:clamp((event.clientX-box.left)/box.width*ROOM.width,50,950),y:clamp((event.clientY-box.top)/box.height*ROOM.height,235,590)};}
+  function roomPoint(clientX,clientY){if(roomEditor)return roomEditor.toWorld(clientX,clientY);const box=el('pianoRoomCanvas').getBoundingClientRect();return {x:(clientX-box.left)/box.width*ROOM.width,y:(clientY-box.top)/box.height*ROOM.height};}
+  function nearChopin(){return roomChopin.visible&&Math.hypot(roomPlayer.x-roomChopin.x,roomPlayer.y-roomChopin.y)<110;}
+  function roomPointer(event){if(event.defaultPrevented||roomEditor?.isEditing()||event.button!==0||roomFinger&&event.pointerType==='touch'&&mobileLayout())return;el('pianoRoomCanvas').focus({preventScroll:true});const point=roomPoint(event.clientX,event.clientY);roomDest={x:clamp(point.x,0,ROOM.width),y:clamp(point.y,0,ROOM.height)};}
   const roomContext=el('pianoRoomCanvas').getContext('2d');
   let roomBackdrop=null,backdropReady=false;
   if(typeof api.backgroundUrl==='string'&&api.backgroundUrl){roomBackdrop=new win.Image();roomBackdrop.onload=()=>{backdropReady=roomBackdrop.naturalWidth>0;};roomBackdrop.src=api.backgroundUrl;}
   function drawRoom(){
-   const g=roomContext;if(!g)return;g.clearRect(0,0,1000,620);g.imageSmoothingEnabled=false;
+   const g=roomContext;if(!g)return;g.clearRect(0,0,1000,620);g.imageSmoothingEnabled=false;roomEditor?.beforeScene(g);
    const rect=(x,y,w,h,color)=>{g.fillStyle=color;g.fillRect(x,y,w,h);},text=(value,x,y,size,color,align='center')=>{g.fillStyle=color;g.font='bold '+size+'px monospace';g.textAlign=align;g.fillText(value,x,y);};
    const help=challengeMode==='free'?'STEP ON A KEY TO PLAY':'STAND ON A KEY + PRESS E';
    if(!backdropReady){
@@ -168,7 +170,7 @@
    // The side piano and bench stay off the giant keyboard walking surface.
    rect(785,194,129,42,'#111225');rect(795,184,104,15,'#3e354e');rect(789,237,9,29,'#171526');rect(901,237,9,29,'#171526');rect(797,191,101,4,'#77617d');rect(818,169,42,25,'#665167');rect(823,171,33,21,'#e0ccbb');for(let line=0;line<4;line++)rect(828,176+line*4,23,1,'#947c8c');
    for(let x=795;x<901;x+=8)rect(x,216,7,16,'#e9e4e9');for(let x=800;x<895;x+=16)rect(x,215,4,11,'#1a1930');
-   text('FRÉDÉRIC CHOPIN',860,177,12,'#dec4ef');
+   if(roomChopin.visible)text('FRÉDÉRIC CHOPIN',roomChopin.x,roomChopin.y-129,12,'#dec4ef');
    }
    if(backdropReady){
     g.drawImage(roomBackdrop,0,0,1000,620);
@@ -188,31 +190,33 @@
     rect(ROOM.keyX-9,ROOM.keyY-9,ROOM.keyW+18,ROOM.keyH+21,'#111426');rect(ROOM.keyX-4,ROOM.keyY-4,ROOM.keyW+8,ROOM.keyH+13,'#76627d');
     WHITE_OFFSETS.forEach((offset,index)=>floorKey(offset,ROOM.keyX+index*keyWidth,keyWidth,false));BLACK_KEYS.forEach(([offset,index])=>floorKey(offset,ROOM.keyX+(index-.31)*keyWidth,keyWidth*.62,true));
    }
-   const actors=[{x:860,y:306,id:'chopin'},{x:roomPlayer.x,y:roomPlayer.y,id:'player'}].sort((a,b)=>a.y-b.y);
+   roomEditor?.afterBackground(g,roomPlayer.y);
+   const actors=[...(roomChopin.visible?[{x:roomChopin.x,y:roomChopin.y,id:'chopin'}]:[]),{x:roomPlayer.x,y:roomPlayer.y,id:'player'}].sort((a,b)=>a.y-b.y);
    for(const actor of actors){g.save();g.translate(actor.x,actor.y);g.scale(1.5,1.5);if(renderer){if(actor.id==='player')renderer.drawPlayer(g,api.getAvatar?.()||{},{x:0,y:0,facing:roomPlayer.facing,walking:roomKeys.size>0||!!roomDest||roomFinger?.getState().following===true,phase:roomPlayer.phase,jumpHeight:roomPlayer.jump/1.5},roomClock);else renderer.drawPlayer(g,{name:'Chopin',skin:'#e6b99d',hair:'#493239',shirt:'#282b42',lowerColor:'#3d3a4a',hairstyle:'long',outfit:'coat',shoes:'oxfords',accessory:'bowtie'},{x:0,y:0,facing:'down',pixelTarget:'chopin'},roomClock);}else{rect(-8,-45,16,15,actor.id==='player'?'#c38d6c':'#e6b99d');rect(-10,-28,20,20,actor.id==='player'?'#92959c':'#282b42');rect(-9,-8,7,8,'#404257');rect(2,-8,7,8,'#404257');}g.restore();}
-   if(backdropReady){g.font='bold 12px monospace';g.textAlign='center';g.lineWidth=3;g.strokeStyle='#10142c';g.strokeText('CHOPIN',860,228);g.fillStyle='#e8d7f5';g.fillText('CHOPIN',860,228);}
-   if(Math.hypot(roomPlayer.x-860,roomPlayer.y-306)<110){rect(751,319,220,29,'#172538');text('E · TALK TO CHOPIN',861,339,13,'#b7f6e4');}
+   if(backdropReady&&roomChopin.visible){g.font='bold 12px monospace';g.textAlign='center';g.lineWidth=3;g.strokeStyle='#10142c';g.strokeText('CHOPIN',roomChopin.x,roomChopin.y-78);g.fillStyle='#e8d7f5';g.fillText('CHOPIN',roomChopin.x,roomChopin.y-78);}
+   if(nearChopin()){rect(roomChopin.x-109,roomChopin.y+13,220,29,'#172538');text('E · TALK TO CHOPIN',roomChopin.x+1,roomChopin.y+33,13,'#b7f6e4');}
    if(challengeMode!=='free'&&floorNote!==null){rect(roomPlayer.x-70,roomPlayer.y+12,140,27,'#172538');text('E · PLAY '+noteLetter(floorNote),roomPlayer.x,roomPlayer.y+31,13,'#ffddb0');}
    if(!backdropReady){rect(26,610,948,4,'#8b5c9a');rect(30,615,940,3,'#332a4b');}
+   roomEditor?.afterScene(g,roomPlayer.y);
   }
-  function roomTick(timestamp){if(!opened)return;const dt=frameTime?Math.min(.05,(timestamp-frameTime)/1000):0;frameTime=timestamp;roomClock+=dt;
+  function roomTick(timestamp){if(!opened)return;const dt=frameTime?Math.min(.05,(timestamp-frameTime)/1000):0;frameTime=timestamp;if(roomEditor?.isEditing()){drawRoom();roomFrame=win.requestAnimationFrame(roomTick);return;}roomClock+=dt;
    let dx=(roomKeys.has('d')||roomKeys.has('arrowright')?1:0)-(roomKeys.has('a')||roomKeys.has('arrowleft')?1:0),dy=(roomKeys.has('s')||roomKeys.has('arrowdown')?1:0)-(roomKeys.has('w')||roomKeys.has('arrowup')?1:0);
    const finger=roomFinger?.getState(),fingerTarget=finger?.following?finger.target:null;
-   if(dx||dy){roomFinger?.stop('direction-controls');roomDest=null;}else if(fingerTarget){const box=el('pianoRoomCanvas').getBoundingClientRect();dx=clamp((fingerTarget.clientX-box.left)/box.width*ROOM.width,50,950)-roomPlayer.x;dy=clamp((fingerTarget.clientY-box.top)/box.height*ROOM.height,250,590)-roomPlayer.y;if(Math.hypot(dx,dy)<3)dx=dy=0;}else if(roomDest){dx=roomDest.x-roomPlayer.x;dy=roomDest.y-roomPlayer.y;if(Math.hypot(dx,dy)<3){roomDest=null;dx=dy=0;}}
-   const distance=Math.hypot(dx,dy);if(distance){const step=Math.min(220*dt,roomDest||fingerTarget?distance:Infinity),nextX=clamp(roomPlayer.x+dx/distance*step,50,950),nextY=clamp(roomPlayer.y+dy/distance*step,250,590);if(Math.hypot(nextX-860,nextY-306)>30){roomPlayer.x=nextX;roomPlayer.y=nextY;}else roomDest=null;roomPlayer.phase+=step/14;roomPlayer.facing=Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'down':'up';}
+   if(dx||dy){roomFinger?.stop('direction-controls');roomDest=null;}else if(fingerTarget){const point=roomPoint(fingerTarget.clientX,fingerTarget.clientY);dx=clamp(point.x,0,ROOM.width)-roomPlayer.x;dy=clamp(point.y,0,ROOM.height)-roomPlayer.y;if(Math.hypot(dx,dy)<3)dx=dy=0;}else if(roomDest){dx=roomDest.x-roomPlayer.x;dy=roomDest.y-roomPlayer.y;if(Math.hypot(dx,dy)<3){roomDest=null;dx=dy=0;}}
+   const distance=Math.hypot(dx,dy);if(distance){const step=Math.min(220*dt,roomDest||fingerTarget?distance:Infinity),mx=dx/distance*step,my=dy/distance*step,parts=Math.max(1,Math.ceil(step/4)),before={x:roomPlayer.x,y:roomPlayer.y};const safe=(x,y)=>{if(x<0||x>ROOM.width||y<0||y>ROOM.height)return false;const base=x>=50&&x<=950&&y>=250&&y<=590&&(!roomChopin.visible||Math.hypot(x-roomChopin.x,y-roomChopin.y)>30);return roomEditor?roomEditor.walkable(x,y,base):base;};for(let index=0;index<parts;index++){if(safe(roomPlayer.x+mx/parts,roomPlayer.y))roomPlayer.x+=mx/parts;if(safe(roomPlayer.x,roomPlayer.y+my/parts))roomPlayer.y+=my/parts;}const moved=Math.hypot(roomPlayer.x-before.x,roomPlayer.y-before.y);if(moved<.01)roomDest=null;roomPlayer.phase+=moved/14;roomPlayer.facing=Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'down':'up';}
    if(roomPlayer.jump>0||roomPlayer.velocity>0){roomPlayer.velocity-=650*dt;roomPlayer.jump=Math.max(0,roomPlayer.jump+roomPlayer.velocity*dt);if(!roomPlayer.jump)roomPlayer.velocity=0;}
    syncFloorNote();drawRoom();roomFrame=win.requestAnimationFrame(roomTick);
   }
   function pointerUp(event){const midi=pointerKeys.get(event.pointerId);if(midi===undefined)return;pointerKeys.delete(event.pointerId);release(midi,'pointer:'+event.pointerId);}
   function isTyping(target){return /^(INPUT|SELECT|TEXTAREA)$/.test(target?.tagName)||target?.isContentEditable;}
   function keyDown(event){
-   if(!opened||event.defaultPrevented||event.ctrlKey||event.metaKey||event.altKey)return;
+   if(!opened||event.defaultPrevented||roomEditor?.isEditing()||event.ctrlKey||event.metaKey||event.altKey)return;
    if(event.key==='Escape'){event.preventDefault();close();return;}
    if(event.key==='Tab'){const controls=Array.from(host.querySelectorAll('button:not(:disabled),select,input,[tabindex="0"]')).filter(node=>!node.hidden&&node.getClientRects().length);if(!controls.length)return;const first=controls[0],last=controls[controls.length-1];if(event.shiftKey&&(doc.activeElement===first||!host.contains(doc.activeElement))){event.preventDefault();last.focus();}else if(!event.shiftKey&&(doc.activeElement===last||!host.contains(doc.activeElement))){event.preventDefault();first.focus();}return;}
    if(isTyping(event.target))return;
    const key=event.key.toLowerCase(),inRoom=event.target===el('pianoRoomCanvas')||keyboardMode==='walk'&&!event.target?.classList?.contains('piano-key');
    if(inRoom&&['w','a','s','d','arrowup','arrowleft','arrowdown','arrowright'].includes(key)){event.preventDefault();roomFinger?.stop('direction-controls');roomKeys.add(key);return;}
-   if(inRoom&&key==='e'){event.preventDefault();if(event.repeat)return;if(floorNote!==null&&challengeMode!=='free')press(floorNote,'floor-intent');else if(Math.hypot(roomPlayer.x-860,roomPlayer.y-306)<110)talkChopin();return;}
+   if(inRoom&&key==='e'){event.preventDefault();if(event.repeat)return;if(floorNote!==null&&challengeMode!=='free')press(floorNote,'floor-intent');else if(nearChopin())talkChopin();return;}
    if(inRoom&&event.code==='Space'){event.preventDefault();if(!event.repeat&&!roomPlayer.jump){roomPlayer.velocity=280;roomPlayer.jump=.1;}return;}
    // A focused piano key uses Space as a button; elsewhere Space is the pedal.
    if(event.code==='Space'&&!event.target?.classList?.contains('piano-key')){event.preventDefault();if(!event.repeat)setSustain(true);return;}
@@ -221,7 +225,7 @@
   function keyUp(event){if(!opened)return;roomKeys.delete(event.key.toLowerCase());if(event.key.toLowerCase()==='e'&&floorNote!==null)release(floorNote,'floor-intent');if(event.code==='Space'&&!event.target?.classList?.contains('piano-key')){event.preventDefault();setSustain(false);}const code=event.code||event.key,midi=computerKeys.get(code);if(midi!==undefined){event.preventDefault();computerKeys.delete(code);release(midi,'keyboard:'+code);}}
   function control(raw,pressed){
    const key=raw==='Space'?' ':String(raw).toLowerCase();
-   if(!opened||destroyed||!['w','a','s','d','arrowup','arrowleft','arrowdown','arrowright','e',' '].includes(key))return false;
+   if(!opened||destroyed||pressed&&roomEditor?.isEditing()||!['w','a','s','d','arrowup','arrowleft','arrowdown','arrowright','e',' '].includes(key))return false;
    const target=el('pianoRoomCanvas'),event={key,code:key===' '?'Space':'',target,preventDefault(){},repeat:false,defaultPrevented:false};
    if(pressed){if(touchHeld.has(key))return true;target.focus({preventScroll:true});touchHeld.add(key);keyDown(event);}else{touchHeld.delete(key);keyUp(event);}
    return true;
@@ -230,9 +234,9 @@
   function blur(){roomFinger?.stop('blur');roomKeys.clear();roomDest=null;if(opened){releaseAll();setSustain(false);}}
   function visibility(){if(doc.hidden)blur();}
   function open(){if(destroyed||opened)return;priorFocus=doc.activeElement;opened=true;host.hidden=false;host.scrollTop=0;setMobileView('room');loadTake();updateRecordingUI();el('pianoRoomCanvas').focus({preventScroll:true});frameTime=0;roomFrame=win.requestAnimationFrame(roomTick);api.onOpen?.();}
-  function close(){if(!opened)return;stopRecording();stopPlayback();setSustain(false);roomFinger?.stop('closed');roomKeys.clear();opened=false;host.hidden=true;win.cancelAnimationFrame(roomFrame);frameTime=0;roomDest=null;try{context?.suspend().catch(()=>{});}catch{}api.onClose?.();if(priorFocus?.isConnected&&!host.contains(priorFocus))priorFocus.focus({preventScroll:true});}
-  function getState(){return {open:opened,mobileView,fingerWalk:roomFinger?.getState()||null,octave,volume,sustain,held:Array.from(held.keys()),voiceCount:voices.size,audioState:context?.state||'closed',recording,playing,recorded:recorded.map(note=>({...note})),lesson:lesson?.id||null,lessonStep,lessonLength:lesson?.notes.length||0,challengeMode,interval:interval?{...interval}:null,intervalStep,completed:Array.from(completed),showNames,keyboardMode,lastWallNote,floorNote,player:{...roomPlayer},chopin:{x:860,y:306,name:'Frédéric Chopin'},background:{ready:backdropReady,url:api.backgroundUrl||null},floorKeys:backdropReady?paintedKeys.map(key=>({midi:(octave+1)*12+key.offset,black:key.black,polygon:key.polygon.map(point=>point.slice())})):[]};}
-  function destroy(){close();roomFinger?.dispose();destroyed=true;win.removeEventListener('keydown',keyDown);win.removeEventListener('keyup',keyUp);win.removeEventListener('pointerup',pointerUp);win.removeEventListener('pointercancel',pointerUp);win.removeEventListener('blur',blur);doc.removeEventListener('visibilitychange',visibility);try{context?.close().catch(()=>{});}catch{}}
+  function close(){if(!opened)return;roomEditor?.close();stopRecording();stopPlayback();setSustain(false);roomFinger?.stop('closed');roomKeys.clear();opened=false;host.hidden=true;win.cancelAnimationFrame(roomFrame);frameTime=0;roomDest=null;try{context?.suspend().catch(()=>{});}catch{}api.onClose?.();if(priorFocus?.isConnected&&!host.contains(priorFocus))priorFocus.focus({preventScroll:true});}
+  function getState(){return {open:opened,editor:roomEditor?.getState()||null,mobileView,fingerWalk:roomFinger?.getState()||null,octave,volume,sustain,held:Array.from(held.keys()),voiceCount:voices.size,audioState:context?.state||'closed',recording,playing,recorded:recorded.map(note=>({...note})),lesson:lesson?.id||null,lessonStep,lessonLength:lesson?.notes.length||0,challengeMode,interval:interval?{...interval}:null,intervalStep,completed:Array.from(completed),showNames,keyboardMode,lastWallNote,floorNote,player:{...roomPlayer},chopin:{...roomChopin,name:'Frédéric Chopin'},background:{ready:backdropReady,url:api.backgroundUrl||null},floorKeys:backdropReady?paintedKeys.map(key=>({midi:(octave+1)*12+key.offset,black:key.black,polygon:key.polygon.map(point=>point.slice())})):[]};}
+  function destroy(){close();roomEditor?.destroy();roomFinger?.dispose();destroyed=true;win.removeEventListener('keydown',keyDown);win.removeEventListener('keyup',keyUp);win.removeEventListener('pointerup',pointerUp);win.removeEventListener('pointercancel',pointerUp);win.removeEventListener('blur',blur);doc.removeEventListener('visibilitychange',visibility);try{context?.close().catch(()=>{});}catch{}}
   el('closepiano').addEventListener('click',close);el('pianoPanic').addEventListener('click',()=>{stopPlayback();releaseAll();setSustain(false);message('All notes released.');});
   el('pianoSustain').addEventListener('click',()=>setSustain(!sustain));el('pianoVolume').addEventListener('input',event=>{volume=Number(event.target.value)/100;if(master&&context)master.gain.setTargetAtTime(volume*.24,context.currentTime,.02);});
   el('pianoOctave').addEventListener('change',event=>{stopPlayback();releaseAll();octave=Number(event.target.value);drawKeys();lessonStep=0;intervalStep=0;renderLesson();updateGameInstructions();if(interval)startInterval();});
@@ -241,12 +245,19 @@
   el('pianoTalkChopin').addEventListener('click',()=>{talkChopin();returnToFloor();});el('pianoStartInterval').addEventListener('click',()=>{startInterval();returnToFloor();});el('pianoFreePlay').addEventListener('click',()=>{el('pianoLesson').value='';chooseLesson('');message('Free play: step onto any giant key to make it sing.');returnToFloor();});
   el('pianoKeyNames').addEventListener('change',event=>{showNames=event.target.checked;for(const span of host.querySelectorAll('.piano-key-name'))span.hidden=!showNames;});
   el('pianoKeyboardMode').addEventListener('change',event=>{keyboardMode=event.target.value;releaseAll();});
-  roomFinger=win.createCodaFingerWalk?.({canvas:el('pianoRoomCanvas'),enabled:()=>opened&&!destroyed&&mobileLayout()&&mobileView==='room',onStart:()=>{roomDest=null;roomKeys.clear();el('pianoRoomCanvas').focus({preventScroll:true});},onStop:()=>{roomDest=null;}})||null;
+  roomFinger=win.createCodaFingerWalk?.({canvas:el('pianoRoomCanvas'),enabled:()=>opened&&!destroyed&&!roomEditor?.isEditing()&&mobileLayout()&&mobileView==='room',onStart:()=>{roomDest=null;roomKeys.clear();el('pianoRoomCanvas').focus({preventScroll:true});},onStop:()=>{roomDest=null;}})||null;
   el('pianoRoomCanvas').addEventListener('pointerdown',roomPointer);
   win.addEventListener('keydown',keyDown);win.addEventListener('keyup',keyUp);win.addEventListener('pointerup',pointerUp);win.addEventListener('pointercancel',pointerUp);win.addEventListener('blur',blur);doc.addEventListener('visibilitychange',visibility);
   for(const button of host.querySelectorAll('[data-piano-view]'))button.addEventListener('click',()=>setMobileView(button.dataset.pianoView,true));
-  drawKeys();loadTake();updateRecordingUI();renderLesson();setMobileView('room');drawRoom();
-  return {open,close,destroy,getState,control,releaseControls,setMobileView};
+  drawKeys();loadTake();updateRecordingUI();renderLesson();setMobileView('room');
+  roomEditor=win.createCodaRoomDeveloperEditor?.({id:'piano',name:'Piano Lab',host,canvas:el('pianoRoomCanvas'),width:ROOM.width,height:ROOM.height,renderer,getAvatar:api.getAvatar,storage,
+   getSharedSprites:api.getSharedSprites,setSharedSprites:api.setSharedSprites,getPixelProfile:id=>id==='chopin'?{name:'Chopin',skin:'#e6b99d',hair:'#493239',shirt:'#282b42',lowerColor:'#3d3a4a',hairstyle:'long',outfit:'coat',shoes:'oxfords',accessory:'bowtie'}:api.getAvatar?.()||{},getPixelTargets:()=>[{id:'player',name:'Your avatar'},{id:'chopin',name:'Frédéric Chopin'}],
+   getBackground:()=>backdropReady?roomBackdrop:null,getEntities:()=>[{id:'chopin',name:'Frédéric Chopin',kind:'npc',...roomChopin,w:40,h:64}],
+   onEntityChange:(id,patch)=>{if(id==='chopin')Object.assign(roomChopin,{x:860,y:306,visible:true},patch);},
+   onActiveChange:active=>{releaseControls();roomKeys.clear();roomDest=null;stopRecording();stopPlayback();releaseAll();setSustain(false);roomPlayer.jump=roomPlayer.velocity=0;frameTime=0;if(active)setMobileView('room');},
+   onProjectChange:(before,after)=>api.onEditorProjectChange?.(before,after)
+  })||null;drawRoom();
+  return {open,close,destroy,getState,getControlState:()=>({open:opened,mobileView,challengeMode,editing:roomEditor?.isEditing()||false}),control,releaseControls,setMobileView,getEditor:()=>roomEditor};
  }
  const exported={createCodaPianoLab,noteName,noteLetter,keyPositionName,frequency,LESSONS,INTERVALS,paintedFloorKeys,polygonContains};
  if(typeof module==='object'&&module.exports)module.exports=exported;else root.createCodaPianoLab=createCodaPianoLab;

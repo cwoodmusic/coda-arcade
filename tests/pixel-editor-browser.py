@@ -106,6 +106,20 @@ class PixelEditorTests(unittest.TestCase):
         self.page.mouse.click(geometry['x'],geometry['y']);self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getProject().sprites.player.down[0][2]'),'#00ccff')
         self.page.screenshot(path='/tmp/coda-pixel-editor30.png',full_page=True)
 
+    def test_production_canvas_keeps_keyboard_pixel_controls_while_map_pan_is_available(self):
+        self.page.goto(f'http://127.0.0.1:{self.server.server_port}/world-preview.html')
+        self.page.wait_for_function('CodaDeveloperConsole?.ready()')
+        self.page.evaluate("CodaDeveloperConsole.open('sprites')")
+        self.page.get_by_label('Animate sprite preview',exact=True).uncheck()
+        position=self.page.evaluate('CodaArcadeQA.position()')
+        self.page.locator('#pixelEditCanvas').focus()
+        self.page.keyboard.press('ArrowRight');self.page.keyboard.press('Space')
+        self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getProject().sprites.player.down'),[[41,45,'#ff5f97']])
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.position()'),position)
+        self.assertEqual(self.page.locator('#devPan').get_attribute('aria-pressed'),'false')
+        self.page.locator('#devUndo').click();self.assertNotIn('sprites',self.page.evaluate('CodaDeveloperConsole.getProject()'))
+        self.page.locator('#devRedo').click();self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getProject().sprites.player.down'),[[41,45,'#ff5f97']])
+
     def test_real_phone_touch_paints_and_cancel_discards_the_unfinished_stroke(self):
         self.context.close();self.context=self.browser.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True);self.page=self.context.new_page();self.page.on('pageerror',lambda error:self.errors.append(str(error)));self.page.goto(f'http://127.0.0.1:{self.server.server_port}/pixel-fixture')
         self.page.wait_for_function('window.editor');self.page.get_by_label('Animate sprite preview',exact=True).uncheck();canvas=self.page.locator('#pixelEditCanvas');canvas.scroll_into_view_if_needed();box=canvas.bounding_box()

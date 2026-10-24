@@ -12,6 +12,8 @@ The same site adapts to a phone or tablet; no separate installation is required.
 
 Large, translucent controls float over the bottom corners in both orientations. The map extends behind them and the middle remains available for finger steering. Layouts account for mobile browser bars and safe areas. A first-time touch device starts with Lite effects; an existing FX preference is preserved.
 
+Developer tools keep the map’s scale when opening Layers. Zoom and **Pan** controls stay available; enable Pan to drag the map with one finger without painting. The Piano Lab and fishing cave also have **Developer** buttons with room-specific artwork, collision, layers, and sprite tools. In the cave, select a fish to edit its species, size, colors, visibility, or placement. Room edits are included in complete world project backups.
+
 ## Music rooms
 
 Piano Lab offers **Room**, **Chopin games**, **Keyboard**, and **Recording** tabs. Selecting a challenge returns to the floor piano. Free play sounds when you walk over a key; melody and interval games require the touch **Play note / E** action while standing on the chosen key. Letter names remain optional; pitch labels show C, D, E and so on, without octave numbers. Hold and drag on the floor to steer; lifting stops walking. The shared pad controls only the active room, and the arcade avatar pauses outside it.

@@ -25,6 +25,16 @@ test('the character renderer validates pixel data and clones its edit journal',(
  const copy=r.getPixelEdits();copy.player.right=[];assert.equal(r.getPixelEdits().player.right.length,1);assert.equal(r.setPixelEdits({player:{down:[[90,0,null]]}}),false);assert.equal(r.getPixelEdits().player.right.length,1);
 });
 
+test('room musician pixel details use the same validated journal and renderer as arcade characters',()=>{
+ const sandbox={window:{}};vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../character-renderer.js'),'utf8'),sandbox);const renderer=sandbox.window.createCodaCharacterRenderer();
+ let data={};for(const id of ['chopin','captain-cadence'])data=pixel.changePixels(data,id,'down',[[40,45]],'#42cafe');
+ assert.equal(pixel.validate(data),true);assert.equal(renderer.setPixelEdits(data),true);
+ assert.deepEqual(JSON.parse(JSON.stringify(renderer.getPixelEdits())),data);
+ assert.equal(pixel.changePixels(data,'unknown-room-character','down',[[40,45]],'#42cafe'),null);
+ assert.equal(renderer.setPixelEdits({'unknown-room-character':{down:[[40,45,'#42cafe']]}}),false);
+ assert.deepEqual(JSON.parse(JSON.stringify(renderer.getPixelEdits())),data,'Invalid targets cannot replace working room sprite details');
+});
+
 test('name labels clear added tall pixels in every facing and ignore erased pixels',()=>{
  const sandbox={window:{}};vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../character-renderer.js'),'utf8'),sandbox);const r=sandbox.window.createCodaCharacterRenderer();
  const original=r.labelOffset({}),bach=r.labelOffset({},'bach');r.setPixelEdits({player:{up:[[40,0,'#ff0000']],down:[[40,10,null]]},bach:{left:[[40,2,'#00ff00']]}});
