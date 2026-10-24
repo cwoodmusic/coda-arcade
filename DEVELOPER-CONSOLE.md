@@ -38,6 +38,8 @@ Object art and collision are separate. For an edited original, **Open collision 
 
 Open **Layers**, or press **Shift+L**. **Paint foreground** promotes pixels from the existing room artwork to an occluding layer. **Send to background / erase mask** removes foreground coverage while retaining the room art beneath actors. Adjust brush size and depth offset; **Show foreground masks** helps inspect coverage. Use object layer controls when changing the depth of a moved or newly added object.
 
+Erasing foreground also works on lifted original objects and their animated screens or disco spheres: erased pixels render behind characters, while the rest retains the object's selected layer. Brush strokes stay at their world coordinates. Moving, resizing, or rotating an object recomputes its intersection with those strokes; the resulting split follows the object's animation.
+
 Layer painting changes occlusion, not walking collision. Painting existing room pixels also does not create or redraw an object; use Objects for that.
 
 ## Playtest, undo, and saving
@@ -46,9 +48,11 @@ Layer painting changes occlusion, not walking collision. Painting existing room 
 
 Undo and redo apply to complete project edits, including objects, collision, and layer strokes. Use the buttons, Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, or Ctrl/Cmd+Y. Escape cancels a pending selection or closes the console.
 
-Edits save locally in this browser and origin. The Project tab's **Save project** reports storage success or failure. **Export project JSON** backs up the whole project, including embedded uploaded images, source cleanup patches, collision overrides, and local foreground strokes. **Import project JSON** validates a backup before replacing the current project and can be undone. **Reset project** restores the published map and clears local project edits; it can also be undone.
+Edits save locally in this browser and origin. The Project tab's **Save project** reports storage success or failure. **Export project JSON** backs up the whole project, including embedded uploaded images, source cleanup patches, collision overrides, and local foreground strokes. **Import project JSON** validates a backup before replacing the current project and can be undone. **Reset project** replaces the current layout with the shared published layout and saves that copy locally; it can also be undone. Individual object and collision **Restore original** tools still return to the underlying original artwork or collision cells.
 
-Export before switching browsers, clearing site data, or moving to another server origin. Browser storage is not a shared project database. The editor does not write source files, commit changes, update Firebase rules, or publish a live site. To distribute edits, retain the exported JSON and import it into another editor session or integrate it in a separate publishing change. The original PNG files remain unchanged.
+Fresh browsers load `published-world-project.json` as the shared default. The checked-in file is the supplied version-1 export, including 8 lifted objects, 242 collision overrides, and 11 foreground erasure strokes. Valid local projects, including deliberately empty projects, take priority; legacy local asset, collision, and layer edits are also preserved. Use **Project → Reset project** to replace those local edits with the current published layout. Merely visiting the world does not save a local override, so browsers without local edits receive later published updates. Movement waits for the layout to finish loading. If the shared file fails to load or validate, existing local edits remain intact and the editor reports the failure.
+
+Export before switching browsers, clearing site data, or moving to another server origin. Browser storage is not a shared project database. The editor does not write source files, commit changes, update Firebase rules, or publish a live site. To publish a new shared default, replace `published-world-project.json` with a validated complete project export and deploy the site. Other browser sessions can import the export directly. The original PNG files remain unchanged.
 
 Image uploads support PNG, JPEG, WebP, GIF, and APNG up to 8 MB each and 8192 × 8192 pixels. Sprite-sheet controls provide explicit animation frames; GIF/APNG animation depends on browser support. Projects allow up to 200 placed/edited objects and 1,000 local layer strokes. Imported project files are limited to 70 MB. Browser storage quotas may be lower, so keep JSON backups.
 
@@ -61,8 +65,11 @@ node --test tests/collision-editor.test.cjs
 node --test tests/world-object-runtime.test.cjs
 python3 tests/clean-world-art.py
 python3 tests/developer-console-browser.py
+python3 tests/published-world-browser.py
 ```
 
 The collision tests exercise override restoration, atomic rejection of invalid imports, and coordinate-aware interpolated pointer strokes. The browser runner requires Python Playwright and Chromium, starts its own temporary local server, and exercises the editor through its UI in disposable browser contexts. Existing local projects are preserved.
+
+The published-world checks cover the exact shared export, local-save priority, Reset and undo, loading and failure handling, cabinet reachability, and lifted-object erasures, including transformed masks and actual character occlusion.
 
 The art checks require Pillow and verify that pixels outside the 33 repair regions are unchanged and that foreground atlas coordinates and alpha masks remain stable. To rebuild art from a new image-generated empty-room plate, run `node scripts/build-clean-world.cjs /path/to/empty-room-plate.png`. The plate must be exactly 1672 × 941. This uses Chromium to align repaired areas to surrounding pixels, feather their seams, and update only the affected foreground texels. The original images and live character atlas are retained.

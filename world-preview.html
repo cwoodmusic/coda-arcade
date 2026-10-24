@@ -17,7 +17,7 @@
 /* Coda Asset Studio v11: stays separate from collision + pixel masks. */
 #assetStudio{position:fixed;left:12px;top:80px;z-index:65;width:min(334px,calc(100vw - 24px));max-height:calc(100dvh - 99px);overflow:auto;background:#171529f5;border:1px solid #eac17d;box-shadow:0 12px 50px #05010de0,0 0 22px #fdac4a24;border-radius:12px;padding:13px;color:#f8efff;font:12px system-ui;backdrop-filter:blur(9px)}
 #assetStudio[hidden]{display:none}#assetStudio .studioHead{display:flex;align-items:center;justify-content:space-between;color:#ffe4a4;font-size:14px;gap:9px;margin-bottom:7px}#assetStudio .studioActions{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0}#assetStudio button{font:inherit;min-height:28px;padding:5px 7px}#assetStudio .studioActions button{flex:1 0 90px}#assetStudio button:disabled{opacity:.36;cursor:not-allowed}#assetStudio hr{border:0;border-top:1px solid #655374;margin:13px 0}#assetStudio .studioField{display:grid;gap:3px;margin:7px 0}#assetStudio .studioField>label{font-weight:650;color:#dccdf3}#assetStudio input:not([type=checkbox]),#assetStudio select{background:#131024;border:1px solid #866e9b;color:#fff;padding:7px;border-radius:5px;width:100%;font:inherit;min-width:0}#assetStudio input[type=checkbox]{accent-color:#f9c880}#assetStudio .studioGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}#assetStudio .studioTip{color:#c9b9d6;line-height:1.45;font-size:11px;margin:6px 0}#assetStudio #assetList{height:108px;padding:2px}#assetStudio #assetList option{padding:6px}#assetStudio #assetMessage{color:#bbf5e5;min-height:18px;overflow-wrap:anywhere}#assetStudio #assetSelection[hidden]{display:none}#assetStudio .studioCheck{display:inline-flex;align-items:center;gap:6px;margin:5px 11px 5px 0}#assetStudio .studioCollapsible{border:1px solid #655374;border-radius:7px;padding:8px}#assetStudio summary{cursor:pointer;color:#ffe4b1;font-weight:650}#assetToggle{border-color:#eecc7c}#view.asset-editing{cursor:crosshair;touch-action:none}#assetStudio #assetAdd{background:#675022;border-color:#e8b85c}#assetStudio #assetImport{border-color:#80d3ed}#assetStudio #assetExport{border-color:#80d3ed}#assetStudio #assetHelp{background:#271d3c}#assetStudio .studioHot{color:#ffcfa4}body.asset-console-open #layerEditor{display:none!important}@media(max-width:650px){#assetStudio{top:120px;max-height:calc(100dvh - 138px)}}
-</style><link rel="stylesheet" href="developer-console.css"><link rel="stylesheet" href="musician-ui.css?v=wasd-jump-22"><link rel="stylesheet" href="boutique-ui.css?v=wasd-jump-22"><script src="collision-editor.js"></script><script src="world-object-catalog.js?v=clean-room-1"></script><script src="world-object-runtime.js"></script><script src="developer-console.js?v=wasd-jump-22"></script><script src="npc-behavior.js?v=wasd-jump-22"></script><script src="character-renderer.js?v=wasd-jump-22"></script><script src="musician-ui.js?v=wasd-jump-22"></script><script src="boutique-ui.js?v=wasd-jump-22"></script><header><b>♫ CODA ARCADE · CONNECTED WORLD / WORLD BUILDER</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="assetToggle" type="button" title="Open Asset Studio (Shift+A)">✥ Assets</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0" aria-label="Connected arcade. Move with WASD or arrow keys. Press Space to jump and E to interact."></canvas><footer><span>WASD / arrows · Walk · Space · Jump · Wheel / + / − Zoom · 0 Reset · F2 Developer console · C Edit collision · Shift+L Edit layers · Right-drag to pan in editor &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 11 · asset studio · animations · layers · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
+</style><link rel="stylesheet" href="developer-console.css"><link rel="stylesheet" href="musician-ui.css?v=world-project-23"><link rel="stylesheet" href="boutique-ui.css?v=world-project-23"><script src="collision-editor.js"></script><script src="world-object-catalog.js?v=clean-room-1"></script><script src="world-object-runtime.js"></script><script src="developer-console.js?v=world-project-23"></script><script src="npc-behavior.js?v=world-project-23"></script><script src="character-renderer.js?v=world-project-23"></script><script src="musician-ui.js?v=world-project-23"></script><script src="boutique-ui.js?v=world-project-23"></script><header><b>♫ CODA ARCADE · CONNECTED WORLD / WORLD BUILDER</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="assetToggle" type="button" title="Open Asset Studio (Shift+A)">✥ Assets</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0" aria-label="Connected arcade. Move with WASD or arrow keys. Press Space to jump and E to interact."></canvas><footer><span>WASD / arrows · Walk · Space · Jump · Wheel / + / − Zoom · 0 Reset · F2 Developer console · C Edit collision · Shift+L Edit layers · Right-drag to pan in editor &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 11 · asset studio · animations · layers · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
   <div class="editorbanner"><b>✎ FOREGROUND EDITOR</b><button id="editClose" type="button">✕</button></div>
   <div class="mini">Paint with pixels from the existing arcade artwork. Erase removes unwanted foreground coverage; the floor stays unchanged.</div>
   <div class="editorline"><button type="button" id="editPaint" class="current">🖌 Paint</button><button type="button" id="editErase">⌫ Erase</button></div>
@@ -366,7 +366,7 @@ function exportCollision(){const blob=new Blob([JSON.stringify([...edits],null,2
 const JUMP_SPEED=280,JUMP_GRAVITY=1000;
 let jumpHeight=0,jumpVelocity=0;
 function startJump(){
- if(jumpHeight>0||jumpVelocity!==0||!characterRenderer?.isReady()||!worldArt.complete||!worldArt.naturalWidth)return false;
+ if(jumpHeight>0||jumpVelocity!==0||!characterRenderer?.isReady()||!worldArt.complete||!worldArt.naturalWidth||(developerConsole&&!developerConsole.loadReady()))return false;
  jumpVelocity=JUMP_SPEED;
  avatar.jumps=(Number.isFinite(avatar.jumps)?Math.max(0,avatar.jumps):0)+1;
  try{localStorage.setItem('musicArcadeV1',JSON.stringify(avatar));}catch{}
@@ -384,6 +384,7 @@ function clearHeldKeys(){keys.clear();walking=false;}
 function update(dt){
  clock+=dt;
  if(!characterRenderer?.isReady()){walking=false;status.textContent=characterRenderer?.error?'Character renderer unavailable. Reload to retry.':'Preparing characters…';return;}
+ if(developerConsole&&!developerConsole.loadReady()){walking=false;status.textContent='Loading world layout…';return;}
  const frozen=developerConsole?developerConsole.isEditing():((layerState.active&&!layerState.preview)||assetStudio.active);
  if(frozen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden){walking=false;return;}
  updateJump(dt);
@@ -714,6 +715,38 @@ function assetSaveDebounced(){clearTimeout(assetSaveTimer);assetSaveTimer=setTim
 function assetImageKey(a){return a.kind==='builtin'?'builtin:'+a.ref:a.kind==='note'?'generated-note':a.data;}
 function assetPicture(a){if(a.origin&&a.kind==='builtin')return developerConsole?.originalPicture(a);if(a.kind==='note')return null;if(a.kind==='builtin')return (a.ref==='foreground'?assetForegroundComposite():({world:worldArt,characters:actorsArt})[a.ref])||null;
  const key=assetImageKey(a);let image=assetImages.get(key);if(!image){image=new Image();image.decoding='async';image.src=a.data;assetImages.set(key,image)}return image;}
+const liftedLayerPictures=new WeakMap();
+function liftedAssetPictures(a){
+ const raw=assetPicture(a);
+ if(!raw||!a.origin||a.kind!=='builtin'||a.layer==='back'||!layerState.erasedCanvas)return {raw,above:raw,behind:null};
+ const frame=assetBoundsFrame(a,raw),[sx,sy,sw,sh]=frame;
+ if(sw<=0||sh<=0||a.w<=0||a.h<=0)return {raw,above:raw,behind:null};
+ const key=JSON.stringify([a.x,a.y,a.w,a.h,a.rotation,...frame]),erased=layerState.erasedCanvas,cached=liftedLayerPictures.get(a);
+ if(cached&&cached.key===key&&cached.raw===raw&&cached.erased===erased)return cached;
+ // Layer brushes live in world coordinates. Map that stencil back into this
+ // object's resting transform; both resulting pieces then share its animation.
+ const mask=makeCanvas(raw.width,raw.height),mg=mask.getContext('2d',{willReadFrequently:true});mg.imageSmoothingEnabled=false;
+ mg.translate(sx+sw/2,sy+sh/2);mg.scale(sw/a.w,sh/a.h);mg.rotate(-a.rotation*Math.PI/180);mg.translate(-a.x,-a.y);mg.drawImage(erased,0,0);
+ const pixels=mg.getImageData(0,0,mask.width,mask.height);let any=false;
+ for(let at=3;at<pixels.data.length;at+=4){const alpha=pixels.data[at]>=128?255:0;pixels.data[at]=alpha;if(alpha)any=true;}
+ let above=raw,behind=null,aboveClip=null,behindClip=null;
+ if(any){
+  mg.setTransform(1,0,0,1,0,0);mg.putImageData(pixels,0,0);
+  above=makeCanvas(raw.width,raw.height);const fg=above.getContext('2d');fg.drawImage(raw,0,0);fg.globalCompositeOperation='destination-out';fg.drawImage(mask,0,0);
+  behind=makeCanvas(raw.width,raw.height);const bg=behind.getContext('2d');bg.drawImage(raw,0,0);bg.globalCompositeOperation='destination-in';bg.drawImage(mask,0,0);
+  // The animated screen/globe must use the same split as the source artwork.
+  // Cache row spans in object-local coordinates, including an inverse clip
+  // that leaves glow outside the source image free to render as before.
+  behindClip=new Path2D();
+  for(let y=0;y<mask.height;y++)for(let x=0;x<mask.width;){
+   if(!pixels.data[(y*mask.width+x)*4+3]){x++;continue;}
+   const start=x;while(x<mask.width&&pixels.data[(y*mask.width+x)*4+3])x++;
+   behindClip.rect((start-sx)*a.w/sw-a.w/2,(y-sy)*a.h/sh-a.h/2,(x-start)*a.w/sw,a.h/sh);
+  }
+  aboveClip=new Path2D();aboveClip.rect(-100000,-100000,200000,200000);aboveClip.addPath(behindClip);
+ }
+ const value={key,raw,erased,above,behind,aboveClip,behindClip};liftedLayerPictures.set(a,value);return value;
+}
 function assetBoundsFrame(a,img){if(a.kind==='builtin')return a.crop;
  const iw=img?.naturalWidth||0,ih=img?.naturalHeight||0;
  const cols=Math.max(1,a.cols),rows=Math.max(1,a.rows),count=Math.min(a.frames,cols*rows);
@@ -735,8 +768,9 @@ function assetAnimTransform(a){const progress=assetStudio.animate?clock*a.speed:
  case 'blink':out.alpha=s>0?.98:.12;break;
  case 'flicker':out.alpha=.72+.28*(Math.sin(progress*48)*Math.sin(progress*31)>.55?.18:1);break;
  }return out;}
-function drawPlacedAsset(a){if(!a.visible)return;
- const anim=assetAnimTransform(a),p=assetPicture(a);
+function drawPlacedAsset(a,pass='above'){if(!a.visible)return;
+ const anim=assetAnimTransform(a),parts=a.origin?liftedAssetPictures(a):null,p=parts?(pass==='behind'?parts.behind:parts.above):assetPicture(a);
+ if(pass==='behind'&&!p)return;
  g.save();g.imageSmoothingEnabled=false;g.globalAlpha=(a.opacity/100)*anim.alpha;
  g.translate(a.x+anim.dx,a.y+anim.dy);g.rotate(a.rotation*Math.PI/180+anim.rot);g.scale(anim.scale,anim.scale);
  if(a.kind==='note'){
@@ -744,11 +778,13 @@ function drawPlacedAsset(a){if(!a.visible)return;
    g.shadowColor='#65f5ff';g.shadowBlur=12;g.fillStyle='#83efff';g.fillText('♫',0,0);
  }else if(p&&(p instanceof HTMLCanvasElement||(p.complete&&p.naturalWidth&&p.naturalHeight))){const [sx,sy,sw,sh]=assetBoundsFrame(a,p);
    if(sw>0&&sh>0&&sx>=0&&sy>=0&&sx+sw<=(p.naturalWidth||p.width)+.001&&sy+sh<=(p.naturalHeight||p.height)+.001)g.drawImage(p,sx,sy,sw,sh,-a.w/2,-a.h/2,a.w,a.h);
- }drawWorldObjectEffects(a);g.restore();}
-function drawWorldObjectEffects(a){
+ }drawWorldObjectEffects(a,parts,pass);g.restore();}
+function drawWorldObjectEffects(a,parts,pass){
  if(a.kind!=='builtin'||!a.origin||!effectsOn())return;
  const part=window.CodaWorldObjectCatalog.find(p=>p.name===a.origin.name);if(!part)return;
- const [x,y,w,h]=part.bounds;g.save();g.scale(a.w/w,a.h/h);g.translate(-x-w/2,-y-h/2);
+ const [x,y,w,h]=part.bounds;g.save();
+ if(parts?.behind)g.clip(pass==='behind'?parts.behindClip:parts.aboveClip,'evenodd');
+ g.scale(a.w/w,a.h/h);g.translate(-x-w/2,-y-h/2);
  if(part.ballIndex!==undefined)spinningDiscoBall({...DISCO_BALLS[part.ballIndex],spin:a.discoSpin??part.spin,time:assetStudio.animate?clock:0},beatInfo());
  if(part.gameIndex!==undefined)drawCabinetScreen(cabinetScreen(part),beatInfo(),assetStudio.animate?clock:0);
  g.restore();
@@ -917,7 +953,7 @@ async function loadAssetStudio(){let found=null;
 window.CodaAssetStudioQA={get:()=>({active:assetStudio.active,count:assetStudio.assets.length,selected:assetStudio.selected,assets:assetStudio.assets.map(a=>({id:a.id,name:a.name,kind:a.kind,x:a.x,y:a.y,w:a.w,h:a.h,layer:a.layer,anim:a.anim,frames:a.frames}))}),open:()=>toggleAssetStudio(true),close:()=>toggleAssetStudio(false),preset:()=>assetUI('assetPreset').click(),export:downloadAssetJSON,save:persistAssets};
 // --- END ASSET STUDIO ------------------------------------------------------
 
-window.CODA_BUILD="22.0-wasd-and-space-jump";
+window.CODA_BUILD="23.0-published-world-project";
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -1620,6 +1656,7 @@ function draw(){
  g.fillStyle='#050716';g.fillRect(0,0,W,H);
  if(!worldArt.complete||!worldArt.naturalWidth){t('Loading the neon arcade…',W/2,H/2,24,'#9ff9ff');return;}
  if(!characterRenderer?.isReady()){t(characterRenderer?.error?'Character renderer unavailable. Reload to retry.':'Preparing characters…',W/2,H/2,24,'#9ff9ff');return;}
+ if(developerConsole&&!developerConsole.loadReady()){t('Loading world layout…',W/2,H/2,24,'#9ff9ff');return;}
  g.imageSmoothingEnabled=false;
  rebuildLayerEdits();
  // All world art, sprites, glow, debug masks and editor brushes use the same
@@ -1633,6 +1670,9 @@ function draw(){
  renderArcadeAtmosphere();
  developerConsole?.renderCleanup(g);
  renderAssetsOfLayer('back');
+ // Erasing foreground changes occlusion, not the visible object artwork.
+ // Draw erased fragments behind actors, then the remainder at object depth.
+ for(const a of assetStudio.assets)if(a.origin&&a.visible&&a.layer!=='back')drawPlacedAsset(a,'behind');
  // Original floor remains beneath actors. Above them render only isolated
  // object silhouettes (plus precise facades for structural walls/door frames).
  const liveActors=[];
@@ -1749,6 +1789,7 @@ window.CodaArcadeQA=Object.freeze({
   assetStudio:()=>({active:assetStudio.active,count:assetStudio.assets.length,selected:assetStudio.selected}),
   layerEditor:()=>({active:layerState.active,tool:layerState.tool,publishedStrokes:PUBLISHED_LAYER_STROKES.length,strokes:layerState.actions.length,redo:layerState.redo.length,paintPatches:layerState.patches.length,editedPixels:layerState.owner?layerState.owner.reduce((a,v)=>a+(v!==-1),0):0}),
   foregroundPixelAlpha:(name,x,y)=>{const part=foregroundParts.find(p=>p.name===name);if(!part)return null;const b=part.bounds;if(x<b[0]||y<b[1]||x>=b[0]+b[2]||y>=b[1]+b[3])return null;const img=getPartImage(part);if(!img)return null;return img.getContext('2d',{willReadFrequently:true}).getImageData(Math.floor(x-b[0]),Math.floor(y-b[1]),1,1).data[3]},
+  liftedObjectPixel:(name,x,y,pass='above')=>{const a=assetStudio.assets.find(a=>a.origin?.name===name);if(!a)return null;rebuildLayerEdits();const parts=liftedAssetPictures(a),image=parts[pass],b=a.origin.bounds;if(!image)return [0,0,0,0];if(x<b[0]||y<b[1]||x>=b[0]+b[2]||y>=b[1]+b[3])return null;return Array.from(image.getContext('2d',{willReadFrequently:true}).getImageData(Math.floor(x-b[0]),Math.floor(y-b[1]),1,1).data);},
   editForegroundAt:(x,y,tool='paint',size=4,offset=0)=>{const action={tool,size,points:[[x,y]],depth:strokeAutoDepth(x,y)+offset};if(!isEditorAction(action))return false;layerState.actions.push(action);layerState.redo=[];layerHistoryRefresh();return true;},
   leafPassage:{blue:[[797,597],[835,654]],leaves:[754,609,65,72]},
   cornerRepair:{openFootStrip:[798,646,821,759],solidWall:[821,699,849,735]},
@@ -1763,7 +1804,7 @@ function frame(ms){const dt=Math.min(.05,(ms-last)/1000||0);last=ms;
  // Full panels already pause movement. Retain that backdrop instead of
  // repainting room lights behind four small, independently animated previews.
  if(!paused||!pausedBackdrop){updateCamera(dt);draw();}
- pausedBackdrop=paused&&worldArt.complete&&worldArt.naturalWidth>0&&characterRenderer?.isReady();musicianUI?.update(ms/1000)}catch(err){
+ pausedBackdrop=paused&&worldArt.complete&&worldArt.naturalWidth>0&&characterRenderer?.isReady()&&(!developerConsole||developerConsole.loadReady());musicianUI?.update(ms/1000)}catch(err){
  pausedBackdrop=false;
  console.error('Arcade frame error:',err);
  if(typeof g.reset==='function')g.reset();
@@ -1867,6 +1908,7 @@ characterRenderer.ready.then(()=>{
 }).catch(error=>{status.textContent='Character renderer unavailable. Reload to retry.';console.error('Character sprite loading failed:',error);});
 developerConsole=window.createCodaDeveloperConsole({
  W,H,c,studio:assetStudio,layer:layerState,parts:foregroundParts,catalog:window.CodaWorldObjectCatalog,worldArt,foregroundArt,
+ publishedProjectUrl:'published-world-project.json?v=world-project-23',
  cell:COLLISION_CELL,gridWidth:GRID_W,gridHeight:GRID_H,navGrid,baseGrid:defaultNavGrid,
  legacyCollision:[...edits].filter(([i,v])=>Number.isInteger(i)&&i>=0&&i<navGrid.length&&(v===0||v===1)),
  panByScreen:(dx,dy)=>{const b=c.getBoundingClientRect();cam.x=Math.max(0,Math.min(W-W/cam.zoom,cam.x+dx*W/b.width/cam.zoom));cam.y=Math.max(0,Math.min(H-H/cam.zoom,cam.y+dy*H/b.height/cam.zoom));},
@@ -1880,6 +1922,6 @@ developerConsole=window.createCodaDeveloperConsole({
  db:assetDB,legacyStore:ASSET_STORE,validLegacy:validScene,validAsset:isValidAsset,validStroke:isEditorAction,
  maxAssets:ASSET_MAX,fileData:dataURLFromFile,imageDimensions:readImageDimensions
 });
-window.CodaDeveloperConsole=Object.freeze({open:developerConsole.open,getProject:developerConsole.getProject,ready:developerConsole.loadReady,save:developerConsole.save});
+window.CodaDeveloperConsole=Object.freeze({open:developerConsole.open,getProject:developerConsole.getProject,getPublishedProject:developerConsole.getPublishedProject,getProjectSource:developerConsole.getProjectSource,ready:developerConsole.loadReady,save:developerConsole.save});
 requestAnimationFrame(frame);
 })();</script></html>

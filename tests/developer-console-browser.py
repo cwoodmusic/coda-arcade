@@ -38,6 +38,16 @@ class WorldEditorTests(unittest.TestCase):
 
     def setUp(self):
         self.context = self.browser.new_context(viewport={'width': 1600, 'height': 1000})
+        # These editor mechanics tests intentionally start from an empty local
+        # project. Fresh published-layout behavior has its own browser suite.
+        self.context.add_init_script('''(()=>{
+          if(location.protocol!=='http:'||sessionStorage.getItem('editorFixtureSeeded'))return;
+          localStorage.setItem('codaWorldProjectV1',JSON.stringify({
+            format:'CodaArcadeWorldProject',version:1,world:{width:1672,height:941},
+            assets:[],collision:[],strokes:[],savedAt:Date.now()
+          }));
+          sessionStorage.setItem('editorFixtureSeeded','yes');
+        })()''')
         # Cloud login is optional; these local editor tests must not contact Firebase.
         self.context.route('https://**/*', lambda route: route.abort())
         self.page = self.context.new_page()
@@ -184,12 +194,13 @@ class WorldEditorTests(unittest.TestCase):
         self.assertEqual(self.project(), expected, 'Rejected imports must leave all edits intact')
         self.page.once('dialog', lambda d:d.accept())
         self.page.locator('#devReset').click()
-        self.assertEqual(self.project()['collision'], [])
+        published=json.loads((ROOT/'published-world-project.json').read_text())
+        self.assertEqual(self.project(),published,'Reset must restore the shared published layout')
         self.import_project(exported)
         self.page.wait_for_function('CodaDeveloperConsole.getProject().strokes.length===1')
         self.assertEqual(self.project(), expected)
         self.page.locator('#devUndo').click()
-        self.assertEqual(self.project()['collision'], [], 'One undo must revert the entire import')
+        self.assertEqual(self.project(),published,'One undo must revert the entire import')
 
     def test_delete_restore_typing_shortcuts_playtest_and_zoom(self):
         original = self.lift()

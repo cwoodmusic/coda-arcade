@@ -9,6 +9,7 @@ window.createCodaDeveloperConsole = function (api) {
   const makeCanvas = (w,h) => Object.assign(document.createElement('canvas'), {width:w,height:h});
   let tab = 'objects', playtest = false, loading = true, strokeBefore = null, saveTimer;
   let pickSample = false, baseCache = null, baseKey = '', cleanupCache = null, loadFailed = false, pan = null;
+  let publishedProject = null, publishedError = null, loadError = null, projectSource = 'base';
   const pictures = new Map();
   const maskedLayers = new WeakMap();
   const panel = $('assetStudio');
@@ -86,7 +87,7 @@ window.createCodaDeveloperConsole = function (api) {
   function changed(before) { api.record(before); }
   function invalidate(layersChanged=true) { if(layersChanged)api.invalidateArtwork(); syncNavigation(); }
   function recordChange(before) {
-    if (before !== snapshot()) { studio.undo.push(before); if(studio.undo.length>40)studio.undo.shift();studio.redo=[]; }
+    if (before !== snapshot()) { studio.undo.push(before); if(studio.undo.length>40)studio.undo.shift();studio.redo=[];projectSource='local'; }
     let layersChanged=true;
     try {layersChanged=JSON.stringify(JSON.parse(before).strokes)!==JSON.stringify(layer.actions);}catch{}
     studio.dirty=true; invalidate(layersChanged); api.refresh(); refresh(); scheduleSave();
@@ -114,7 +115,7 @@ window.createCodaDeveloperConsole = function (api) {
   function open(name='objects') { api.toggle(true); setTab(name); c.focus(); }
   function onToggle() {
     if(!studio.active) { playtest=false; panel.classList.remove('dev-playtest'); $('devPlaytest').textContent='▶ Playtest'; $('devPlaytest').setAttribute('aria-pressed','false'); }
-    setTab(tab); if(studio.active)message('Developer console active. Changes save locally; export a project backup.');
+    setTab(tab); if(studio.active)message(loadFailed&&loadError?loadError:'Developer console active. Changes save locally; export a project backup.'+(publishedError?' '+publishedError:''));
   }
   function togglePlaytest() {
     finishGesture(); playtest=!playtest; panel.classList.toggle('dev-playtest',playtest); $('devPlaytest').setAttribute('aria-pressed',String(playtest)); $('devPlaytest').textContent=playtest?'■ Stop playtest':'▶ Playtest';
@@ -278,8 +279,8 @@ window.createCodaDeveloperConsole = function (api) {
     if(loading||loadFailed){message('Project loading failed or is incomplete. Export your current work before replacing storage.');return false;}
     const payload={...documentData(),savedAt:Date.now()};
     if(!validate(payload)){message('Project contains unsupported data. Export a backup before changing storage.');return false;}
-    try { const db=await api.db();await new Promise((resolve,reject)=>{const tx=db.transaction('layouts','readwrite');tx.objectStore('layouts').put(payload,STORE);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});studio.dirty=false;message('Complete world project saved in this browser. Export JSON for a portable backup.');return true; }
-    catch(err) { try {localStorage.setItem(STORE,JSON.stringify(payload));studio.dirty=false;message('Project saved in local storage. Export a backup.');return true;}catch{message('Storage unavailable or full. Export project JSON now to keep your work.');return false;} }
+    try { const db=await api.db();await new Promise((resolve,reject)=>{const tx=db.transaction('layouts','readwrite');tx.objectStore('layouts').put(payload,STORE);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});studio.dirty=false;projectSource='local';message('Complete world project saved in this browser. Export JSON for a portable backup.');return true; }
+    catch(err) { try {localStorage.setItem(STORE,JSON.stringify(payload));studio.dirty=false;projectSource='local';message('Project saved in local storage. Export a backup.');return true;}catch{message('Storage unavailable or full. Export project JSON now to keep your work.');return false;} }
   }
   function scheduleSave() {clearTimeout(saveTimer);saveTimer=setTimeout(save,450);}
   async function stored(key) {
@@ -289,12 +290,51 @@ window.createCodaDeveloperConsole = function (api) {
     // A newer fallback must win over a stale IndexedDB save after quota failures.
     return localValue&&(!databaseValue||(localValue.savedAt||0)>(databaseValue.savedAt||0))?localValue:databaseValue;
   }
+  async function decodeProjectImages(data) {
+    for(const a of data.assets)if(a.kind==='image') {
+      const [w,h]=await api.imageDimensions(a.data);
+      if(w<1||h<1||w>8192||h>8192)throw Error('Invalid embedded image dimensions.');
+    }
+  }
+  async function published() {
+    if(!api.publishedProjectUrl)return {project:null,error:null};
+    const request=new AbortController(),timeout=setTimeout(()=>request.abort(),10000);
+    try {
+      const response=await fetch(api.publishedProjectUrl,{cache:'no-cache',signal:request.signal});
+      if(!response.ok)throw Error('HTTP '+response.status);
+      const data=await response.json();
+      if(!validate(data))throw Error('Unsupported project data');
+      await decodeProjectImages(data);
+      return {project:clone(data),error:null};
+    }catch(error){return {project:null,error:'Published layout could not load: '+(error.name==='AbortError'?'request timed out':error.message)+'.'};}
+    finally{clearTimeout(timeout);}
+  }
   async function load() {
     try {
-      const data=await stored(STORE);
-      if(data) {if(!validate(data))throw Error('Saved project is invalid; it has been preserved. Import a valid backup.');applyState(data);message('Restored complete world project.');}
-      else { const legacy=await stored(api.legacyStore);if(legacy&&api.validLegacy(legacy))studio.assets=clone(legacy.assets);collision.apply(api.legacyCollision);invalidate();api.refresh();message('Ready. Existing assets, collision and foreground edits preserved.'); }
-    }catch(err){loadFailed=true;message(err.message);}
+      const [publication,data]=await Promise.all([published(),stored(STORE)]);
+      publishedProject=publication.project;publishedError=publication.error;
+      if(data) {
+        if(!validate(data))throw Error('Saved project is invalid; it has been preserved. Import a valid backup.');
+        await decodeProjectImages(data);applyState(data);projectSource='local';
+        message('Restored complete world project.'+(publication.error?' '+publication.error+' Your saved edits are intact.':''));
+      }else {
+        const legacy=await stored(api.legacyStore),hasLegacy=legacy&&api.validLegacy(legacy);
+        const hasLocalEdits=hasLegacy||studio.assets.length>0||layer.actions.length>0||(api.legacyCollision?.length||0)>0;
+        if(hasLocalEdits){
+          if(hasLegacy)studio.assets=clone(legacy.assets);
+          collision.apply(api.legacyCollision||[]);invalidate();api.refresh();projectSource='legacy';
+          message('Ready. Existing assets, collision and foreground edits preserved.'+(publication.error?' '+publication.error:''));
+        }else if(publishedProject){
+          applyState(publishedProject);projectSource='published';
+          message('Loaded the published world layout. New edits save only in this browser.');
+        }else{
+          collision.apply([]);invalidate();api.refresh();
+          loadFailed=!!publication.error;
+          loadError=publication.error?publication.error+' Showing the original map; export edits before reloading.':null;
+          message(loadError||'Ready. Existing assets, collision and foreground edits preserved.');
+        }
+      }
+    }catch(err){loadFailed=true;loadError=err.message;message(loadError);}
     loading=false;studio.ready=true; refresh();catalogPreview();
   }
   function exportProject() {
@@ -306,9 +346,9 @@ window.createCodaDeveloperConsole = function (api) {
       if(file.size>70*1024*1024)throw Error('Project exceeds the 70 MB limit.');
       const data=JSON.parse(await file.text());if(!validate(data))throw Error('Invalid world project. Current edits are unchanged.');
       // Decode all embedded artwork before committing, so a broken image cannot replace a working project.
-      for(const a of data.assets)if(a.kind==='image') {const [w,h]=await api.imageDimensions(a.data);if(w<1||h<1||w>8192||h>8192)throw Error('Invalid embedded image dimensions.');}
+      await decodeProjectImages(data);
       if(!confirm('Replace the current complete world project? You can undo this import.'))return;
-      finishGesture();const before=snapshot();applyState(data);loadFailed=false;changed(before);message('Imported complete project. Undo is available.');
+      finishGesture();const before=snapshot();applyState(data);loadFailed=false;loadError=null;changed(before);message('Imported complete project. Undo is available.');
     }catch(err){message('Import failed: '+err.message);}
   }
   function refresh() {
@@ -373,7 +413,12 @@ window.createCodaDeveloperConsole = function (api) {
   $('devSave').onclick=save;$('devExport').onclick=exportProject;$('assetExport').onclick=exportProject;
   $('devImport').onclick=$('assetImport').onclick=()=>$('devImportFile').click();
   $('devImportFile').onchange=e=>{const file=e.target.files?.[0];e.target.value='';importFile(file);};
-  $('devReset').onclick=()=>{if(!confirm('Reset all objects, collision and local foreground edits? Published artwork stays intact. Undo is available.'))return;const before=snapshot();applyState({assets:[],collision:[],strokes:[]});loadFailed=false;changed(before);};
+  $('devReset').onclick=()=>{
+    if(api.publishedProjectUrl&&!publishedProject){message('The published layout is unavailable. Your current project has been kept. Reload to retry before resetting.');return;}
+    if(!confirm(publishedProject?'Reset your local project to the published world layout? Undo is available.':'Reset all objects, collision and local foreground edits? Published artwork stays intact. Undo is available.'))return;
+    const before=snapshot();applyState(publishedProject||{assets:[],collision:[],strokes:[]});loadFailed=false;loadError=null;changed(before);
+    message(publishedProject?'Restored the published world layout. Undo is available.':'Restored the original world layout. Undo is available.');
+  };
   $('editorToggle').onclick=()=>open('layers');
   window.addEventListener('keydown',e=>{
     const typing=['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)||e.target?.isContentEditable;
@@ -394,5 +439,5 @@ window.createCodaDeveloperConsole = function (api) {
   setTab('objects');load();
   return {snapshot,recordChange,undoRedo,save,refresh,onToggle,open,renderBase,renderCleanup,suppressOriginal,drawUnliftedPixels,originalPicture:a=>a.origin?picture(a.origin):null,validateAssetExtension,walkableOverride,pointerDown,pointerMove,pointerEnd,drawOverlay,liftedRegion,finishGesture,isPlaytest:()=>playtest,isEditing:()=>studio.active&&!playtest,exportProject,loadReady:()=>!loading,validate,
     // Data-only inspection supports repeatable browser integration checks.
-    getProject:()=>clone(documentData())};
+    getProject:()=>clone(documentData()),getPublishedProject:()=>publishedProject?clone(publishedProject):null,getProjectSource:()=>projectSource};
 };
