@@ -8,6 +8,8 @@ python3 -m http.server 8000 --bind 127.0.0.1
 
 Open `world-preview.html` from that server in your browser. Use the **Developer** button, **F2**, or **Shift+A** to open the editor. It edits scene data through controls; it does not evaluate JavaScript or require browser developer tools.
 
+**C** opens Collision from gameplay or switches to it from another editor tab or playtest. **Shift+L** opens Layers the same way. These shortcuts leave text entry and browser modifier shortcuts alone. Opening the editor ends an active NPC conversation so map painting can receive pointer input. Fullscreen includes the map and its editor controls. On portrait phones, the console appears below the map; scroll between the tools and the canvas to paint without the panel covering the artwork.
+
 For the live musician cast, conversations, and avatar customization, see [MUSICIANS.md](MUSICIANS.md). NPC routes use the same editable collision map and follow moved cabinet approach points.
 
 ## Objects
@@ -31,6 +33,8 @@ The room now uses a cleaned background and foreground atlas with all 33 painted 
 ## Collision
 
 Open the **Collision** tab, or press **C** from gameplay. Drag to paint **Block walking**, **Allow walking**, or **Restore original** with a 1, 3, or 5-cell brush. Cells are 10 world pixels across. Green cells allow walking; red cells block it. Outlined cells contain explicit overrides. These changes affect player movement and NPC pathfinding, including the original architectural walls.
+
+The displayed cell grid is the shared authority for walking and pathfinding. Original room geometry generates its initial values; additional invisible geometry checks do not override the cells during play. Select **Playtest** after painting to walk the edited map, or close the console with **F2**. Editing mode pauses character movement.
 
 Object art and collision are separate. For an edited original, **Open collision at original position** releases its old rectangular source area. Enable **Solid collision footprint** to add a footprint that follows the object's position, size, and rotation; its left/top/width/height fields use percentages of the object's dimensions. Explicit collision paint takes priority over object footprints and released source areas. Restore removes painted overrides and returns those cells to the original map.
 
@@ -66,10 +70,13 @@ node --test tests/world-object-runtime.test.cjs
 python3 tests/clean-world-art.py
 python3 tests/developer-console-browser.py
 python3 tests/published-world-browser.py
+python3 tests/collision-integration-browser.py
 ```
 
 The collision tests exercise override restoration, atomic rejection of invalid imports, and coordinate-aware interpolated pointer strokes. The browser runner requires Python Playwright and Chromium, starts its own temporary local server, and exercises the editor through its UI in disposable browser contexts. Existing local projects are preserved.
 
 The published-world checks cover the exact shared export, local-save priority, Reset and undo, loading and failure handling, cabinet reachability, and lifted-object erasures, including transformed masks and actual character occlusion.
+
+The collision integration checks compare walkability with every displayed cell, test a restored cell at a former hidden wall edge, and exercise real walking and click navigation against painted walls, opening cells and reloading saves, editor shortcuts, conversations, fullscreen controls, and portrait phone map access.
 
 The art checks require Pillow and verify that pixels outside the 33 repair regions are unchanged and that foreground atlas coordinates and alpha masks remain stable. To rebuild art from a new image-generated empty-room plate, run `node scripts/build-clean-world.cjs /path/to/empty-room-plate.png`. The plate must be exactly 1672 × 941. This uses Chromium to align repaired areas to surrounding pixels, feather their seams, and update only the affected foreground texels. The original images and live character atlas are retained.

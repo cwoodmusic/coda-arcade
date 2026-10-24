@@ -57,7 +57,7 @@ window.createCodaDeveloperConsole = function (api) {
       <label class="studioField">Left %<input id="devColX" type="number" min="-100" max="100"></label><label class="studioField">Top %<input id="devColY" type="number" min="-100" max="100"></label>
       <label class="studioField">Width %<input id="devColW" type="number" min="1" max="200"></label><label class="studioField">Height %<input id="devColH" type="number" min="1" max="200"></label></div></div>`;
   $('assetSelection').append(extra);
-  pane('collision', '<h3 class="dev-heading">Walking & collision</h3><p class="dev-note">Drag to block or open cells. Restore returns cells to the published map. Changes affect player movement and NPC routes, including original walls.</p><div id="devCollisionTools"></div>');
+  pane('collision', '<h3 class="dev-heading">Walking & collision</h3><p class="dev-note">Drag to block or open cells. Restore returns cells to the original map. Changes affect player movement and NPC routes, including original walls.</p><div id="devCollisionTools"></div>');
   pane('layers', `<h3 class="dev-heading">Foreground & background</h3><p class="dev-note">Paint promotes existing room pixels in front of actors. Erase sends them behind actors. For moved objects, choose Background, Actor depth, or Foreground in Objects.</p>
     <label class="studioField">Brush tool<select id="devLayerTool"><option value="paint">Paint foreground</option><option value="erase">Send to background / erase mask</option></select></label>
     <label class="studioField">Brush size<select id="devLayerSize"><option>1</option><option>2</option><option selected>4</option><option>8</option><option>16</option></select></label>
@@ -425,6 +425,14 @@ window.createCodaDeveloperConsole = function (api) {
     if(e.key==='F2'&&!typing){e.preventDefault();e.stopImmediatePropagation();api.toggle(!studio.active);return;}
     if(!studio.active)return;
     if(typing){e.stopImmediatePropagation();return;}
+    if(!e.repeat&&!e.ctrlKey&&!e.metaKey&&!e.altKey){
+      const key=e.key.toLowerCase(),destination=key==='c'?'collision':key==='l'&&e.shiftKey?'layers':null;
+      if(destination){
+        e.preventDefault();e.stopImmediatePropagation();
+        if(playtest)togglePlaytest();
+        open(destination);return;
+      }
+    }
     if(e.key==='Escape'&&(pickSample||studio.capturing)){e.preventDefault();e.stopImmediatePropagation();pickSample=false;studio.capturing=null;message('Selection cancelled.');return;}
     if(playtest){
       if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();togglePlaytest();}

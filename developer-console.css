@@ -20,3 +20,13 @@
 #assetStudio .dev-status { margin:4px 0; font-size:11px; }
 #assetStudio .collision-editor-fields label { display:grid; gap:6px; margin:10px 0; }
 @media(max-width:650px) { #assetStudio.dev-console { top:155px; max-height:calc(100dvh - 170px); } }
+/* A floating panel covers the entire map on portrait phones. Put its controls
+ * below the map instead, so scrolling never leaves an overlay intercepting paint. */
+@media(max-width:650px) and (orientation:portrait) {
+  #assetStudio.dev-console {
+    position:relative; inset:auto!important; width:calc(100vw - 24px);
+    max-height:none; overflow:visible; margin:12px auto;
+  }
+  #assetStudio .studioHead, #assetStudio .dev-tabs, #assetStudio > :last-child { position:static; }
+  #assetStudio .studioHead button[aria-label="Move console to the other side"] { display:none; }
+}
