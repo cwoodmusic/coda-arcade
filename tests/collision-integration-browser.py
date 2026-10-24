@@ -115,6 +115,7 @@ class CollisionIntegrationTests(unittest.TestCase):
 
     def test_mobile_collision_controls_leave_the_map_accessible(self):
         self.page.set_viewport_size({'width':390, 'height':844})
+        self.page.locator('#worldMenuBtn').click()
         self.page.locator('#assetToggle').click()
         self.page.locator('#devTab-collision').click()
         self.paint(1205,505,'open')

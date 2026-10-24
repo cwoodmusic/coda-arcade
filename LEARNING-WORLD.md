@@ -2,6 +2,8 @@
 
 Open `world-preview.html`. Guest play works with a static web server and no credentials. The connected world keeps the uploaded project layout, collision paint, and layer edits.
 
+Phones and tablets use the same page with touch movement, a compact menu, a following camera, and room-specific controls. See [MOBILE.md](MOBILE.md) for phone play and the touch composer.
+
 ## Rooms and people
 
 - **Piano Lab:** approach the north doorway or use the header button. WASD/arrows walk, Space jumps. The 22 painted floor keys have individual perspective polygons. Free play sounds on entry; during a Chopin game, stand on the desired key and press **E**. The back wall shows the sounded pitch. **Show letter names on keys** is optional. Accessible piano buttons offer the same intentional note input.

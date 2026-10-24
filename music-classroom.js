@@ -31,13 +31,19 @@
     const host=api.host;if(!host)throw new Error('Music classroom needs a host element.');
     const doc=host.ownerDocument,win=doc.defaultView||root,renderer=api.renderer;
     let opened=false,destroyed=false,priorFocus=null,selected='welcome',frame=0,last=0,clock=0,walking=false,near=null,destination=null,audio=null,voices=[],audioTimers=[];
+    let mobileView='room';const touchHeld=new Set(),mobileLayout=()=>win.matchMedia?.('(max-width:760px), (pointer:coarse)').matches===true;
     const keys=new Set(),player={x:500,y:510,facing:'up',phase:0};
     host.classList.add('music-classroom');host.setAttribute('role','dialog');host.setAttribute('aria-modal','true');host.setAttribute('aria-labelledby','classroomTitle');
-    host.innerHTML=`<div class="classroom-shell"><header class="classroom-heading"><div><span class="classroom-eyebrow">CODA ARCADE · MUSIC ROOMS</span><h1 id="classroomTitle">The Music Classroom</h1><p>Professor Haydn’s shelves are always open.</p></div><button id="classroomClose" type="button">← Return to arcade <small>Esc</small></button></header><section class="classroom-room" aria-label="Walkable music classroom"><canvas id="classroomCanvas" width="1000" height="600" tabindex="0" aria-label="Music classroom. Walk with WASD or arrows. E talks to Professor Haydn or reads a nearby bookshelf. The study guide below offers the same books."></canvas><div class="classroom-room-controls"><p>WASD / arrows · Walk &nbsp; E · Talk or read &nbsp; Click / tap · Walk</p><div><button type="button" id="classroomTalk">Talk to Professor Haydn</button><button type="button" id="classroomRead">Read a nearby shelf</button></div></div></section><p class="classroom-professor-message" id="classroomStatus" role="status" aria-live="polite">Haydn: “Welcome! Come in, choose a book, and ask questions.”</p><main class="classroom-library"><nav aria-label="Classroom books"><h2>The study shelves</h2><label class="classroom-search">Find a topic<input id="classroomSearch" type="search" placeholder="Try intervals, triads, or rhythm"></label><div class="classroom-topic-list" id="classroomTopics"></div></nav><article id="classroomBook" class="classroom-book" tabindex="-1" aria-labelledby="classroomBookTitle"></article></main></div>`;
+    host.innerHTML=`<div class="classroom-shell"><header class="classroom-heading"><div><span class="classroom-eyebrow">CODA ARCADE · MUSIC ROOMS</span><h1 id="classroomTitle">The Music Classroom</h1><p>Professor Haydn’s shelves are always open.</p></div><button id="classroomClose" type="button" aria-label="Return to arcade"><span class="room-return-full">← Return to arcade</span><span class="room-return-short" aria-hidden="true">← Arcade</span> <small>Esc</small></button></header><nav class="classroom-mobile-nav" aria-label="Music classroom views"><button type="button" data-classroom-view="room">Room</button><button type="button" data-classroom-view="books">Study books</button></nav><section class="classroom-room" aria-label="Walkable music classroom"><canvas id="classroomCanvas" width="1000" height="600" tabindex="0" aria-label="Music classroom. Walk with WASD or arrows. E talks to Professor Haydn or reads a nearby bookshelf. The study guide below offers the same books."></canvas><div class="classroom-room-controls"><p><span class="room-keyboard-hint">WASD / arrows · Walk &nbsp; E · Talk or read &nbsp; Click / tap · Walk</span><span class="room-touch-hint">Tap the floor to walk, or use the movement pad · Talk / Read</span></p><div><button type="button" id="classroomTalk">Talk to Professor Haydn</button><button type="button" id="classroomRead">Read a nearby shelf</button></div></div></section><p class="classroom-professor-message" id="classroomStatus" role="status" aria-live="polite">Haydn: “Welcome! Come in, choose a book, and ask questions.”</p><main class="classroom-library"><nav aria-label="Classroom books"><h2>The study shelves</h2><label class="classroom-search">Find a topic<input id="classroomSearch" type="search" placeholder="Try intervals, triads, or rhythm"></label><div class="classroom-topic-list" id="classroomTopics"></div></nav><article id="classroomBook" class="classroom-book" tabindex="-1" aria-labelledby="classroomBookTitle"></article></main></div>`;
     const el=id=>host.querySelector('#'+id),canvas=el('classroomCanvas');let g=canvas.getContext('2d');
     const background=doc.createElement('canvas');background.width=1000;background.height=600;let backgroundReady=false,backgroundImage=null;
     if(api.backgroundSrc){backgroundImage=new win.Image();backgroundImage.onload=()=>{if(opened)draw();};backgroundImage.src=api.backgroundSrc;}
     function status(text){el('classroomStatus').textContent=text;}
+    function setMobileView(view,focus=false){
+      if(!['room','books'].includes(view))return;releaseControls();clearKeys();mobileView=view;host.dataset.mobileView=view;
+      for(const button of host.querySelectorAll('[data-classroom-view]'))button.setAttribute('aria-pressed',String(button.dataset.classroomView===view));
+      if(focus&&mobileLayout()){host.scrollTop=0;(view==='room'?canvas:el('classroomSearch')).focus({preventScroll:true});}
+    }
     function listTopics(){
       const query=el('classroomSearch').value.trim().toLocaleLowerCase(),list=el('classroomTopics');list.replaceChildren();
       const matches=TOPICS.filter(topic=>(topic.title+' '+topic.keywords+' '+topic.shelf).toLocaleLowerCase().includes(query));
@@ -51,7 +57,7 @@
       if(topic.audio){const controls=doc.createElement('div');controls.className='classroom-listen';for(const example of topic.audio){const button=doc.createElement('button');button.type='button';button.textContent='♫ '+example.label;button.onclick=()=>playExample(example);controls.append(button);}const stop=doc.createElement('button');stop.type='button';stop.textContent='Stop example';stop.onclick=stopAudio;controls.append(stop);article.append(controls);}
       const quiz=topic.quiz,check=doc.createElement('section');check.className='classroom-check';check.setAttribute('aria-label','Check your understanding');const heading=doc.createElement('h3');heading.textContent='Quick check';const question=doc.createElement('p');question.textContent=quiz.question;const answers=doc.createElement('div');answers.className='classroom-answers';const feedback=doc.createElement('p');feedback.className='classroom-feedback';feedback.setAttribute('role','status');
       quiz.answers.forEach((answer,index)=>{const button=doc.createElement('button');button.type='button';button.textContent=answer;button.onclick=()=>{const correct=index===quiz.correct;feedback.dataset.correct=String(correct);feedback.textContent=(correct?'Haydn: “Exactly! ':'Haydn: “Try again. ')+quiz.explanation+'”';};answers.append(button);});
-      check.append(heading,question,answers,feedback);article.append(check);listTopics();status('Haydn: “'+topic.title+'. A fine place to begin.”');if(focus){article.focus({preventScroll:true});article.scrollIntoView({behavior:'auto',block:'start'});}
+      check.append(heading,question,answers,feedback);article.append(check);listTopics();status('Haydn: “'+topic.title+'. A fine place to begin.”');if(focus){if(mobileLayout())setMobileView('books');article.focus({preventScroll:true});article.scrollIntoView({behavior:'auto',block:'start'});}
     }
     function stopAudio(){for(const timer of audioTimers)win.clearTimeout(timer);audioTimers=[];for(const voice of voices)try{voice.stop();}catch{}voices=[];if(audio){audio.close().catch(()=>{});audio=null;}}
     function playExample(example){
@@ -114,7 +120,13 @@
       if(distance){player.facing=Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'down':'up';const amount=destination?Math.min(distance,190*dt):190*dt,nx=player.x+dx/distance*amount,ny=player.y+dy/distance*amount,before={...player};if(passable(nx,player.y))player.x=nx;if(passable(player.x,ny))player.y=ny;const moved=Math.hypot(player.x-before.x,player.y-before.y);walking=moved>.01;player.phase+=moved/14;if(destination&&!walking)destination=null;}
       near=nearest();el('classroomRead').disabled=near?.type!=='shelf';draw();frame=win.requestAnimationFrame(tick);
     }
-    function clearKeys(){keys.clear();walking=false;destination=null;}
+    function clearKeys(){touchHeld.clear();keys.clear();walking=false;destination=null;}
+    function control(raw,pressed){
+      const key=String(raw).toLowerCase();if(!opened||destroyed||!['w','a','s','d','arrowup','arrowleft','arrowdown','arrowright','e'].includes(key))return false;
+      if(pressed){if(touchHeld.has(key))return true;canvas.focus({preventScroll:true});touchHeld.add(key);keydown({key,target:canvas,preventDefault(){},repeat:false});}
+      else{touchHeld.delete(key);keyup({key});}return true;
+    }
+    function releaseControls(){for(const key of Array.from(touchHeld))control(key,false);touchHeld.clear();}
     function keydown(event){
       if(!opened)return;
       if(event.key==='Escape'){event.preventDefault();close();return;}
@@ -123,14 +135,15 @@
       const key=event.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e'].includes(key)){event.preventDefault();if(key==='e'){if(!event.repeat){clearKeys();interact();}}else keys.add(key);}
     }
     function keyup(event){keys.delete(event.key.toLowerCase());}
-    function open(){if(destroyed||opened)return;priorFocus=doc.activeElement;opened=true;host.hidden=false;clearKeys();last=win.performance.now();selectTopic(selected);canvas.focus({preventScroll:true});frame=win.requestAnimationFrame(tick);}
+    function open(){if(destroyed||opened)return;priorFocus=doc.activeElement;opened=true;host.hidden=false;host.scrollTop=0;setMobileView('room');clearKeys();last=win.performance.now();selectTopic(selected);canvas.focus({preventScroll:true});frame=win.requestAnimationFrame(tick);}
     function close(){if(!opened)return;opened=false;host.hidden=true;win.cancelAnimationFrame(frame);clearKeys();stopAudio();if(priorFocus?.isConnected)priorFocus.focus({preventScroll:true});api.onClose?.();}
     function destroy(){if(destroyed)return;close();destroyed=true;host.removeEventListener('keydown',keydown);win.removeEventListener('keyup',keyup);win.removeEventListener('blur',clearKeys);}
     el('classroomClose').onclick=close;el('classroomTalk').onclick=()=>{clearKeys();selectTopic('welcome',true);};el('classroomRead').onclick=()=>{clearKeys();interact();};el('classroomSearch').oninput=listTopics;
     canvas.addEventListener('pointerdown',event=>{if(!opened||event.button!==0)return;event.preventDefault();canvas.focus({preventScroll:true});const box=canvas.getBoundingClientRect(),x=(event.clientX-box.left)*1000/box.width,y=(event.clientY-box.top)*600/box.height;if(passable(x,y))destination={x,y};});
     host.addEventListener('keydown',keydown);win.addEventListener('keyup',keyup);win.addEventListener('blur',clearKeys);canvas.addEventListener('blur',clearKeys);
-    selectTopic('welcome');draw();
-    return {open,close,destroy,selectTopic,getState:()=>({open:opened,topic:selected,player:{...player},near:near?{...near}:null,audioPlaying:!!audio,professor:{id:HAYDN.id,name:HAYDN.name,x:HAYDN.x,y:HAYDN.y},shelves:SHELVES.map(shelf=>({id:shelf.id,label:shelf.label,x:shelf.approach.x,y:shelf.approach.y}))})};
+    for(const button of host.querySelectorAll('[data-classroom-view]'))button.addEventListener('click',()=>setMobileView(button.dataset.classroomView,true));
+    selectTopic('welcome');setMobileView('room');draw();
+    return {open,close,destroy,selectTopic,control,releaseControls,setMobileView,getState:()=>({open:opened,mobileView,topic:selected,player:{...player},near:near?{...near}:null,audioPlaying:!!audio,professor:{id:HAYDN.id,name:HAYDN.name,x:HAYDN.x,y:HAYDN.y},shelves:SHELVES.map(shelf=>({id:shelf.id,label:shelf.label,x:shelf.approach.x,y:shelf.approach.y}))})};
   }
   return {TOPICS,SHELVES,HAYDN,topicFor,createCodaMusicClassroom};
 });

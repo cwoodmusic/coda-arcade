@@ -79,6 +79,7 @@ class ClassroomTests(unittest.TestCase):
 
     def test_books_remain_accessible_at_phone_width(self):
         self.page.set_viewport_size({'width':375,'height':812})
+        self.page.get_by_role('button',name='Study books',exact=True).click()
         self.page.locator('#classroomSearch').fill('Music Triad')
         self.page.locator('[data-topic="music-triad"]').click()
         self.assertIn('rhythm card strategy game',self.page.locator('#classroomBook').inner_text())

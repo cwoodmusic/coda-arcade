@@ -20,7 +20,7 @@ Typing, dialogs, cabinets, and editing keep their own controls. Space activates 
 
 `createCodaCharacterRenderer()` exposes `drawPlayer`, `drawNPC`, `normalizeProfile`, `appearanceFor`, `sampleMotion`, `labelOffset`, `catalog`, `ready`, `isReady`, `error`, and `getState`. Readiness is immediate because character art needs no downloads. QA reports `mode: javascript-characters`, `base: bald-gray`, and `sourcePolicy: javascript-drawn`. A bounded palette cache avoids repeated color calculations.
 
-The implementation restores the procedural style from the version before image sprites, with the current independent cosmetic slots and saved-profile compatibility. The world loads it with revision `rooms-27` so returning browsers fetch the restored renderer.
+The implementation restores the procedural style from the version before image sprites, with the current independent cosmetic slots and saved-profile compatibility. The world loads it with revision `mobile-28` so returning browsers fetch the restored renderer.
 
 ## World rendering
 

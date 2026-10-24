@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Coda Arcade — Neon World Preview</title><style>
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Coda Arcade — Neon World Preview</title><style>
 *{box-sizing:border-box}body{margin:0;background:#10101e;color:#e9def9;font:15px system-ui}header{padding:12px 20px;display:flex;align-items:center;gap:18px;justify-content:space-between;background:#211a37}a{color:#a6eff4}button{background:#392f58;color:white;border:1px solid #ba8fdf;border-radius:6px;padding:9px 12px;cursor:pointer}button:hover{background:#514073}#view{display:block;width:min(100vw,calc((100dvh - 110px) * 1672 / 941));height:auto;aspect-ratio:1672/941;margin:0 auto;image-rendering:pixelated;background:#10101e;touch-action:none}footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 16px;min-height:44px;background:#211a37;font-size:12px}#dialog{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);width:min(490px,90vw);padding:20px;background:#261d40;border:2px solid #d8a6f1;box-shadow:0 8px 50px #000b;display:none}#dialog strong{color:#f4c8fa}#dialog p{line-height:1.6}#dialog button{float:right}@media(max-width:650px){header{font-size:12px;padding:8px}#view{width:min(100vw,calc((100dvh - 110px) * 1672 / 941));height:auto}}
 #gameoverlay{position:fixed;inset:0;z-index:100;background:#121327;display:flex;flex-direction:column}#gameoverlay[hidden]{display:none}.gamebar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#231a3c;border-bottom:2px solid #b583dc}.gamebar strong{color:#f0d7ff}#gameiframe{border:0;width:100%;flex:1;min-height:0;background:#111628}body.game-open{overflow:hidden}@media(max-width:650px){.gamebar{gap:6px}.gamebar strong{font-size:12px}.gamebar a{font-size:11px}}
 #panel{position:fixed;z-index:90;top:50%;left:50%;transform:translate(-50%,-50%);width:min(570px,94vw);max-height:84dvh;overflow:auto;padding:20px;background:#231c3b;border:2px solid #c69be9;box-shadow:0 0 0 100vmax #05030ab8,0 14px 55px #000c;border-radius:12px}#panel[hidden]{display:none}.panelHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.panelRow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0;padding:10px;border:1px solid #66517f;border-radius:7px}.panelRow small{display:block;opacity:.75}.formRow{display:grid;gap:5px;margin:10px 0}.formRow select,.formRow input{background:#17142c;color:#fff;border:1px solid #a08dbd;padding:9px;border-radius:5px;width:100%}.panelActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.muted{color:#c1b4d7;font-size:13px}.panelMsg{min-height:22px;color:#9fe9dc}
@@ -16,7 +16,7 @@
 /* Coda Asset Studio v11: stays separate from collision + pixel masks. */
 #assetStudio{position:fixed;left:12px;top:80px;z-index:65;width:min(334px,calc(100vw - 24px));max-height:calc(100dvh - 99px);overflow:auto;background:#171529f5;border:1px solid #eac17d;box-shadow:0 12px 50px #05010de0,0 0 22px #fdac4a24;border-radius:12px;padding:13px;color:#f8efff;font:12px system-ui;backdrop-filter:blur(9px)}
 #assetStudio[hidden]{display:none}#assetStudio .studioHead{display:flex;align-items:center;justify-content:space-between;color:#ffe4a4;font-size:14px;gap:9px;margin-bottom:7px}#assetStudio .studioActions{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0}#assetStudio button{font:inherit;min-height:28px;padding:5px 7px}#assetStudio .studioActions button{flex:1 0 90px}#assetStudio button:disabled{opacity:.36;cursor:not-allowed}#assetStudio hr{border:0;border-top:1px solid #655374;margin:13px 0}#assetStudio .studioField{display:grid;gap:3px;margin:7px 0}#assetStudio .studioField>label{font-weight:650;color:#dccdf3}#assetStudio input:not([type=checkbox]),#assetStudio select{background:#131024;border:1px solid #866e9b;color:#fff;padding:7px;border-radius:5px;width:100%;font:inherit;min-width:0}#assetStudio input[type=checkbox]{accent-color:#f9c880}#assetStudio .studioGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}#assetStudio .studioTip{color:#c9b9d6;line-height:1.45;font-size:11px;margin:6px 0}#assetStudio #assetList{height:108px;padding:2px}#assetStudio #assetList option{padding:6px}#assetStudio #assetMessage{color:#bbf5e5;min-height:18px;overflow-wrap:anywhere}#assetStudio #assetSelection[hidden]{display:none}#assetStudio .studioCheck{display:inline-flex;align-items:center;gap:6px;margin:5px 11px 5px 0}#assetStudio .studioCollapsible{border:1px solid #655374;border-radius:7px;padding:8px}#assetStudio summary{cursor:pointer;color:#ffe4b1;font-weight:650}#assetToggle{border-color:#eecc7c}#view.asset-editing{cursor:crosshair;touch-action:none}#assetStudio #assetAdd{background:#675022;border-color:#e8b85c}#assetStudio #assetImport{border-color:#80d3ed}#assetStudio #assetExport{border-color:#80d3ed}#assetStudio #assetHelp{background:#271d3c}#assetStudio .studioHot{color:#ffcfa4}body.asset-console-open #layerEditor{display:none!important}@media(max-width:650px){#assetStudio{top:120px;max-height:calc(100dvh - 138px)}}
-</style><link rel="stylesheet" href="developer-console.css?v=rooms-27"><link rel="stylesheet" href="musician-ui.css?v=rooms-27"><link rel="stylesheet" href="boutique-ui.css?v=rooms-27"><script src="collision-editor.js?v=rooms-27"></script><script src="world-object-catalog.js?v=rooms-27"></script><script src="world-object-runtime.js"></script><script src="world-lighting.js?v=rooms-27"></script><script src="dance-floor.js?v=rooms-27"></script><script src="dj-library.js?v=rooms-27"></script><script src="developer-console.js?v=rooms-27"></script><script src="npc-behavior.js?v=rooms-27"></script><script src="character-renderer.js?v=rooms-27"></script><script src="musician-ui.js?v=rooms-27"></script><script src="boutique-ui.js?v=rooms-27"></script><link rel="stylesheet" href="notes-shop.css?v=rooms-27"><link rel="stylesheet" href="piano-lab.css?v=rooms-27"><link rel="stylesheet" href="music-classroom.css?v=rooms-27"><script src="notes-shop.js?v=rooms-27"></script><script src="piano-lab.js?v=rooms-27"></script><script src="music-classroom.js?v=rooms-27"></script><link rel="stylesheet" href="player-progression.css?v=rooms-27"><link rel="stylesheet" href="hall-of-fame.css?v=rooms-27"><script src="player-progression.js?v=rooms-27"></script><script src="hall-of-fame.js?v=rooms-27"></script><script src="musician-missions.js?v=rooms-27"></script><script src="song-machine/sound-library.js?v=rooms-27"></script><header><b>♫ CODA ARCADE · CONNECTED WORLD / WORLD BUILDER</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="levelBtn" type="button" aria-label="Your musician level">Level 1 · 0 XP</button> <button id="hallFameBtn" type="button">Hall of Fame</button> <button id="notesBtn" type="button" aria-label="Open Notes shop">♫ 150 Notes</button> <button id="pianoLabBtn" type="button">Piano Lab</button> <button id="classroomBtn" type="button">Classroom</button> <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="assetToggle" type="button" title="Open Asset Studio (Shift+A)">✥ Assets</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0" aria-label="Connected arcade. Move with WASD or arrow keys. Press Space to jump and E to interact."></canvas><footer><span>WASD / arrows · Walk · Space · Jump · Wheel / + / − Zoom · 0 Reset · F2 Developer console · C Edit collision · Shift+L Edit layers · Right-drag to pan in editor &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 11 · asset studio · animations · layers · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
+</style><link rel="stylesheet" href="mobile-controls.css?v=mobile-28"><link rel="stylesheet" href="world-mobile.css?v=mobile-28"><script src="mobile-controls.js?v=mobile-28"></script><link rel="stylesheet" href="developer-console.css?v=mobile-28"><link rel="stylesheet" href="musician-ui.css?v=mobile-28"><link rel="stylesheet" href="boutique-ui.css?v=mobile-28"><script src="collision-editor.js?v=mobile-28"></script><script src="world-object-catalog.js?v=mobile-28"></script><script src="world-object-runtime.js"></script><script src="world-lighting.js?v=mobile-28"></script><script src="dance-floor.js?v=mobile-28"></script><script src="dj-library.js?v=mobile-28"></script><script src="developer-console.js?v=mobile-28"></script><script src="npc-behavior.js?v=mobile-28"></script><script src="character-renderer.js?v=mobile-28"></script><script src="musician-ui.js?v=mobile-28"></script><script src="boutique-ui.js?v=mobile-28"></script><link rel="stylesheet" href="notes-shop.css?v=mobile-28"><link rel="stylesheet" href="piano-lab.css?v=mobile-28"><link rel="stylesheet" href="music-classroom.css?v=mobile-28"><script src="notes-shop.js?v=mobile-28"></script><script src="piano-lab.js?v=mobile-28"></script><script src="music-classroom.js?v=mobile-28"></script><link rel="stylesheet" href="player-progression.css?v=mobile-28"><link rel="stylesheet" href="hall-of-fame.css?v=mobile-28"><script src="player-progression.js?v=mobile-28"></script><script src="hall-of-fame.js?v=mobile-28"></script><script src="musician-missions.js?v=mobile-28"></script><script src="song-machine/sound-library.js?v=mobile-28"></script><header><b>♫ CODA ARCADE · CONNECTED WORLD / WORLD BUILDER</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="levelBtn" type="button" aria-label="Your musician level">Level 1 · 0 XP</button> <button id="hallFameBtn" type="button">Hall of Fame</button> <button id="notesBtn" type="button" aria-label="Open Notes shop">♫ 150 Notes</button> <button id="pianoLabBtn" type="button">Piano Lab</button> <button id="classroomBtn" type="button">Classroom</button> <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="assetToggle" type="button" title="Open Asset Studio (Shift+A)">✥ Assets</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><main id="worldStage" aria-label="Arcade world"><canvas id="view" width="1672" height="941" tabindex="0" aria-label="Connected arcade. Move with WASD or arrow keys. Press Space to jump and E to interact."></canvas></main><footer><span>WASD / arrows · Walk · Space · Jump · Wheel / + / − Zoom · 0 Reset · F2 Developer console · C Edit collision · Shift+L Edit layers · Right-drag to pan in editor &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 11 · asset studio · animations · layers · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
   <div class="editorbanner"><b>✎ FOREGROUND EDITOR</b><button id="editClose" type="button">✕</button></div>
   <div class="mini">Paint with pixels from the existing arcade artwork. Erase removes unwanted foreground coverage; the floor stays unchanged.</div>
   <div class="editorline"><button type="button" id="editPaint" class="current">🖌 Paint</button><button type="button" id="editErase">⌫ Erase</button></div>
@@ -76,7 +76,7 @@
  <p id="assetMessage" role="status">Your assets are saved in this browser. Export scene JSON to publish or move them to another computer.</p>
  <details><summary id="assetHelp">Help · shortcuts and storage</summary><p class="studioTip">Shift+A opens/closes. Delete removes. Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z redo. Arrows nudge selected asset (Shift = 8 px). Escape closes. GIF/APNG playback depends on browser support; sprite sheets offer deterministic frame animation. Crop selects a rectangular section of the *original art* (not the whole live canvas). Imported images are embedded in exported JSON. Browser storage is local to this page/origin; GitHub won't receive edits until you publish the export.</p></details>
 </aside><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><section id="pianoroom" hidden aria-label="Piano Lab"></section><section id="musicClassroom" hidden aria-label="Music Classroom"></section><script>
-(()=>{'use strict';let developerConsole=null,worldObjects=null,worldLighting=null,danceFloor=null,npcBrain=null,characterRenderer=null,musicianUI=null,boutiqueUI=null,notesWallet=null,notesShop=null,pianoLab=null,musicClassroom=null,progression=null,missions=null,hallFame=null,playerPhase=0,emoteStarted=0,followedMusician=null,followTimer=0;const c=document.querySelector('#view'),worldContext=c.getContext('2d',{alpha:false}),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}avatar=window.CodaAvatarDefaults.migrate(avatar);const W=1672,H=941,ART_SCALE=1,keys=new Set();let player={x:1180,y:388},cam={x:0,y:0,zoom:1,targetZoom:1},dest=null,emote=0,near=null,last=0,clock=0,walking=false,facing="down";const rooms=[{id:'lounge',name:'LOUNGE',x:95,y:145,w:350,h:235},{id:'dance',name:'DANCE',x:90,y:505,w:670,h:325},{id:'arcade',name:'ARCADE',x:648,y:220,w:900,h:580}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:718,y:313,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:831,y:314,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:951,y:315,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1064,y:315,url:'song-machine/index.html'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
+(()=>{'use strict';let mobileControls=null,developerConsole=null,worldObjects=null,worldLighting=null,danceFloor=null,npcBrain=null,characterRenderer=null,musicianUI=null,boutiqueUI=null,notesWallet=null,notesShop=null,pianoLab=null,musicClassroom=null,progression=null,missions=null,hallFame=null,playerPhase=0,emoteStarted=0,followedMusician=null,followTimer=0;const c=document.querySelector('#view'),worldContext=c.getContext('2d',{alpha:false}),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}avatar=window.CodaAvatarDefaults.migrate(avatar);const W=1672,H=941,ART_SCALE=1,keys=new Set(),touchKeys=new Set();let player={x:1180,y:388},cam={x:0,y:0,zoom:1,targetZoom:1},dest=null,emote=0,near=null,last=0,clock=0,walking=false,facing="down";const rooms=[{id:'lounge',name:'LOUNGE',x:95,y:145,w:350,h:235},{id:'dance',name:'DANCE',x:90,y:505,w:670,h:325},{id:'arcade',name:'ARCADE',x:648,y:220,w:900,h:580}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:718,y:313,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:831,y:314,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:951,y:315,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1064,y:315,url:'song-machine/index.html?v=mobile-28'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
 
 let g=worldContext;
 
@@ -106,6 +106,12 @@ function setCameraZoom(value,pointer){
  cam.targetZoom=clampZoom(value);updateZoomControls();
  if(cam.targetZoom<=ZOOM_MAX)try{localStorage.setItem('codaArcadeCameraZoomV1',String(cam.targetZoom))}catch{}
 }
+function cameraViewport(){
+ if(!mobileControls?.isMobile()||developerConsole?.isEditing())return {left:0,top:0,width:W,height:H};
+ const image=c.getBoundingClientRect(),stage=document.querySelector('#worldStage').getBoundingClientRect();
+ const left=Math.max(0,(stage.left-image.left)*W/image.width),top=Math.max(0,(stage.top-image.top)*H/image.height);
+ return {left,top,width:Math.min(W-left,stage.width*W/image.width),height:Math.min(H-top,stage.height*H/image.height)};
+}
 function updateCamera(dt){
  const limit=zoomLimit();
  if(cam.targetZoom>limit){cam.zoom=Math.min(cam.zoom,limit);cam.targetZoom=limit;zoomAnchor=null;try{localStorage.setItem('codaArcadeCameraZoomV1',String(limit));}catch{}}
@@ -122,11 +128,13 @@ function updateCamera(dt){
  }
  // The avatar is the focal point. Clamping avoids showing empty space outside
  // the artwork, including when the camera is near an edge or the zoom resets.
- const tx=Math.max(0,Math.min(W-visibleW,player.x-visibleW/2));
- const ty=Math.max(0,Math.min(H-visibleH,player.y-visibleH/2));
+ const viewport=cameraViewport(),minX=-viewport.left/cam.zoom,minY=-viewport.top/cam.zoom;
+ const maxX=W-(viewport.left+viewport.width)/cam.zoom,maxY=H-(viewport.top+viewport.height)/cam.zoom;
+ const tx=Math.max(minX,Math.min(maxX,player.x-(viewport.left+viewport.width/2)/cam.zoom));
+ const ty=Math.max(minY,Math.min(maxY,player.y-(viewport.top+viewport.height/2)/cam.zoom));
  cam.x+=(tx-cam.x)*blend;cam.y+=(ty-cam.y)*blend;
- cam.x=Math.max(0,Math.min(W-visibleW,cam.x));
- cam.y=Math.max(0,Math.min(H-visibleH,cam.y));
+ cam.x=Math.max(minX,Math.min(maxX,cam.x));
+ cam.y=Math.max(minY,Math.min(maxY,cam.y));
  if(Math.abs(cam.x-tx)<.01)cam.x=tx;
  if(Math.abs(cam.y-ty)<.01)cam.y=ty;
 }
@@ -432,7 +440,8 @@ function updateJump(dt){
  if(height<=0&&jumpVelocity<0){jumpHeight=0;jumpVelocity=0;}else jumpHeight=Math.max(0,height);
 }
 function typingTarget(target){return !!(target?.isContentEditable||target?.closest?.('input,textarea,select'));}
-function clearHeldKeys(){keys.clear();walking=false;}
+function keyDown(key){return keys.has(key)||touchKeys.has(key);}
+function clearHeldKeys(){keys.clear();touchKeys.clear();walking=false;}
 
 function update(dt){
  clock+=dt;
@@ -450,8 +459,8 @@ function update(dt){
    if(!clickPath.length){dest=null;followedMusician=null;}
   }
  }
- let dx=chatting?0:(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0);
- let dy=chatting?0:(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);
+ let dx=chatting?0:(keyDown('d')||keyDown('arrowright')?1:0)-(keyDown('a')||keyDown('arrowleft')?1:0);
+ let dy=chatting?0:(keyDown('s')||keyDown('arrowdown')?1:0)-(keyDown('w')||keyDown('arrowup')?1:0);
  if(dx||dy){dest=null;clickPath=[];followedMusician=null;}
  if(!chatting&&dest){
   while(clickPath.length&&Math.hypot(clickPath[0].x-player.x,clickPath[0].y-player.y)<3)clickPath.shift();
@@ -480,15 +489,15 @@ window.addEventListener('keydown',event=>{if(learningRoomOpen()&&event.key==='F2
 function prepareLearningRoom(){
  if(assetStudio.active)toggleAssetStudio(false);
  musicianUI?.closeConversation();closePanel();stopSong();stopAmbientMusic();
- keys.clear();dest=null;clickPath=[];walking=false;followedMusician=null;dialog.style.display='none';
+ clearHeldKeys();dest=null;clickPath=[];walking=false;followedMusician=null;dialog.style.display='none';
 }
 function openPiano(){if(!pianoLab)return;musicClassroom?.close();prepareLearningRoom();pianoLab.open();}
-function closePiano(){pianoLab?.close();keys.clear();c.focus();}
+function closePiano(){pianoLab?.close();clearHeldKeys();c.focus({preventScroll:true});}
 function openClassroom(){if(!musicClassroom)return;pianoLab?.close();prepareLearningRoom();musicClassroom.open();}
-function closeClassroom(){musicClassroom?.close();keys.clear();c.focus();}
+function closeClassroom(){musicClassroom?.close();clearHeldKeys();c.focus({preventScroll:true});}
 function openCabinet(game){musicianUI?.closeConversation();walking=false;followedMusician=null;stopSong();stopAmbientMusic();
   if(!game||!game.url)return;
-  keys.clear();dest=null;dialog.style.display='none';
+  clearHeldKeys();dest=null;dialog.style.display='none';
   document.querySelector('#activegame').textContent=game.name;
   document.querySelector('#externalgame').href=game.url;
   missions?.attachGame(game,gameiframe);
@@ -498,7 +507,7 @@ function openCabinet(game){musicianUI?.closeConversation();walking=false;followe
 function closeCabinet(){
   missions?.detachGame();
   gameiframe.src='about:blank';gameoverlay.hidden=true;document.body.classList.remove('game-open');gameOpen=false;
-  keys.clear();dest=null;c.focus();
+  clearHeldKeys();dest=null;c.focus({preventScroll:true});
 }
 document.querySelector('#returnworld').addEventListener('click',closeCabinet);
 
@@ -567,11 +576,11 @@ function talk(){
  if(near.type==='fame'){hallFame?.open();return;}
  musicianUI.talk(near.id);
 }
-const worldArt=new Image();worldArt.src='coda_arcade_world_clean.png?v=rooms-27';
+const worldArt=new Image();worldArt.src='coda_arcade_world_clean.png?v=mobile-28';
 const actorsArt=new Image();actorsArt.src='coda_arcade_phase73_characters.png';
 const characterFrames={"hero_down_0":{"x":16,"y":5,"w":47,"h":69},"hero_down_1":{"x":97,"y":5,"w":45,"h":69},"hero_down_2":{"x":178,"y":5,"w":44,"h":69},"hero_down_3":{"x":259,"y":5,"w":42,"h":69},"hero_down_4":{"x":338,"y":5,"w":44,"h":69},"hero_up_0":{"x":416,"y":6,"w":47,"h":67},"hero_up_1":{"x":497,"y":6,"w":45,"h":67},"hero_up_2":{"x":578,"y":6,"w":44,"h":67},"hero_up_3":{"x":658,"y":6,"w":43,"h":67},"hero_up_4":{"x":739,"y":6,"w":42,"h":67},"hero_left_0":{"x":816,"y":5,"w":47,"h":69},"hero_left_1":{"x":896,"y":5,"w":47,"h":69},"hero_left_2":{"x":16,"y":85,"w":47,"h":69},"hero_left_3":{"x":96,"y":85,"w":47,"h":69},"hero_left_4":{"x":176,"y":85,"w":47,"h":69},"hero_right_0":{"x":256,"y":85,"w":47,"h":69},"hero_right_1":{"x":336,"y":85,"w":47,"h":69},"hero_right_2":{"x":416,"y":85,"w":47,"h":69},"hero_right_3":{"x":496,"y":85,"w":47,"h":69},"hero_right_4":{"x":576,"y":85,"w":47,"h":69},"pink_down_0":{"x":652,"y":84,"w":55,"h":71},"pink_up_0":{"x":735,"y":86,"w":50,"h":67},"pink_left_0":{"x":812,"y":86,"w":55,"h":67},"pink_right_0":{"x":892,"y":84,"w":55,"h":71},"blue_down_0":{"x":12,"y":164,"w":55,"h":71},"blue_up_0":{"x":94,"y":166,"w":52,"h":67},"blue_left_0":{"x":172,"y":166,"w":55,"h":67},"blue_right_0":{"x":252,"y":164,"w":55,"h":71},"brown_down_0":{"x":334,"y":164,"w":51,"h":71},"brown_up_0":{"x":412,"y":164,"w":55,"h":71},"brown_left_0":{"x":492,"y":164,"w":55,"h":71},"brown_right_0":{"x":572,"y":164,"w":55,"h":71},"hat_down_0":{"x":657,"y":164,"w":46,"h":71},"hat_up_0":{"x":732,"y":166,"w":55,"h":67},"hat_left_0":{"x":812,"y":166,"w":55,"h":67},"hat_right_0":{"x":892,"y":164,"w":55,"h":71},"green_down_0":{"x":12,"y":244,"w":55,"h":71},"green_up_0":{"x":92,"y":246,"w":55,"h":67},"green_left_0":{"x":172,"y":246,"w":55,"h":67},"green_right_0":{"x":252,"y":244,"w":55,"h":71},"orange_down_0":{"x":334,"y":244,"w":52,"h":71},"orange_up_0":{"x":412,"y":246,"w":55,"h":67},"orange_left_0":{"x":492,"y":246,"w":55,"h":67},"orange_right_0":{"x":572,"y":244,"w":55,"h":71}};
 const actorsArtReady=()=>actorsArt.complete&&actorsArt.naturalWidth;
-const foregroundArt=new Image();foregroundArt.src='coda_arcade_foreground_clean.png?v=rooms-27';
+const foregroundArt=new Image();foregroundArt.src='coda_arcade_foreground_clean.png?v=mobile-28';
 
 const foregroundParts=[{"name":"lounge_sofa","bounds":[124,132,288,105],"poly":[[132,174],[155,152],[195,146],[277,133],[350,142],[393,145],[403,165],[403,215],[362,226],[282,220],[237,232],[190,218],[134,212]],"sortY":239,"type":"object","atlas":[3,3,288,105]},{"name":"lounge_center_candle_table","bounds":[255,205,86,70],"poly":[[338,248],[336,255],[330,262],[322,267],[310,271],[298,272],[286,271],[274,267],[266,262],[260,255],[258,248],[260,241],[266,234],[274,229],[286,225],[298,224],[310,225],[322,229],[330,234],[336,241]],"sortY":290,"type":"object","atlas":[295,3,86,70]},{"name":"lounge_northwest_candle_table","bounds":[69,263,63,61],"poly":[[130,292],[129,300],[124,308],[118,314],[110,318],[101,319],[92,318],[84,314],[78,308],[73,300],[72,292],[73,284],[78,276],[84,270],[92,266],[101,265],[110,266],[118,270],[124,276],[129,284]],"sortY":332,"type":"object","atlas":[385,3,63,61]},{"name":"lounge_west_candle_table","bounds":[167,285,52,41],"poly":[[216,305],[215,311],[211,316],[206,320],[199,322],[192,323],[185,322],[178,320],[173,316],[169,311],[168,305],[169,299],[173,294],[178,290],[185,288],[192,287],[199,288],[206,290],[211,294],[215,299]],"sortY":342,"type":"object","atlas":[452,3,52,41]},{"name":"boutique_counter","bounds":[449,381,127,81],"poly":[[451,403],[467,386],[556,383],[569,400],[570,441],[551,461],[454,461]],"sortY":477,"type":"object","atlas":[508,3,127,81]},{"name":"boutique_mirror","bounds":[591,352,55,103],"poly":[[595,378],[598,364],[611,356],[626,359],[642,372],[642,447],[594,447]],"sortY":480,"type":"object","atlas":[639,3,55,103]},{"name":"main_counter","bounds":[1170,441,361,142],"poly":[[1201,465],[1497,461],[1516,471],[1523,516],[1518,556],[1503,573],[1193,574],[1173,557],[1169,507]],"sortY":584,"type":"object","atlas":[698,3,361,142]},{"name":"dance_left_couch","bounds":[76,579,164,131],"poly":[[83,629],[98,600],[138,582],[190,579],[231,598],[237,640],[204,650],[160,679],[104,709],[79,691]],"sortY":727,"type":"object","atlas":[1063,3,164,131]},{"name":"dance_right_couch","bounds":[544,595,162,109],"poly":[[553,633],[581,598],[641,601],[701,628],[703,673],[672,699],[601,692],[555,670]],"sortY":725,"type":"object","atlas":[1231,3,162,109]},{"name":"dance_dj_console","bounds":[333,600,121,62],"poly":[[335,622],[359,602],[432,604],[453,624],[451,653],[337,655]],"sortY":669,"type":"object","atlas":[1397,3,121,62]},{"name":"dance_east_wall","bounds":[808,435,39,273],"poly":[[808,437],[840,434],[845,459],[845,696],[812,695]],"sortY":774,"type":"wall","atlas":[1522,3,39,273]},{"name":"dance_east_lower_wall","bounds":[806,778,41,65],"poly":[[813,780],[840,778],[845,818],[845,842],[810,842]],"sortY":865,"type":"wall","atlas":[1565,3,41,65]},{"name":"dance_lower_wall_left","bounds":[44,790,225,93],"poly":[[48,793],[252,818],[266,865],[256,882],[60,849]],"sortY":892,"type":"wall","atlas":[1610,3,225,93]},{"name":"dance_lower_wall_right","bounds":[464,796,372,98],"poly":[[469,833],[835,799],[834,862],[814,882],[470,890]],"sortY":905,"type":"wall","atlas":[3,280,372,98]},{"name":"obelisk_west","bounds":[146,780,27,66],"poly":[[151,787],[160,783],[169,791],[169,841],[147,841],[148,797]],"sortY":875,"type":"obelisk","atlas":[379,280,27,66]},{"name":"obelisk_middle","bounds":[266,786,25,68],"poly":[[271,794],[279,790],[289,797],[287,848],[268,848],[268,797]],"sortY":875,"type":"obelisk","atlas":[410,280,25,68]},{"name":"obelisk_east","bounds":[461,790,24,65],"poly":[[466,795],[476,791],[484,798],[483,846],[463,847],[461,800]],"sortY":875,"type":"obelisk","atlas":[439,280,24,65]},{"name":"obelisk_far_east","bounds":[537,783,28,72],"poly":[[541,791],[553,787],[563,794],[561,847],[540,847],[538,793]],"sortY":875,"type":"obelisk","atlas":[467,280,28,72]},{"name":"obelisk_corner","bounds":[741,770,35,66],"poly":[[749,775],[762,772],[774,780],[771,825],[748,827],[742,793]],"sortY":875,"type":"obelisk","atlas":[499,280,35,66]},{"name":"lounge_palm_left","bounds":[165,141,58,78],"sortY":230,"type":"plant","atlas":[538,280,58,78]},{"name":"lounge_palm_top","bounds":[428,2,55,98],"sortY":117,"type":"plant","atlas":[600,280,55,98]},{"name":"lounge_palm_south","bounds":[202,303,67,70],"sortY":388,"type":"plant","atlas":[659,280,67,70]},{"name":"boutique_palm_right","bounds":[537,360,67,98],"sortY":488,"type":"plant","atlas":[730,280,67,98]},{"name":"boutique_roof_palm","bounds":[588,267,66,87],"sortY":374,"type":"plant","atlas":[801,280,66,87]},{"name":"boutique_left_palm","bounds":[329,286,58,70],"sortY":377,"type":"plant","atlas":[871,280,58,70]},{"name":"dance_upper_right_palm","bounds":[696,547,67,90],"sortY":681,"type":"plant","atlas":[933,280,67,90]},{"name":"dance_right_palm","bounds":[687,683,72,84],"sortY":782,"type":"plant","atlas":[1004,280,72,84]},{"name":"dance_far_right_palm","bounds":[765,746,67,96],"sortY":867,"type":"plant","atlas":[1080,280,67,96]},{"name":"dance_front_left_palm","bounds":[164,805,75,73],"sortY":893,"type":"plant","atlas":[1151,280,75,73]},{"name":"dance_front_mid_palm","bounds":[259,822,68,69],"sortY":904,"type":"plant","atlas":[1230,280,68,69]},{"name":"dance_front_center_palm","bounds":[418,809,70,73],"sortY":892,"type":"plant","atlas":[1302,280,70,73]},{"name":"dance_front_right_palm","bounds":[484,793,76,85],"sortY":893,"type":"plant","atlas":[1376,280,76,85]},{"name":"dance_front_second_right_palm","bounds":[578,782,68,85],"sortY":883,"type":"plant","atlas":[1456,280,68,85]},{"name":"main_counter_left_palm","bounds":[1144,440,75,89],"sortY":541,"type":"plant","atlas":[1528,280,75,89]},{"name":"main_counter_right_palm","bounds":[1471,441,72,93],"sortY":554,"type":"plant","atlas":[1607,280,72,93]},{"name":"hall_palm_west","bounds":[1340,216,59,77],"sortY":319,"type":"plant","atlas":[1683,280,59,77]},{"name":"hall_palm_east","bounds":[1516,205,62,80],"sortY":303,"type":"plant","atlas":[1746,280,62,80]},{"name":"piano_landing_palm","bounds":[1184,80,80,85],"sortY":182,"type":"plant","atlas":[1812,280,80,85]},{"name":"piano_landing_palm_right","bounds":[1330,71,58,93],"sortY":186,"type":"plant","atlas":[1896,280,58,93]},{"name":"dance_corner_palm","bounds":[67,649,79,88],"sortY":744,"type":"plant","atlas":[1958,280,79,88]}];
 
@@ -686,10 +695,10 @@ function refreshLayerToolbar(){
  editorEl('editDepthLabel').textContent=(layerState.offset>=0?'+':'')+layerState.offset+' px';
  editorEl('editZoom').value=layerState.zoom;
 }
-function toggleLayerEditor(force){layerState.active=typeof force==='boolean'?force:!layerState.active;layerState.drawing=null;layerState.preview=false;dest=null;clickPath=[];keys.clear();
+function toggleLayerEditor(force){layerState.active=typeof force==='boolean'?force:!layerState.active;layerState.drawing=null;layerState.preview=false;dest=null;clickPath=[];clearHeldKeys();
  if(layerState.active){if(assetStudio.active)toggleAssetStudio(false);depthDebug=false;collisionDebug=false;foregroundEnabled=true;editNotice('Paint/erase directly on the game artwork. No collision is changed.');}
  else{c.style.width='';layerState.zoom='fit'}
- refreshLayerToolbar();c.focus();}
+ refreshLayerToolbar();c.focus({preventScroll:true});}
 editorEl('editorToggle').addEventListener('click',()=>toggleLayerEditor());
 editorEl('editClose').onclick=()=>toggleLayerEditor(false);
 editorEl('editPaint').onclick=()=>{layerState.tool='paint';refreshLayerToolbar()};
@@ -697,7 +706,7 @@ editorEl('editErase').onclick=()=>{layerState.tool='erase';refreshLayerToolbar()
 editorEl('editBrush').onchange=(e)=>{layerState.size=Number(e.target.value);refreshLayerToolbar()};
 editorEl('editDepth').oninput=(e)=>{layerState.offset=Number(e.target.value);refreshLayerToolbar()};
 editorEl('editZoom').onchange=(e)=>{layerState.zoom=e.target.value;c.style.width=layerState.zoom==='fit'?'':Math.round(W*Number(layerState.zoom))+'px';refreshLayerToolbar();};
-editorEl('editPreview').onclick=()=>{layerState.preview=!layerState.preview;layerState.hover=null;depthDebug=false;refreshLayerToolbar();c.focus()};
+editorEl('editPreview').onclick=()=>{layerState.preview=!layerState.preview;layerState.hover=null;depthDebug=false;refreshLayerToolbar();c.focus({preventScroll:true})};
 editorEl('editMasks').onclick=()=>{layerState.maskView=!layerState.maskView;depthDebug=layerState.maskView;refreshLayerToolbar()};
 function layerHistoryRefresh(){assetForegroundCompositeCache=null;layerState.dirty=true;saveLayerActions();refreshLayerToolbar();}
 editorEl('editUndo').onclick=()=>{if(layerState.actions.length){layerState.redo.push(layerState.actions.pop());layerHistoryRefresh()}};
@@ -716,7 +725,7 @@ editorEl('editImportFile').onchange=async(evt)=>{const file=evt.target.files?.[0
  editNotice(`Imported ${layerState.actions.length} additional strokes; ${PUBLISHED_LAYER_STROKES.length} published fixes remain active.`);
  }catch(err){editNotice('Import failed: '+err.message)}finally{evt.target.value=''}};
 function editorPointerDown(e){if(!layerState.active||layerState.preview)return false;
- if(e.button!==0)return true;e.preventDefault();c.focus();const [x,y]=paintEditorAtPoint(e);
+ if(e.button!==0)return true;e.preventDefault();c.focus({preventScroll:true});const [x,y]=paintEditorAtPoint(e);
  const action={tool:layerState.tool,size:layerState.size,points:[[x,y]],depth:Math.max(-500,Math.min(H+500,strokeAutoDepth(x,y)+layerState.offset))};
  layerState.drawing=action;layerState.hover=[x,y];layerState.dirty=true;dest=null;clickPath=[];
  try{c.setPointerCapture(e.pointerId)}catch{}return true;
@@ -893,10 +902,10 @@ function studioRefresh(){
  developerConsole?.refresh();
 }
 function toggleAssetStudio(force){developerConsole?.finishGesture();assetStudio.active=typeof force==='boolean'?force:!assetStudio.active;
- assetStudio.drag=null;assetStudio.capturing=null;keys.clear();dest=null;clickPath=[];
+ assetStudio.drag=null;assetStudio.capturing=null;clearHeldKeys();dest=null;clickPath=[];
  if(assetStudio.active){musicianUI?.closeConversation();if(layerState.active)toggleLayerEditor(false);collisionDebug=false;depthDebug=false;assetUI('assetStudio').hidden=false;document.body.classList.add('asset-console-open');studioMessage('Asset editor active · drag objects and handles. Collision and masks remain unchanged.');}
  else{assetUI('assetStudio').hidden=true;document.body.classList.remove('asset-console-open');if(assetStudio.dirty)persistAssets();}
- c.classList.toggle('asset-editing',assetStudio.active);studioRefresh();developerConsole?.onToggle();c.focus();}
+ c.classList.toggle('asset-editing',assetStudio.active);studioRefresh();developerConsole?.onToggle();c.focus({preventScroll:true});}
 assetUI('assetToggle').onclick=()=>toggleAssetStudio();assetUI('assetClose').onclick=()=>toggleAssetStudio(false);
 assetUI('assetList').addEventListener('change',e=>assetKeepSelected(e.target.value));
 assetUI('assetAdd').onclick=()=>assetUI('assetUpload').click();
@@ -976,7 +985,7 @@ function captureClipEnd(){const q=assetStudio.capturing;assetStudio.capturing=nu
  const a=assetPrototype('Crop · '+q.which,'builtin');a.ref=q.which;a.crop=[x,y,w,h];a.w=w;a.h=h;a.x=x+w/2;a.y=y+h/2;a.anim='none';assetNew(a);
 }
 function assetPointerStart(e){if(!assetStudio.active)return false;
- if(e.button!==0)return true;e.preventDefault();c.focus();keys.clear();dest=null;clickPath=[];
+ if(e.button!==0)return true;e.preventDefault();c.focus({preventScroll:true});clearHeldKeys();dest=null;clickPath=[];
  const p=canvasToWorld(e.clientX,e.clientY);
  if(assetStudio.capturing){assetStudio.capturing.start=p;assetStudio.capturing.end=p;try{c.setPointerCapture(e.pointerId)}catch{}return true;}
  let a=assetSelected(),mode=null;if(a&&!a.locked){const ctl=assetControlPositions(a),tol=14/cam.zoom;
@@ -1020,7 +1029,7 @@ async function loadAssetStudio(){let found=null;
 window.CodaAssetStudioQA={get:()=>({active:assetStudio.active,count:assetStudio.assets.length,selected:assetStudio.selected,assets:assetStudio.assets.map(a=>({id:a.id,name:a.name,kind:a.kind,x:a.x,y:a.y,w:a.w,h:a.h,layer:a.layer,anim:a.anim,frames:a.frames}))}),open:()=>toggleAssetStudio(true),close:()=>toggleAssetStudio(false),preset:()=>assetUI('assetPreset').click(),export:downloadAssetJSON,save:persistAssets};
 // --- END ASSET STUDIO ------------------------------------------------------
 
-window.CODA_BUILD="27.0-learning-rooms";
+window.CODA_BUILD="28.0-mobile-arcade";
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -1051,7 +1060,7 @@ const musicButton=document.querySelector('#musicBtn');
 const effectsButton=document.querySelector('#fxBtn');
 const fxChoice=['full','lite','off'];
 const reduceMotion=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-let fxMode=reduceMotion?'lite':'full';
+let fxMode=reduceMotion||window.matchMedia?.('(pointer:coarse)').matches?'lite':'full';
 try{const saved=localStorage.getItem('codaArcadeFXV1');if(fxChoice.includes(saved))fxMode=saved}catch{}
 const musicEngine={ctx:null,gain:null,noise:null,active:false,bpm:110,step:0,next:0,start:0};
 let jukeboxVisual=null;
@@ -1745,7 +1754,8 @@ window.CodaArcadeQA=Object.freeze({
   characters:()=>({spriteState:characterRenderer.getState(),player:{...player,facing,walking,phase:playerPhase,jumpHeight,jumpVelocity,airborne:jumpHeight>0||jumpVelocity!==0,jumps:Number.isFinite(avatar.jumps)?avatar.jumps:0,following:followedMusician,destination:dest?{...dest}:null,emote:emote>clock?(avatar.emote||'wave'):null,appearance:characterRenderer.normalizeProfile(avatar)},npcs:npcBrain.snapshot().map(person=>({...person,appearance:characterRenderer.normalizeProfile({...characterRenderer.appearanceFor(person.id),...npc.find(p=>p.id===person.id)?.appearance})}))}),
   conversation:()=>({id:musicianUI?.selected()||null,open:dialog.style.display==='block'}),
   worldObjects:()=>window.CodaWorldObjectCatalog.map(part=>{const object=worldObjects.state(part.name),anchor=part.anchor||[part.bounds[0]+part.bounds[2]/2,part.bounds[1]+part.bounds[3]/2];return {name:part.name,visible:object.visible,opacity:object.opacity,anchor:worldObjects.point(object,...anchor),spin:object.asset?.discoSpin??part.spin,rays:object.visible&&object.asset?.discoRays!==false,game:part.gameIndex!==undefined?runtimeGames().find(g=>g.index===part.gameIndex)||null:null};}),
-  camera:()=>({x:cam.x,y:cam.y,zoom:cam.zoom,targetZoom:cam.targetZoom,visibleWidth:W/cam.zoom,visibleHeight:H/cam.zoom}),
+  camera:()=>({x:cam.x,y:cam.y,zoom:cam.zoom,targetZoom:cam.targetZoom,visibleWidth:cameraViewport().width/cam.zoom,visibleHeight:cameraViewport().height/cam.zoom,viewport:cameraViewport()}),
+  touch:()=>mobileControls?.snapshot()||null,
   dj:()=>({...djState()}),
   shopkeepers:()=>shopkeeperStates().map(person=>({...person,appearance:{...person.appearance},approaches:person.approaches.map(point=>({...point}))})),
   notes:()=>notesWallet?.snapshot()||null,
@@ -1781,6 +1791,53 @@ window.CodaArcadeQA=Object.freeze({
   debugState:()=>({collisionDebug,depthDebug,foregroundEnabled,greenMasksReady:greenMaskCache.size}),
   menu:()=>({gameOpen,game:gameoverlay.hidden,panelOpen:!document.querySelector('#panel').hidden,pianoOpen:!document.querySelector('#pianoroom').hidden,classroomOpen:!document.querySelector('#musicClassroom').hidden})
 });
+function touchWorldKey(key,pressed){
+ if(!pressed){touchKeys.delete(key);return;}
+ if(gameOpen||!panel.hidden||learningRoomOpen()||developerConsole?.isEditing())return;
+ if(dialog.style.display==='block'){if(key==='e')musicianUI.closeConversation();return;}
+ if(!characterRenderer?.isReady()||!developerConsole?.loadReady())return;
+ if(touchKeys.has(key))return;touchKeys.add(key);
+ if(['w','a','s','d'].includes(key)){dest=null;clickPath=[];followedMusician=null;}
+ if(key===' ')startJump();
+ if(key==='e')talk();
+ if(key==='q'){emoteStarted=clock;emote=clock+2.4;avatar.emotesUsed=(avatar.emotesUsed||0)+1;}
+ if(panel.hidden&&!learningRoomOpen()&&dialog.style.display!=='block')c.focus({preventScroll:true});
+}
+function installMobileWorld(){
+ const header=document.querySelector('body>header'),brand=header.querySelector('b'),fullBrand=brand.textContent;
+ const menu=header.querySelector(':scope>span');for(const node of Array.from(menu.childNodes))if(node.nodeType===Node.TEXT_NODE&&!node.textContent.trim())node.remove();menu.id='worldMenu';menu.setAttribute('aria-label','Arcade menu');
+ const toggle=document.createElement('button');toggle.id='worldMenuBtn';toggle.type='button';toggle.textContent='☰ Menu';toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-controls','worldMenu');header.insertBefore(toggle,menu);
+ const scrim=document.createElement('button');scrim.id='worldMenuScrim';scrim.type='button';scrim.setAttribute('aria-label','Close arcade menu');header.after(scrim);
+ const host=document.createElement('div');host.id='codaTouchControls';document.body.append(host);
+ function closeMenu(){document.body.classList.remove('world-menu-open');toggle.setAttribute('aria-expanded','false');mobileControls?.refresh();}
+ toggle.onclick=()=>{const opened=document.body.classList.toggle('world-menu-open');toggle.setAttribute('aria-expanded',String(opened));mobileControls?.releaseAll();clearHeldKeys();mobileControls?.refresh();};scrim.onclick=closeMenu;
+ menu.addEventListener('click',event=>{const action=event.target.closest('button,a');if(action&&!['fxBtn','musicBtn','zoomIn','zoomOut','zoomReset'].includes(action.id))closeMenu();});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.body.classList.contains('world-menu-open')){event.preventDefault();closeMenu();toggle.focus();}});
+ let initialMobile=true;
+ mobileControls=window.createCodaMobileControls({host,getContext:()=>{
+  if(pianoLab?.getState().open){const state=pianoLab.getState();return {id:'piano',enabled:!state.mobileView||state.mobileView==='room',canJump:true,canEmote:false,interactLabel:state.challengeMode==='free'?'Talk':'Play note',key:(key,down)=>pianoLab.control(key,down),release:()=>pianoLab.releaseControls()};}
+  if(musicClassroom?.getState().open){const state=musicClassroom.getState();return {id:'classroom',enabled:!state.mobileView||state.mobileView==='room',canJump:false,canEmote:false,interactLabel:'Talk / Read',key:(key,down)=>musicClassroom.control(key,down),release:()=>musicClassroom.releaseControls()};}
+  return {id:'world',enabled:!gameOpen&&panel.hidden&&!developerConsole?.isEditing()&&!document.body.classList.contains('world-menu-open'),canJump:dialog.style.display!=='block',canEmote:dialog.style.display!=='block',interactLabel:dialog.style.display==='block'?'Continue':near?(near.type==='game'?'Play':near.type==='piano'||near.type==='classroom'?'Enter':'Interact'):'Interact',key:touchWorldKey,release:()=>touchKeys.clear()};
+ },onMobileChange:active=>{
+  document.body.classList.toggle('coda-mobile-world',active);brand.textContent=active?'♫ CODA ARCADE':fullBrand;
+  if(!active)closeMenu();
+  if(active&&initialMobile){initialMobile=false;try{if(!localStorage.getItem('codaArcadeCameraZoomV1'))cam.zoom=cam.targetZoom=1.5;}catch{cam.zoom=cam.targetZoom=1.5;}updateZoomControls();}
+ }});
+ const sizeHeader=()=>document.documentElement.style.setProperty('--coda-world-header-height',header.getBoundingClientRect().height+'px');
+ if(window.ResizeObserver)new ResizeObserver(sizeHeader).observe(header);window.addEventListener('resize',sizeHeader);sizeHeader();
+ const fingers=new Map();let pinch=null;
+ c.addEventListener('pointerdown',event=>{
+  if(event.pointerType!=='touch'||!mobileControls.isMobile()||developerConsole?.isEditing())return;
+  fingers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+  if(fingers.size===2){const [a,b]=[...fingers.values()];pinch={distance:Math.hypot(a.x-b.x,a.y-b.y),zoom:cam.targetZoom};dest=null;clickPath=[];clearHeldKeys();event.preventDefault();event.stopImmediatePropagation();}
+ },true);
+ c.addEventListener('pointermove',event=>{
+  if(!fingers.has(event.pointerId))return;fingers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+  if(pinch&&fingers.size>=2){const [a,b]=[...fingers.values()];if(pinch.distance>1)setCameraZoom(pinch.zoom*Math.hypot(a.x-b.x,a.y-b.y)/pinch.distance);event.preventDefault();event.stopImmediatePropagation();}
+ },true);
+ for(const name of ['pointerup','pointercancel'])c.addEventListener(name,event=>{fingers.delete(event.pointerId);if(fingers.size<2)pinch=null;},true);
+ window.addEventListener('blur',()=>{fingers.clear();pinch=null;});
+}
 let pausedBackdrop=false;
 function frame(ms){const dt=Math.min(.05,(ms-last)/1000||0);last=ms;
  tickAmbientMusic();
@@ -1796,9 +1853,9 @@ function frame(ms){const dt=Math.min(.05,(ms-last)/1000||0);last=ms;
  g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.globalCompositeOperation='source-over';
  g.fillStyle='#10142b';g.fillRect(0,0,W,H);
  g.fillStyle='#ffb9e5';g.font='bold 25px monospace';g.fillText('Arcade error: '+err.message,55,110);
- }requestAnimationFrame(frame)}window.addEventListener('keydown',e=>{if(e.defaultPrevented||e.isComposing||typingTarget(e.target))return;if(gameOpen||!document.querySelector('#panel').hidden||learningRoomOpen())return;const k=e.key.toLowerCase();if(developerConsole&&!e.repeat&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&(k==='c'||k==='l'&&e.shiftKey)){e.preventDefault();developerConsole.open(k==='c'?'collision':'layers');return;}if(dialog.style.display==='block'){if((k==='e'||k==='escape')&&!e.repeat){e.preventDefault();musicianUI.closeConversation();}return;}if(k==='a'&&e.shiftKey&&!e.repeat&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();toggleAssetStudio();return;}if(assetStudio.active&&!developerConsole?.isPlaytest()){if(k==='escape'){e.preventDefault();if(assetStudio.capturing){assetStudio.capturing=null;studioMessage('Crop cancelled.')}else toggleAssetStudio(false);return;}if((e.ctrlKey||e.metaKey)&&k==='z'&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUndoRedo(!e.shiftKey);return;}if((e.ctrlKey||e.metaKey)&&k==='y'&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUndoRedo(false);return;}if(['delete','backspace'].includes(k)&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUI('assetRemove').click();return;}if(k.startsWith('arrow')&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();const a=assetSelected();if(a&&!a.locked){const before=assetSnapshot(),step=e.shiftKey?8:1;a.x=numberBound(a.x+(k==='arrowright'?step:k==='arrowleft'?-step:0),-1000,3000,a.x);a.y=numberBound(a.y+(k==='arrowdown'?step:k==='arrowup'?-step:0),-1000,2200,a.y);assetRecordHistory(before);}return;}if(!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)&&['+','=','-','_','0'].includes(k)){e.preventDefault();setCameraZoom(k==='0'?1:cam.targetZoom+((k==='+'||k==='=')?ZOOM_STEP:-ZOOM_STEP));return;}if(!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName))e.preventDefault();return;}if(k==='l'&&e.shiftKey&&!e.repeat){e.preventDefault();developerConsole.open('layers');return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='z'&&!e.repeat){e.preventDefault();editorEl(e.shiftKey?'editRedo':'editUndo').click();return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='y'&&!e.repeat){e.preventDefault();editorEl('editRedo').click();return;}if(layerState.active&&k==='escape'&&!e.repeat){e.preventDefault();toggleLayerEditor(false);return;}if(layerState.active&&!layerState.preview){if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q',' '].includes(k))e.preventDefault();return;}if(e.ctrlKey||e.metaKey||e.altKey)return;if(!e.repeat&&['=','+','-','_','0'].includes(k)&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){
+ }requestAnimationFrame(frame)}window.addEventListener('keydown',e=>{if(e.defaultPrevented||e.isComposing||typingTarget(e.target))return;if(gameOpen||!document.querySelector('#panel').hidden||learningRoomOpen()||document.body.classList.contains('world-menu-open'))return;const k=e.key.toLowerCase();if(developerConsole&&!e.repeat&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&(k==='c'||k==='l'&&e.shiftKey)){e.preventDefault();developerConsole.open(k==='c'?'collision':'layers');return;}if(dialog.style.display==='block'){if((k==='e'||k==='escape')&&!e.repeat){e.preventDefault();musicianUI.closeConversation();}return;}if(k==='a'&&e.shiftKey&&!e.repeat&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();toggleAssetStudio();return;}if(assetStudio.active&&!developerConsole?.isPlaytest()){if(k==='escape'){e.preventDefault();if(assetStudio.capturing){assetStudio.capturing=null;studioMessage('Crop cancelled.')}else toggleAssetStudio(false);return;}if((e.ctrlKey||e.metaKey)&&k==='z'&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUndoRedo(!e.shiftKey);return;}if((e.ctrlKey||e.metaKey)&&k==='y'&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUndoRedo(false);return;}if(['delete','backspace'].includes(k)&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUI('assetRemove').click();return;}if(k.startsWith('arrow')&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();const a=assetSelected();if(a&&!a.locked){const before=assetSnapshot(),step=e.shiftKey?8:1;a.x=numberBound(a.x+(k==='arrowright'?step:k==='arrowleft'?-step:0),-1000,3000,a.x);a.y=numberBound(a.y+(k==='arrowdown'?step:k==='arrowup'?-step:0),-1000,2200,a.y);assetRecordHistory(before);}return;}if(!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)&&['+','=','-','_','0'].includes(k)){e.preventDefault();setCameraZoom(k==='0'?1:cam.targetZoom+((k==='+'||k==='=')?ZOOM_STEP:-ZOOM_STEP));return;}if(!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName))e.preventDefault();return;}if(k==='l'&&e.shiftKey&&!e.repeat){e.preventDefault();developerConsole.open('layers');return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='z'&&!e.repeat){e.preventDefault();editorEl(e.shiftKey?'editRedo':'editUndo').click();return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='y'&&!e.repeat){e.preventDefault();editorEl('editRedo').click();return;}if(layerState.active&&k==='escape'&&!e.repeat){e.preventDefault();toggleLayerEditor(false);return;}if(layerState.active&&!layerState.preview){if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q',' '].includes(k))e.preventDefault();return;}if(e.ctrlKey||e.metaKey||e.altKey)return;if(!e.repeat&&['=','+','-','_','0'].includes(k)&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){
  e.preventDefault();setCameraZoom(k==='0'?1:cam.targetZoom+((k==='+'||k==='=')?ZOOM_STEP:-ZOOM_STEP));return;}
- if(k==='c'&&!e.repeat){if(developerConsole){developerConsole.open('collision');return;}collisionDebug=!collisionDebug;return;}if(k==='l'&&!e.repeat){depthDebug=!depthDebug;return;}if(k==='f'&&!e.repeat){foregroundEnabled=!foregroundEnabled;return;}if(k==='x'&&collisionDebug&&!e.repeat){exportCollision();return;}if(k==='r'&&e.shiftKey&&collisionDebug&&!e.repeat){localStorage.removeItem('codaCollisionEditsV891');window.location.reload();return;}if(k===' '||e.code==='Space'){if(e.target?.closest?.('button,a,[role=button],summary'))return;e.preventDefault();if(!e.repeat&&!keys.has(' ')){keys.add(' ');startJump();}c.focus({preventScroll:true});return;}if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k)){e.preventDefault();keys.add(k);c.focus({preventScroll:true});if(k==='e'&&!e.repeat)talk();if(k==='q'&&!e.repeat){emoteStarted=clock;emote=clock+2.4;avatar.emotesUsed=(avatar.emotesUsed||0)+1;}}});window.addEventListener('keyup',e=>keys.delete(e.code==='Space'?' ':e.key.toLowerCase()));window.addEventListener('blur',clearHeldKeys);document.addEventListener('visibilitychange',()=>{if(document.hidden)clearHeldKeys();});c.addEventListener('pointerdown',e=>{if(dialog.style.display==='block')return;if(gameOpen||!document.querySelector('#panel').hidden||learningRoomOpen())return;const b=c.getBoundingClientRect();
+ if(k==='c'&&!e.repeat){if(developerConsole){developerConsole.open('collision');return;}collisionDebug=!collisionDebug;return;}if(k==='l'&&!e.repeat){depthDebug=!depthDebug;return;}if(k==='f'&&!e.repeat){foregroundEnabled=!foregroundEnabled;return;}if(k==='x'&&collisionDebug&&!e.repeat){exportCollision();return;}if(k==='r'&&e.shiftKey&&collisionDebug&&!e.repeat){localStorage.removeItem('codaCollisionEditsV891');window.location.reload();return;}if(k===' '||e.code==='Space'){if(e.target?.closest?.('button,a,[role=button],summary'))return;e.preventDefault();if(!e.repeat&&!keyDown(' ')){keys.add(' ');startJump();}c.focus({preventScroll:true});return;}if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k)){e.preventDefault();keys.add(k);c.focus({preventScroll:true});if(k==='e'&&!e.repeat)talk();if(k==='q'&&!e.repeat){emoteStarted=clock;emote=clock+2.4;avatar.emotesUsed=(avatar.emotesUsed||0)+1;}}});window.addEventListener('keyup',e=>keys.delete(e.code==='Space'?' ':e.key.toLowerCase()));window.addEventListener('blur',clearHeldKeys);document.addEventListener('visibilitychange',()=>{if(document.hidden)clearHeldKeys();});c.addEventListener('pointerdown',e=>{if(dialog.style.display==='block')return;if(gameOpen||!document.querySelector('#panel').hidden||learningRoomOpen())return;const b=c.getBoundingClientRect();
  if(developerConsole?.pointerDown(e))return;
  if((!developerConsole||developerConsole.isEditing())&&assetPointerStart(e))return;
  if(editorPointerDown(e))return;
@@ -1819,7 +1876,7 @@ function frame(ms){const dt=Math.min(.05,(ms-last)/1000||0);last=ms;
  }
  dest=canvasToWorld(e.clientX,e.clientY);
  clickPath=pathTo(player.x,player.y,dest.x,dest.y);
- if(!clickPath.length)dest=null;c.focus()});c.addEventListener('pointermove',e=>{developerConsole?.pointerMove(e);if(!developerConsole||developerConsole.isEditing())assetPointerMove(e);if(!developerConsole)editorPointerMove(e)});
+ if(!clickPath.length)dest=null;c.focus({preventScroll:true})});c.addEventListener('pointermove',e=>{developerConsole?.pointerMove(e);if(!developerConsole||developerConsole.isEditing())assetPointerMove(e);if(!developerConsole)editorPointerMove(e)});
 c.addEventListener('pointerup',e=>{developerConsole?.pointerEnd(e);assetPointerEnd(e);if(!developerConsole)editorPointerEnd(e)});
 c.addEventListener('pointercancel',e=>{developerConsole?.pointerEnd(e);assetPointerEnd(e);if(!developerConsole)editorPointerEnd(e)});
 c.addEventListener('pointerleave',()=>{layerState.hover=null});
@@ -1828,8 +1885,8 @@ const panel=document.querySelector('#panel'),panelBody=document.querySelector('#
 let firebaseApi=null,cloudAuth=null,cloudDb=null,cloudUser=null,profileReady=false,authMessage='Connecting…',songRecords={},songPlayer=null,songFinishTimer=null,songSerial=0,jukeboxTitle='',jukeboxSource=null;
 const config=window.ARCADE_ACCOUNTS_CONFIG;
 function msg(s){const el=panelBody.querySelector('.panelMsg');if(el)el.textContent=s}
-function openPanel(title){if(assetStudio.active)toggleAssetStudio(false);musicianUI?.closeConversation();walking=false;keys.clear();dest=null;dialog.style.display='none';panelTitle.textContent=title;panel.hidden=false;panelBody.classList.remove('boutique-panel');panelBody.replaceChildren();panel.scrollTop=0;}
-function closePanel(){panel.hidden=true;keys.clear();c.focus()}
+function openPanel(title){if(assetStudio.active)toggleAssetStudio(false);musicianUI?.closeConversation();walking=false;clearHeldKeys();dest=null;dialog.style.display='none';panelTitle.textContent=title;panel.hidden=false;panelBody.classList.remove('boutique-panel');panelBody.replaceChildren();panel.scrollTop=0;if(mobileControls?.isMobile())document.querySelector('#panelClose').focus({preventScroll:true});}
+function closePanel(){panel.hidden=true;clearHeldKeys();c.focus({preventScroll:true})}
 document.querySelector('#panelClose').onclick=closePanel;
 panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-labelledby','panelTitle');
 panel.addEventListener('keydown',event=>{
@@ -1943,7 +2000,7 @@ async function openJukebox(){
   title.textContent=record.title||'Untitled';small.textContent=record.composition.bpm+' BPM · '+record.composition.bars+' bars';info.append(title,small);row.append(info);
   const play=document.createElement('button');play.type='button';play.textContent='▶ Play';play.setAttribute('aria-label','Play '+title.textContent);play.dataset.jukeboxTrack=record.id||source;
   play.onclick=()=>playSong(record.composition,{title:title.textContent,source});row.append(play);
-  if(editId){const edit=document.createElement('button');edit.type='button';edit.textContent='Edit ↗';edit.onclick=()=>{stopSong();closePanel();openCabinet({...games[3],url:'song-machine/index.html?song='+encodeURIComponent(editId)})};row.append(edit);}
+  if(editId){const edit=document.createElement('button');edit.type='button';edit.textContent='Edit ↗';edit.onclick=()=>{stopSong();closePanel();openCabinet({...games[3],url:'song-machine/index.html?song='+encodeURIComponent(editId)+'&v=mobile-28'})};row.append(edit);}
   parent.append(row);
  }
  for(const record of window.CodaDJLibrary.songs)songRow(house,record,'house');
@@ -1989,10 +2046,10 @@ npcBrain=window.createCodaNPCBehavior({npcs:npc,inside,route:pathTo,getGames:run
 musicianUI=window.createCodaMusicianUI({
  npcs:npc,getBrain:()=>npcBrain,renderer:characterRenderer,canvas:c,panelBody,
  openPanel,closePanel,openWardrobe:openBoutique,openMissions:id=>missions?.open(npc.find(person=>person.id===id)||id),
- clearInput:()=>{keys.clear();dest=null;clickPath=[];walking=false;},
+ clearInput:()=>{clearHeldKeys();dest=null;clickPath=[];walking=false;},
  distance:person=>Math.hypot(person.x-player.x,person.y-player.y),
  faceTo:person=>{const dx=person.x-player.x,dy=person.y-player.y;facing=Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'down':'up';},
- walkTo:person=>{followedMusician=person.id;followTimer=.65;dest={x:person.x,y:person.y};clickPath=pathTo(player.x,player.y,person.x,person.y);if(!clickPath.length){dest=null;status.textContent='No walking route to '+person.name+'. Open Collision to inspect the path.';}c.focus();}
+ walkTo:person=>{followedMusician=person.id;followTimer=.65;dest={x:person.x,y:person.y};clickPath=pathTo(player.x,player.y,person.x,person.y);if(!clickPath.length){dest=null;status.textContent='No walking route to '+person.name+'. Open Collision to inspect the path.';}c.focus({preventScroll:true});}
 });
 notesWallet=window.CodaNotesShop.createWallet({getAvatar:()=>avatar,catalog:characterRenderer.catalog});
 progression=window.CodaPlayerProgression.create({panelBody,openPanel});
@@ -2016,8 +2073,8 @@ missions=window.CodaMusicianMissions.create({wallet:notesWallet,frame:gameiframe
  onVerifiedResult:(game,id,result)=>{progression.recordGameEvent(game,id,result);hallFame.record(game,id,result);const bonus=window.CodaNotesShop.gameReward(game,result);if(bonus)notesWallet.grantReward('game:'+game+':'+id,bonus);},
  onMissionRewarded:mission=>progression.recordQuest(mission.id)
 });
-pianoLab=window.createCodaPianoLab({host:document.querySelector('#pianoroom'),backgroundUrl:'assets/world/piano-lab-room.png?v=rooms-27',renderer:characterRenderer,getAvatar:()=>avatar,onClose:()=>{keys.clear();walking=false;c.focus();},onReward:(reason,amount)=>{const result=notesWallet.grantReward(reason,amount);if(result.ok)progression.recordQuest(reason);return result;}});
-musicClassroom=window.createCodaMusicClassroom({host:document.querySelector('#musicClassroom'),backgroundSrc:'assets/world/music-classroom-room.png?v=rooms-27',renderer:characterRenderer,getAvatar:()=>avatar,onClose:()=>{keys.clear();walking=false;c.focus();}});
+pianoLab=window.createCodaPianoLab({host:document.querySelector('#pianoroom'),backgroundUrl:'assets/world/piano-lab-room.png?v=mobile-28',renderer:characterRenderer,getAvatar:()=>avatar,onClose:()=>{clearHeldKeys();walking=false;c.focus({preventScroll:true});},onReward:(reason,amount)=>{const result=notesWallet.grantReward(reason,amount);if(result.ok)progression.recordQuest(reason);return result;}});
+musicClassroom=window.createCodaMusicClassroom({host:document.querySelector('#musicClassroom'),backgroundSrc:'assets/world/music-classroom-room.png?v=mobile-28',renderer:characterRenderer,getAvatar:()=>avatar,onClose:()=>{clearHeldKeys();walking=false;c.focus({preventScroll:true});}});
 document.querySelector('#pianoLabBtn').onclick=openPiano;document.querySelector('#classroomBtn').onclick=openClassroom;
 boutiqueUI=window.createCodaBoutiqueUI({
  renderer:characterRenderer,panelBody,openPanel,closePanel,getPreviewUI:()=>musicianUI,
@@ -2033,7 +2090,7 @@ characterRenderer.ready.then(()=>{
 }).catch(error=>{status.textContent='Character renderer unavailable. Reload to retry.';console.error('Character sprite loading failed:',error);});
 developerConsole=window.createCodaDeveloperConsole({
  W,H,c,studio:assetStudio,layer:layerState,parts:foregroundParts,catalog:window.CodaWorldObjectCatalog,worldArt,foregroundArt,
- publishedProjectUrl:'published-world-project.json?v=rooms-27',
+ publishedProjectUrl:'published-world-project.json?v=mobile-28',
  cell:COLLISION_CELL,gridWidth:GRID_W,gridHeight:GRID_H,navGrid,baseGrid:defaultNavGrid,
  legacyCollision:[...edits].filter(([i,v])=>Number.isInteger(i)&&i>=0&&i<navGrid.length&&(v===0||v===1)),
  panByScreen:(dx,dy)=>{zoomAnchor=null;const b=c.getBoundingClientRect();cam.x=Math.max(0,Math.min(W-W/cam.zoom,cam.x+dx*W/b.width/cam.zoom));cam.y=Math.max(0,Math.min(H-H/cam.zoom,cam.y+dy*H/b.height/cam.zoom));},
@@ -2042,11 +2099,12 @@ developerConsole=window.createCodaDeveloperConsole({
  toggle:toggleAssetStudio,selected:assetSelected,prototype:assetPrototype,add:assetNew,
  assetAt,nearHandle:(a,p)=>{const ctl=assetControlPositions(a);return Math.min(Math.hypot(p.x-ctl.corner.x,p.y-ctl.corner.y),Math.hypot(p.x-ctl.rotator.x,p.y-ctl.rotator.y))<14/cam.zoom},
  assetPointerEnd,layerPointerDown:editorPointerDown,layerPointerMove:editorPointerMove,layerPointerEnd:editorPointerEnd,
- invalidateRoutes:()=>{navigationRevision++;ambientLightStamp=-1;keys.clear();dest=null;clickPath=[];npcBrain?.invalidateRoutes();},
+ invalidateRoutes:()=>{navigationRevision++;ambientLightStamp=-1;clearHeldKeys();dest=null;clickPath=[];npcBrain?.invalidateRoutes();},
  invalidateArtwork:()=>{layerState.dirty=true;assetForegroundCompositeCache=null;greenMaskCache.clear()},
  db:assetDB,legacyStore:ASSET_STORE,validLegacy:validScene,validAsset:isValidAsset,validStroke:isEditorAction,
  maxAssets:ASSET_MAX,fileData:dataURLFromFile,imageDimensions:readImageDimensions
 });
 window.CodaDeveloperConsole=Object.freeze({open:developerConsole.open,getProject:developerConsole.getProject,getPublishedProject:developerConsole.getPublishedProject,getProjectSource:developerConsole.getProjectSource,ready:developerConsole.loadReady,save:developerConsole.save});
+installMobileWorld();
 requestAnimationFrame(frame);
 })();</script></html>
