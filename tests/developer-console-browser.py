@@ -317,7 +317,7 @@ class WorldEditorTests(unittest.TestCase):
           const canvas=document.createElement('canvas');canvas.width=1672;canvas.height=941;
           const reference=canvas.getContext('2d');reference.drawImage(image,0,0);
           const game=document.querySelector('#view').getContext('2d');
-          const characters=CodaArcadeQA.characters(),actors=[characters.player,...characters.npcs.filter(p=>!p.hidden)];
+          const characters=CodaArcadeQA.characters(),dj=CodaArcadeQA.dj(),actors=[characters.player,...characters.npcs.filter(p=>!p.hidden),...(dj.visible?[dj]:[])];
           return samples.filter(([x,y])=>!actors.some(p=>Math.abs(p.x-x)<45&&y>p.y-90&&y<p.y+8)).filter(([x,y])=>{const a=game.getImageData(x,y,1,1).data,b=reference.getImageData(x,y,1,1).data;return [0,1,2].some(i=>Math.abs(a[i]-b[i])>2)});
         }''',samples)
         self.assertEqual(mismatches,[],'Foreground masks must not put the old people back over the clean background')

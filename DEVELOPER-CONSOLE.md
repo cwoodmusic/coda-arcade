@@ -50,13 +50,13 @@ Layer painting changes occlusion, not walking collision. Painting existing room 
 
 ## Playtest, undo, and saving
 
-**Playtest** resumes normal WASD/arrow movement and click-to-walk with editor overlays hidden. Click **Stop playtest** to resume editing. Zoom with the wheel or +/−; reset with 0. Right-drag pans the editor when zoomed. Use the ⇄ button to dock the console on the other side when it covers artwork.
+**Playtest** resumes normal WASD/arrow movement and click-to-walk with editor overlays hidden. Click **Stop playtest** to resume editing. Zoom with the wheel or +/− up to **800%** for detail work; reset with 0. Wheel zoom keeps the point under the cursor in place when map bounds allow it. Playtest and closing the console return to the 300% gameplay limit. Right-drag pans the editor when zoomed. Use the ⇄ button to dock the console on the other side when it covers artwork.
 
 Undo and redo apply to complete project edits, including objects, collision, and layer strokes. Use the buttons, Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, or Ctrl/Cmd+Y. Escape cancels a pending selection or closes the console.
 
 Edits save locally in this browser and origin. The Project tab's **Save project** reports storage success or failure. **Export project JSON** backs up the whole project, including embedded uploaded images, source cleanup patches, collision overrides, and local foreground strokes. **Import project JSON** validates a backup before replacing the current project and can be undone. **Reset project** replaces the current layout with the shared published layout and saves that copy locally; it can also be undone. Individual object and collision **Restore original** tools still return to the underlying original artwork or collision cells.
 
-Fresh browsers load `published-world-project.json` as the shared default. The checked-in file uses the second supplied version-1 export, including 8 lifted objects, 984 collision overrides, and 81 foreground strokes. The dance-passage plant is hidden with a cleanup silhouette covering its leaves, trunk, and pot. Its floor repair preserves the corridor's horizontal grid rows and adjoining wall. The other seven objects and all uploaded collision and layer edits are preserved; the corridor's existing green cells already permit NPC passage, while the neighboring red wall cells remain solid.
+Fresh browsers load `published-world-project.json` as the shared default. The checked-in file uses the latest supplied version-1 export, including 8 lifted objects, 1,085 collision overrides, and 99 foreground strokes. The dance-passage plant is hidden with a cleanup silhouette covering its leaves, trunk, and pot. Its floor repair preserves the corridor's horizontal grid rows and adjoining wall. The other seven objects and all uploaded collision and layer edits are preserved; the corridor's existing green cells already permit NPC passage, while the neighboring red wall cells remain solid.
 
 Valid local projects, including deliberately empty projects, take priority; legacy local asset, collision, and layer edits are also preserved. Use **Project → Reset project** to replace those local edits with the current published layout. Merely visiting the world does not save a local override, so browsers without local edits receive later published updates. Movement waits for the layout to finish loading. If the shared file fails to load or validate, existing local edits remain intact and the editor reports the failure.
 
@@ -76,6 +76,7 @@ python3 tests/developer-console-browser.py
 python3 tests/published-world-browser.py
 python3 tests/collision-integration-browser.py
 python3 tests/dance-passage-browser.py
+python3 tests/world-features-browser.py
 ```
 
 The collision tests exercise override restoration, atomic rejection of invalid imports, and coordinate-aware interpolated pointer strokes. The browser runner requires Python Playwright and Chromium, starts its own temporary local server, and exercises the editor through its UI in disposable browser contexts. Existing local projects are preserved.

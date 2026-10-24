@@ -17,8 +17,8 @@ ROOT=Path(__file__).resolve().parents[1]
 # Pin the uploaded sections that the requested plant removal does not change.
 UPLOAD_DIGESTS={
     'other_assets':'e73fa094c391e076e2993677e1deffeee49d814787b20d176903b8801289d8cd',
-    'collision':'4a942655d2f4cdf2180819afc57766d05b34ad43f7c834ede98618724876a914',
-    'strokes':'d2aa91a1bafb5f40f5be0baf9a517db4b9c9a6e6fcde3b48f1a27e645f8c45ad',
+    'collision':'57c91841122493deac969c4b0752d42043d8acd3ee3c1248e9d0ebd93dc5d922',
+    'strokes':'82affa1d35a3fa992b587ef2b15f799c4ee3b2620e5a4f0900f90b82c4581068',
 }
 
 
@@ -71,7 +71,7 @@ class DancePassageTests(unittest.TestCase):
         project=self.page.evaluate('CodaDeveloperConsole.getProject()')
         self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getProjectSource()'),'published')
         self.assertEqual((len(project['assets']),len(project['collision']),len(project['strokes'])),
-                         (8,984,81))
+                         (8,1085,99))
         other=[asset for asset in project['assets'] if asset['id']!='asset-8']
         self.assertEqual(digest(other),UPLOAD_DIGESTS['other_assets'])
         for key in ['collision','strokes']:

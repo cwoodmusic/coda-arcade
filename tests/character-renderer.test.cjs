@@ -103,3 +103,38 @@ test('palette storage stays bounded and invalid motion never sends nonfinite coo
   const {value:r}=renderer();for(let i=0;i<180;i++)draw(r,{skin:'#'+(0x704000+i*103).toString(16).padStart(6,'0')},{walking:true,phase:i/5},i);assert.ok(r.getState().paletteCount<=128);
   for(const raw of [null,undefined,{}, {x:NaN,y:Infinity,phase:NaN,scale:Infinity,facing:'bad'}])assert.doesNotThrow(()=>draw(r,null,raw,NaN));
 });
+
+test('the expanded collection has real drawings in every direction and preserves independent item ids',()=>{
+  const {value:r}=renderer({reducedMotion:()=>true});
+  const groups={hairstyles:'hairstyle',outfits:'outfit',headwear:'headwear',eyewear:'eyewear',accessories:'accessory',shoes:'shoes'};
+  assert.ok(r.catalog.headwear.length>=24);assert.ok(r.catalog.eyewear.length>=14);assert.ok(r.catalog.accessories.length>=22);assert.ok(r.catalog.shoes.length>=16);
+  for(const [group,slot]of Object.entries(groups))for(const item of r.catalog[group]){
+    assert.equal(r.normalizeProfile({[slot]:item.id})[slot],item.id);
+    for(const facing of directions)assert.doesNotThrow(()=>draw(r,{[slot]:item.id},{facing}),group+': '+item.id);
+  }
+  assert.notEqual(signature(draw(r,{headwear:'witch'})),signature(draw(r,{headwear:'wizard'})));
+  assert.ok(r.labelOffset({headwear:'wizard'})>r.labelOffset({}), 'Name labels must clear taller hats');
+  assert.notEqual(signature(draw(r,{headwear:'cap',headwearColor:'#154875'})),signature(draw(r,{headwear:'cap',headwearColor:'#e95486'})));
+});
+
+test('every selected emote changes the pose and remains stable with reduced motion',()=>{
+  const {value:r}=renderer(),{value:quiet}=renderer({reducedMotion:()=>true});
+  assert.ok(r.catalog.emotes.length>=16);
+  for(const {id}of r.catalog.emotes){
+    const actions=[.15,.45,.8,1.2].map(time=>signature(draw(r,{}, {emote:id,emoteTime:time},time)));
+    assert.ok(actions.some((value,index)=>value!==signature(draw(r,{}, {},[.15,.45,.8,1.2][index]))),id+' must have an actual pose');
+    assert.equal(signature(draw(quiet,{}, {emote:id,emoteTime:.2},.2)),signature(draw(quiet,{}, {emote:id,emoteTime:8},8)));
+  }
+});
+
+test('musician identity survives a shared color palette and matches the boutique character preview',()=>{
+  const {value:r}=renderer({reducedMotion:()=>true}),signatures=[];
+  for(const id of ['bach','mozart','beethoven','clara','joplin','ellington','ella','nina','miles']){
+    const appearance={skin:'#aaaaaa',hair:'#555555',shirt:'#888888',lowerColor:'#777777'};
+    const ctx=context();r.drawNPC(ctx,{id,x:10,y:20,facing:'down',appearance},0);signatures.push(signature(ctx));
+    const preview=draw(r,{...r.appearanceFor(id),...appearance,characterId:id},{x:10,y:20,facing:'down'},0);
+    assert.equal(signature(preview),signature(ctx),id+' preview must retain body, face, hair and costume identity');
+  }
+  assert.equal(new Set(signatures).size,9,'Distinct people must remain distinct beyond a palette swap');
+  assert.equal(r.appearanceFor('dj').name,'DJ Coda');
+});

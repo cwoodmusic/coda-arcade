@@ -79,6 +79,10 @@ class AnimationPerformanceTests(unittest.TestCase):
         light = result['ambientRaster']
         self.assertLessEqual(light['width']*light['height'], 1672*941/8,
                              'Soft lighting must not repaint a full-resolution world surface')
+        beams=self.page.evaluate('CodaArcadeQA.lighting().beamRaster')
+        self.assertGreater(beams['width'],0)
+        self.assertLessEqual(beams['width']*beams['height'],1672*941/3,
+                             'Volumetric beams must use a smaller cached surface; floor pins stay sharp')
 
     def test_paused_world_backdrop_stays_still_while_the_boutique_keeps_animating(self):
         self.page.locator('#avatarBtn').click()

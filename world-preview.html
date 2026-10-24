@@ -17,7 +17,7 @@
 /* Coda Asset Studio v11: stays separate from collision + pixel masks. */
 #assetStudio{position:fixed;left:12px;top:80px;z-index:65;width:min(334px,calc(100vw - 24px));max-height:calc(100dvh - 99px);overflow:auto;background:#171529f5;border:1px solid #eac17d;box-shadow:0 12px 50px #05010de0,0 0 22px #fdac4a24;border-radius:12px;padding:13px;color:#f8efff;font:12px system-ui;backdrop-filter:blur(9px)}
 #assetStudio[hidden]{display:none}#assetStudio .studioHead{display:flex;align-items:center;justify-content:space-between;color:#ffe4a4;font-size:14px;gap:9px;margin-bottom:7px}#assetStudio .studioActions{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0}#assetStudio button{font:inherit;min-height:28px;padding:5px 7px}#assetStudio .studioActions button{flex:1 0 90px}#assetStudio button:disabled{opacity:.36;cursor:not-allowed}#assetStudio hr{border:0;border-top:1px solid #655374;margin:13px 0}#assetStudio .studioField{display:grid;gap:3px;margin:7px 0}#assetStudio .studioField>label{font-weight:650;color:#dccdf3}#assetStudio input:not([type=checkbox]),#assetStudio select{background:#131024;border:1px solid #866e9b;color:#fff;padding:7px;border-radius:5px;width:100%;font:inherit;min-width:0}#assetStudio input[type=checkbox]{accent-color:#f9c880}#assetStudio .studioGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}#assetStudio .studioTip{color:#c9b9d6;line-height:1.45;font-size:11px;margin:6px 0}#assetStudio #assetList{height:108px;padding:2px}#assetStudio #assetList option{padding:6px}#assetStudio #assetMessage{color:#bbf5e5;min-height:18px;overflow-wrap:anywhere}#assetStudio #assetSelection[hidden]{display:none}#assetStudio .studioCheck{display:inline-flex;align-items:center;gap:6px;margin:5px 11px 5px 0}#assetStudio .studioCollapsible{border:1px solid #655374;border-radius:7px;padding:8px}#assetStudio summary{cursor:pointer;color:#ffe4b1;font-weight:650}#assetToggle{border-color:#eecc7c}#view.asset-editing{cursor:crosshair;touch-action:none}#assetStudio #assetAdd{background:#675022;border-color:#e8b85c}#assetStudio #assetImport{border-color:#80d3ed}#assetStudio #assetExport{border-color:#80d3ed}#assetStudio #assetHelp{background:#271d3c}#assetStudio .studioHot{color:#ffcfa4}body.asset-console-open #layerEditor{display:none!important}@media(max-width:650px){#assetStudio{top:120px;max-height:calc(100dvh - 138px)}}
-</style><link rel="stylesheet" href="developer-console.css?v=corridor-plant-25"><link rel="stylesheet" href="musician-ui.css?v=corridor-plant-25"><link rel="stylesheet" href="boutique-ui.css?v=corridor-plant-25"><script src="collision-editor.js?v=corridor-plant-25"></script><script src="world-object-catalog.js?v=corridor-plant-25"></script><script src="world-object-runtime.js"></script><script src="developer-console.js?v=corridor-plant-25"></script><script src="npc-behavior.js?v=corridor-plant-25"></script><script src="character-renderer.js?v=corridor-plant-25"></script><script src="musician-ui.js?v=corridor-plant-25"></script><script src="boutique-ui.js?v=corridor-plant-25"></script><header><b>♫ CODA ARCADE · CONNECTED WORLD / WORLD BUILDER</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="assetToggle" type="button" title="Open Asset Studio (Shift+A)">✥ Assets</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0" aria-label="Connected arcade. Move with WASD or arrow keys. Press Space to jump and E to interact."></canvas><footer><span>WASD / arrows · Walk · Space · Jump · Wheel / + / − Zoom · 0 Reset · F2 Developer console · C Edit collision · Shift+L Edit layers · Right-drag to pan in editor &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 11 · asset studio · animations · layers · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
+</style><link rel="stylesheet" href="developer-console.css?v=nightlife-26"><link rel="stylesheet" href="musician-ui.css?v=nightlife-26"><link rel="stylesheet" href="boutique-ui.css?v=nightlife-26"><script src="collision-editor.js?v=nightlife-26"></script><script src="world-object-catalog.js?v=nightlife-26"></script><script src="world-object-runtime.js"></script><script src="world-lighting.js?v=nightlife-26"></script><script src="dj-library.js?v=nightlife-26"></script><script src="developer-console.js?v=nightlife-26"></script><script src="npc-behavior.js?v=nightlife-26"></script><script src="character-renderer.js?v=nightlife-26"></script><script src="musician-ui.js?v=nightlife-26"></script><script src="boutique-ui.js?v=nightlife-26"></script><header><b>♫ CODA ARCADE · CONNECTED WORLD / WORLD BUILDER</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="assetToggle" type="button" title="Open Asset Studio (Shift+A)">✥ Assets</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0" aria-label="Connected arcade. Move with WASD or arrow keys. Press Space to jump and E to interact."></canvas><footer><span>WASD / arrows · Walk · Space · Jump · Wheel / + / − Zoom · 0 Reset · F2 Developer console · C Edit collision · Shift+L Edit layers · Right-drag to pan in editor &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 11 · asset studio · animations · layers · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
   <div class="editorbanner"><b>✎ FOREGROUND EDITOR</b><button id="editClose" type="button">✕</button></div>
   <div class="mini">Paint with pixels from the existing arcade artwork. Erase removes unwanted foreground coverage; the floor stays unchanged.</div>
   <div class="editorline"><button type="button" id="editPaint" class="current">🖌 Paint</button><button type="button" id="editErase">⌫ Erase</button></div>
@@ -77,35 +77,50 @@
  <p id="assetMessage" role="status">Your assets are saved in this browser. Export scene JSON to publish or move them to another computer.</p>
  <details><summary id="assetHelp">Help · shortcuts and storage</summary><p class="studioTip">Shift+A opens/closes. Delete removes. Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z redo. Arrows nudge selected asset (Shift = 8 px). Escape closes. GIF/APNG playback depends on browser support; sprite sheets offer deterministic frame animation. Crop selects a rectangular section of the *original art* (not the whole live canvas). Imported images are embedded in exported JSON. Browser storage is local to this page/origin; GitHub won't receive edits until you publish the export.</p></details>
 </aside><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><div id="pianoroom" hidden><div class="stage"><h2>♫ PIANO LAB ♫</h2><p>A quieter music space away from the arcade floor.</p><div class="keys"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p style="opacity:.7">Dedicated room preview — instruments and activities coming later.</p></div><button id="closepiano">← Return to Arcade</button></div><script>
-(()=>{'use strict';let developerConsole=null,worldObjects=null,npcBrain=null,characterRenderer=null,musicianUI=null,boutiqueUI=null,playerPhase=0,emoteStarted=0,followedMusician=null,followTimer=0;const c=document.querySelector('#view'),worldContext=c.getContext('2d',{alpha:false}),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}avatar=window.CodaAvatarDefaults.migrate(avatar);const W=1672,H=941,ART_SCALE=1,keys=new Set();let player={x:1180,y:388},cam={x:0,y:0,zoom:1,targetZoom:1},dest=null,emote=0,near=null,last=0,clock=0,walking=false,facing="down";const rooms=[{id:'lounge',name:'LOUNGE',x:95,y:145,w:350,h:235},{id:'dance',name:'DANCE',x:90,y:505,w:670,h:325},{id:'arcade',name:'ARCADE',x:648,y:220,w:900,h:580}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:718,y:313,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:831,y:314,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:951,y:315,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1064,y:315,url:'song-machine/index.html'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
+(()=>{'use strict';let developerConsole=null,worldObjects=null,worldLighting=null,npcBrain=null,characterRenderer=null,musicianUI=null,boutiqueUI=null,playerPhase=0,emoteStarted=0,followedMusician=null,followTimer=0;const c=document.querySelector('#view'),worldContext=c.getContext('2d',{alpha:false}),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}avatar=window.CodaAvatarDefaults.migrate(avatar);const W=1672,H=941,ART_SCALE=1,keys=new Set();let player={x:1180,y:388},cam={x:0,y:0,zoom:1,targetZoom:1},dest=null,emote=0,near=null,last=0,clock=0,walking=false,facing="down";const rooms=[{id:'lounge',name:'LOUNGE',x:95,y:145,w:350,h:235},{id:'dance',name:'DANCE',x:90,y:505,w:670,h:325},{id:'arcade',name:'ARCADE',x:648,y:220,w:900,h:580}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:718,y:313,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:831,y:314,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:951,y:315,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1064,y:315,url:'song-machine/index.html'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
 
 let g=worldContext;
 
 // PHASE 9.8: World-space camera. Gameplay, collisions and editor masks stay in
 // their original 1672x941 coordinate system. Only the canvas view is scaled.
-const ZOOM_MIN=1,ZOOM_MAX=3,ZOOM_STEP=.25;
-function clampZoom(value){return Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,Math.round(value/ZOOM_STEP)*ZOOM_STEP))}
+const ZOOM_MIN=1,ZOOM_MAX=3,EDITOR_ZOOM_MAX=8,ZOOM_STEP=.25;
+let zoomAnchor=null,zoomControlsLimit=ZOOM_MAX;
+function zoomLimit(){return developerConsole?.isEditing()?EDITOR_ZOOM_MAX:ZOOM_MAX;}
+function clampZoom(value){return Math.max(ZOOM_MIN,Math.min(zoomLimit(),Math.round(value/ZOOM_STEP)*ZOOM_STEP))}
 try{const saved=Number(localStorage.getItem('codaArcadeCameraZoomV1'));
  if(Number.isFinite(saved)&&saved>=ZOOM_MIN&&saved<=ZOOM_MAX){cam.zoom=cam.targetZoom=clampZoom(saved);}}
 catch{} // Preferences are optional; browser privacy settings can disable storage.
 function updateZoomControls(){
  const indicator=document.querySelector('#zoomReset');
  indicator.textContent=Math.round(cam.targetZoom*100)+'%';
- document.querySelector('#zoomIn').disabled=cam.targetZoom>=ZOOM_MAX;
+ zoomControlsLimit=zoomLimit();
+ document.querySelector('#zoomIn').disabled=cam.targetZoom>=zoomControlsLimit;
  document.querySelector('#zoomOut').disabled=cam.targetZoom<=ZOOM_MIN;
 }
-function setCameraZoom(value){
+function setCameraZoom(value,pointer){
  if(!Number.isFinite(value))return;
+ zoomAnchor=null;
+ if(pointer&&developerConsole?.isEditing()){
+  const world=canvasToWorld(pointer.clientX,pointer.clientY),box=c.getBoundingClientRect();
+  zoomAnchor={x:world.x,y:world.y,sx:(pointer.clientX-box.left)*W/box.width,sy:(pointer.clientY-box.top)*H/box.height};
+ }
  cam.targetZoom=clampZoom(value);updateZoomControls();
- try{localStorage.setItem('codaArcadeCameraZoomV1',String(cam.targetZoom))}catch{}
+ if(cam.targetZoom<=ZOOM_MAX)try{localStorage.setItem('codaArcadeCameraZoomV1',String(cam.targetZoom))}catch{}
 }
 function updateCamera(dt){
+ const limit=zoomLimit();
+ if(cam.targetZoom>limit){cam.zoom=Math.min(cam.zoom,limit);cam.targetZoom=limit;zoomAnchor=null;try{localStorage.setItem('codaArcadeCameraZoomV1',String(limit));}catch{}}
+ if(limit!==zoomControlsLimit)updateZoomControls();
  const blend=1-Math.exp(-Math.min(.05,Math.max(0,dt))*11);
  const previousZoom=cam.zoom;
  cam.zoom+=(cam.targetZoom-cam.zoom)*blend;
  if(Math.abs(cam.targetZoom-cam.zoom)<.0001)cam.zoom=cam.targetZoom;
  const visibleW=W/cam.zoom,visibleH=H/cam.zoom;
- if(developerConsole?.isEditing()){cam.x=Math.max(0,Math.min(W-visibleW,cam.x+(W/previousZoom-visibleW)/2));cam.y=Math.max(0,Math.min(H-visibleH,cam.y+(H/previousZoom-visibleH)/2));return;}
+ if(developerConsole?.isEditing()){
+  cam.x=Math.max(0,Math.min(W-visibleW,zoomAnchor?zoomAnchor.x-zoomAnchor.sx/cam.zoom:cam.x+(W/previousZoom-visibleW)/2));
+  cam.y=Math.max(0,Math.min(H-visibleH,zoomAnchor?zoomAnchor.y-zoomAnchor.sy/cam.zoom:cam.y+(H/previousZoom-visibleH)/2));
+  if(cam.zoom===cam.targetZoom)zoomAnchor=null;return;
+ }
  // The avatar is the focal point. Clamping avoids showing empty space outside
  // the artwork, including when the camera is near an edge or the zoom resets.
  const tx=Math.max(0,Math.min(W-visibleW,player.x-visibleW/2));
@@ -128,11 +143,20 @@ document.querySelector('#zoomReset').onclick=()=>setCameraZoom(1);
 // Wheel zoom operates on the canvas only; scrolling the rest of the page is normal.
 c.addEventListener('wheel',e=>{
  if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;
- e.preventDefault();setCameraZoom(cam.targetZoom+(e.deltaY<0?ZOOM_STEP:-ZOOM_STEP));
+ e.preventDefault();setCameraZoom(cam.targetZoom+(e.deltaY<0?ZOOM_STEP:-ZOOM_STEP),e);
 },{passive:false});
 updateZoomControls();
 function runtimeGames(){return worldObjects?worldObjects.games(games):games.map((q,index)=>({...q,index}));}
 function cabinetApproach(index){const game=runtimeGames().find(g=>g.index===index)||runtimeGames()[0];return game?{x:game.npcX??game.x,y:game.npcY??323}:{x:1180,y:388};}
+function djState(){
+ const object=worldObjects?.state('dance_dj_console');
+ if(!object)return {id:'dj',name:'DJ Coda',visible:false};
+ const point=worldObjects.point(object,393.5,621),approach=worldObjects.point(object,393.5,684);
+ const turn=((Math.round(Math.atan2(object.matrix[1],object.matrix[0])/(Math.PI/2))%4)+4)%4;
+ return {id:'dj',name:'DJ Coda',consoleName:'dance_dj_console',visible:object.visible&&object.opacity>0,
+  x:point.x,y:point.y,approachX:approach.x,approachY:approach.y,opacity:object.opacity,
+  facing:['down','left','up','right'][turn]};
+}
 const looks=[['#e5b48d','#ed8cbe','#171424','spiky'],['#85543b','#8ddde6','#e3c27d','long'],['#f4cba6','#c9a3f1','#402c4b','buns'],['#a56b48','#f4ae77','#1c172d','short'],['#f3c3a1','#b2f37b','#6c3159','bob'],['#704633','#a8b5fc','#eee6df','curly'],['#f0b79d','#ffd48c','#171424','ponytail']];const npc=window.CodaMusicianCast.map((person,index)=>({...person,x:1450,y:752,goal:index%4,wait:0,look:index}));const sofas=[{x:105,y:135,w:110,h:45},{x:240,y:135,w:110,h:45}];const seats=[{x:158,y:267},{x:370,y:262},{x:190,y:304},{x:390,y:296}];const spot=(p)=>p.mode==='cabinet'?cabinetApproach(p.goal%4):p.mode==='lounge'?seats[p.goal%4]:p.mode==='dance'?{x:205+(p.goal%4)*125,y:718+(p.goal%2)*65}:p.mode==='leave'?{x:1450,y:752}:{x:1450,y:752};const r=(x,y,w,h,color)=>{g.fillStyle=color;g.fillRect(Math.round(x),Math.round(y),w,h)};const t=(s,x,y,size=18,color='#e7e2ff')=>{g.fillStyle=color;g.font=`bold ${size}px monospace`;g.textAlign='center';g.fillText(s,x,y)};function sprite(x,y,look,walk=false,dance=false,scale=1){const [skin,shirt,hair,style]=look;g.save();g.translate(Math.round(x),Math.round(y));g.scale(scale,scale);const bob=dance?Math.sin(clock*8)*5:walk?Math.sin(clock*12)*2:0;r(-10,-38+bob,20,17,hair);if(style==='buns'){r(-15,-39+bob,6,7,hair);r(9,-39+bob,6,7,hair)}if(style==='long')r(-13,-30+bob,26,20,hair);r(-9,-32+bob,18,16,skin);r(-12,-16+bob,24,20,shirt);r(-16,-12+bob,4,13,skin);r(12,-12+bob,4,13,skin);r(-9,4+bob,7,11,'#695d99');r(2,4+bob,7,11,'#695d99');r(-10,14+bob,9,4,'#f8d56b');r(1,14+bob,9,4,'#f8d56b');r(-6,-24+bob,3,3,'#222033');r(4,-24+bob,3,3,'#222033');if(dance){const beat=Math.floor(clock*4+look[0].length)%4,up=beat%2===0;r(-18,-(up?29:13)+bob,5,up?16:11,skin);r(13,-(up?13:29)+bob,5,up?11:16,skin);r(-10+(up?-5:3),14+bob,9,5,'#f8d56b');r(1+(up?4:-4),14+bob,9,5,'#f8d56b')}g.restore()};
 // Phase 7.1: world-coordinate collision, small foot hitboxes, and A* navigation.
 // All dimensions refer to the original 1536×1024 background image.
@@ -256,6 +280,7 @@ function insideGeometry(x,y){
 }
 const GRID_W=Math.ceil(W/COLLISION_CELL),GRID_H=Math.ceil(H/COLLISION_CELL);
 const navGrid=new Uint8Array(GRID_W*GRID_H);
+let navigationRevision=0;
 for(let y=0;y<GRID_H;y++)for(let x=0;x<GRID_W;x++)
  navGrid[y*GRID_W+x]=insideGeometry((x+.5)*COLLISION_CELL,(y+.5)*COLLISION_CELL)?1:0;
 // This grid is the collision authority for the editor, movement, and A*.
@@ -428,7 +453,8 @@ function update(dt){
  const moved=Math.hypot(player.x-before.x,player.y-before.y);walking=moved>.01;if(walking){playerPhase+=moved/14;avatar.walked=(avatar.walked||0)+moved/9;}
  npcBrain?.update(dt);
  near=null;let distance=Infinity;
- for(const person of [...runtimeGames().map(q=>({...q,type:'game'})),...npc.filter(q=>!q.hidden).map(q=>({...q,type:'npc'})),{name:'Pip · Avatar Boutique',x:525,y:468,type:'shop'},{name:'Jukebox',x:1248,y:585,type:'jukebox'},{name:'Piano Lab',x:1290,y:247,type:'piano'}]){
+ const dj=djState();
+ for(const person of [...runtimeGames().map(q=>({...q,type:'game'})),...npc.filter(q=>!q.hidden).map(q=>({...q,type:'npc'})),...(dj.visible?[{name:dj.name,x:dj.approachX,y:dj.approachY,type:'dj'}]:[]),{name:'Pip · Avatar Boutique',x:525,y:468,type:'shop'},{name:'Piano Lab',x:1290,y:247,type:'piano'}]){
   const d=Math.hypot(person.x-player.x,person.y-player.y);if(d<94&&d<distance){near=person;distance=d;}
  }
  if(followedMusician&&near?.id===followedMusician)followedMusician=null;
@@ -511,7 +537,7 @@ function talk(){
  if(!near)return;
  if(near.type==='game'){openCabinet(near);return;}
  if(near.type==='shop'){openBoutique();return;}
- if(near.type==='jukebox'){openJukebox();return;}
+ if(near.type==='jukebox'||near.type==='dj'){openJukebox();return;}
  if(near.type==='piano'){openPiano();return;}
  musicianUI.talk(near.id);
 }
@@ -968,7 +994,7 @@ async function loadAssetStudio(){let found=null;
 window.CodaAssetStudioQA={get:()=>({active:assetStudio.active,count:assetStudio.assets.length,selected:assetStudio.selected,assets:assetStudio.assets.map(a=>({id:a.id,name:a.name,kind:a.kind,x:a.x,y:a.y,w:a.w,h:a.h,layer:a.layer,anim:a.anim,frames:a.frames}))}),open:()=>toggleAssetStudio(true),close:()=>toggleAssetStudio(false),preset:()=>assetUI('assetPreset').click(),export:downloadAssetJSON,save:persistAssets};
 // --- END ASSET STUDIO ------------------------------------------------------
 
-window.CODA_BUILD="25.0-clear-dance-passage";
+window.CODA_BUILD="26.0-nightlife-and-wardrobe";
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -1212,50 +1238,6 @@ function spinningDiscoBall(ball,beat){
    g.save();g.globalCompositeOperation='screen';g.globalAlpha=opacity*.38;
    g.fillStyle='#ffffff';g.fillRect(Math.round(px)-1,Math.round(py)-1,3,3);g.restore();
   }
- }
-}
-function discoReflections(beat){
- if(!effectsOn())return;
- const active=beat.on?1:.46;
- for(const [index,original] of DISCO_BALLS.entries()){
-  const part=window.CodaWorldObjectCatalog.find(p=>p.ballIndex===index),object=worldObjects?.state(part.name),asset=object?.asset;
-  if(object&&!object.visible||asset?.discoRays===false)continue;
-  const ball={...original,spin:asset?.discoSpin??original.spin};
-  const {x,y,spin}=ball,opacity=object?.opacity??1,point=object?worldObjects.point(object,x,y):{x,y};
-  g.save();g.globalCompositeOperation='screen';
-  // The club rays stop at the nightclub walls, rather than shining through them.
-  if(ball.club&&point.x>=40&&point.x<850&&point.y>=470&&point.y<880)clubRoomClip();
-  if(asset)g.transform(...object.matrix);
-  const effectTime=asset&&!assetStudio.animate?0:clock;
-  const spinBase=effectTime*(beat.on?1.8:.67)*spin;
-  const count=fxMode==='full'?7:4;
-  for(let i=0;i<count;i++)for(const ray of ball.beams){
-   const angle=spinBase+i*Math.PI*2/count+(ray.color==='#fff4c1'?.08:0);
-   const dx=Math.cos(angle),dy=Math.sin(angle),nx=-dy,ny=dx;
-   const len=ray.len*(.94+.06*Math.sin(effectTime*.95+i));
-   const ex=x+dx*len,ey=y+dy*len,spread=ray.spread;
-   // Both projected cones begin at the center of the sphere. The rotating
-   // sprite is drawn afterward and masks their tiny center join.
-   g.beginPath();g.moveTo(x,y);
-   g.lineTo(ex+nx*spread,ey+ny*spread);
-   g.lineTo(ex-nx*spread,ey-ny*spread);g.closePath();
-   const fog=g.createLinearGradient(x,y,ex,ey);
-   fog.addColorStop(0,'rgba(255,255,255,0)');
-   fog.addColorStop(.08,ray.color+'65');
-   fog.addColorStop(.42,ray.color+'32');
-   fog.addColorStop(1,ray.color+'00');
-   g.globalAlpha=opacity*ray.alpha*active*(.8+.2*thump(beat));g.fillStyle=fog;g.fill();
-   g.beginPath();g.moveTo(x,y);
-   g.lineTo(ex+nx*spread*.19,ey+ny*spread*.19);
-   g.lineTo(ex-nx*spread*.19,ey-ny*spread*.19);g.closePath();
-   const core=g.createLinearGradient(x,y,ex,ey);
-   core.addColorStop(0,'rgba(255,255,255,0)');
-   core.addColorStop(.07,'rgba(255,255,255,.45)');
-   core.addColorStop(.42,ray.color+'45');
-   core.addColorStop(1,ray.color+'00');
-   g.globalAlpha=opacity*ray.alpha*.82*active;g.fillStyle=core;g.fill();
-  }
-  g.restore();
  }
 }
 
@@ -1531,10 +1513,6 @@ const OPEN_FLOOR_TWINKLES=[
  [874,607,1],[957,628,0],[1038,606,1],[1121,629,0],[1204,607,1],[1286,629,0],[1368,607,1],[1451,628,0],
  [902,695,0],[984,716,1],[1066,694,0],[1147,717,1],[1230,695,0],[1312,717,1],[1394,695,0]
 ];
-const WARM_LAMPS=[
- [82,96,'#ffb95e',39],[454,132,'#ffb95e',38],[586,80,'#ffc36b',37],[705,84,'#ffb462',35],[1026,84,'#ffb45c',35],[1127,82,'#ffb65c',38],[1209,82,'#ffbb69',35],
- [806,506,'#ffb968',40],[177,500,'#ffa6eb',34],[470,486,'#ffb86a',35],[603,592,'#ffb76a',34],[679,647,'#ffb96a',34],[805,649,'#ffb76a',32],[189,266,'#ffd070',22],[117,329,'#ffcf72',20]
-];
 const DANCE_TILE={x0:130,y0:652,w:55,h:39,cols:10,rows:5};
 let danceStepBursts=[];
 const danceStepState=new Map();
@@ -1621,15 +1599,6 @@ function openFloorTwinkles(beat){
  }
  g.restore();
 }
-function pulseWarmLamps(beat){
- if(!effectsOn())return;
- const base=beat.on?1:.78;
- for(let i=0;i<WARM_LAMPS.length;i++){
-  const [x,y,color,r]=WARM_LAMPS[i];
-  const glow=.055 + .03*pulse(clock*.72+i*.47,1.2) + (beat.on?.012:0);
-  bloom(x,y,r,color,glow*base);
- }
-}
 
 // Broad, soft lighting needs fewer pixels and a slower refresh than moving
 // characters. Composite one cached light surface instead of making the world
@@ -1644,8 +1613,8 @@ function renderAmbientLights(beat){
   try{
    g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,ambientLightCanvas.width,ambientLightCanvas.height);
    g.setTransform(ambientLightCanvas.width/W,0,0,ambientLightCanvas.height/H,0,0);
-   nightclubColorwash(beat);clubRoomHeartbeat(beat);gradientFloodlights(beat);
-   discoReflections(beat);pulseWarmLamps(beat);neonSigns(beat);
+   nightclubColorwash(beat);clubRoomHeartbeat(beat);gradientFloodlights(beat);worldLighting?.drawBeams(g);
+   neonSigns(beat);
    ambientLightStamp=stamp;ambientLightQuality=fxMode;
   }finally{g=previous;}
  }
@@ -1685,6 +1654,7 @@ function draw(){
  renderArcadeAtmosphere();
  developerConsole?.renderCleanup(g);
  renderAssetsOfLayer('back');
+ worldLighting?.drawFloorPins(g);
  // Erasing foreground changes occlusion, not the visible object artwork.
  // Draw erased fragments behind actors, then the remainder at object depth.
  for(const a of assetStudio.assets)if(a.origin&&a.visible&&a.layer!=='back')drawPlacedAsset(a,'behind');
@@ -1694,6 +1664,7 @@ function draw(){
  for(const p of npc)if(!p.hidden){
   liveActors.push({type:'npc',y:p.y,x:p.x,p});
  }
+ const dj=djState();if(dj.visible)liveActors.push({type:'dj',x:dj.x,y:dj.y,p:dj});
  liveActors.push({type:'player',y:player.y,x:player.x});
  const scene=[...liveActors];
  for(const part of foregroundParts)scene.push({type:'foreground',y:(part.sortY??part.y),part});
@@ -1707,6 +1678,10 @@ function draw(){
   }
   if(item.type==='editor-paint'){if(foregroundEnabled){if(developerConsole)developerConsole.drawUnliftedPixels(g,item.patch.canvas,item.patch.x,item.patch.y);else g.drawImage(item.patch.canvas,item.patch.x,item.patch.y);}continue;}
   if(item.type==='placed-asset'){drawPlacedAsset(item.part);continue;}
+  if(item.type==='dj'){
+   g.save();g.globalAlpha=item.p.opacity;
+   characterRenderer.drawNPC(g,{...item.p,id:'dj',activity:'playing',appearance:npcLooks.dj},clock);g.restore();continue;
+  }
   if(item.type==='player'){
    g.save();g.globalCompositeOperation='screen';g.globalAlpha=.12;
    g.fillStyle='#7aefff';g.beginPath();g.ellipse(player.x,player.y+2,17,5,0,0,Math.PI*2);g.fill();g.restore();
@@ -1716,6 +1691,7 @@ function draw(){
   }
  }
  renderAssetsOfLayer('front');
+ worldLighting?.drawLanterns(g);
  // Soft club color haze touches characters too, without changing occlusion order.
  // Skip it while editing or inspecting collision/foreground masks.
  if(effectsOn()&&!collisionDebug&&!depthDebug&&!layerState.active){
@@ -1730,12 +1706,13 @@ function draw(){
  }
  // Don't draw extra characters or arrows from the baked-in artwork.
  g.save();g.shadowColor='#030814';g.shadowBlur=5;
- t(avatar.name&&avatar.name!=='Guest'?avatar.name:'YOU',player.x,player.y-59-jumpHeight,12,'#e6ffac');g.restore();
+ t(avatar.name&&avatar.name!=='Guest'?avatar.name:'YOU',player.x,player.y-characterRenderer.labelOffset(avatar)-jumpHeight,12,'#e6ffac');g.restore();
  for(const p of npc){if(p.hidden)continue;const nearby=Math.hypot(p.x-player.x,p.y-player.y)<145,following=p.id===followedMusician,chatting=p.conversation;
   g.save();g.shadowColor='#08091a';g.shadowBlur=4;
-  if(nearby||following||chatting){t((following?'↓ ':'')+p.name,p.x,p.y-59,11,chatting?'#ffe3ac':following?'#c4ffab':'#e8dfff');}
+  if(nearby||following||chatting){t((following?'↓ ':'')+p.name,p.x,p.y-characterRenderer.labelOffset(p.appearance,p.id),11,chatting?'#ffe3ac':following?'#c4ffab':'#e8dfff');}
   g.restore();
  }
+ if(dj.visible&&Math.hypot(dj.approachX-player.x,dj.approachY-player.y)<170)t('DJ Coda',dj.x,dj.y-characterRenderer.labelOffset(npcLooks.dj,'dj'),11,'#a8ffec');
 
  if(collisionDebug){
   g.save();g.globalAlpha=.40;
@@ -1790,6 +1767,9 @@ window.CodaArcadeQA=Object.freeze({
   conversation:()=>({id:musicianUI?.selected()||null,open:dialog.style.display==='block'}),
   worldObjects:()=>window.CodaWorldObjectCatalog.map(part=>{const object=worldObjects.state(part.name),anchor=part.anchor||[part.bounds[0]+part.bounds[2]/2,part.bounds[1]+part.bounds[3]/2];return {name:part.name,visible:object.visible,opacity:object.opacity,anchor:worldObjects.point(object,...anchor),spin:object.asset?.discoSpin??part.spin,rays:object.visible&&object.asset?.discoRays!==false,game:part.gameIndex!==undefined?runtimeGames().find(g=>g.index===part.gameIndex)||null:null};}),
   camera:()=>({x:cam.x,y:cam.y,zoom:cam.zoom,targetZoom:cam.targetZoom,visibleWidth:W/cam.zoom,visibleHeight:H/cam.zoom}),
+  dj:()=>({...djState()}),
+  lighting:()=>worldLighting?.snapshot()||null,
+  jukebox:()=>({playing:!!songPlayer||musicEngine.active,title:jukeboxTitle,source:jukeboxSource,audioState:songPlayer?.ctx.state||musicEngine.ctx?.state||'closed',bpm:jukeboxVisual?.bpm||musicEngine.bpm}),
   cameraPoint:(x,y)=>({x:cam.x+x/cam.zoom,y:cam.y+y/cam.zoom}),
   setZoom:setCameraZoom,
   atmosphere:()=>({quality:fxMode,musicOn:musicEngine.active,jukeboxOn:!!jukeboxVisual,beat:beatInfo().beat,glowsCached:glows.size,musicNotesCached:musicNoteSprites.size,ambientRaster:{width:ambientLightCanvas.width,height:ambientLightCanvas.height,refreshHz:24}}),
@@ -1856,10 +1836,10 @@ c.addEventListener('pointercancel',e=>{developerConsole?.pointerEnd(e);assetPoin
 c.addEventListener('pointerleave',()=>{layerState.hover=null});
 document.querySelector('#close').onclick=()=>dialog.style.display='none';document.querySelector('#fs').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen?.();}catch{status.textContent='Fullscreen is unavailable in this browser.';}};// Phase 4.2 account, boutique, and song library bridge (preview only).
 const panel=document.querySelector('#panel'),panelBody=document.querySelector('#panelBody'),panelTitle=document.querySelector('#panelTitle');
-let firebaseApi=null,cloudAuth=null,cloudDb=null,cloudUser=null,profileReady=false,authMessage='Connecting…',songRecords={},songPlayer=null;
+let firebaseApi=null,cloudAuth=null,cloudDb=null,cloudUser=null,profileReady=false,authMessage='Connecting…',songRecords={},songPlayer=null,songFinishTimer=null,songSerial=0,jukeboxTitle='',jukeboxSource=null;
 const config=window.ARCADE_ACCOUNTS_CONFIG;
 function msg(s){const el=panelBody.querySelector('.panelMsg');if(el)el.textContent=s}
-function openPanel(title){if(assetStudio.active)toggleAssetStudio(false);musicianUI?.closeConversation();walking=false;keys.clear();dest=null;dialog.style.display='none';panelTitle.textContent=title;panel.hidden=false;panelBody.classList.remove('boutique-panel');panelBody.replaceChildren()}
+function openPanel(title){if(assetStudio.active)toggleAssetStudio(false);musicianUI?.closeConversation();walking=false;keys.clear();dest=null;dialog.style.display='none';panelTitle.textContent=title;panel.hidden=false;panelBody.classList.remove('boutique-panel');panelBody.replaceChildren();panel.scrollTop=0;}
 function closePanel(){panel.hidden=true;keys.clear();c.focus()}
 document.querySelector('#panelClose').onclick=closePanel;
 function addAction(text,callback){const b=document.createElement('button');b.textContent=text;b.onclick=callback;panelBody.append(b);return b}
@@ -1869,7 +1849,7 @@ const NPC_LOOKS_KEY='codaNPCOutfitsV1';
 let npcLooks={};
 function loadNPCLooks(){
  try{const saved=JSON.parse(localStorage.getItem(NPC_LOOKS_KEY)||'{}');
-  if(saved&&typeof saved==='object'&&!Array.isArray(saved))for(const person of npc){
+  if(saved&&typeof saved==='object'&&!Array.isArray(saved))for(const person of [...npc,{id:'dj',name:'DJ Coda'}]){
    const look=saved[person.id];if(look&&typeof look==='object'&&!Array.isArray(look)){
     npcLooks[person.id]=characterRenderer.normalizeProfile({...characterRenderer.appearanceFor(person.id),...look});person.appearance=npcLooks[person.id];
    }
@@ -1882,7 +1862,7 @@ function applyBoutiqueLook(id,look){
    const next={...avatar,...characterRenderer.normalizeProfile(look),customized:true,hat:false};
    localStorage.setItem('musicArcadeV1',JSON.stringify(next));avatar=next;syncProfile();
   }else{
-   const person=npc.find(p=>p.id===id);if(!person)return false;
+   const person=npc.find(p=>p.id===id)||(id==='dj'?{id:'dj',name:'DJ Coda'}:null);if(!person)return false;
    const next={...npcLooks,[id]:characterRenderer.normalizeProfile({...look,name:person.name})};
    localStorage.setItem(NPC_LOOKS_KEY,JSON.stringify(next));npcLooks=next;person.appearance=next[id];
   }
@@ -1894,15 +1874,109 @@ function openAccount(){openPanel('Arcade Passport');const p=document.createEleme
 async function syncProfile(){if(!cloudUser||!profileReady||!firebaseApi)return;try{await firebaseApi.set(firebaseApi.ref(cloudDb,'arcadeProfiles/'+cloudUser.uid),{profile:avatar,updatedAt:firebaseApi.serverTimestamp(),schemaVersion:1})}catch(e){authMessage='Could not save profile: '+e.message}}
 async function loadProfile(user){profileReady=false;try{const snap=await firebaseApi.get(firebaseApi.ref(cloudDb,'arcadeProfiles/'+user.uid));if(!cloudUser||cloudUser.uid!==user.uid)return;const remote=snap.val()?.profile;if(remote&&typeof remote==='object'){avatar={...avatar,...window.CodaAvatarDefaults.migrate(remote)};localStorage.setItem('musicArcadeV1',JSON.stringify(avatar))}profileReady=true;authMessage='Signed in · '+(remote?'Saved profile loaded':'New profile ready');if(!remote)await syncProfile()}catch(e){authMessage='Profile unavailable: '+e.message}}
 async function initCloud(){if(!config?.enabled||!config?.firebase){authMessage='Firebase account settings unavailable.';return}try{const [app,auth,database]=await Promise.all([import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'),import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js'),import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js')]);firebaseApi={...auth,...database};const instance=app.initializeApp(config.firebase,'arcade-connected-preview');cloudAuth=auth.getAuth(instance);cloudDb=database.getDatabase(instance);await auth.setPersistence(cloudAuth,auth.browserLocalPersistence);auth.onAuthStateChanged(cloudAuth,async user=>{cloudUser=user;profileReady=false;document.querySelector('#accountBtn').textContent=user?'◉ Account':'◉ Guest';authMessage=user?'Loading your arcade profile…':'Guest mode';if(user)await loadProfile(user)})}catch(e){authMessage='Cloud connection failed: '+e.message}}
-function stopSong(){if(songPlayer){songPlayer.stop();songPlayer=null}jukeboxVisual=null;}
+function stopSong(){
+ songSerial++;clearTimeout(songFinishTimer);songFinishTimer=null;
+ const previous=songPlayer;songPlayer=null;
+ if(previous)previous.stop();
+ jukeboxVisual=null;jukeboxTitle='';jukeboxSource=null;
+}
 function steps(m){const [a,b]=m.split('/').map(Number);return a*16/b}
-function playSong(song){stopAmbientMusic();stopSong();const C=window.AudioContext||window.webkitAudioContext;if(!C){msg('Audio not supported.');return}const ctx=new C(),oscillators=[];let stopped=false;const beat=60/song.bpm/4,start=ctx.currentTime+.07;jukeboxVisual={ctx,start,bpm:song.bpm};function note(p,t,d,sound,volume){const o=ctx.createOscillator(),v=ctx.createGain();o.type=['square','triangle','triangle','sine','sawtooth','sawtooth','sine','triangle','square','sawtooth'][sound]||'triangle';o.frequency.value=440*2**((p-69)/12)*(sound===3?2:1);v.gain.setValueAtTime(.0001,t);v.gain.exponentialRampToValueAtTime(Math.max(.0002,(volume||.6)*.14),t+.008);v.gain.exponentialRampToValueAtTime(.0001,t+Math.max(.045,d));o.connect(v).connect(ctx.destination);o.start(t);o.stop(t+Math.max(.045,d)+.01);oscillators.push(o)}
- for(const tr of song.tracks||[]){if(tr.mute)continue;for(const n of tr.notes||[])if(n.t<song.bars*steps(song.meter))note(n.p,start+n.t*beat,n.d*beat*.94,tr.sound,tr.volume)}for(let i=0;i<3;i++){const tr=song.drums?.[i];if(!tr||tr.mute)continue;for(const n of tr.notes||[])if(n.t<song.bars*steps(song.meter))note(i===0?45:i===1?57:88,start+n.t*beat,.12,i===0?3:1,tr.volume)}songPlayer={stop(){if(stopped)return;stopped=true;for(const o of oscillators)try{o.stop()}catch{}ctx.close().catch(()=>{})}};msg('Now playing your composition.');setTimeout(()=>{if(songPlayer&&!stopped){stopSong();msg('Playback finished.')}},(song.bars*steps(song.meter)*beat+.2)*1000)}
-async function openJukebox(){openPanel('♫ Jukebox · Your Songs');addAction('■ Stop playback',stopSong);const m=document.createElement('p');m.className='panelMsg';m.textContent='Loading saved compositions…';panelBody.append(m);if(!cloudUser||!profileReady){m.textContent='Sign in with Google to see your saved Song Machine compositions.';return}try{const snap=await firebaseApi.get(firebaseApi.ref(cloudDb,'songLibrary/'+cloudUser.uid));songRecords=snap.val()||{};const songs=Object.entries(songRecords).sort((a,b)=>(b[1].updatedAt||0)-(a[1].updatedAt||0));m.textContent=songs.length?songs.length+' saved composition(s)':'No saved compositions yet. Visit Song Machine to create one.';for(const [id,record] of songs){if(!record.composition)continue;const row=document.createElement('div');row.className='panelRow';const info=document.createElement('div');const strong=document.createElement('strong');strong.textContent=record.title||'Untitled';info.append(strong);const small=document.createElement('small');small.textContent=(record.composition.bpm||110)+' BPM';info.append(small);row.append(info);const play=document.createElement('button');play.textContent='▶ Play';play.onclick=()=>playSong(record.composition);row.append(play);const edit=document.createElement('button');edit.textContent='Edit ↗';edit.onclick=()=>{stopSong();closePanel();openCabinet({...games[3],url:'song-machine/index.html?song='+encodeURIComponent(id)})};row.append(edit);panelBody.append(row)}}catch(e){m.textContent='Could not load saved songs: '+e.message}}
+async function playSong(song,details={}){
+ if(!window.CodaDJLibrary.valid(song)){msg('This composition is not a supported Song Machine song.');return false;}
+ stopAmbientMusic();stopSong();
+ const A=window.AudioContext||window.webkitAudioContext;
+ if(!A){msg('Audio is unavailable in this browser.');return false;}
+ const ctx=new A(),voices=[],sequence=songSerial;
+ let stopped=false;
+ const playback={ctx,stop(){if(stopped)return;stopped=true;for(const voice of voices)try{voice.stop()}catch{}ctx.close().catch(()=>{});}};
+ songPlayer=playback;jukeboxTitle=details.title||'Your composition';jukeboxSource=details.source||'cloud';
+ try{
+  await ctx.resume();if(stopped||sequence!==songSerial)return false;
+  const beat=60/song.bpm/4,start=ctx.currentTime+.07,duration=song.bars*steps(song.meter)*beat;
+  jukeboxVisual={ctx,start,bpm:song.bpm};
+  const output=ctx.createGain();output.gain.value=.7;output.connect(ctx.destination);
+  function note(p,t,d,sound,volume){
+   if(volume<=0)return;
+   const o=ctx.createOscillator(),gain=ctx.createGain();
+   o.type=['square','triangle','triangle','sine','sawtooth','sawtooth','sine','triangle','square','sawtooth'][sound]||'triangle';
+   o.frequency.value=440*2**((p-69)/12)*(sound===3?2:1);
+   gain.gain.setValueAtTime(.0001,t);gain.gain.exponentialRampToValueAtTime(Math.max(.0002,volume*.14),t+.008);
+   gain.gain.exponentialRampToValueAtTime(.0001,t+Math.max(.045,d));o.connect(gain).connect(output);
+   o.start(t);o.stop(t+Math.max(.045,d)+.01);voices.push(o);
+  }
+  const noise=ctx.createBuffer(1,Math.floor(ctx.sampleRate*.2),ctx.sampleRate),data=noise.getChannelData(0);
+  for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*.6;
+  function drum(row,t,volume){
+   if(volume<=0)return;
+   const gain=ctx.createGain(),voice=row===0?ctx.createOscillator():ctx.createBufferSource();
+   const length=row===0?.19:row===1?.14:.055;
+   if(row===0){voice.frequency.setValueAtTime(125,t);voice.frequency.exponentialRampToValueAtTime(42,t+length);voice.connect(gain);}
+   else{voice.buffer=noise;const filter=ctx.createBiquadFilter();filter.type=row===1?'bandpass':'highpass';filter.frequency.value=row===1?1800:6500;voice.connect(filter).connect(gain);}
+   gain.gain.setValueAtTime(Math.max(.0002,volume*.5),t);gain.gain.exponentialRampToValueAtTime(.0001,t+length);gain.connect(output);
+   voice.start(t);voice.stop(t+length+.01);voices.push(voice);
+  }
+  for(const track of song.tracks)if(!track.mute)for(const n of track.notes)note(n.p,start+n.t*beat,Math.min(n.d*beat*.94,duration-n.t*beat),track.sound,track.volume);
+  song.drums.forEach((track,row)=>{if(!track.mute)for(const n of track.notes)drum(row,start+n.t*beat,track.volume);});
+  msg('Now playing: '+jukeboxTitle+' · '+song.bpm+' BPM');
+  songFinishTimer=setTimeout(()=>{if(songPlayer===playback){stopSong();msg('Playback finished. Choose another track.');}},(duration+.2)*1000);
+  return true;
+ }catch(error){if(songPlayer===playback){stopSong();msg('Playback could not start. Try Play again.');}return false;}
+}
+function importedDJSongs(){
+ try{const records=JSON.parse(localStorage.getItem('codaDJLibraryV1')||'[]');return Array.isArray(records)?records.filter(r=>r&&typeof r.title==='string'&&window.CodaDJLibrary.valid(r.composition)).slice(0,12):[];}catch{return [];}
+}
+async function openJukebox(){
+ openPanel('DJ Coda · Jukebox');
+ const intro=document.createElement('p');intro.className='muted';intro.textContent='DJ Coda is on the decks. Pick an original house track, or bring a Song Machine composition.';panelBody.append(intro);
+ const status=document.createElement('p');status.className='panelMsg';status.setAttribute('role','status');status.textContent=songPlayer?'Now playing: '+jukeboxTitle:'Choose a track to start the set.';panelBody.append(status);
+ const stop=addAction('■ Stop playback',()=>{stopAmbientMusic();stopSong();msg('Stopped.');});stop.id='jukeboxStop';
+ const house=document.createElement('section'),heading=document.createElement('h3');heading.textContent='House collection';house.append(heading);panelBody.append(house);
+ function songRow(parent,record,source,editId){
+  const row=document.createElement('div');row.className='panelRow';const info=document.createElement('div'),title=document.createElement('strong'),small=document.createElement('small');
+  title.textContent=record.title||'Untitled';small.textContent=record.composition.bpm+' BPM · '+record.composition.bars+' bars';info.append(title,small);row.append(info);
+  const play=document.createElement('button');play.type='button';play.textContent='▶ Play';play.setAttribute('aria-label','Play '+title.textContent);play.dataset.jukeboxTrack=record.id||source;
+  play.onclick=()=>playSong(record.composition,{title:title.textContent,source});row.append(play);
+  if(editId){const edit=document.createElement('button');edit.type='button';edit.textContent='Edit ↗';edit.onclick=()=>{stopSong();closePanel();openCabinet({...games[3],url:'song-machine/index.html?song='+encodeURIComponent(editId)})};row.append(edit);}
+  parent.append(row);
+ }
+ for(const record of window.CodaDJLibrary.songs)songRow(house,record,'house');
+ const local=document.createElement('section'),localHeading=document.createElement('h3');localHeading.textContent='Your local compositions';local.append(localHeading);panelBody.append(local);
+ for(const record of importedDJSongs())songRow(local,record,'import');
+ const file=document.createElement('input');file.type='file';file.accept='application/json,.json';file.hidden=true;file.id='djSongImport';panelBody.append(file);
+ const load=addAction('Load Song Machine JSON',()=>file.click());load.id='djSongImportButton';
+ file.onchange=async()=>{
+  const selected=file.files?.[0];file.value='';if(!selected)return;
+  try{
+   if(selected.size>2*1024*1024)throw Error('Choose a composition smaller than 2 MB.');
+   const composition=JSON.parse(await selected.text());if(!window.CodaDJLibrary.valid(composition))throw Error('Choose a valid Song Machine composition JSON.');
+   const record={id:'local-'+Date.now(),title:selected.name.replace(/\.json$/i,''),composition};
+   const records=[record,...importedDJSongs()].slice(0,12);
+   try{localStorage.setItem('codaDJLibraryV1',JSON.stringify(records));}catch{msg('Song loaded for this session. Local storage is full.');}
+   songRow(local,record,'import');msg('Loaded '+record.title+'. Press Play when you are ready.');
+  }catch(error){msg('Could not load that song: '+error.message);}
+ };
+ const cloud=document.createElement('section'),cloudHeading=document.createElement('h3'),cloudStatus=document.createElement('p');cloudHeading.textContent='Cloud song library';cloudStatus.className='muted';cloud.append(cloudHeading,cloudStatus);panelBody.append(cloud);
+ if(!cloudUser||!profileReady){cloudStatus.textContent='Sign in to add your saved Song Machine songs to the set. House tracks and local JSON work as a guest.';return;}
+ cloudStatus.textContent='Loading saved compositions…';
+ try{
+  const snap=await firebaseApi.get(firebaseApi.ref(cloudDb,'songLibrary/'+cloudUser.uid));if(!cloud.isConnected)return;
+  songRecords=snap.val()||{};const songs=Object.entries(songRecords).sort((a,b)=>(b[1].updatedAt||0)-(a[1].updatedAt||0));
+  let count=0;for(const [id,record] of songs)if(window.CodaDJLibrary.valid(record.composition)){songRow(cloud,{...record,id},'cloud',id);count++;}
+  cloudStatus.textContent=count?count+' saved composition(s)':'No saved compositions yet. Visit Song Machine to create one.';
+ }catch(error){if(cloud.isConnected)cloudStatus.textContent='Could not load saved songs. The house collection is ready to play.';}
+}
 document.querySelector('#accountBtn').onclick=openAccount;document.querySelector('#jukeboxBtn').onclick=openJukebox;initCloud();
 characterRenderer=window.createCodaCharacterRenderer({reducedMotion:()=>window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true});
 loadNPCLooks();
-worldObjects=window.createCodaWorldObjects({catalog:window.CodaWorldObjectCatalog,getAssets:()=>assetStudio.assets,getAnimation:assetAnimTransform});
+worldObjects=window.createCodaWorldObjects({catalog:[...window.CodaWorldObjectCatalog,...foregroundParts.filter(part=>!window.CodaWorldObjectCatalog.some(original=>original.name===part.name))],getAssets:()=>assetStudio.assets,getAnimation:assetAnimTransform});
+worldLighting=window.createCodaWorldLighting({
+ width:W,height:H,getTime:()=>clock,getQuality:()=>fxMode,getBeat:beatInfo,isWalkable:inside,getBeamRaster:()=>({width:ambientLightCanvas.width,height:ambientLightCanvas.height,refreshHz:24}),getMapRevision:()=>navigationRevision,reducedMotion:()=>reduceMotion,
+ getBallStates:()=>DISCO_BALLS.map((ball,index)=>{
+  const part=window.CodaWorldObjectCatalog.find(p=>p.ballIndex===index),object=worldObjects.state(part.name),asset=object.asset;
+  return {id:part.name,x:ball.x,y:ball.y,radius:ball.r,spin:asset?.discoSpin??ball.spin,seed:ball.seed,club:ball.club===true,
+   visible:object.visible,rays:asset?.discoRays!==false,opacity:object.opacity,matrix:object.matrix,animate:!asset||assetStudio.animate};
+ })
+});
 npcBrain=window.createCodaNPCBehavior({npcs:npc,inside,route:pathTo,getGames:runtimeGames,getPlayer:()=>player});
 musicianUI=window.createCodaMusicianUI({
  npcs:npc,getBrain:()=>npcBrain,renderer:characterRenderer,canvas:c,panelBody,
@@ -1914,8 +1988,8 @@ musicianUI=window.createCodaMusicianUI({
 });
 boutiqueUI=window.createCodaBoutiqueUI({
  renderer:characterRenderer,panelBody,openPanel,closePanel,getPreviewUI:()=>musicianUI,
- getTargets:()=>[{id:'player',label:'Your avatar'},...npc.map(person=>({id:person.id,label:person.name}))],
- getProfile:id=>id==='player'?avatar:{...characterRenderer.appearanceFor(id),...npc.find(person=>person.id===id)?.appearance,name:npc.find(person=>person.id===id)?.name},
+ getTargets:()=>[{id:'player',label:'Your avatar'},...npc.map(person=>({id:person.id,label:person.name})),{id:'dj',label:'DJ Coda'}],
+ getProfile:id=>id==='player'?avatar:{...characterRenderer.appearanceFor(id),...(id==='dj'?npcLooks.dj:npc.find(person=>person.id===id)?.appearance),name:id==='dj'?'DJ Coda':npc.find(person=>person.id===id)?.name},
  applyProfile:applyBoutiqueLook,unlocked:id=>!rewards[id]||!!rewards[id](avatar)
 });
 for(const id of ['avatarBtn','musiciansBtn'])document.getElementById(id).disabled=true;
@@ -1924,16 +1998,16 @@ characterRenderer.ready.then(()=>{
 }).catch(error=>{status.textContent='Character renderer unavailable. Reload to retry.';console.error('Character sprite loading failed:',error);});
 developerConsole=window.createCodaDeveloperConsole({
  W,H,c,studio:assetStudio,layer:layerState,parts:foregroundParts,catalog:window.CodaWorldObjectCatalog,worldArt,foregroundArt,
- publishedProjectUrl:'published-world-project.json?v=corridor-plant-25',
+ publishedProjectUrl:'published-world-project.json?v=nightlife-26',
  cell:COLLISION_CELL,gridWidth:GRID_W,gridHeight:GRID_H,navGrid,baseGrid:defaultNavGrid,
  legacyCollision:[...edits].filter(([i,v])=>Number.isInteger(i)&&i>=0&&i<navGrid.length&&(v===0||v===1)),
- panByScreen:(dx,dy)=>{const b=c.getBoundingClientRect();cam.x=Math.max(0,Math.min(W-W/cam.zoom,cam.x+dx*W/b.width/cam.zoom));cam.y=Math.max(0,Math.min(H-H/cam.zoom,cam.y+dy*H/b.height/cam.zoom));},
+ panByScreen:(dx,dy)=>{zoomAnchor=null;const b=c.getBoundingClientRect();cam.x=Math.max(0,Math.min(W-W/cam.zoom,cam.x+dx*W/b.width/cam.zoom));cam.y=Math.max(0,Math.min(H-H/cam.zoom,cam.y+dy*H/b.height/cam.zoom));},
  focusWorld:(x,y)=>{cam.x=Math.max(0,Math.min(W-W/cam.zoom,x-W/cam.zoom/2));cam.y=Math.max(0,Math.min(H-H/cam.zoom,y-H/cam.zoom/2));},
  toWorld:canvasToWorld,bound:numberBound,record:assetRecordHistory,refresh:studioRefresh,
  toggle:toggleAssetStudio,selected:assetSelected,prototype:assetPrototype,add:assetNew,
  assetAt,nearHandle:(a,p)=>{const ctl=assetControlPositions(a);return Math.min(Math.hypot(p.x-ctl.corner.x,p.y-ctl.corner.y),Math.hypot(p.x-ctl.rotator.x,p.y-ctl.rotator.y))<14/cam.zoom},
  assetPointerEnd,layerPointerDown:editorPointerDown,layerPointerMove:editorPointerMove,layerPointerEnd:editorPointerEnd,
- invalidateRoutes:()=>{keys.clear();dest=null;clickPath=[];npcBrain?.invalidateRoutes();},
+ invalidateRoutes:()=>{navigationRevision++;ambientLightStamp=-1;keys.clear();dest=null;clickPath=[];npcBrain?.invalidateRoutes();},
  invalidateArtwork:()=>{layerState.dirty=true;assetForegroundCompositeCache=null;greenMaskCache.clear()},
  db:assetDB,legacyStore:ASSET_STORE,validLegacy:validScene,validAsset:isValidAsset,validStroke:isEditorAction,
  maxAssets:ASSET_MAX,fileData:dataURLFromFile,imageDimensions:readImageDimensions

@@ -8,6 +8,7 @@ class Element{
   constructor(tag){this.tagName=tag;this.children=[];this.attributes={};this.style={};this.classList={add(){}};this.value='';this.textContent='';}
   setAttribute(name,value){this.attributes[name]=String(value);}
   append(...nodes){for(const node of nodes){node.parentElement=this;this.children.push(node);}}
+  insertBefore(node,before){const at=this.children.indexOf(before);node.parentElement=this;this.children.splice(at<0?this.children.length:at,0,node);}
   replaceChildren(...nodes){for(const node of this.children)node.parentElement=null;this.children=[];this.append(...nodes);}
   dispatchEvent(){}
 }
@@ -18,7 +19,7 @@ function setup(options={}){
   const sandbox={window:{},document:{createElement:tag=>new Element(tag)},Event:class{}};
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../boutique-ui.js'),'utf8'),sandbox);
   const ui=sandbox.window.createCodaBoutiqueUI({
-    panelBody:body,renderer:{normalizeProfile:p=>({...defaults,...p})},
+    panelBody:body,renderer:{normalizeProfile:p=>({...defaults,...p}),catalog:options.catalog},
     openPanel(){body.replaceChildren();},closePanel(){closed++;},
     getTargets:()=>[{id:'player',label:'Your avatar'},{id:'miles',label:'Miles Davis'}],getProfile:id=>profiles[id],
     applyProfile(id,draft){calls.push({id,draft});if(options.failure)return false;profiles[id]={...profiles[id],...draft};return true;},
@@ -118,4 +119,33 @@ test('switching targets and cancelling discard unsaved drafts rather than changi
 test('a failed save keeps the draft available and does not close the boutique',()=>{
   const env=setup({failure:true});env.ui.open();env.label('Hats').value='beanie';env.button('Save my look').onclick();
   assert.equal(env.closed,0);assert.equal(env.ui.getDraft().headwear,'beanie');assert.match(env.all().find(node=>node.className==='panelMsg').textContent,/could not be saved/);
+});
+
+test('wardrobe categories and search preview fantasy choices without changing saved equipment',()=>{
+  const env=setup({catalog:{headwear:[{id:'none',label:'None'},{id:'witch',label:'Witch hat'},{id:'wizard',label:'Wizard hat'}],eyewear:[{id:'none',label:'None'},{id:'cateye',label:'Cat-eye glasses'}]}});
+  env.ui.open();const before=JSON.stringify(env.profiles.player),search=env.label('Search wardrobe');
+  search.value='witch';search.oninput();
+  assert.ok(env.label('Try Witch hat'));assert.equal(env.label('Try Wizard hat'),undefined);
+  env.label('Try Witch hat').onclick();assert.equal(env.preview.headwear,'witch');
+  assert.equal(JSON.stringify(env.profiles.player),before,'Browsing and trying items remain a draft');
+  search.value='wizard';search.oninput();assert.equal(env.preview.headwear,'witch','Filtering must not silently change the equipped draft');
+  env.label('Try Wizard hat').onclick();assert.equal(env.preview.headwear,'wizard');
+  env.button('Glasses').onclick();assert.equal(search.value,'');env.label('Try Cat-eye glasses').onclick();
+  assert.equal(env.preview.headwear,'wizard');assert.equal(env.preview.eyewear,'cateye');
+  env.button('Save my look').onclick();assert.equal(env.profiles.player.headwear,'wizard');assert.equal(env.profiles.player.eyewear,'cateye');
+});
+
+test('hat and glasses colors save with independent equipment and remain draft-only until save',()=>{
+  const env=setup({player:{headwear:'beanie',headwearColor:'#123456',eyewear:'glasses',eyewearColor:'#654321'}});env.ui.open();
+  assert.equal(env.label('Hat color').value,'#123456');assert.equal(env.label('Glasses color').value,'#654321');
+  env.label('Hat color').value='#cc5599';env.label('Glasses color').value='#55bbee';
+  assert.equal(env.preview.headwearColor,'#cc5599');assert.equal(env.preview.eyewearColor,'#55bbee');
+  assert.equal(env.profiles.player.headwearColor,'#123456');env.button('Save my look').onclick();
+  assert.equal(env.profiles.player.headwearColor,'#cc5599');assert.equal(env.profiles.player.eyewearColor,'#55bbee');
+});
+
+test('NPC preview retains its character identity while its costume remains independently editable',()=>{
+  const env=setup();env.ui.open('miles');
+  assert.equal(env.preview.characterId,'miles');assert.equal(env.preview.name,'Miles Davis');
+  env.ui.open();assert.equal(env.preview.characterId,undefined);
 });

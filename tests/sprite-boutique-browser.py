@@ -70,6 +70,52 @@ class SpriteBoutiqueTests(unittest.TestCase):
         self.page.get_by_label('Customize',exact=True).select_option(target)
         self.page.locator('#avatarPreviewMode').select_option('idle')
 
+    def try_catalog_item(self,category,item):
+        self.page.get_by_role('button',name='Browse '+category,exact=True).click()
+        self.page.get_by_label('Search wardrobe',exact=True).fill(item)
+        self.page.locator('.boutique-item[data-item-id="'+item+'"]').click()
+
+    def test_guest_can_search_try_and_save_the_expanded_fantasy_collection(self):
+        before=self.appearance();self.open_boutique()
+        for category,item in [('Hats','witch'),('Glasses','starglasses'),('Accessories','wand'),
+                              ('Shoes','rollerskates'),('Emotes','cheer')]:
+            self.try_catalog_item(category,item)
+        self.assertEqual(self.page.locator('#avatarPreviewMode').input_value(),'emote',
+                         'Trying an emote must play it in the live preview')
+        self.set_color('Hat color','#7863b8');self.set_color('Glasses color','#f0c460')
+        self.assertEqual(self.appearance(),before,'Trying new collection items must not commit the draft')
+        self.page.get_by_role('button',name='Save my look',exact=True).click()
+        saved=self.appearance()
+        for field,value in {'headwear':'witch','eyewear':'starglasses','accessory':'wand',
+                            'shoes':'rollerskates','emote':'cheer','headwearColor':'#7863b8',
+                            'eyewearColor':'#f0c460'}.items():
+            self.assertEqual(saved[field],value,field)
+        self.load();self.assertEqual(self.appearance(),saved)
+        # A second chic/fantasy combination stays a draft when canceled.
+        self.open_boutique()
+        for category,item in [('Hats','wizard'),('Glasses','cateye'),('Accessories','pearls'),
+                              ('Shoes','heels'),('Emotes','bow')]:
+            self.try_catalog_item(category,item)
+        self.page.get_by_role('button',name='Cancel',exact=True).click()
+        self.assertEqual(self.appearance(),saved)
+        self.load();self.assertEqual(self.appearance(),saved)
+
+    def test_catalog_search_preserves_current_choice_and_native_controls_stay_in_sync(self):
+        self.open_boutique();self.try_catalog_item('Hats','wizard')
+        self.assertEqual(self.page.get_by_label('Hats',exact=True).input_value(),'wizard')
+        self.page.get_by_label('Search wardrobe',exact=True).fill('witch')
+        self.assertEqual(self.page.get_by_label('Hats',exact=True).input_value(),'wizard',
+                         'Filtering choices must not replace the current hat')
+        self.page.locator('.boutique-item[data-item-id="witch"]').click()
+        self.assertEqual(self.page.get_by_label('Hats',exact=True).input_value(),'witch')
+        self.page.get_by_label('Hats',exact=True).select_option('wizard')
+        self.page.get_by_label('Search wardrobe',exact=True).fill('wizard')
+        self.assertEqual(self.page.locator('.boutique-item[data-item-id="wizard"]').get_attribute('aria-pressed'),'true')
+        self.page.get_by_label('Search wardrobe',exact=True).fill('no-such-style')
+        self.assertEqual(self.page.locator('.boutique-item').count(),0)
+        self.assertEqual(self.page.get_by_label('Hats',exact=True).input_value(),'wizard')
+        self.page.get_by_role('button',name='Cancel',exact=True).click()
+
     def test_javascript_characters_render_directional_previews_without_sprite_assets(self):
         state=self.page.evaluate('CodaArcadeQA.characters().spriteState')
         self.assertEqual(state['mode'],'javascript-characters');self.assertTrue(state['ready'])

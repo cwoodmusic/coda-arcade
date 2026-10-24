@@ -15,7 +15,7 @@ import unittest
 from playwright.sync_api import sync_playwright
 
 ROOT=Path(__file__).resolve().parents[1]
-EXPORT_FINGERPRINT='9092f9068146c80d8a89d49354c982195a87eb574b7b75e0ebe0a2338f14e073'
+EXPORT_FINGERPRINT='e2094156fc5d145efe0f73a34627d90610dcd771f227877b2d5054a72c39f7ce'
 BLANK={'format':'CodaArcadeWorldProject','version':1,
        'world':{'width':1672,'height':941},'assets':[],'collision':[],'strokes':[]}
 
@@ -113,7 +113,7 @@ class PublishedWorldTests(unittest.TestCase):
                          'Publish the reviewed layout, including the authorized corridor-plant removal')
         self.load();self.assertEqual(self.project(),self.published)
         self.assertEqual((len(self.published['assets']),len(self.published['collision']),
-                          len(self.published['strokes'])),(8,984,81))
+                          len(self.published['strokes'])),(8,1085,99))
         games=self.page.evaluate('''()=>CodaArcadeQA.worldObjects().filter(x=>x.game).map(x=>({
           name:x.game.name,walkable:CodaArcadeQA.walkable(x.game.npcX??x.game.x,x.game.npcY??x.game.y),
           route:CodaArcadeQA.route(1180,388,x.game.x,x.game.y).length
