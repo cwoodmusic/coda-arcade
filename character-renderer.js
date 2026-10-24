@@ -51,7 +51,7 @@ window.createCodaCharacterRenderer=function(api){
   const worldScale=Math.max(.125,Math.min(4,finite(api.worldScale,1)));
   const locationURL=()=>window.location?.href||'http://localhost/';
   const url=(value,base)=>new URL(value,base).href;
-  const artVersion=api.artVersion===false?'':typeof api.artVersion==='string'?api.artVersion:'unified-17';
+  const artVersion=api.artVersion===false?'':typeof api.artVersion==='string'?api.artVersion:'motion-18';
   function artURL(value,base){
     const resolved=new URL(value,base);
     // A new art revision refreshes the manifest and every raster layer together.
@@ -176,20 +176,11 @@ window.createCodaCharacterRenderer=function(api){
   }
   function originalLook(p){return ['skin','hair','shirt','lowerColor','hairstyle','outfit','headwear','eyewear','accessory','shoes'].every(key=>p[key]===DEFAULTS[key]);}
   function drawOriginal(ctx,motion,time){
-    const pose=animation.sample(motion,time,reduced()),map=[0,1,2,3,4,1];
-    const walking=pose.clip==='walk',frame=walking?map[pose.frame]:0;
-    const part=originalHero.frames['hero_'+pose.direction+'_'+frame];if(!part)return false;
-    const scale=Math.max(.25,Math.min(8,finite(motion.scale,1)))*worldScale,h=Math.round(53*scale),width=Math.min(39*scale,h*part.w/part.h);
-    const action=entries.get('original/hero');
-    if(!walking&&pose.clip!=='idle'&&action){
-      const [cw,ch]=manifest.cell,sx=pose.index%action.columns*cw,sy=Math.floor(pose.index/action.columns)*ch;
-      ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(Math.round(finite(motion.x)),Math.round(finite(motion.y)));ctx.scale(scale,scale);
-      ctx.drawImage(action.image,sx,sy,cw,ch,-40,-88,cw,ch);ctx.restore();return true;
-    }
-    let bob=0;if(!reduced()&&!walking&&['wave','dance','interact','talk','sit'].includes(pose.clip))bob=pose.clip==='sit'?3*scale:-Math.abs(Math.sin(pose.actionTime*9)*3*scale);
-    ctx.save();ctx.imageSmoothingEnabled=false;
-    ctx.drawImage(originalHero.image,part.x,part.y,part.w,part.h,Math.round(finite(motion.x)-width/2),Math.round(finite(motion.y)-h+bob),Math.round(width),h);
-    ctx.restore();return true;
+    const action=entries.get('original/hero');if(!action)return false;
+    const pose=animation.sample(motion,time,reduced()),scale=Math.max(.25,Math.min(8,finite(motion.scale,1)))*worldScale;
+    const [cw,ch]=manifest.cell,[ax,ay]=manifest.anchor,sx=pose.index%action.columns*cw,sy=Math.floor(pose.index/action.columns)*ch;
+    ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(Math.round(finite(motion.x)),Math.round(finite(motion.y)));ctx.scale(scale,scale);
+    ctx.drawImage(action.image,sx,sy,cw,ch,-ax,-ay,cw,ch);ctx.restore();return true;
   }
   function render(ctx,p,motion,time){
     if(!loaded)return false;

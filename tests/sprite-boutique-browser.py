@@ -101,7 +101,7 @@ class SpriteBoutiqueTests(unittest.TestCase):
         self.assertTrue(any(resource.path.endswith('.png') for resource in sprites),'Raster sprite layers must be loaded')
         for resource in sprites:
             if resource.path.endswith(('/manifest.json','.png')):
-                self.assertEqual(parse_qs(resource.query).get('v'),['unified-17'],resource.geturl())
+                self.assertEqual(parse_qs(resource.query).get('v'),['motion-18'],resource.geturl())
 
     def test_original_arcade_look_previews_before_save_and_persists_after_reload(self):
         self.page.emulate_media(reduced_motion='reduce')

@@ -2,18 +2,15 @@
 
 Every active player, musician, outfit, hairstyle, shoe, hat, glasses, and accessory layer is derived from the unchanged `coda_arcade_phase73_characters.png`. The manifest declares `sourcePolicy: original-atlas-only`, and all 38 layer descriptors declare `source: original-atlas`. Characters share the original head, face, shading language, and compact 53-pixel world template. Variants use source-pixel extraction, cloning, reshaping, and recoloring; different costumes are not claimed to be byte-identical to the hero.
 
-## Exact original player
+## Original player and stable motion
 
-The canonical default and the boutique's **Original arcade look** preset use a direct original-atlas draw path for idle and walking. It reproduces the legacy renderer:
+The canonical default and the boutique's **Original arcade look** preset use the compiled `original-hero.png` sheet. The compact original head, face, outfit, and nearest-neighbor pixel style remain, with a **53-world-pixel** standing template. The renderer uses the same compiled animation layout for the canonical player and customizable characters.
 
-- Character height is **53 world pixels**.
-- Width is `min(39, 53 × sourceWidth / sourceHeight)`, with the original destination-size and position rounding.
-- Sampling uses nearest neighbor, with no added character shadow or cosmetic tint on this path.
-- The original five walk images are reused across six timing slots as `[0, 1, 2, 3, 4, 1]`.
+The source sheet has malformed profile artwork: all five right-facing caps are cut flat at the top, several profile crops contain blue divider lines, and one right-facing walk pose abruptly spreads the legs. The baker removes divider pixels and mirrors the clean left-facing artwork for the right-facing view. It leaves `coda_arcade_phase73_characters.png` unchanged. The compiled output therefore deliberately differs from the old raw profile crops.
 
-The original atlas remains immutable. `tests/original-sprite-browser.py` draws the canonical avatar onto an isolated canvas and compares its full RGBA output against the legacy formula. All four idle facings and the walk timing slots require **zero differing channels**. Separate world lighting and labels are outside that comparison. Custom costumes are not claimed to be pixel-identical to the original hero.
+A stable idle head and body scale are shared across each six-phase walking cycle. Alternating limb translations move original pixels without resizing the entire character for each step. Hair, hats, glasses, clothing, and hand props use the same attachment layout. Canonical idle and walking no longer have a full-sprite, four-facing exact-match guarantee against the legacy renderer; preserving malformed source artifacts is not a regression requirement.
 
-Canonical emotes remain available. `original-hero.png`, registered as the optional `original/hero` manifest layer, supplies action frames by reusing complete original poses and pixel-aligned motion. Whole sprites preserve the face, shirt, and hands; no arm-shaped rectangle is erased from a finished character. They are distinct action poses, not part of the idle/walk exact-pixel guarantee.
+Canonical emotes remain available through the `original/hero` manifest layer. Idle, walk, and action frames share the compiled sprite path, so the original-look preset receives the same profile and alignment repairs as custom looks.
 
 ## One active source atlas
 
@@ -21,7 +18,7 @@ Canonical emotes remain available. `original-hero.png`, registered as the option
 | --- | --- |
 | `coda_arcade_phase73_characters.png` | The only artwork input: hero poses, original visitor hair and eyewear, garments, footwear, and small prop source pieces |
 | `scripts/original-sprite-layers.cjs` | Extracts hair and cap pixels, fits the shared head template, protects face openings, and derives six RGB shading samples from the original atlas |
-| `scripts/original-wardrobe-layers.cjs` | Builds six outfits and five shoe styles from all five original source poses, retaining the original body and stride positions |
+| `scripts/original-wardrobe-layers.cjs` | Extracts six outfits and five shoe styles from original garment and footwear pixels for the shared animation rig |
 | `scripts/original-accessory-layers.cjs` | Builds hats, glasses, and props from the original cap, emblem, gloves, and visitor glasses using pixel cloning and recoloring |
 
 The six earlier generated plates in `assets/characters/source/`—`body-poses.png`, `hair.png`, `outfits.png`, `headwear.png`, `accessories.png`, and `shoes-props.png`—are retained only as history. **The current baker never reads them.** Its artwork endpoint serves only the immutable original atlas; generated outputs use a separate write endpoint.
@@ -63,9 +60,9 @@ node scripts/build-character-sprites.cjs
 
 The baker starts a temporary loopback server and headless Chromium, reads only the immutable original atlas, invokes the three extraction helpers above, and writes the layer PNGs, `original-hero.png`, and `manifest.json` into `assets/characters/`. It closes Chromium and removes the temporary browser profile afterward. Rebuilding intentionally replaces generated artifacts; keep source changes, extraction helpers, and rebuilt outputs together for review.
 
-Original atlas rectangles and source-pose mappings are explicit. Shared placement and per-pose fitting keep hair, clothes, shoes, and hand props aligned across facings and gestures. Preserve the original face core and the per-facing legacy sampling rules when changing the canonical path.
+Original atlas rectangles, the mirrored right-facing source, divider cleanup, and limb motions are explicit. Keep the original face core, stable standing scale, and shared attachment layout when changing the compiled animation path.
 
-Treat PNG layouts, manifest offsets, facing order, and runtime animation definitions as one format. Changing that format requires updating the baker, renderer expectations, and tests together. The `unified-17` art revision versions the manifest and every loaded PNG URL so returning browsers fetch a matching set. Custom loaders can supply `artVersion`, or set it to `false` to disable revision queries; existing explicit URL versions are preserved.
+Treat PNG layouts, manifest offsets, facing order, and runtime animation definitions as one format. Changing that format requires updating the baker, renderer expectations, and tests together. The `motion-18` art revision versions the manifest and every loaded PNG URL so returning browsers fetch a matching set. Custom loaders can supply `artVersion`, or set it to `false` to disable revision queries; existing explicit URL versions are preserved.
 
 ## Boutique and saved looks
 
@@ -85,6 +82,6 @@ python3 tests/original-sprite-browser.py
 python3 tests/unified-sprite-browser.py
 ```
 
-Browser checks require Python Playwright and Chromium. They cover asset loading, direction and movement, aligned layered cosmetics, draft cancellation, saved reloads, separate clothing colors, and player/NPC outfit isolation. The original-sprite suite additionally proves exact canonical idle/walk pixels, checks complete original action poses for cutout holes, and verifies that enlarged previews preserve the foot anchor.
+Browser checks require Python Playwright and Chromium. They cover asset loading, direction and movement, aligned layered cosmetics, draft cancellation, saved reloads, separate clothing colors, and player/NPC outfit isolation. The original-sprite suite checks exact frontal idle pixels, enlarged-preview foot placement, fixed heads, alternating grounded feet, complete mirrored caps, and visible emotes. It also compares trumpet and microphone motion with actual hand pixels in every walking direction, including low back-facing hands. Walking checks cover intermediate phases and profile silhouettes so clipped caps, divider lines, changing head scale, and abrupt leg jumps cannot be accepted merely because they also exist in the source atlas.
 
-The unified-sprite suite additionally compares the exposed front-facing original face core with zero RGBA differences across all 48 hairstyle/outfit combinations and all nine musicians at a matching skin color, without hats or facial wearables. It checks compact proportions, the original-only provenance declarations and loaded assets, and that the bald back view contains no inherited blue hair. These targeted guarantees supplement the canonical whole-sprite checks; they do not imply identical pixels across different clothes or chosen colors.
+The unified-sprite suite additionally compares the exposed front-facing original face core with zero RGBA differences across all 48 hairstyle/outfit combinations and all nine musicians at a matching skin color, without hats or facial wearables. It checks compact proportions, the original-only provenance declarations and loaded assets, and that the bald back view contains no inherited blue hair. These targeted face and provenance guarantees do not imply identical whole-sprite pixels across directions, animation phases, different clothes, or chosen colors.

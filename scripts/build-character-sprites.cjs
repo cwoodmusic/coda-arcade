@@ -46,7 +46,11 @@ async function bake(){
  function nativeFrame(index,dir){const f=heroFrames['hero_'+directions[dir]+'_'+index],out=make();ctx(out).drawImage(original,f.x,f.y,f.w,f.h,Math.round(40-f.w/2),88-f.h,f.w,f.h);return out;}
  function fitInfo(info){const [left,top]=info.placement,height=info.bottom-top+1,width=Math.min(39,53*info.source.w/height),sx=Math.round(width)/info.source.w,sy=53/height;return {sx,sy,tx:Math.round(40-width/2)-left*sx,ty:35-top*sy,width:Math.round(width)};}
  const idleFits=wardrobe[0].metadata.frames.map(fitInfo);
- function fit(native,info){const out=make(),g=ctx(out),matrix=fitInfo(info);g.imageSmoothingEnabled=false;g.setTransform(matrix.sx,0,0,matrix.sy,matrix.tx,matrix.ty);g.drawImage(native,0,0);return out;}
+ // A pose must never resize the head or change the pixel scale. The source
+ // sheet's five variants have different crop widths and are not a walk cycle.
+ function poseFit(info,dir){const idle=wardrobe[0].metadata.frames[dir],matrix=idleFits[dir];return {...matrix,tx:matrix.tx+(idle.placement[0]+idle.source.w/2-info.placement[0]-info.source.w/2)*matrix.sx,ty:matrix.ty+(idle.bottom-info.bottom)*matrix.sy};}
+ function fit(native,info,dir){const out=make(),g=ctx(out),matrix=dir===undefined?fitInfo(info):poseFit(info,dir);g.imageSmoothingEnabled=false;g.save();g.setTransform(matrix.sx,0,0,matrix.sy,matrix.tx,matrix.ty);g.drawImage(native,0,0);g.restore();return out;}
+ const mirror=source=>{const out=make(),g=ctx(out);g.translate(W,0);g.scale(-1,1);g.drawImage(source,0,0);return out;};
  const capEnds=[27,22,27,15],faceEnds=[42,35,41,29];
  const referenceSkin=ctx(nativeFrame(0,0)).getImageData(0,0,W,H).data,defaultSkinPalette=[];
  for(let y=45;y<62;y++)for(let x=26;x<55;x++){const at=(y*W+x)*4,r=referenceSkin[at],green=referenceSkin[at+1],b=referenceSkin[at+2];if(referenceSkin[at+3]&&r>green*1.15&&green>b*1.12&&green>70&&r<green*1.9)defaultSkinPalette.push([r,green,b]);}
@@ -81,31 +85,77 @@ async function bake(){
   g.putImageData(basePixels,0,0);
   if(info.groundStart!==null)g.clearRect(0,info.groundStart,W,H-info.groundStart);return out;
  }));
- const sourcePose={idle:[0,0],walk:[0,1,2,3,4,1],wave:[0,3,4,3],talk:[0,3,0,4],dance:[1,3,2,4,1,3],interact:[0,1,0,2],sit:[0,0]},rig=[];
+ const steps=[0,1,2,0,-1,-2];
+ manifest.walkCycle={phases:steps,head:'fixed',scale:'fixed per facing',right:'mirrored left',method:'alternating original limb pixels'};
+ const sourcePose={idle:[0,0],walk:[0,0,0,0,0,0],wave:[0,3,4,3],talk:[0,3,0,4],dance:[1,3,2,4,1,3],interact:[0,1,0,2],sit:[0,0]},rig=[];
  for(let dir=0;dir<4;dir++)for(const [clip,definition]of Object.entries(clips))for(let frame=0;frame<definition.frames;frame++){
-  const sourceIndex=sourcePose[clip][frame],info=wardrobe[sourceIndex].metadata.frames[dir],matrix=fitInfo(info),idle=wardrobe[0].metadata.frames[dir],idleMatrix=idleFits[dir];
+  const sourceIndex=sourcePose[clip][frame],info=wardrobe[sourceIndex].metadata.frames[dir],matrix=poseFit(info,dir);
   const dx=clip==='dance'?Math.round(Math.sin(frame/6*Math.PI*2)):0,dy=clip==='dance'?-Math.round(Math.abs(Math.sin(frame/6*Math.PI*2))):clip==='idle'&&frame===1?-1:0;
-  const ratioX=info.source.w/idle.source.w,ratioY=info.source.h/idle.source.h,sx=matrix.sx*ratioX/idleMatrix.sx,sy=matrix.sy*ratioY/idleMatrix.sy;
-  const tx=matrix.sx*(info.placement[0]-idle.placement[0]*ratioX)+matrix.tx-sx*idleMatrix.tx+dx;
-  const ty=matrix.sy*(info.placement[1]-idle.placement[1]*ratioY)+matrix.ty-sy*idleMatrix.ty+dy;
-  const offsetX=tx+40*(sx-1),offsetY=ty+88*(sy-1)+(clip==='sit'?3:0);
-  manifest.frameData.push({headX:offsetX,headY:offsetY,headScaleX:sx,headScaleY:sy,bodyX:offsetX,bodyY:offsetY,bodyScaleX:sx,bodyScaleY:sy,handX:offsetX,handY:offsetY+(sourceIndex%2?-1:0),handScaleX:sx,handScaleY:sy});
+  const offsetY=dy+(clip==='sit'?3:0),swing=clip==='walk'?Math.sign(steps[frame]):sourceIndex%2?-1:0;
+  manifest.frameData.push({headX:dx,headY:offsetY,headScaleX:1,headScaleY:1,bodyX:dx,bodyY:offsetY,bodyScaleX:1,bodyScaleY:1,handX:dx,handY:offsetY+(dir===1||dir===2?swing:-swing),handScaleX:1,handScaleY:1});
   rig.push({dir,clip,frame,sourceIndex,info,matrix,dx,dy});
  }
- function posed(native,r){const source=fit(native,r.info),out=make(),g=ctx(out);g.imageSmoothingEnabled=false;
+ const walkMasks=[];
+ function walkMask(dir){
+  if(walkMasks[dir])return walkMasks[dir];
+  const idle=wardrobe[0].metadata.frames[dir],matrix=idleFits[dir],reference=ctx(fit(cleanOriginal(0,dir),idle,dir)).getImageData(0,0,W,H).data;
+  const neck=Math.round(idle.clothesTop*matrix.sy+matrix.ty),hips=Math.round(idle.waist*matrix.sy+matrix.ty)+2,arms=neck+2,shoeTop=Math.round(idle.shoeTop*matrix.sy+matrix.ty),mask=new Uint8Array(W*H);
+  const hand=(x,y)=>{if(x<0||x>=W||y<arms||y>=shoeTop)return false;const at=(y*W+x)*4,r=reference[at],g=reference[at+1],b=reference[at+2];return reference[at+3]&&r>g*1.1&&g>b*1.1&&g>15&&r>70;};
+  for(let y=arms;y<H;y++)for(let x=0;x<W;x++){
+   let nearHand=false;if(y<shoeTop&&(x<35||x>=45))for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)if(hand(x+dx,y+dy))nearHand=true;
+   // Low hands and their ink outlines stay on the arm even below the hips.
+   // The same mask is used for skin, sleeves, garments and footwear.
+   mask[y*W+x]=((x<32||x>=48)&&y<hips)||nearHand?x<40?1:2:y>=hips?x<40?3:4:0;
+  }
+  return walkMasks[dir]=mask;
+ }
+ function walk(source,r){
+  const out=make(),g=ctx(out),pixels=ctx(source).getImageData(0,0,W,H),result=g.createImageData(W,H),mask=walkMask(r.dir),step=steps[r.frame],swing=Math.sign(step);
+  const shifts=[0,swing,-swing,-Math.max(0,step),-Math.max(0,-step)];
+  // Composite arms last so cuffs and hands remain in front of the legs.
+  for(const part of [0,3,4,1,2])for(let at=0;at<W*H;at++){
+   if(mask[at]!==part||!pixels.data[at*4+3])continue;
+   const y=Math.floor(at/W)+shifts[part];if(y<0||y>=H)continue;const target=(y*W+at%W)*4;
+   for(let channel=0;channel<4;channel++)result.data[target+channel]=pixels.data[at*4+channel];
+  }
+  g.putImageData(result,0,0);return out;
+ }
+ function posed(native,r,idleHead){const source=fit(native,r.info,r.dir),out=make(),g=ctx(out);g.imageSmoothingEnabled=false;
+  if(r.clip==='walk')return walk(source,r);
+  if(idleHead){const idle=wardrobe[0].metadata.frames[r.dir],matrix=idleFits[r.dir],neck=Math.round(idle.clothesTop*matrix.sy+matrix.ty);const sg=ctx(source);sg.clearRect(0,0,W,neck);sg.drawImage(idleHead,0,0,W,neck,0,0,W,neck);}
   if(r.clip==='sit'){const split=Math.min(82,Math.round(r.info.waist*r.matrix.sy+r.matrix.ty)+2);g.drawImage(source,0,0,W,split,0,3,W,split);g.drawImage(source,0,split,W,88-split,0,split+3,W,85-split);}
   else g.drawImage(source,r.dx,r.dy);return out;
  }
  async function write(name,canvas){const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png')),response=await fetch('/output/'+name+'.png',{method:'POST',body:blob});if(!response.ok)throw Error('Cannot save '+name);manifest.artifacts.push({file:name+'.png',width:canvas.width,height:canvas.height});}
- async function animated(name,cells){const out=make(W*COLS,H*14),g=ctx(out);cells.forEach((cell,index)=>g.drawImage(cell,index%COLS*W,Math.floor(index/COLS)*H));await write(name,out);}
- async function directional(name,cells){const out=make(W*4,H),g=ctx(out);cells.forEach((cell,dir)=>g.drawImage(fit(cell,wardrobe[0].metadata.frames[dir]),dir*W,0));await write(name,out);}
- await animated('body',rig.map(r=>posed(rawBodies[r.sourceIndex][r.dir],r)));
- const originalActions=rig.map(r=>{const f=heroFrames['hero_'+directions[r.dir]+'_'+r.sourceIndex],out=make(),g=ctx(out),width=Math.min(39,53*f.w/f.h);g.imageSmoothingEnabled=false;g.drawImage(original,f.x,f.y,f.w,f.h,Math.round(40-width/2)+r.dx,35+r.dy,Math.round(width),53);return out;});
+ async function animated(name,cells){const out=make(W*COLS,H*14),g=ctx(out);cells.forEach((cell,index)=>{const direction=Math.floor(index/PERDIR);if(direction===3)cell=mirror(cells[PERDIR+index%PERDIR]);g.drawImage(cell,index%COLS*W,Math.floor(index/COLS)*H);});await write(name,out);}
+ async function directional(name,cells){const out=make(W*4,H),g=ctx(out),fitted=cells.map((cell,dir)=>fit(cell,wardrobe[0].metadata.frames[dir],dir));fitted[3]=mirror(fitted[1]);fitted.forEach((cell,dir)=>g.drawImage(cell,dir*W,0));await write(name,out);}
+ const idleBodies=rawBodies[0].map((cell,dir)=>fit(cell,wardrobe[0].metadata.frames[dir],dir));
+ const bodyCells=rig.map(r=>posed(rawBodies[r.sourceIndex][r.dir],r,idleBodies[r.dir]));
+ await animated('body',bodyCells);
+ function preserveHands(cell,r,index){
+  if(r.clip!=='walk')return cell;
+  const g=ctx(cell),pixels=g.getImageData(0,0,W,H),body=ctx(bodyCells[index]).getImageData(0,0,W,H).data,idle=wardrobe[0].metadata.frames[r.dir],matrix=idleFits[r.dir];
+  const top=Math.round(idle.clothesTop*matrix.sy+matrix.ty)+2,bottom=Math.ceil(idle.shoeTop*matrix.sy+matrix.ty)-2;
+  // Moving trouser/skirt ink must not paint over an exposed hand when its
+  // leg travels upward. Skin remains in front of clothing and footwear.
+  for(let y=top;y<bottom;y++)for(let x=0;x<W;x++){
+   if(x>=35&&x<45)continue;const at=(y*W+x)*4,r=body[at],green=body[at+1],b=body[at+2];
+   if(body[at+3]&&r>green*1.1&&green>b*1.1&&green>15&&r>70)pixels.data[at+3]=0;
+  }
+  g.putImageData(pixels,0,0);return cell;
+ }
+ function cleanOriginal(index,dir){const out=nativeFrame(index,dir),info=wardrobe[index].metadata.frames[dir];if(info.groundStart!==null)ctx(out).clearRect(0,info.groundStart,W,H-info.groundStart);return out;}
+ const idleOriginal=directions.map((_,dir)=>fit(cleanOriginal(0,dir),wardrobe[0].metadata.frames[dir],dir));
+ const originalActions=rig.map(r=>posed(cleanOriginal(r.sourceIndex,r.dir),r,idleOriginal[r.dir]));
  await animated('original-hero',originalActions);
  for(const [id,views]of Object.entries(head.hair)){manifest.layers.hair[id]={url:'hair-'+id+'.png',layout:'directional',material:'hair',source:'original-atlas'};await directional('hair-'+id,views);}
- for(const id of Object.keys(wardrobe[0].outfit)){manifest.layers.outfit[id]={url:'outfit-'+id+'.png',layout:'animated',material:id==='pants'?'original-clothes':'clothes',source:'original-atlas'};await animated('outfit-'+id,rig.map(r=>posed(wardrobe[r.sourceIndex].outfit[id][r.dir],r)));}
- for(const id of Object.keys(wardrobe[0].shoes)){manifest.layers.shoes[id]={url:'shoes-'+id+'.png',layout:'animated',material:'none',source:'original-atlas'};await animated('shoes-'+id,rig.map(r=>posed(wardrobe[r.sourceIndex].shoes[id][r.dir],r)));}
+ for(const id of Object.keys(wardrobe[0].outfit)){manifest.layers.outfit[id]={url:'outfit-'+id+'.png',layout:'animated',material:id==='pants'?'original-clothes':'clothes',source:'original-atlas'};await animated('outfit-'+id,rig.map((r,index)=>preserveHands(posed(wardrobe[r.sourceIndex].outfit[id][r.dir],r),r,index)));}
+ for(const id of Object.keys(wardrobe[0].shoes)){manifest.layers.shoes[id]={url:'shoes-'+id+'.png',layout:'animated',material:'none',source:'original-atlas'};await animated('shoes-'+id,rig.map((r,index)=>preserveHands(posed(wardrobe[r.sourceIndex].shoes[id][r.dir],r),r,index)));}
  for(const category of ['headwear','eyewear','accessory'])for(const [id,views]of Object.entries(props[category])){manifest.layers[category][id]={url:category+'-'+id+'.png',layout:'directional',material:'none',source:'original-atlas'};await directional(category+'-'+id,views);}
+ // The atlas' original right dome is truncated. All right-facing runtime
+ // layers mirror the complete left artwork, including attachment geometry.
+ for(let frame=0;frame<PERDIR;frame++){const left=manifest.frameData[PERDIR+frame];manifest.frameData[3*PERDIR+frame]={...left,headX:-left.headX,bodyX:-left.bodyX,handX:-left.handX};}
+ for(const key of ['headWindows','faceWindows']){const left=manifest.sharedHead[key][1];manifest.sharedHead[key][3]=left&&(key==='headWindows'?{...left,x:W-left.x-left.w}:{...left,x:W-1-left.right,right:W-1-left.x});}
  return manifest;
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});
