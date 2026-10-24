@@ -10,6 +10,7 @@ window.createCodaBoutiqueUI=function(api){
     shoes:[['sneakers','Sneakers'],['boots','Boots'],['hightops','High tops'],['neon','Neon trainers'],['gold','Gold shoes']],
     emotes:[['wave','Wave'],['dance','Dance'],['spin','Spin'],['robot','Robot'],['disco','Disco point']]
   };
+  const ORIGINAL_LOOK={hairstyle:'short',hair:'#171424',skin:'#e5ad75',outfit:'pants',shirt:'#e94038',lowerColor:'#235cb9',headwear:'cap',eyewear:'none',accessory:'none',shoes:'sneakers',emote:'wave'};
   let targetId='player',current=null;
   const body=api.panelBody;
   const has=(object,key)=>Object.prototype.hasOwnProperty.call(object,key)&&typeof object[key]==='string';
@@ -74,6 +75,12 @@ window.createCodaBoutiqueUI=function(api){
     api.getPreviewUI().addPreview(draft);
     const note=document.createElement('p');note.className='muted boutique-note';note.textContent=isPlayer?'Preview as much as you like. Save applies the complete look; closing leaves your saved look unchanged. Locked rewards unlock through arcade achievements.':'NPC costume changes are saved separately from your avatar. All clothing is available for NPC styling.';body.append(note);
     const actions=document.createElement('div');actions.className='boutique-actions';
+    if(isPlayer){
+      const original=document.createElement('button');original.type='button';original.textContent='Original arcade look';original.id='boutiqueOriginalLook';
+      const controls={hairstyle,hair,skin,outfit,shirt,lowerColor,headwear,eyewear,accessory,shoes,emote};
+      original.onclick=()=>{for(const [key,value] of Object.entries(ORIGINAL_LOOK))controls[key].value=value;message('');};
+      actions.append(original);
+    }
     const save=document.createElement('button');save.type='button';save.textContent=isPlayer?'Save my look':'Save NPC look';save.id='boutiqueSave';
     const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Cancel';cancel.onclick=api.closePanel;
     actions.append(save,cancel);body.append(actions);

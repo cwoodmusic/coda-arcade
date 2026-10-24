@@ -51,6 +51,14 @@ window.createCodaCharacterRenderer=function(api){
   const worldScale=Math.max(.125,Math.min(4,finite(api.worldScale,1)));
   const locationURL=()=>window.location?.href||'http://localhost/';
   const url=(value,base)=>new URL(value,base).href;
+  const artVersion=api.artVersion===false?'':typeof api.artVersion==='string'?api.artVersion:'classic-15';
+  function artURL(value,base){
+    const resolved=new URL(value,base);
+    // A new art revision refreshes the manifest and every raster layer together.
+    // Preserve caller-supplied versions and leave data/blob sources unchanged.
+    if(artVersion&&['http:','https:'].includes(resolved.protocol)&&!resolved.searchParams.has('v'))resolved.searchParams.set('v',artVersion);
+    return resolved.href;
+  }
   const baseURL=()=>url(api.basePath?(api.basePath.endsWith('/')?api.basePath:api.basePath+'/'):'assets/characters/',locationURL());
   async function image(source){
     if(!imagePromises.has(source))imagePromises.set(source,api.loadImage?Promise.resolve(api.loadImage(source)):new Promise((resolve,reject)=>{const value=new Image();value.onload=()=>resolve(value);value.onerror=()=>reject(Error('Could not load sprite asset: '+source));value.src=source;}));
@@ -67,7 +75,7 @@ window.createCodaCharacterRenderer=function(api){
   async function load(){
     let base=baseURL(),data=api.manifest;
     if(!data){
-      const source=api.manifestUrl?url(api.manifestUrl,locationURL()):url('manifest.json',base),fetcher=api.fetch||(typeof fetch==='function'?fetch:null);
+      const source=api.manifestUrl?artURL(api.manifestUrl,locationURL()):artURL('manifest.json',base),fetcher=api.fetch||(typeof fetch==='function'?fetch:null);
       if(!fetcher)throw Error('Sprite loading requires fetch.');
       const response=await fetcher(source);if(!response.ok)throw Error('Sprite manifest request failed: '+response.status);
       data=await response.json();base=url('.',source);
@@ -80,11 +88,11 @@ window.createCodaCharacterRenderer=function(api){
     }
     await Promise.all(descriptors.map(async([key,descriptor])=>{
       const layout=descriptor.layout||'directional';if(!['animated','directional'].includes(layout))throw Error('Invalid sprite layer layout: '+key);
-      const source=url(descriptor.url,base),bitmap=await image(source),columns=descriptor.columns||(layout==='animated'?data.columns:4),count=layout==='animated'?112:4;
+      const source=artURL(descriptor.url,base),bitmap=await image(source),columns=descriptor.columns||(layout==='animated'?data.columns:4),count=layout==='animated'?112:4;
       const width=bitmap.naturalWidth||bitmap.width,height=bitmap.naturalHeight||bitmap.height;
       if(!Number.isInteger(columns)||columns<1||width<columns*data.cell[0]||height<Math.ceil(count/columns)*data.cell[1])throw Error('Sprite sheet is too small for '+key);
       const entry={...descriptor,key,layout,columns,image:bitmap};
-      if(descriptor.backUrl)entry.back={...entry,key:key+'/back',image:await image(url(descriptor.backUrl,base))};
+      if(descriptor.backUrl)entry.back={...entry,key:key+'/back',image:await image(artURL(descriptor.backUrl,base))};
       entries.set(key,entry);
     }));
     loaded=true;return data;
@@ -182,5 +190,5 @@ window.createCodaCharacterRenderer=function(api){
     return render(ctx,appearance,{x:p.x,y:p.y,facing:p.facing,walking:p.walking,phase:p.phase,emote,emoteTime:p.emoteTime,seed:base.id.length},time);
   }
   return {drawPlayer,drawNPC,normalizeProfile,appearanceFor,sampleMotion,ready,catalog,isReady:()=>loaded,
-    get error(){return loadError?.message||null;},getState:()=>({ready:loaded,mode:'raster-sprites',layers:entries.size,tintedFrames:tinted.size,cacheLimit,cell:manifest?.cell||null,totalFrames:112})};
+    get error(){return loadError?.message||null;},getState:()=>({ready:loaded,mode:'raster-sprites',artStyle:manifest?.artStyle||'layered-raster',layers:entries.size,tintedFrames:tinted.size,cacheLimit,cell:manifest?.cell||null,totalFrames:112})};
 };

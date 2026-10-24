@@ -47,6 +47,21 @@ test('player preview combines independent hats, glasses, accessories and colors 
   assert.equal(env.calls.length,1);assert.equal(env.calls[0].id,'player');assert.equal(env.profiles.player.headwear,'cap');assert.equal(env.profiles.player.eyewear,'sunglasses');assert.equal(env.profiles.player.accessory,'headphones');assert.equal(env.profiles.player.collectedTokens,7);assert.equal(env.closed,1);
 });
 
+test('original arcade look previews only a player draft until saved and preserves identity and progress',()=>{
+  const env=setup({player:{name:'Improviser',avatarId:'player-42',hairstyle:'buns',hair:'#abcdef',skin:'#704633',outfit:'dress',shirt:'#d69cff',lowerColor:'#34313a',headwear:'crown',eyewear:'glasses',accessory:'bow',shoes:'boots',emote:'dance'}});
+  const before=JSON.stringify(env.profiles.player);
+  const expected={hairstyle:'short',hair:'#171424',skin:'#e5ad75',outfit:'pants',shirt:'#e94038',lowerColor:'#235cb9',headwear:'cap',eyewear:'none',accessory:'none',shoes:'sneakers',emote:'wave'};
+  env.ui.open();env.label('Arcade nickname').value='New nickname';env.button('Original arcade look').onclick();
+  for(const [key,value] of Object.entries(expected))assert.equal(env.preview[key],value,key);
+  assert.equal(env.preview.name,'New nickname');assert.equal(env.calls.length,0);assert.equal(JSON.stringify(env.profiles.player),before);
+  env.button('Cancel').onclick();env.ui.open();
+  assert.equal(env.preview.name,'Improviser');assert.equal(env.preview.outfit,'dress');assert.equal(env.preview.headwear,'crown');
+  env.button('Original arcade look').onclick();env.button('Save my look').onclick();
+  for(const [key,value] of Object.entries(expected))assert.equal(env.profiles.player[key],value,key);
+  assert.equal(env.calls.length,1);assert.equal(env.profiles.player.name,'Improviser');assert.equal(env.profiles.player.avatarId,'player-42');assert.equal(env.profiles.player.collectedTokens,7);
+  env.ui.open('miles');assert.equal(env.button('Original arcade look'),undefined);assert.equal(env.preview.name,'Miles Davis');assert.equal(env.preview.outfit,'suit');
+});
+
 test('locked player equipment can be previewed but cannot be saved from any slot',()=>{
   const env=setup({unlocked:id=>!['partyglasses','halo'].includes(id)});env.ui.open();
   env.label('Glasses').value='partyglasses';assert.equal(env.preview.eyewear,'partyglasses');env.button('Save my look').onclick();

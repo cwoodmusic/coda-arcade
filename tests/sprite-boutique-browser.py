@@ -8,6 +8,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import threading
 import unittest
+from urllib.parse import parse_qs, urlparse
 
 from playwright.sync_api import sync_playwright
 
@@ -95,7 +96,40 @@ class SpriteBoutiqueTests(unittest.TestCase):
             self.page.wait_for_timeout(160)
         self.assertGreater(len(set(frames)),1,'Walking must advance real raster frames')
         resources=self.page.evaluate('performance.getEntriesByType("resource").map(entry=>entry.name)')
-        self.assertTrue(any('/assets/characters/' in name and '.png' in name for name in resources))
+        sprites=[urlparse(name) for name in resources if '/assets/characters/' in name]
+        self.assertTrue(any(resource.path.endswith('/manifest.json') for resource in sprites),'The sprite manifest must be loaded')
+        self.assertTrue(any(resource.path.endswith('.png') for resource in sprites),'Raster sprite layers must be loaded')
+        for resource in sprites:
+            if resource.path.endswith(('/manifest.json','.png')):
+                self.assertEqual(parse_qs(resource.query).get('v'),['classic-15'],resource.geturl())
+
+    def test_original_arcade_look_previews_before_save_and_persists_after_reload(self):
+        self.page.emulate_media(reduced_motion='reduce')
+        self.page.evaluate('''localStorage.setItem("musicArcadeV1",JSON.stringify({name:"Preset Keeper",walked:600,collectedTokens:7,
+          hairstyle:"buns",hair:"#ece4d6",skin:"#704633",outfit:"overalls",shirt:"#4678ab",lowerColor:"#334c72",
+          headwear:"none",eyewear:"sunglasses",accessory:"headphones",shoes:"boots",emote:"dance"}))''')
+        self.load();before=self.appearance()
+        raw_before=self.page.evaluate('localStorage.getItem("musicArcadeV1")')
+        self.open_boutique()
+        preview=self.page.locator('.avatar-preview-views canvas').first
+        self.page.wait_for_function('''()=>{const canvas=document.querySelector('.avatar-preview-views canvas');
+          return canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data.some((value,index)=>index%4===3&&value>0)}''')
+        before_pixels=preview.evaluate('(canvas)=>canvas.toDataURL()')
+        self.page.get_by_role('button',name='Original arcade look',exact=True).click()
+        self.page.wait_for_function('''before=>document.querySelector('.avatar-preview-views canvas').toDataURL()!==before''',arg=before_pixels)
+        for label,value in {'Hairstyle':'short','Hair color':'#171424','Skin color':'#e5ad75','Outfit':'pants','Outfit color':'#e94038',
+                            'Lower clothing color':'#235cb9','Hats':'cap','Glasses':'none','Accessories':'none','Shoes':'sneakers','Emote':'wave'}.items():
+            self.assertEqual(self.page.get_by_label(label,exact=True).input_value(),value,label)
+        self.assertEqual(self.page.get_by_label('Arcade nickname',exact=True).input_value(),'Preset Keeper')
+        self.assertEqual(self.appearance(),before,'The preset must remain a draft until Save')
+        self.assertEqual(self.page.evaluate('localStorage.getItem("musicArcadeV1")'),raw_before)
+        self.page.get_by_role('button',name='Save my look',exact=True).click()
+        saved=self.appearance()
+        for field,value in {'name':'Preset Keeper','hairstyle':'short','hair':'#171424','skin':'#e5ad75','outfit':'pants','shirt':'#e94038',
+                            'lowerColor':'#235cb9','headwear':'cap','eyewear':'none','accessory':'none','shoes':'sneakers','emote':'wave'}.items():
+            self.assertEqual(saved[field],value,field)
+        self.assertEqual(self.page.evaluate('JSON.parse(localStorage.musicArcadeV1).collectedTokens'),7)
+        self.load();self.assertEqual(self.appearance(),saved)
 
     def test_player_can_save_hat_glasses_accessory_and_colors_together(self):
         self.page.emulate_media(reduced_motion='reduce')

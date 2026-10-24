@@ -1,6 +1,6 @@
 # Raster character assets
 
-The connected-world player and musician NPCs share a layered raster sprite system. Runtime drawing selects and composites transparent PNG cells; it does not construct character bodies from rectangles, circles, or vector paths. Cosmetic tinting retains the shading and outlines from the source artwork.
+The connected-world player and musician NPCs share a layered raster sprite system. Runtime drawing selects and composites transparent PNG cells; it does not construct character bodies from rectangles, circles, or vector paths. Cosmetic tinting retains the shading and outlines from the source artwork. The active art follows the original `coda_arcade_phase73_characters.png` reference: large heads, compact bodies, short legs, bold dark outlines, and bright pixel shading. The original sheet is preserved.
 
 The original image-generated source plates are checked into `assets/characters/source/`:
 
@@ -36,7 +36,7 @@ These source images are original generated art for the prototype, not a third-pa
 
 Body, outfit, and shoe sheets use animated cells. Hair, headwear, eyewear, and accessories use directional cells aligned to the shared rig. The renderer composites the body, clothing, shoes, hair, hat, accessory, and glasses in a fixed order. Headwear, eyewear, and accessory are independent selections, so a hat, glasses, and another accessory can appear together. Supported descriptors can also provide a back layer.
 
-The baker extracts raster art from the source plates, removes plate backgrounds, fits pieces to the rig, and assembles the clip frames. It reuses authored poses with pixel transforms where appropriate. The runtime uses those baked frames, rather than generating new poses or artwork. `sprite-animation.js` selects frames from actual walking phase, idle time, activity, and emote state. The spin emote cycles facings; robot and disco emotes reuse the appropriate authored clips. Reduced motion selects quiet poses while gameplay movement continues.
+The baker extracts raster art from the source plates, removes plate backgrounds, fits pieces to the rig, and assembles the clip frames. It detects actual opaque row and column bands; generated sheets have uneven gutters, so dividing the image into equal rectangles would clip shoes and mix neighboring outfits. It reuses authored poses with pixel transforms where appropriate. The runtime uses those baked frames, rather than generating new poses or artwork. `sprite-animation.js` selects frames from actual walking phase, idle time, activity, and emote state. The spin emote cycles facings; robot and disco emotes reuse the appropriate authored clips. Reduced motion selects quiet poses while gameplay movement continues.
 
 ## Rebuilding
 
@@ -54,9 +54,9 @@ Treat the PNG cells, manifest clip offsets, facing order, and runtime animation 
 
 ## Cosmetics and storage
 
-The player and all musicians use the same frame and layer layout. `character-renderer.js` supplies their default looks and normalizes stored cosmetics. Upper clothing (`shirt`) and lower clothing (`lowerColor`) have separate tint channels, alongside skin and hair colors. Existing saves using a single accessory slot are migrated into independent headwear and eyewear selections when those fields are absent.
+The player and all musicians use the same frame and layer layout. `character-renderer.js` supplies their default looks and normalizes stored cosmetics. Its `classic-15` art revision versions both the manifest and every PNG URL so returning browsers load the complete matching asset set. Custom asset loaders can supply `artVersion`, or set it to `false` to use unversioned URLs. Upper clothing (`shirt`) and lower clothing (`lowerColor`) have separate tint channels, alongside skin and hair colors. Existing saves using a single accessory slot are migrated into independent headwear and eyewear selections when those fields are absent.
 
-The boutique edits a draft and shows it from all four directions. Saving applies the complete draft; closing, canceling, or changing the target leaves the saved look unchanged. Player appearance remains in `musicArcadeV1`; musician costume overrides are stored under `codaNPCOutfitsV1` by stable cast ID. NPC styling does not rename the musician or alter dialogue, game preferences, collision, or routines. Local browser/origin storage remains separate from account services and from world-editor project JSON.
+The boutique edits a draft and shows it from all four directions. The player-only **Original arcade look** preset previews the dark-haired, red-and-white-cap look with a red vest, white shirt, blue pants, and sneakers; it requires Save to apply and preserves the player nickname and progress. Saving applies the complete draft; closing, canceling, or changing the target leaves the saved look unchanged. Player appearance remains in `musicArcadeV1`; musician costume overrides are stored under `codaNPCOutfitsV1` by stable cast ID. NPC styling does not rename the musician or alter dialogue, game preferences, collision, or routines. Local browser/origin storage remains separate from account services and from world-editor project JSON.
 
 ## Verification
 
