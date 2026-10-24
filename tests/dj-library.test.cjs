@@ -17,6 +17,12 @@ test('ordinary Song Machine drum notes do not need a melodic pitch field',()=>{
   assert.equal(library.valid(song),false);
 });
 
+test('unlocked bonus instrument compositions remain playable in the DJ library',()=>{
+ const song=structuredClone(library.songs[0].composition);song.tracks[0].sound=17;
+ assert.equal(library.valid(song),true);song.tracks[0].sound=18;assert.equal(library.valid(song),false);
+ song.tracks[0].sound=17;song.drums[0].sound=5;assert.equal(library.valid(song),false);
+});
+
 test('unsupported or unbounded imported songs cannot reach the audio scheduler',()=>{
   for(const edit of [
     song=>song.bpm=0,song=>song.bpm=Infinity,song=>song.bars=200,

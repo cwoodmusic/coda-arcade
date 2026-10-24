@@ -14,9 +14,11 @@ Musicians have individual body proportions, face shapes and details, hairstyles,
 
 Visitors play cabinets, relax, dance, and explore using the editable collision map. Cabinet destinations follow moved cabinets; hidden or unreachable stations are abandoned. Visitors reserve stations, yield to others, and retry blocked routes. Brief avoidance steps keep their route-facing direction. Conversations pause the selected visitor while the rest of the room continues. Full panels, cabinets, and world editing pause movement. Visitors blocked by a new edit briefly despawn before safe reentry.
 
+See [LEARNING-WORLD.md](LEARNING-WORLD.md) for Chopin, Professor Haydn, Notes, musician missions, levels, and Hall of Fame.
+
 ## Boutique and saving
 
-**Your avatar** or the boutique opens the wardrobe. **Customize** switches between the player, the nine musicians, and DJ Coda. The searchable wardrobe has 138 catalog choices: 17 hairstyles, 15 outfits, 26 hats, 16 glasses, 28 accessories, 18 shoes, and 18 emotes. Witch and wizard hats, clockwork goggles, heart glasses, wings, wands, roller skates, clown shoes, chic frames and formalwear are included. The four-direction preview shows draft choices in idle, walking, or selected-emote poses; taller hats fit the expanded preview. Hat and glasses colors are editable. **Plain base avatar** restores the bald gray draft; **Classic cap look** is optional. **Save my look** or **Save NPC look** applies it. Canceling, closing, or switching targets leaves the saved look intact. Names and gameplay progress are preserved.
+**Your avatar** or the boutique opens the wardrobe. **Customize** switches between the player, the nine musicians, and DJ Coda. The searchable wardrobe has 158 catalog choices: 17 hairstyles, 15 outfits, 26 hats, 16 glasses, 48 accessories, 18 shoes, and 18 emotes. Witch and wizard hats, clockwork goggles, heart glasses, wings, wands, roller skates, clown shoes, chic frames and formalwear are included. The four-direction preview shows draft choices in idle, walking, or selected-emote poses; taller hats fit the expanded preview. Hat and glasses colors are editable. **Plain base avatar** restores the bald gray draft; **Classic cap look** is optional. **Save my look** or **Save NPC look** applies it. Canceling, closing, or switching targets leaves the saved look intact. Names and gameplay progress are preserved.
 
 Player cosmetics stay in `musicArcadeV1`; musician overrides stay in `codaNPCOutfitsV1`, keyed by cast ID. Explicit equipment remains equipped, while recognizable older automatic defaults migrate to the plain base. Unlocks do not automatically equip rewards. Local saves remain separate from account services and world-editor exports.
 
@@ -28,14 +30,14 @@ Move with **WASD** or arrows and press **Space** to jump. You can steer during t
 
 DJ Coda works behind the dance-room turntables. Walk to the front of the booth and press **E** to open the jukebox, or use the header button. Guests can play three original house compositions, stop playback, and load Song Machine JSON files. Up to twelve imported songs are kept locally in `codaDJLibraryV1`; signed-in song libraries remain available alongside them. Moving or hiding the turntable also moves or hides the DJ and interaction point. The DJ’s outfit can be edited in the boutique.
 
-Hanging lantern glass and bloom pulse slowly. Disco balls project spinning colored beams and small floor reflections clipped to the room and walkable map. The Canvas projection gives a ray-traced visual style without requiring WebGL. Ball transforms, opacity, rays switches and animation controls carry through to the lights. Full and Lite bound the ray/pin counts; Off removes the added lights. Reduced motion keeps the light geometry and lamp intensity steady.
+Hanging lantern glass and bloom pulse slowly. Disco balls project spinning colored beams and small floor reflections contained by the room outline and independent of walking collision. The Canvas projection gives a ray-traced visual style without requiring WebGL. Ball transforms, opacity, rays switches and animation controls carry through to the lights. Full and Lite bound the ray/pin counts; Off removes the added lights. Reduced motion keeps the light geometry and lamp intensity steady.
 
 ## Implementation and checks
 
 - `npc-behavior.js` owns cast metadata, dialogue, activity states, reservations, and routing.
 - `character-renderer.js` draws the JavaScript characters and owns normalized cosmetic slots, cast appearances, motion, and a bounded palette cache.
 - `musician-ui.js` provides conversations, the roster, and live previews; `boutique-ui.js` provides draft controls, presets, and safe default migration.
-- `world-lighting.js` owns lantern pulses, wall-capped disco projections, cached glow textures and moving floor pins; `dj-library.js` supplies the original guest compositions and validates Song Machine JSON.
+- `world-lighting.js` owns lantern pulses, room-bounded disco projections, cached glow textures and moving floor pins; `dj-library.js` supplies the original guest compositions and validates Song Machine JSON.
 - `world-preview.html` connects these to movement, cabinets, editing, and storage, while preserving cached lighting and paused modal backdrops.
 
 Image sprites and their build tools are retained but inactive. See [SPRITE-ASSETS.md](SPRITE-ASSETS.md) for the active renderer API and verification commands. Guest play needs no credentials; runtime characters do not call an image-generation or AI service.

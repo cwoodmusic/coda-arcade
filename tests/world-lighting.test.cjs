@@ -22,7 +22,7 @@ function context() {
 function canvas(){const ctx=context();ctx.shadowBlur=0;return {width:64,height:64,getContext:()=>ctx};}
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-7,`${a} must match ${b}`);
 
-test('floor projections stop at the first blocking wall rather than relighting the floor behind it',()=>{
+test('room-boundary tracing stays inside its geometric outline',()=>{
   const hit=traceFloorRay({x:5,y:20},{x:105,y:20},x=>x<35||x>65);
   assert.equal(hit.hitWall,true);assert.ok(hit.x<35&&hit.x>=31);
   near(hit.y,20);near(hit.length,hit.x-5);
@@ -39,9 +39,9 @@ test('full/lite/off and hidden or rays-disabled balls have bounded independent l
   state=f.lighting.snapshot();assert.equal(state.balls.length,2);assert.equal(state.spotCount,0);
 });
 
-test('spinning facets create moving walkable floor pins and geometry is reused within its refresh interval',()=>{
+test('spinning facets create moving floor pins and geometry is reused within its refresh interval',()=>{
   const f=fixture();const first=f.lighting.snapshot(),checks=f.checks();
-  assert.ok(checks<12000,'One ball must use bounded geometric samples, not a world-pixel scan');
+  assert.equal(checks,0,'Light projection must never consult the walking collision map');
   assert.deepEqual(f.lighting.snapshot().spots,first.spots);assert.equal(f.checks(),checks);
   f.time(1);const next=f.lighting.snapshot();assert.notDeepEqual(next.spots,first.spots);
   assert.equal(next.spots.length,32);
@@ -61,12 +61,27 @@ test('translating, rotating and resizing a ball transforms its anchor and every 
   }
 });
 
-test('floor pins stay on walkable floor and wall hits never extend beyond the edited map',()=>{
+test('floor pins ignore blocked walking cells and collision edits cannot displace them',()=>{
   const allowed=(x,y)=>x>=650&&x<1000&&y>=315&&y<700;
-  const f=fixture({allowed});f.balls([{id:'main',x:878,y:130,radius:28,spin:.55}]);
-  const state=f.lighting.snapshot();assert.ok(state.spotCount>0);
-  assert.ok(state.beams.some(beam=>beam.hitWall));
-  for(const spot of state.spots)assert.equal(allowed(spot.x,spot.y),true);
+  const open=fixture(),blocked=fixture({allowed});
+  const balls=[{id:'main',x:878,y:130,radius:28,spin:.55}];
+  open.balls(balls);blocked.balls(balls);
+  for(const time of [0,.04,.08,.12,1]){
+    open.time(time);blocked.time(time);blocked.revision();
+    const clear=open.lighting.snapshot(),edited=blocked.lighting.snapshot();
+    assert.ok(edited.spotCount>0);
+    assert.deepEqual(edited.spots,clear.spots,'Blocked furniture must not move or truncate pins');
+    assert.deepEqual(edited.beams,clear.beams,'Beams must still reach their projected pins');
+    assert.ok(edited.spots.some(spot=>!allowed(spot.x,spot.y)), 'Light must cross blocked cells');
+  }
+  assert.equal(blocked.checks(),0);
+});
+
+test('even an entirely blocked walking map leaves the decorative light pattern intact',()=>{
+  const open=fixture(),blocked=fixture({allowed:()=>false});
+  assert.deepEqual(blocked.lighting.snapshot().spots,open.lighting.snapshot().spots);
+  assert.equal(blocked.lighting.snapshot().spotCount,32);
+  assert.equal(blocked.checks(),0);
 });
 
 test('reduced motion and an individual asset animation switch freeze projected geometry',()=>{
@@ -111,5 +126,7 @@ test('beam clips are batched by room and the smaller raster is reused until geom
   f.lighting.drawDisco(ctx);f.time(.008);f.lighting.drawDisco(ctx);
   assert.equal(raster.calls.filter(call=>call[0]==='clear').length,1,'Do not rerasterize unchanged beams each display frame');
   f.revision();f.lighting.drawDisco(ctx);
-  assert.equal(raster.calls.filter(call=>call[0]==='clear').length,2,'Collision edits must refresh the cached projection immediately');
+  assert.equal(raster.calls.filter(call=>call[0]==='clear').length,1,'Collision edits must not disturb decorative projections');
+  f.time(.04);f.lighting.drawDisco(ctx);
+  assert.equal(raster.calls.filter(call=>call[0]==='clear').length,2,'Advancing animation must refresh the projection');
 });

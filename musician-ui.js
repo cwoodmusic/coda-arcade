@@ -14,12 +14,13 @@ window.createCodaMusicianUI=function(api){
     selected=data.id;api.clearInput();dialog.style.display='block';$('who').textContent=data.name;details.textContent=data.description;$('words').textContent=data.line;
     choices.replaceChildren();
     for(const choice of data.choices){const button=document.createElement('button');button.type='button';button.textContent=choice.label;button.onclick=()=>{$('words').textContent=api.getBrain().say(selected,choice.id);};choices.append(button);}
+    if(api.openMissions){const mission=document.createElement('button');mission.type='button';mission.textContent='Any missions for me? · Earn Notes';mission.onclick=()=>{const id=selected;closeConversation();api.openMissions(id);};choices.append(mission);}
     $('close').textContent='See you around · E';$('close').focus();
   }
   $('close').onclick=closeConversation;
   function openRoster(){
     closeConversation();api.openPanel('Meet the musicians');
-    const intro=document.createElement('p');intro.className='muted';intro.textContent='Historic musicians reimagined as arcade regulars. Find them on the map to chat, get a music tip, or hear what they are playing.';api.panelBody.append(intro);
+    const intro=document.createElement('p');intro.className='muted';intro.textContent='Historic musicians reimagined as arcade regulars. Find them on the map to chat, learn a music tip, or take a game mission to earn Notes.';api.panelBody.append(intro);
     for(const person of api.npcs){
       const data=api.getBrain().getConversation(person),card=document.createElement('article');card.className='musician-card';
       const portrait=document.createElement('canvas');portrait.width=100;portrait.height=128;portrait.setAttribute('aria-label',person.name+' portrait');
@@ -29,6 +30,7 @@ window.createCodaMusicianUI=function(api){
       const button=document.createElement('button');button.type='button';const near=api.distance(person)<100;button.textContent=near?'Chat':'Find on map';button.setAttribute('aria-label',(near?'Chat with ':'Find ')+person.name);
       button.onclick=()=>{api.closePanel();if(api.distance(person)<100)talk(person);else api.walkTo(person);};
       card.append(portrait,body,button);api.panelBody.append(card);
+      if(api.openMissions){const mission=document.createElement('button');mission.type='button';mission.textContent='Missions · Notes';mission.setAttribute('aria-label','Missions from '+person.name);mission.onclick=()=>api.openMissions(person.id);body.append(mission);}
     }
   }
   const roster=document.createElement('button');roster.type='button';roster.id='musiciansBtn';roster.textContent='♫ Meet musicians';roster.onclick=openRoster;

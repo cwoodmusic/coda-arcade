@@ -1,0 +1,70 @@
+/* Cabinet records come from completed game results, never from panel visits. */
+(function(root,factory){const value=factory();if(typeof module==='object'&&module.exports)module.exports=value;if(root)root.CodaHallOfFame=value;})(typeof window!=='undefined'?window:null,function(){
+ 'use strict';
+ const KEY='codaHallOfFameV1';
+ const TITLES={pitch:'Pitch Race',triad:'Music Triad',rhythm:'Rhythm Room'};
+ const number=(n,max=1000000)=>Number.isSafeInteger(n)&&n>=0&&n<=max;
+ function resultRow(game,runId,result,name){
+  if(typeof runId!=='string'||!runId.length||runId.length>128||!result||typeof result!=='object')return null;
+  const row={game,runId,name:typeof name==='string'?name.trim().slice(0,18)||'Guest':'Guest',at:Date.now()};
+  if(game==='pitch'&&['classic','endless','levels','multi'].includes(result.mode)&&number(result.score)&&number(result.correct)&&number(result.streak)&&result.streak<=result.correct)
+   return {...row,mode:result.mode,score:result.score,tiebreak:result.streak,detail:result.streak+' best streak',unit:'points'};
+  if(game==='triad'&&['computer','multiplayer'].includes(result.mode)&&number(result.score,16)&&number(result.captures,1000))
+   return {...row,mode:result.mode,score:result.score,tiebreak:result.captures,detail:result.captures+' captures',unit:'cards'};
+  if(game==='rhythm'&&result.mode==='tap'&&number(result.total,128)&&result.total>0&&number(result.hits,128)&&result.hits<=result.total&&number(result.extra,1000))
+   return {...row,mode:'tap',score:Math.round(10000*result.hits/(result.total+result.extra))/100,tiebreak:result.hits,detail:result.hits+' / '+result.total+' notes · '+result.extra+' extra taps',unit:'% accuracy'};
+  return null;
+ }
+ const better=(a,b)=>!b||a.score>b.score||a.score===b.score&&a.tiebreak>b.tiebreak;
+ function publicChampion(raw){
+  if(!raw||typeof raw!=='object'||Array.isArray(raw))return null;
+  const rows=Object.values(raw).filter(row=>row&&/^[A-Z]{3}$/.test(row.initials)&&number(row.score)&&number(row.streak)&&number(row.level));
+  rows.sort((a,b)=>b.score-a.score||b.streak-a.streak||(b.createdAt||0)-(a.createdAt||0));
+  return rows.length?{name:rows[0].initials,score:rows[0].score,streak:rows[0].streak}:null;
+ }
+ function create(api={}){
+  let storage=api.storage;try{if(storage===undefined)storage=window.localStorage;}catch{}
+  let records={},error='',section=null,publicState='idle',champion=null,request=null;
+  try{const saved=JSON.parse(storage?.getItem(KEY)||'null');if(saved?.version===1&&saved.records&&typeof saved.records==='object')for(const [key,row]of Object.entries(saved.records))
+   if(row&&TITLES[row.game]&&key===row.game+':'+row.mode&&Number.isFinite(row.score)&&row.score>=0&&row.score<=1000000&&Number.isFinite(row.tiebreak)&&typeof row.name==='string')records[key]={...row,name:row.name.slice(0,18)};
+  }catch{}
+  function record(game,runId,result){
+   const row=resultRow(game,runId,result,api.getAvatar?.()?.name);if(!row)return false;
+   const key=game+':'+row.mode;if(!better(row,records[key]))return false;
+   const next={...records,[key]:row};
+   try{if(!storage)throw Error('storage');storage.setItem(KEY,JSON.stringify({version:1,records:next}));records=next;error='';render();return true;}
+   catch{error='Browser saving is unavailable. This record has not been saved.';render();return false;}
+  }
+  const node=(tag,text,className)=>{const element=api.panelBody.ownerDocument.createElement(tag);if(text!==undefined)element.textContent=text;if(className)element.className=className;return element;};
+  function render(){
+   if(!section?.isConnected)return;section.replaceChildren();
+   section.append(node('p','The number one recorded score for each competitive game. Cabinet results update this board automatically.','muted'));
+   const online=node('article',undefined,'fame-public'),heading=node('h3','Pitch Race · Public #1 · Classic');online.append(heading);
+   online.append(node('p',publicState==='loading'?'Loading the shared Pitch Race leaderboard…':publicState==='error'?'Shared leaderboard is unavailable. Browser records below still work.':champion?champion.name+' · '+champion.score+' points · '+champion.streak+' best streak':'No public score recorded yet.'));
+   section.append(online,node('h3','Best in this browser'));
+   for(const game of Object.keys(TITLES)){
+    const card=node('article',undefined,'fame-record');card.append(node('h3',TITLES[game]));
+    const modes=game==='pitch'?['classic','endless','levels','multi']:game==='triad'?['computer','multiplayer']:['tap'];
+    const rows=modes.map(mode=>records[game+':'+mode]).filter(Boolean);
+    if(!rows.length)card.append(node('p','No completed score yet. Play through an arcade cabinet to set the first record.','muted'));
+    for(const row of rows){const line=node('div',undefined,'fame-score'),name=node('strong','#1 '+row.name),score=node('span',row.score+' '+row.unit),detail=node('small',row.mode+' · '+row.detail);line.append(name,score,detail);card.append(line);}
+    section.append(card);
+   }
+   const completed=(api.getNotes?.()?.rewards||[]).filter(id=>id.startsWith('piano-lesson:')||id.startsWith('piano-interval:')).length;
+   const piano=node('article',undefined,'fame-record');piano.append(node('h3','Piano Lab · Challenge mastery'),node('p',completed?api.getAvatar?.()?.name+' · '+completed+' Chopin challenges completed':'Complete Chopin’s melody and interval challenges to build your mastery record.'));section.append(piano);
+   const studio=node('article',undefined,'fame-record');studio.append(node('h3','Song Machine · Composition studio'),node('p','Create and share your own music. Your musician level unlocks eight additional instrument sounds.','muted'));section.append(studio);
+   if(error)section.append(node('p',error,'panelMsg'));
+  }
+  async function refreshPublic(){
+   if(request)return request;publicState='loading';render();
+   request=(async()=>{const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);try{
+    const fetcher=api.fetch||globalThis.fetch;if(!fetcher)throw Error('offline');
+    const response=await fetcher('https://pitch-race-default-rtdb.firebaseio.com/leaderboards/classic.json',{signal:controller.signal,credentials:'omit'});
+    if(!response.ok)throw Error('leaderboard');const text=await response.text();if(text.length>2000000)throw Error('large leaderboard');champion=publicChampion(JSON.parse(text));publicState='ready';
+   }catch{publicState='error';}finally{clearTimeout(timer);request=null;render();}})();return request;
+  }
+  function open(){api.openPanel('Hall of Fame · #1 Records');section=node('section',undefined,'hall-of-fame');section.setAttribute('aria-label','Hall of Fame records');api.panelBody.append(section);render();refreshPublic();}
+  return {record,open,refreshPublic,snapshot:()=>({records:JSON.parse(JSON.stringify(records)),publicState,champion:champion?{...champion}:null,error})};
+ }
+ return {KEY,resultRow,better,publicChampion,create};
+});

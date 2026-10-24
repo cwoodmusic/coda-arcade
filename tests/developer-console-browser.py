@@ -317,7 +317,7 @@ class WorldEditorTests(unittest.TestCase):
           const canvas=document.createElement('canvas');canvas.width=1672;canvas.height=941;
           const reference=canvas.getContext('2d');reference.drawImage(image,0,0);
           const game=document.querySelector('#view').getContext('2d');
-          const characters=CodaArcadeQA.characters(),dj=CodaArcadeQA.dj(),actors=[characters.player,...characters.npcs.filter(p=>!p.hidden),...(dj.visible?[dj]:[])];
+          const characters=CodaArcadeQA.characters(),dj=CodaArcadeQA.dj(),actors=[characters.player,...characters.npcs.filter(p=>!p.hidden),...(dj.visible?[dj]:[]),...CodaArcadeQA.shopkeepers().filter(p=>p.visible)];
           return samples.filter(([x,y])=>!actors.some(p=>Math.abs(p.x-x)<45&&y>p.y-90&&y<p.y+8)).filter(([x,y])=>{const a=game.getImageData(x,y,1,1).data,b=reference.getImageData(x,y,1,1).data;return [0,1,2].some(i=>Math.abs(a[i]-b[i])>2)});
         }''',samples)
         self.assertEqual(mismatches,[],'Foreground masks must not put the old people back over the clean background')
@@ -402,7 +402,7 @@ class WorldEditorTests(unittest.TestCase):
         self.page.get_by_label('Hairstyle',exact=True).select_option('buns')
         self.page.get_by_label('Outfit',exact=True).select_option('overalls')
         self.page.get_by_label('Accessories',exact=True).select_option('headphones')
-        self.page.get_by_label('Shoes',exact=True).select_option('neon')
+        self.page.get_by_label('Shoes',exact=True).select_option('boots')
         self.page.get_by_label('Outfit color',exact=True).evaluate('(input)=>{input.value="#4678ab";input.dispatchEvent(new Event("input",{bubbles:true}));}')
         self.page.wait_for_timeout(100)
         after=self.page.locator('.avatar-preview-views canvas').first.evaluate('(c)=>c.toDataURL()')

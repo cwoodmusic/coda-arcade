@@ -8,7 +8,7 @@
   const [top,bottom]=song.meter.split('/').map(Number),end=song.bars*top*16/bottom;
   let count=0;
   return [...song.tracks,...song.drums].every((track,index)=>{
-   if(!track||!Array.isArray(track.notes)||(count+=track.notes.length)>8192||!Number.isInteger(track.sound)||track.sound<0||track.sound>9||!Number.isFinite(track.volume)||track.volume<0||track.volume>1)return false;
+   if(!track||!Array.isArray(track.notes)||(count+=track.notes.length)>8192||!Number.isInteger(track.sound)||track.sound<0||track.sound>(index<song.tracks.length?17:4)||!Number.isFinite(track.volume)||track.volume<0||track.volume>1)return false;
    return track.notes.every(note=>note&&Number.isFinite(note.t)&&note.t>=0&&note.t<end&&Number.isFinite(note.d)&&note.d>0&&note.d<=64&&(index>=song.tracks.length||Number.isFinite(note.p)&&note.p>=0&&note.p<=127));
   });
  }

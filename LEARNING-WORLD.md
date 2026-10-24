@@ -1,0 +1,49 @@
+# Learning rooms, Notes, missions, and levels
+
+Open `world-preview.html`. Guest play works with a static web server and no credentials. The connected world keeps the uploaded project layout, collision paint, and layer edits.
+
+## Rooms and people
+
+- **Piano Lab:** approach the north doorway or use the header button. WASD/arrows walk, Space jumps. The 22 painted floor keys have individual perspective polygons. Free play sounds on entry; during a Chopin game, stand on the desired key and press **E**. The back wall shows the sounded pitch. **Show letter names on keys** is optional. Accessible piano buttons offer the same intentional note input.
+- **Chopin:** press E nearby or choose a challenge below the room. Melody games include Twinkle Twinkle Little Star, Mary Had a Little Lamb, and London Bridge. Fourteen interval games ask for a starting pitch, then a minor/major second or third, perfect fourth/fifth, or octave higher or lower. Timing is flexible. Each completed challenge awards 35 Notes once, plus quest XP. Free play, recording, and listening remain available.
+- **Music Classroom:** enter the east-wall doorway or use **Classroom**. Professor Haydn and three bookshelves open twelve searchable study guides, examples, listening exercises, and quizzes. The guides explain the actual cabinet rules, including Music Triad's rhythm-card battles, Pitch Race's note-reading and holds, and Rhythm Room's listen/repeat patterns.
+- **Pip:** the boutique attendant opens the wardrobe. **Riff**, behind the main arcade counter, sells cosmetics. Both follow their counter's transform, visibility, and opacity. Header controls remain available for keyboard and touch access.
+
+Rooms use detailed pixel-art backgrounds, with live JavaScript characters, note displays, interactions, and lighting over the art. Escape releases room audio and returns to the arcade. Main-world movement pauses inside a room or full panel.
+
+## Notes and wardrobe
+
+Notes are integer units. The purse makes exact change using whole notes worth 16, half notes 8, quarter notes 4, eighth notes 2, and sixteenth notes 1. New guests receive 150 Notes. Completed cabinet rounds provide repeatable income: Triad awards 16 for a win or 4 for a completed loss; Pitch Race with correct notes awards 16 for a win or 8 otherwise; Rhythm Room awards 1–16 based on tap accuracy. Each run pays once. Quests add larger rewards, so buying cosmetics remains possible after all authored quests are complete. Purchases debit once and remain owned after reload. Previously equipped items are retained when loading older profiles.
+
+The renderer has 158 choices across hair, outfits, hats, glasses, accessories, shoes, and emotes, including 48 accessories. Of the 123 nonempty choices in the five equipment/emote groups, 112 (91%) start behind Notes, achievements, or level rewards. Hair, skin, clothing colors, base outfits, and a small starter wardrobe remain available. Locked items can be previewed; saving explains the unlock requirement. Unlocks never equip automatically.
+
+## Musician missions and XP
+
+Talk to a musician and choose **Any missions for me?**, or open a mission from **Meet musicians**. Accept before starting a fresh cabinet game. Nine authored missions use completed results, including Music Triad wins/captures/comebacks, Pitch Race runs/streaks, and Rhythm Room perfect rounds or 20/50 consecutive notes. Consecutive-hit tracking resets on misses and extra taps. Each mission awards Notes once. Completion and saved rewards are separate so a browser write failure can be retried.
+
+XP comes from completed cabinet games, earned achievements, musician quests, Chopin challenges, and played original Song Machine compositions. Buying items or spending Notes awards no XP. Twelve levels unlock cosmetics and eight additional Song Machine sounds. The level panel lists thresholds and rewards. Imported songs retain their instrument sounds even when the listener has not unlocked those sounds for new selections.
+
+Game messages check the active iframe, expected origin, game ID, and per-session token. On the published shared origin, live hooks additionally observe actual Rhythm Room hit ordering. These are client-reported progress records, not a server anti-cheat system. Local development cannot establish the public games' parent-origin handshake; unit and integration fixtures cover the bridge without changing those games' allowlists.
+
+## Hall of Fame and dance floor
+
+**Hall of Fame** or E near its wall opens number-one records. Pitch Race's existing public Classic leaderboard is read without credentials. Completed cabinet results also maintain per-mode browser records for Pitch Race, Music Triad, and Rhythm Room. The latter two have no existing shared leaderboard, so their records are explicitly labeled **Best in this browser**. Piano Lab shows completed challenge mastery; Song Machine remains a composition studio.
+
+The dance floor has 78 measured quadrilateral tiles. Grounded footsteps illuminate the actual cell, preserving its grout, and departed tiles fade. Disco pins ignore walking collision; room boundaries still contain their projections. FX Off retains basic footstep interaction while disabling decorative lighting.
+
+## Storage and art
+
+New local keys: `codaNotesWalletV1`, `codaMusicianMissionsV1`, `codaPlayerProgressV1`, `codaHallOfFameV1`, and `codaPianoTakeV1`. Existing avatar, NPC costume, and editor data keep their current keys. Currency, quests, levels, and records currently remain in this browser; existing avatar cloud sync is unchanged.
+
+The four pictured plants, including pots and shadows, were rebuilt in both world and foreground art. `scripts/build-plant-repairs.cjs` stitches the generated repair plate into the approved crop, rephases the floor grid, and retains the fifth plant outside the screenshot. It pins the already character-cleaned input revision for deterministic rebuilding. Legacy passage-plant project entries remain valid but render transparently, preventing old local layouts from repainting the permanently removed plant.
+
+Relevant checks:
+
+```sh
+node --test tests/*.test.cjs
+python3 tests/learning-world-browser.py
+python3 tests/piano-lab-browser.py
+python3 tests/music-classroom-browser.py
+python3 tests/song-progression-browser.py
+python3 tests/clean-world-art.py
+```

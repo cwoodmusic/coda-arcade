@@ -139,6 +139,9 @@ window.createCodaDeveloperConsole = function (api) {
     if(!worldArt.complete||!worldArt.naturalWidth||!foregroundArt.complete||!foregroundArt.naturalWidth)return null;
     const [x,y,w,h]=origin.bounds,out=makeCanvas(w,h),ctx=out.getContext('2d'); ctx.imageSmoothingEnabled=false;
     let part=catalog.find(p=>p.name===origin.name);
+    // Retain legacy project keys without letting an old visible plant asset
+    // repaint floor pixels over its permanently repaired source location.
+    if(part?.permanentlyRemoved){pictures.set(key,out);return out;}
     if(part?.legacyBounds?.some(bounds=>JSON.stringify(bounds)===JSON.stringify(origin.bounds)))
       part=parts.find(p=>p.name===origin.name&&JSON.stringify(p.bounds)===JSON.stringify(origin.bounds))||part;
     if(part?.source==='world'){
@@ -199,6 +202,7 @@ window.createCodaDeveloperConsole = function (api) {
         const o=a.origin,[x,y,w,h]=o.bounds,img=sourcePictures[index];
         const patch=makeCanvas(w,h),p=patch.getContext('2d'); p.imageSmoothingEnabled=false;
         const part=catalog.find(part=>part.name===o.name),repair=part?.cleanup;
+        if(part?.permanentlyRemoved)continue;
         if(repair?.kind==='dance-passage'&&JSON.stringify(part.bounds)===JSON.stringify(o.bounds)){
           // Clone the unoccupied right-hand floor strip at the same world Y.
           // Its 12px half-tiles preserve the corridor's 24px grid; repeating a

@@ -88,3 +88,5 @@ The collision integration checks compare walkability with every displayed cell, 
 The dance-passage checks pin the uploaded object, collision, and layer data outside the authorized plant removal, preserve neighboring solid walls, and exercise the production NPC movement code through the former plant footprint in both directions.
 
 The art checks require Pillow and verify that pixels outside the 33 repair regions are unchanged and that foreground atlas coordinates and alpha masks remain stable. To rebuild art from a new image-generated empty-room plate, run `node scripts/build-clean-world.cjs /path/to/empty-room-plate.png`. The plate must be exactly 1672 × 941. This uses Chromium to align repaired areas to surrounding pixels, feather their seams, and update only the affected foreground texels. The original images and live character atlas are retained.
+
+Learning rooms, Notes, missions, levels, the interactive dance floor, and the permanently repaired four-plant area are documented in [LEARNING-WORLD.md](LEARNING-WORLD.md). The permanent repair remains clear even in older editor projects containing the former passage-plant asset.

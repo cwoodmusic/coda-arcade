@@ -56,7 +56,9 @@
     const time = () => Math.max(0, finite(api.getTime?.()));
     const quality = () => ['full', 'lite', 'off'].includes(api.getQuality?.()) ? api.getQuality() : 'full';
     const quiet = () => typeof api.reducedMotion === 'function' ? !!api.reducedMotion() : api.reducedMotion === true;
-    const floor = (x, y) => x >= 0 && y >= 0 && x < width && y < height && (api.isWalkable ? !!api.isWalkable(x, y) : true);
+    // Light is decorative and passes across furniture and painted collision
+    // cells. Only the artwork's room outline and canvas bounds contain it.
+    const inWorld = (x, y) => x >= 0 && y >= 0 && x < width && y < height;
     let geometryKey = '', current = {balls: [], beams: [], spots: []};
     function glow(color) {
       if (textures.has(color)) return textures.get(color);
@@ -74,8 +76,7 @@
     }
     function getGeometry() {
       const q = quality(), now = time(), reduced = quiet(), source = api.getBallStates?.() || [];
-      const revision = api.getMapRevision?.() ?? '';
-      const key = JSON.stringify([q, reduced, Math.floor(now * (q === 'full' ? 30 : 16)), revision, source]);
+      const key = JSON.stringify([q, reduced, Math.floor(now * (q === 'full' ? 30 : 16)), source]);
       if (key === geometryKey) return current;
       geometryKey = key;
       const balls = [], beams = [], spots = [], beat = api.getBeat?.() || {};
@@ -88,11 +89,11 @@
         const spin = clamp(finite(raw.spin, 1), -8, 8), animate = raw.animate !== false;
         const inClub = raw.club === true && pointInPolygon(anchor.x, anchor.y, CLUB);
         const region = inClub ? CLUB : pointInPolygon(anchor.x, anchor.y, ARCADE) ? ARCADE : null;
-        const allowed = (x, y) => floor(x, y) && (!region || pointInPolygon(x, y, region));
+        const allowed = (x, y) => inWorld(x, y) && (!region || pointInPolygon(x, y, region));
         const desired = transformPoint(matrix, raw.x, raw.y + (raw.club ? r * 5.8 : r * 7.8));
         let ground = null;
-        // A ceiling ball may be above cabinet collision. Find its nearest lit
-        // floor origin, without ever placing reflected pins inside furniture.
+        // Keep moved or rotated balls within their room outline. This search
+        // never consults walking collision, including furniture underneath.
         for (let ring = 0; ring <= 80 && !ground; ring += 10) {
           const offsets = ring ? [[0,ring],[-ring,0],[ring,0],[0,-ring],[-ring,ring],[ring,ring]] : [[0,0]];
           for (const [dx, dy] of offsets) if (allowed(desired.x + dx, desired.y + dy)) { ground = {x: desired.x + dx, y: desired.y + dy}; break; }
@@ -106,8 +107,8 @@
           const angle = rotation + ray * 2.3999632297;
           const range = 65 + ((ray * 73 + seed * 29) % (raw.club ? 250 : 370));
           const ideal = transformPoint(matrix, raw.x + Math.cos(angle) * range, raw.y + (raw.club ? r * 5.8 : r * 7.8) + Math.sin(angle) * range * (raw.club ? .46 : .72));
-          // Preserve the small safe-ground adjustment after transforming the
-          // original projection, so moving/resizing/rotation remain coherent.
+          // Preserve only the room-boundary adjustment after transforming the
+          // projection, so moving/resizing/rotation remain coherent.
           ideal.x += ground.x - desired.x; ideal.y += ground.y - desired.y;
           const hit = traceFloorRay(ground, ideal, allowed);
           if (!hit || hit.length < 12) continue;

@@ -76,6 +76,16 @@ class SpriteBoutiqueTests(unittest.TestCase):
         self.page.locator('.boutique-item[data-item-id="'+item+'"]').click()
 
     def test_guest_can_search_try_and_save_the_expanded_fantasy_collection(self):
+        # This appearance test uses legitimately purchased items. The assembled
+        # world tests cover the visible purchase flow and locked-item rejection.
+        self.page.evaluate('''()=>{
+          const wallet=CodaNotesShop.createWallet({catalog:createCodaCharacterRenderer().catalog});
+          wallet.grantReward('fixture:completed-quests',500);
+          for(const id of ['witch','starglasses','wand','rollerskates','cheer']){
+            if(!wallet.buy(id).ok)throw Error('Could not prepare purchased cosmetic '+id);
+          }
+        }''')
+        self.load()
         before=self.appearance();self.open_boutique()
         for category,item in [('Hats','witch'),('Glasses','starglasses'),('Accessories','wand'),
                               ('Shoes','rollerskates'),('Emotes','cheer')]:

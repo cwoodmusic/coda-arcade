@@ -2,7 +2,6 @@
 *{box-sizing:border-box}body{margin:0;background:#10101e;color:#e9def9;font:15px system-ui}header{padding:12px 20px;display:flex;align-items:center;gap:18px;justify-content:space-between;background:#211a37}a{color:#a6eff4}button{background:#392f58;color:white;border:1px solid #ba8fdf;border-radius:6px;padding:9px 12px;cursor:pointer}button:hover{background:#514073}#view{display:block;width:min(100vw,calc((100dvh - 110px) * 1672 / 941));height:auto;aspect-ratio:1672/941;margin:0 auto;image-rendering:pixelated;background:#10101e;touch-action:none}footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 16px;min-height:44px;background:#211a37;font-size:12px}#dialog{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);width:min(490px,90vw);padding:20px;background:#261d40;border:2px solid #d8a6f1;box-shadow:0 8px 50px #000b;display:none}#dialog strong{color:#f4c8fa}#dialog p{line-height:1.6}#dialog button{float:right}@media(max-width:650px){header{font-size:12px;padding:8px}#view{width:min(100vw,calc((100dvh - 110px) * 1672 / 941));height:auto}}
 #gameoverlay{position:fixed;inset:0;z-index:100;background:#121327;display:flex;flex-direction:column}#gameoverlay[hidden]{display:none}.gamebar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#231a3c;border-bottom:2px solid #b583dc}.gamebar strong{color:#f0d7ff}#gameiframe{border:0;width:100%;flex:1;min-height:0;background:#111628}body.game-open{overflow:hidden}@media(max-width:650px){.gamebar{gap:6px}.gamebar strong{font-size:12px}.gamebar a{font-size:11px}}
 #panel{position:fixed;z-index:90;top:50%;left:50%;transform:translate(-50%,-50%);width:min(570px,94vw);max-height:84dvh;overflow:auto;padding:20px;background:#231c3b;border:2px solid #c69be9;box-shadow:0 0 0 100vmax #05030ab8,0 14px 55px #000c;border-radius:12px}#panel[hidden]{display:none}.panelHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.panelRow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0;padding:10px;border:1px solid #66517f;border-radius:7px}.panelRow small{display:block;opacity:.75}.formRow{display:grid;gap:5px;margin:10px 0}.formRow select,.formRow input{background:#17142c;color:#fff;border:1px solid #a08dbd;padding:9px;border-radius:5px;width:100%}.panelActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.muted{color:#c1b4d7;font-size:13px}.panelMsg{min-height:22px;color:#9fe9dc}
-#pianoroom{position:fixed;inset:0;z-index:95;background:radial-gradient(ellipse at 50% 20%,#344962,#11172b 75%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#f5edff}#pianoroom[hidden]{display:none}#pianoroom .stage{border:9px solid #69567e;background:repeating-linear-gradient(90deg,#243349 0 32px,#28374d 32px 64px);width:min(650px,88vw);padding:30px;text-align:center;box-shadow:0 0 70px #b08ed255}#pianoroom .keys{display:flex;justify-content:center;margin:20px auto 0}#pianoroom .keys i{height:85px;width:27px;background:#eee9f3;border:2px solid #35324b;box-shadow:inset 0 -8px #aaa8bc}#pianoroom .keys i:nth-child(3n+2){background:#22223b;height:55px;width:18px;margin:0 -8px;z-index:1}#pianoroom h2{color:#9feaf2;letter-spacing:3px}#pianoroom button{font-size:16px}
 
 #musicBtn[aria-pressed="true"]{background:#1c5b5d;border-color:#64e9cf;color:#ddfff4;box-shadow:0 0 10px #40f4c02f}#fxBtn{border-color:#80bbef}header span{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end}header span button{padding:7px 10px}@media(max-width:650px){header{align-items:flex-start;flex-direction:column}header span{justify-content:flex-start}}
 #layerEditor{position:fixed;right:14px;top:174px;z-index:60;width:min(292px,calc(100vw - 24px));background:#17152aef;border:1px solid #72f5c8;box-shadow:0 10px 32px #000b,0 0 20px #2fecb228;border-radius:12px;padding:13px;color:#f0eaff;max-height:calc(100dvh - 190px);overflow-y:auto;font-size:13px;backdrop-filter:blur(7px)}
@@ -17,7 +16,7 @@
 /* Coda Asset Studio v11: stays separate from collision + pixel masks. */
 #assetStudio{position:fixed;left:12px;top:80px;z-index:65;width:min(334px,calc(100vw - 24px));max-height:calc(100dvh - 99px);overflow:auto;background:#171529f5;border:1px solid #eac17d;box-shadow:0 12px 50px #05010de0,0 0 22px #fdac4a24;border-radius:12px;padding:13px;color:#f8efff;font:12px system-ui;backdrop-filter:blur(9px)}
 #assetStudio[hidden]{display:none}#assetStudio .studioHead{display:flex;align-items:center;justify-content:space-between;color:#ffe4a4;font-size:14px;gap:9px;margin-bottom:7px}#assetStudio .studioActions{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0}#assetStudio button{font:inherit;min-height:28px;padding:5px 7px}#assetStudio .studioActions button{flex:1 0 90px}#assetStudio button:disabled{opacity:.36;cursor:not-allowed}#assetStudio hr{border:0;border-top:1px solid #655374;margin:13px 0}#assetStudio .studioField{display:grid;gap:3px;margin:7px 0}#assetStudio .studioField>label{font-weight:650;color:#dccdf3}#assetStudio input:not([type=checkbox]),#assetStudio select{background:#131024;border:1px solid #866e9b;color:#fff;padding:7px;border-radius:5px;width:100%;font:inherit;min-width:0}#assetStudio input[type=checkbox]{accent-color:#f9c880}#assetStudio .studioGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}#assetStudio .studioTip{color:#c9b9d6;line-height:1.45;font-size:11px;margin:6px 0}#assetStudio #assetList{height:108px;padding:2px}#assetStudio #assetList option{padding:6px}#assetStudio #assetMessage{color:#bbf5e5;min-height:18px;overflow-wrap:anywhere}#assetStudio #assetSelection[hidden]{display:none}#assetStudio .studioCheck{display:inline-flex;align-items:center;gap:6px;margin:5px 11px 5px 0}#assetStudio .studioCollapsible{border:1px solid #655374;border-radius:7px;padding:8px}#assetStudio summary{cursor:pointer;color:#ffe4b1;font-weight:650}#assetToggle{border-color:#eecc7c}#view.asset-editing{cursor:crosshair;touch-action:none}#assetStudio #assetAdd{background:#675022;border-color:#e8b85c}#assetStudio #assetImport{border-color:#80d3ed}#assetStudio #assetExport{border-color:#80d3ed}#assetStudio #assetHelp{background:#271d3c}#assetStudio .studioHot{color:#ffcfa4}body.asset-console-open #layerEditor{display:none!important}@media(max-width:650px){#assetStudio{top:120px;max-height:calc(100dvh - 138px)}}
-</style><link rel="stylesheet" href="developer-console.css?v=nightlife-26"><link rel="stylesheet" href="musician-ui.css?v=nightlife-26"><link rel="stylesheet" href="boutique-ui.css?v=nightlife-26"><script src="collision-editor.js?v=nightlife-26"></script><script src="world-object-catalog.js?v=nightlife-26"></script><script src="world-object-runtime.js"></script><script src="world-lighting.js?v=nightlife-26"></script><script src="dj-library.js?v=nightlife-26"></script><script src="developer-console.js?v=nightlife-26"></script><script src="npc-behavior.js?v=nightlife-26"></script><script src="character-renderer.js?v=nightlife-26"></script><script src="musician-ui.js?v=nightlife-26"></script><script src="boutique-ui.js?v=nightlife-26"></script><header><b>♫ CODA ARCADE · CONNECTED WORLD / WORLD BUILDER</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="assetToggle" type="button" title="Open Asset Studio (Shift+A)">✥ Assets</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0" aria-label="Connected arcade. Move with WASD or arrow keys. Press Space to jump and E to interact."></canvas><footer><span>WASD / arrows · Walk · Space · Jump · Wheel / + / − Zoom · 0 Reset · F2 Developer console · C Edit collision · Shift+L Edit layers · Right-drag to pan in editor &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 11 · asset studio · animations · layers · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
+</style><link rel="stylesheet" href="developer-console.css?v=rooms-27"><link rel="stylesheet" href="musician-ui.css?v=rooms-27"><link rel="stylesheet" href="boutique-ui.css?v=rooms-27"><script src="collision-editor.js?v=rooms-27"></script><script src="world-object-catalog.js?v=rooms-27"></script><script src="world-object-runtime.js"></script><script src="world-lighting.js?v=rooms-27"></script><script src="dance-floor.js?v=rooms-27"></script><script src="dj-library.js?v=rooms-27"></script><script src="developer-console.js?v=rooms-27"></script><script src="npc-behavior.js?v=rooms-27"></script><script src="character-renderer.js?v=rooms-27"></script><script src="musician-ui.js?v=rooms-27"></script><script src="boutique-ui.js?v=rooms-27"></script><link rel="stylesheet" href="notes-shop.css?v=rooms-27"><link rel="stylesheet" href="piano-lab.css?v=rooms-27"><link rel="stylesheet" href="music-classroom.css?v=rooms-27"><script src="notes-shop.js?v=rooms-27"></script><script src="piano-lab.js?v=rooms-27"></script><script src="music-classroom.js?v=rooms-27"></script><link rel="stylesheet" href="player-progression.css?v=rooms-27"><link rel="stylesheet" href="hall-of-fame.css?v=rooms-27"><script src="player-progression.js?v=rooms-27"></script><script src="hall-of-fame.js?v=rooms-27"></script><script src="musician-missions.js?v=rooms-27"></script><script src="song-machine/sound-library.js?v=rooms-27"></script><header><b>♫ CODA ARCADE · CONNECTED WORLD / WORLD BUILDER</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="levelBtn" type="button" aria-label="Your musician level">Level 1 · 0 XP</button> <button id="hallFameBtn" type="button">Hall of Fame</button> <button id="notesBtn" type="button" aria-label="Open Notes shop">♫ 150 Notes</button> <button id="pianoLabBtn" type="button">Piano Lab</button> <button id="classroomBtn" type="button">Classroom</button> <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="assetToggle" type="button" title="Open Asset Studio (Shift+A)">✥ Assets</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><canvas id="view" width="1672" height="941" tabindex="0" aria-label="Connected arcade. Move with WASD or arrow keys. Press Space to jump and E to interact."></canvas><footer><span>WASD / arrows · Walk · Space · Jump · Wheel / + / − Zoom · 0 Reset · F2 Developer console · C Edit collision · Shift+L Edit layers · Right-drag to pan in editor &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 11 · asset studio · animations · layers · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
   <div class="editorbanner"><b>✎ FOREGROUND EDITOR</b><button id="editClose" type="button">✕</button></div>
   <div class="mini">Paint with pixels from the existing arcade artwork. Erase removes unwanted foreground coverage; the floor stays unchanged.</div>
   <div class="editorline"><button type="button" id="editPaint" class="current">🖌 Paint</button><button type="button" id="editErase">⌫ Erase</button></div>
@@ -76,8 +75,8 @@
  <input id="assetImportFile" type="file" accept="application/json,.json" hidden>
  <p id="assetMessage" role="status">Your assets are saved in this browser. Export scene JSON to publish or move them to another computer.</p>
  <details><summary id="assetHelp">Help · shortcuts and storage</summary><p class="studioTip">Shift+A opens/closes. Delete removes. Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z redo. Arrows nudge selected asset (Shift = 8 px). Escape closes. GIF/APNG playback depends on browser support; sprite sheets offer deterministic frame animation. Crop selects a rectangular section of the *original art* (not the whole live canvas). Imported images are embedded in exported JSON. Browser storage is local to this page/origin; GitHub won't receive edits until you publish the export.</p></details>
-</aside><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><div id="pianoroom" hidden><div class="stage"><h2>♫ PIANO LAB ♫</h2><p>A quieter music space away from the arcade floor.</p><div class="keys"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p style="opacity:.7">Dedicated room preview — instruments and activities coming later.</p></div><button id="closepiano">← Return to Arcade</button></div><script>
-(()=>{'use strict';let developerConsole=null,worldObjects=null,worldLighting=null,npcBrain=null,characterRenderer=null,musicianUI=null,boutiqueUI=null,playerPhase=0,emoteStarted=0,followedMusician=null,followTimer=0;const c=document.querySelector('#view'),worldContext=c.getContext('2d',{alpha:false}),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}avatar=window.CodaAvatarDefaults.migrate(avatar);const W=1672,H=941,ART_SCALE=1,keys=new Set();let player={x:1180,y:388},cam={x:0,y:0,zoom:1,targetZoom:1},dest=null,emote=0,near=null,last=0,clock=0,walking=false,facing="down";const rooms=[{id:'lounge',name:'LOUNGE',x:95,y:145,w:350,h:235},{id:'dance',name:'DANCE',x:90,y:505,w:670,h:325},{id:'arcade',name:'ARCADE',x:648,y:220,w:900,h:580}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:718,y:313,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:831,y:314,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:951,y:315,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1064,y:315,url:'song-machine/index.html'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
+</aside><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><section id="pianoroom" hidden aria-label="Piano Lab"></section><section id="musicClassroom" hidden aria-label="Music Classroom"></section><script>
+(()=>{'use strict';let developerConsole=null,worldObjects=null,worldLighting=null,danceFloor=null,npcBrain=null,characterRenderer=null,musicianUI=null,boutiqueUI=null,notesWallet=null,notesShop=null,pianoLab=null,musicClassroom=null,progression=null,missions=null,hallFame=null,playerPhase=0,emoteStarted=0,followedMusician=null,followTimer=0;const c=document.querySelector('#view'),worldContext=c.getContext('2d',{alpha:false}),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}avatar=window.CodaAvatarDefaults.migrate(avatar);const W=1672,H=941,ART_SCALE=1,keys=new Set();let player={x:1180,y:388},cam={x:0,y:0,zoom:1,targetZoom:1},dest=null,emote=0,near=null,last=0,clock=0,walking=false,facing="down";const rooms=[{id:'lounge',name:'LOUNGE',x:95,y:145,w:350,h:235},{id:'dance',name:'DANCE',x:90,y:505,w:670,h:325},{id:'arcade',name:'ARCADE',x:648,y:220,w:900,h:580}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:718,y:313,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:831,y:314,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:951,y:315,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1064,y:315,url:'song-machine/index.html'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
 
 let g=worldContext;
 
@@ -142,7 +141,7 @@ document.querySelector('#zoomIn').onclick=()=>setCameraZoom(cam.targetZoom+ZOOM_
 document.querySelector('#zoomReset').onclick=()=>setCameraZoom(1);
 // Wheel zoom operates on the canvas only; scrolling the rest of the page is normal.
 c.addEventListener('wheel',e=>{
- if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;
+ if(gameOpen||!document.querySelector('#panel').hidden||learningRoomOpen())return;
  e.preventDefault();setCameraZoom(cam.targetZoom+(e.deltaY<0?ZOOM_STEP:-ZOOM_STEP),e);
 },{passive:false});
 updateZoomControls();
@@ -156,6 +155,20 @@ function djState(){
  return {id:'dj',name:'DJ Coda',consoleName:'dance_dj_console',visible:object.visible&&object.opacity>0,
   x:point.x,y:point.y,approachX:approach.x,approachY:approach.y,opacity:object.opacity,
   facing:['down','left','up','right'][turn]};
+}
+const SHOPKEEPERS=[
+ {id:'riff',name:'Riff · Notes Shop',counter:'main_counter',foot:[1352,480],approaches:[[1352,430],[1352,610]],type:'notes-shop',appearance:{name:'Riff',skin:'#955e43',hair:'#302133',hairstyle:'locs',shirt:'#2facac',lowerColor:'#3b3158',outfit:'waistcoat',headwear:'beret',headwearColor:'#e7b15b',eyewear:'round',accessory:'necklace',shoes:'oxfords',emote:'wave'}},
+ {id:'pip',name:'Pip · Avatar Boutique',counter:'boutique_counter',foot:[513,418],approaches:[[525,485]],type:'shop',appearance:{name:'Pip',skin:'#edb68d',hair:'#ae5d9f',hairstyle:'bob',shirt:'#e187bd',lowerColor:'#3a5369',outfit:'overalls',headwear:'none',eyewear:'none',accessory:'starclip',shoes:'hightops',emote:'wave'}}
+];
+function shopkeeperStates(){
+ return SHOPKEEPERS.map(person=>{
+  const object=worldObjects?.state(person.counter);if(!object)return {...person,visible:false,approaches:[]};
+  const point=worldObjects.point(object,...person.foot),approaches=person.approaches.map(([x,y])=>worldObjects.point(object,x,y));
+  const turn=((Math.round(Math.atan2(object.matrix[1],object.matrix[0])/(Math.PI/2))%4)+4)%4;
+  const depth=object.asset?object.asset.y+object.asset.h/2+(object.asset.depthOffset||0):object.definition.sortY;
+  return {...person,x:point.x,y:point.y,approaches,visible:object.visible&&object.opacity>0,opacity:object.opacity,
+   facing:['down','left','up','right'][turn],sortY:Math.min(point.y,(depth??point.y+1)-1)};
+ });
 }
 const looks=[['#e5b48d','#ed8cbe','#171424','spiky'],['#85543b','#8ddde6','#e3c27d','long'],['#f4cba6','#c9a3f1','#402c4b','buns'],['#a56b48','#f4ae77','#1c172d','short'],['#f3c3a1','#b2f37b','#6c3159','bob'],['#704633','#a8b5fc','#eee6df','curly'],['#f0b79d','#ffd48c','#171424','ponytail']];const npc=window.CodaMusicianCast.map((person,index)=>({...person,x:1450,y:752,goal:index%4,wait:0,look:index}));const sofas=[{x:105,y:135,w:110,h:45},{x:240,y:135,w:110,h:45}];const seats=[{x:158,y:267},{x:370,y:262},{x:190,y:304},{x:390,y:296}];const spot=(p)=>p.mode==='cabinet'?cabinetApproach(p.goal%4):p.mode==='lounge'?seats[p.goal%4]:p.mode==='dance'?{x:205+(p.goal%4)*125,y:718+(p.goal%2)*65}:p.mode==='leave'?{x:1450,y:752}:{x:1450,y:752};const r=(x,y,w,h,color)=>{g.fillStyle=color;g.fillRect(Math.round(x),Math.round(y),w,h)};const t=(s,x,y,size=18,color='#e7e2ff')=>{g.fillStyle=color;g.font=`bold ${size}px monospace`;g.textAlign='center';g.fillText(s,x,y)};function sprite(x,y,look,walk=false,dance=false,scale=1){const [skin,shirt,hair,style]=look;g.save();g.translate(Math.round(x),Math.round(y));g.scale(scale,scale);const bob=dance?Math.sin(clock*8)*5:walk?Math.sin(clock*12)*2:0;r(-10,-38+bob,20,17,hair);if(style==='buns'){r(-15,-39+bob,6,7,hair);r(9,-39+bob,6,7,hair)}if(style==='long')r(-13,-30+bob,26,20,hair);r(-9,-32+bob,18,16,skin);r(-12,-16+bob,24,20,shirt);r(-16,-12+bob,4,13,skin);r(12,-12+bob,4,13,skin);r(-9,4+bob,7,11,'#695d99');r(2,4+bob,7,11,'#695d99');r(-10,14+bob,9,4,'#f8d56b');r(1,14+bob,9,4,'#f8d56b');r(-6,-24+bob,3,3,'#222033');r(4,-24+bob,3,3,'#222033');if(dance){const beat=Math.floor(clock*4+look[0].length)%4,up=beat%2===0;r(-18,-(up?29:13)+bob,5,up?16:11,skin);r(13,-(up?13:29)+bob,5,up?11:16,skin);r(-10+(up?-5:3),14+bob,9,5,'#f8d56b');r(1+(up?4:-4),14+bob,9,5,'#f8d56b')}g.restore()};
 // Phase 7.1: world-coordinate collision, small foot hitboxes, and A* navigation.
@@ -426,7 +439,7 @@ function update(dt){
  if(!characterRenderer?.isReady()){walking=false;status.textContent=characterRenderer?.error?'Character renderer unavailable. Reload to retry.':'Preparing characters…';return;}
  if(developerConsole&&!developerConsole.loadReady()){walking=false;status.textContent='Loading world layout…';return;}
  const frozen=developerConsole?developerConsole.isEditing():((layerState.active&&!layerState.preview)||assetStudio.active);
- if(frozen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden){walking=false;return;}
+ if(frozen||!document.querySelector('#panel').hidden||learningRoomOpen()){walking=false;return;}
  updateJump(dt);
  const chatting=dialog.style.display==='block';
  if(followedMusician&&!chatting){
@@ -451,10 +464,10 @@ function update(dt){
   for(let k=0;k<steps;k++){const nx=player.x+mx/steps,ny=player.y+my/steps;if(inside(nx,player.y))player.x=nx;if(inside(player.x,ny))player.y=ny;}
  }
  const moved=Math.hypot(player.x-before.x,player.y-before.y);walking=moved>.01;if(walking){playerPhase+=moved/14;avatar.walked=(avatar.walked||0)+moved/9;}
- npcBrain?.update(dt);
+ npcBrain?.update(dt);recordAvatarAchievements();
  near=null;let distance=Infinity;
  const dj=djState();
- for(const person of [...runtimeGames().map(q=>({...q,type:'game'})),...npc.filter(q=>!q.hidden).map(q=>({...q,type:'npc'})),...(dj.visible?[{name:dj.name,x:dj.approachX,y:dj.approachY,type:'dj'}]:[]),{name:'Pip · Avatar Boutique',x:525,y:468,type:'shop'},{name:'Piano Lab',x:1290,y:247,type:'piano'}]){
+ for(const person of [...runtimeGames().map(q=>({...q,type:'game'})),...npc.filter(q=>!q.hidden).map(q=>({...q,type:'npc'})),...(dj.visible?[{name:dj.name,x:dj.approachX,y:dj.approachY,type:'dj'}]:[]),...shopkeeperStates().filter(person=>person.visible).flatMap(person=>person.approaches.map(point=>({name:person.name,...point,type:person.type}))),{name:'Piano Lab',x:1290,y:185,type:'piano'},{name:'Music Classroom',x:1555,y:415,type:'classroom'},{name:'Hall of Fame',x:1460,y:318,type:'fame'}]){
   const d=Math.hypot(person.x-player.x,person.y-player.y);if(d<94&&d<distance){near=person;distance=d;}
  }
  if(followedMusician&&near?.id===followedMusician)followedMusician=null;
@@ -462,18 +475,28 @@ function update(dt){
 }
 const gameoverlay=document.querySelector('#gameoverlay'),gameiframe=document.querySelector('#gameiframe');let gameOpen=false;
 
-function openPiano(){keys.clear();dest=null;document.querySelector('#pianoroom').hidden=false;}
-function closePiano(){document.querySelector('#pianoroom').hidden=true;keys.clear();c.focus();}
-document.querySelector('#closepiano').addEventListener('click',closePiano);
+function learningRoomOpen(){return !document.querySelector('#pianoroom').hidden||!document.querySelector('#musicClassroom').hidden;}
+window.addEventListener('keydown',event=>{if(learningRoomOpen()&&event.key==='F2'){event.preventDefault();event.stopImmediatePropagation();}},{capture:true});
+function prepareLearningRoom(){
+ if(assetStudio.active)toggleAssetStudio(false);
+ musicianUI?.closeConversation();closePanel();stopSong();stopAmbientMusic();
+ keys.clear();dest=null;clickPath=[];walking=false;followedMusician=null;dialog.style.display='none';
+}
+function openPiano(){if(!pianoLab)return;musicClassroom?.close();prepareLearningRoom();pianoLab.open();}
+function closePiano(){pianoLab?.close();keys.clear();c.focus();}
+function openClassroom(){if(!musicClassroom)return;pianoLab?.close();prepareLearningRoom();musicClassroom.open();}
+function closeClassroom(){musicClassroom?.close();keys.clear();c.focus();}
 function openCabinet(game){musicianUI?.closeConversation();walking=false;followedMusician=null;stopSong();stopAmbientMusic();
   if(!game||!game.url)return;
   keys.clear();dest=null;dialog.style.display='none';
   document.querySelector('#activegame').textContent=game.name;
   document.querySelector('#externalgame').href=game.url;
+  missions?.attachGame(game,gameiframe);
   gameiframe.src=game.url;
   gameoverlay.hidden=false;document.body.classList.add('game-open');gameOpen=true;
 }
 function closeCabinet(){
+  missions?.detachGame();
   gameiframe.src='about:blank';gameoverlay.hidden=true;document.body.classList.remove('game-open');gameOpen=false;
   keys.clear();dest=null;c.focus();
 }
@@ -537,15 +560,18 @@ function talk(){
  if(!near)return;
  if(near.type==='game'){openCabinet(near);return;}
  if(near.type==='shop'){openBoutique();return;}
+ if(near.type==='notes-shop'){openNotesShop();return;}
  if(near.type==='jukebox'||near.type==='dj'){openJukebox();return;}
  if(near.type==='piano'){openPiano();return;}
+ if(near.type==='classroom'){openClassroom();return;}
+ if(near.type==='fame'){hallFame?.open();return;}
  musicianUI.talk(near.id);
 }
-const worldArt=new Image();worldArt.src='coda_arcade_world_clean.png';
+const worldArt=new Image();worldArt.src='coda_arcade_world_clean.png?v=rooms-27';
 const actorsArt=new Image();actorsArt.src='coda_arcade_phase73_characters.png';
 const characterFrames={"hero_down_0":{"x":16,"y":5,"w":47,"h":69},"hero_down_1":{"x":97,"y":5,"w":45,"h":69},"hero_down_2":{"x":178,"y":5,"w":44,"h":69},"hero_down_3":{"x":259,"y":5,"w":42,"h":69},"hero_down_4":{"x":338,"y":5,"w":44,"h":69},"hero_up_0":{"x":416,"y":6,"w":47,"h":67},"hero_up_1":{"x":497,"y":6,"w":45,"h":67},"hero_up_2":{"x":578,"y":6,"w":44,"h":67},"hero_up_3":{"x":658,"y":6,"w":43,"h":67},"hero_up_4":{"x":739,"y":6,"w":42,"h":67},"hero_left_0":{"x":816,"y":5,"w":47,"h":69},"hero_left_1":{"x":896,"y":5,"w":47,"h":69},"hero_left_2":{"x":16,"y":85,"w":47,"h":69},"hero_left_3":{"x":96,"y":85,"w":47,"h":69},"hero_left_4":{"x":176,"y":85,"w":47,"h":69},"hero_right_0":{"x":256,"y":85,"w":47,"h":69},"hero_right_1":{"x":336,"y":85,"w":47,"h":69},"hero_right_2":{"x":416,"y":85,"w":47,"h":69},"hero_right_3":{"x":496,"y":85,"w":47,"h":69},"hero_right_4":{"x":576,"y":85,"w":47,"h":69},"pink_down_0":{"x":652,"y":84,"w":55,"h":71},"pink_up_0":{"x":735,"y":86,"w":50,"h":67},"pink_left_0":{"x":812,"y":86,"w":55,"h":67},"pink_right_0":{"x":892,"y":84,"w":55,"h":71},"blue_down_0":{"x":12,"y":164,"w":55,"h":71},"blue_up_0":{"x":94,"y":166,"w":52,"h":67},"blue_left_0":{"x":172,"y":166,"w":55,"h":67},"blue_right_0":{"x":252,"y":164,"w":55,"h":71},"brown_down_0":{"x":334,"y":164,"w":51,"h":71},"brown_up_0":{"x":412,"y":164,"w":55,"h":71},"brown_left_0":{"x":492,"y":164,"w":55,"h":71},"brown_right_0":{"x":572,"y":164,"w":55,"h":71},"hat_down_0":{"x":657,"y":164,"w":46,"h":71},"hat_up_0":{"x":732,"y":166,"w":55,"h":67},"hat_left_0":{"x":812,"y":166,"w":55,"h":67},"hat_right_0":{"x":892,"y":164,"w":55,"h":71},"green_down_0":{"x":12,"y":244,"w":55,"h":71},"green_up_0":{"x":92,"y":246,"w":55,"h":67},"green_left_0":{"x":172,"y":246,"w":55,"h":67},"green_right_0":{"x":252,"y":244,"w":55,"h":71},"orange_down_0":{"x":334,"y":244,"w":52,"h":71},"orange_up_0":{"x":412,"y":246,"w":55,"h":67},"orange_left_0":{"x":492,"y":246,"w":55,"h":67},"orange_right_0":{"x":572,"y":244,"w":55,"h":71}};
 const actorsArtReady=()=>actorsArt.complete&&actorsArt.naturalWidth;
-const foregroundArt=new Image();foregroundArt.src='coda_arcade_foreground_clean.png';
+const foregroundArt=new Image();foregroundArt.src='coda_arcade_foreground_clean.png?v=rooms-27';
 
 const foregroundParts=[{"name":"lounge_sofa","bounds":[124,132,288,105],"poly":[[132,174],[155,152],[195,146],[277,133],[350,142],[393,145],[403,165],[403,215],[362,226],[282,220],[237,232],[190,218],[134,212]],"sortY":239,"type":"object","atlas":[3,3,288,105]},{"name":"lounge_center_candle_table","bounds":[255,205,86,70],"poly":[[338,248],[336,255],[330,262],[322,267],[310,271],[298,272],[286,271],[274,267],[266,262],[260,255],[258,248],[260,241],[266,234],[274,229],[286,225],[298,224],[310,225],[322,229],[330,234],[336,241]],"sortY":290,"type":"object","atlas":[295,3,86,70]},{"name":"lounge_northwest_candle_table","bounds":[69,263,63,61],"poly":[[130,292],[129,300],[124,308],[118,314],[110,318],[101,319],[92,318],[84,314],[78,308],[73,300],[72,292],[73,284],[78,276],[84,270],[92,266],[101,265],[110,266],[118,270],[124,276],[129,284]],"sortY":332,"type":"object","atlas":[385,3,63,61]},{"name":"lounge_west_candle_table","bounds":[167,285,52,41],"poly":[[216,305],[215,311],[211,316],[206,320],[199,322],[192,323],[185,322],[178,320],[173,316],[169,311],[168,305],[169,299],[173,294],[178,290],[185,288],[192,287],[199,288],[206,290],[211,294],[215,299]],"sortY":342,"type":"object","atlas":[452,3,52,41]},{"name":"boutique_counter","bounds":[449,381,127,81],"poly":[[451,403],[467,386],[556,383],[569,400],[570,441],[551,461],[454,461]],"sortY":477,"type":"object","atlas":[508,3,127,81]},{"name":"boutique_mirror","bounds":[591,352,55,103],"poly":[[595,378],[598,364],[611,356],[626,359],[642,372],[642,447],[594,447]],"sortY":480,"type":"object","atlas":[639,3,55,103]},{"name":"main_counter","bounds":[1170,441,361,142],"poly":[[1201,465],[1497,461],[1516,471],[1523,516],[1518,556],[1503,573],[1193,574],[1173,557],[1169,507]],"sortY":584,"type":"object","atlas":[698,3,361,142]},{"name":"dance_left_couch","bounds":[76,579,164,131],"poly":[[83,629],[98,600],[138,582],[190,579],[231,598],[237,640],[204,650],[160,679],[104,709],[79,691]],"sortY":727,"type":"object","atlas":[1063,3,164,131]},{"name":"dance_right_couch","bounds":[544,595,162,109],"poly":[[553,633],[581,598],[641,601],[701,628],[703,673],[672,699],[601,692],[555,670]],"sortY":725,"type":"object","atlas":[1231,3,162,109]},{"name":"dance_dj_console","bounds":[333,600,121,62],"poly":[[335,622],[359,602],[432,604],[453,624],[451,653],[337,655]],"sortY":669,"type":"object","atlas":[1397,3,121,62]},{"name":"dance_east_wall","bounds":[808,435,39,273],"poly":[[808,437],[840,434],[845,459],[845,696],[812,695]],"sortY":774,"type":"wall","atlas":[1522,3,39,273]},{"name":"dance_east_lower_wall","bounds":[806,778,41,65],"poly":[[813,780],[840,778],[845,818],[845,842],[810,842]],"sortY":865,"type":"wall","atlas":[1565,3,41,65]},{"name":"dance_lower_wall_left","bounds":[44,790,225,93],"poly":[[48,793],[252,818],[266,865],[256,882],[60,849]],"sortY":892,"type":"wall","atlas":[1610,3,225,93]},{"name":"dance_lower_wall_right","bounds":[464,796,372,98],"poly":[[469,833],[835,799],[834,862],[814,882],[470,890]],"sortY":905,"type":"wall","atlas":[3,280,372,98]},{"name":"obelisk_west","bounds":[146,780,27,66],"poly":[[151,787],[160,783],[169,791],[169,841],[147,841],[148,797]],"sortY":875,"type":"obelisk","atlas":[379,280,27,66]},{"name":"obelisk_middle","bounds":[266,786,25,68],"poly":[[271,794],[279,790],[289,797],[287,848],[268,848],[268,797]],"sortY":875,"type":"obelisk","atlas":[410,280,25,68]},{"name":"obelisk_east","bounds":[461,790,24,65],"poly":[[466,795],[476,791],[484,798],[483,846],[463,847],[461,800]],"sortY":875,"type":"obelisk","atlas":[439,280,24,65]},{"name":"obelisk_far_east","bounds":[537,783,28,72],"poly":[[541,791],[553,787],[563,794],[561,847],[540,847],[538,793]],"sortY":875,"type":"obelisk","atlas":[467,280,28,72]},{"name":"obelisk_corner","bounds":[741,770,35,66],"poly":[[749,775],[762,772],[774,780],[771,825],[748,827],[742,793]],"sortY":875,"type":"obelisk","atlas":[499,280,35,66]},{"name":"lounge_palm_left","bounds":[165,141,58,78],"sortY":230,"type":"plant","atlas":[538,280,58,78]},{"name":"lounge_palm_top","bounds":[428,2,55,98],"sortY":117,"type":"plant","atlas":[600,280,55,98]},{"name":"lounge_palm_south","bounds":[202,303,67,70],"sortY":388,"type":"plant","atlas":[659,280,67,70]},{"name":"boutique_palm_right","bounds":[537,360,67,98],"sortY":488,"type":"plant","atlas":[730,280,67,98]},{"name":"boutique_roof_palm","bounds":[588,267,66,87],"sortY":374,"type":"plant","atlas":[801,280,66,87]},{"name":"boutique_left_palm","bounds":[329,286,58,70],"sortY":377,"type":"plant","atlas":[871,280,58,70]},{"name":"dance_upper_right_palm","bounds":[696,547,67,90],"sortY":681,"type":"plant","atlas":[933,280,67,90]},{"name":"dance_right_palm","bounds":[687,683,72,84],"sortY":782,"type":"plant","atlas":[1004,280,72,84]},{"name":"dance_far_right_palm","bounds":[765,746,67,96],"sortY":867,"type":"plant","atlas":[1080,280,67,96]},{"name":"dance_front_left_palm","bounds":[164,805,75,73],"sortY":893,"type":"plant","atlas":[1151,280,75,73]},{"name":"dance_front_mid_palm","bounds":[259,822,68,69],"sortY":904,"type":"plant","atlas":[1230,280,68,69]},{"name":"dance_front_center_palm","bounds":[418,809,70,73],"sortY":892,"type":"plant","atlas":[1302,280,70,73]},{"name":"dance_front_right_palm","bounds":[484,793,76,85],"sortY":893,"type":"plant","atlas":[1376,280,76,85]},{"name":"dance_front_second_right_palm","bounds":[578,782,68,85],"sortY":883,"type":"plant","atlas":[1456,280,68,85]},{"name":"main_counter_left_palm","bounds":[1144,440,75,89],"sortY":541,"type":"plant","atlas":[1528,280,75,89]},{"name":"main_counter_right_palm","bounds":[1471,441,72,93],"sortY":554,"type":"plant","atlas":[1607,280,72,93]},{"name":"hall_palm_west","bounds":[1340,216,59,77],"sortY":319,"type":"plant","atlas":[1683,280,59,77]},{"name":"hall_palm_east","bounds":[1516,205,62,80],"sortY":303,"type":"plant","atlas":[1746,280,62,80]},{"name":"piano_landing_palm","bounds":[1184,80,80,85],"sortY":182,"type":"plant","atlas":[1812,280,80,85]},{"name":"piano_landing_palm_right","bounds":[1330,71,58,93],"sortY":186,"type":"plant","atlas":[1896,280,58,93]},{"name":"dance_corner_palm","bounds":[67,649,79,88],"sortY":744,"type":"plant","atlas":[1958,280,79,88]}];
 
@@ -994,7 +1020,7 @@ async function loadAssetStudio(){let found=null;
 window.CodaAssetStudioQA={get:()=>({active:assetStudio.active,count:assetStudio.assets.length,selected:assetStudio.selected,assets:assetStudio.assets.map(a=>({id:a.id,name:a.name,kind:a.kind,x:a.x,y:a.y,w:a.w,h:a.h,layer:a.layer,anim:a.anim,frames:a.frames}))}),open:()=>toggleAssetStudio(true),close:()=>toggleAssetStudio(false),preset:()=>assetUI('assetPreset').click(),export:downloadAssetJSON,save:persistAssets};
 // --- END ASSET STUDIO ------------------------------------------------------
 
-window.CODA_BUILD="26.0-nightlife-and-wardrobe";
+window.CODA_BUILD="27.0-learning-rooms";
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -1124,31 +1150,6 @@ async function startAmbientMusic(){
 musicButton.onclick=()=>musicEngine.active?stopAmbientMusic():startAmbientMusic();
 effectsButton.onclick=()=>{fxMode=fxChoice[(fxChoice.indexOf(fxMode)+1)%fxChoice.length];try{localStorage.setItem('codaArcadeFXV1',fxMode)}catch{}updateFxButton();pausedBackdrop=false;};
 updateAudioButton();updateFxButton();
-
-// A vertical spotlight sweep remains on the dance floor, not on characters.
-// The dance tiles keep their baked-in appearance. Only footsteps leave a small
-// temporary shimmer; no more beat-wide checkerboard flashes.
-function danceFloorLight(beat){
- updateDanceStepBursts();
- if(!danceStepBursts.length)return;
- g.save();g.globalCompositeOperation='screen';
- g.beginPath();g.moveTo(171,653);g.lineTo(632,653);
- g.lineTo(692,813);g.lineTo(118,813);g.closePath();g.clip();
- for(const burst of danceStepBursts){
-  const age=clock-burst.t;
-  if(age<0||age>1.2)continue;
-  const fade=(1-age/1.2)*burst.e;
-  const cx=DANCE_TILE.x0+burst.col*DANCE_TILE.w;
-  const cy=DANCE_TILE.y0+burst.row*DANCE_TILE.h;
-  g.globalAlpha=.045*fade;g.fillStyle=ambientPalette[(burst.col+burst.row)%ambientPalette.length];
-  g.fillRect(cx+5,cy+6,43,27);
-  if(fxMode==='full'&&age<.25){
-   g.globalAlpha=.12*(1-age/.25)*fade;g.fillStyle='#e7ffff';
-   g.fillRect(cx+24,cy+16,3,3);
-  }
- }
- g.restore();
-}
 
 // Precise centers of the disco-ball sprites painted into the original world art.
 // All highlights, rotating facets, and projected beams use THESE shared anchors.
@@ -1513,45 +1514,6 @@ const OPEN_FLOOR_TWINKLES=[
  [874,607,1],[957,628,0],[1038,606,1],[1121,629,0],[1204,607,1],[1286,629,0],[1368,607,1],[1451,628,0],
  [902,695,0],[984,716,1],[1066,694,0],[1147,717,1],[1230,695,0],[1312,717,1],[1394,695,0]
 ];
-const DANCE_TILE={x0:130,y0:652,w:55,h:39,cols:10,rows:5};
-let danceStepBursts=[];
-const danceStepState=new Map();
-function danceTileFor(x,y){
- const col=Math.floor((x-DANCE_TILE.x0)/DANCE_TILE.w);
- const row=Math.floor((y-DANCE_TILE.y0)/DANCE_TILE.h);
- if(col<0||col>=DANCE_TILE.cols||row<0||row>=DANCE_TILE.rows)return null;
- return {col,row};
-}
-function emitDanceStep(actorId,x,y,energy=1){
- const tile=danceTileFor(x,y); if(!tile)return;
- danceStepBursts.push({col:tile.col,row:tile.row,t:clock,e:Math.max(.45,Math.min(1.2,energy))});
- if(danceStepBursts.length>120)danceStepBursts=danceStepBursts.slice(-80);
-}
-function updateDanceStepBursts(){
- const actors=[{id:'player',x:player.x,y:player.y,mode:'walk'},...npc.filter(q=>!q.hidden).map((q,i)=>({id:'npc_'+i,x:q.x,y:q.y,mode:q.mode||'walk'}))];
- for(const a of actors){
-  const footY=a.y+8;
-  const tile=danceTileFor(a.x,footY);
-  const prev=danceStepState.get(a.id)||{x:a.x,y:footY,last:-99,col:-1,row:-1};
-  if(tile){
-   const moved=Math.hypot(a.x-prev.x,footY-prev.y);
-   const changed=tile.col!==prev.col||tile.row!==prev.row;
-   const dancing=a.mode==='dance';
-   const cooldown=dancing?.16:.22;
-   if((changed||moved>6||dancing)&&clock-prev.last>cooldown){
-    emitDanceStep(a.id,a.x,footY,dancing?1.15:.85);
-    prev.last=clock;
-   }
-   prev.col=tile.col; prev.row=tile.row;
-  } else {
-   prev.col=-1; prev.row=-1;
-  }
-  prev.x=a.x; prev.y=footY;
-  danceStepState.set(a.id,prev);
- }
- danceStepBursts=danceStepBursts.filter(b=>clock-b.t<1.2);
-}
-
 // PHASE 10.1: one low-amplitude heartbeat envelopes the *whole nightclub*.
 // No separately pulsing tiles, floor zones, or sweeping floor stripes.
 function clubRoomHeartbeat(beat,aboveActors=false){
@@ -1626,13 +1588,24 @@ function renderArcadeAtmosphere(){
  const beat=beatInfo();
  flickerSelectedNeon();renderAmbientLights(beat);
  // Small, sharp artwork and pixel sparks still update at the display rate.
- openFloorTwinkles(beat);danceFloorLight(beat);
+ openFloorTwinkles(beat);
  animatedCabinets(beat);
  for(const [index,ball] of DISCO_BALLS.entries()){const part=window.CodaWorldObjectCatalog.find(p=>p.ballIndex===index);if(!worldObjects?.state(part.name)?.asset)spinningDiscoBall(ball,beat);}
  speakerLife(beat);
 }
 // =======================================================================
 
+function drawLearningDoors(){
+ // A permanent, readable entrance on the east wall. The walking interaction
+ // stays on the existing floor at the left side of the doorway.
+ g.save();g.shadowBlur=0;
+ r(1556,358,57,85,'#080e24');r(1559,361,51,79,'#465a83');r(1563,365,43,71,'#123952');
+ r(1567,369,35,63,'#13233e');r(1568,370,2,60,'#67e4fa');r(1598,370,2,60,'#67e4fa');
+ r(1574,378,19,14,'#416f97');r(1577,381,13,2,'#e7e0a9');r(1577,385,13,2,'#e7e0a9');
+ r(1592,406,4,4,'#f1cc78');r(1562,433,46,4,'#89d8e9');
+ r(1532,339,106,17,'#171b37');r(1534,341,102,1,'#b7a5ec');t('CLASSROOM',1585,352,11,'#c7f7ff');
+ g.restore();
+}
 function draw(){
  // A bad FX frame must not leave a stale clip/opacity/compositing state behind.
  if(typeof g.reset==='function')g.reset();
@@ -1654,7 +1627,7 @@ function draw(){
  renderArcadeAtmosphere();
  developerConsole?.renderCleanup(g);
  renderAssetsOfLayer('back');
- worldLighting?.drawFloorPins(g);
+ worldLighting?.drawFloorPins(g);danceFloor?.draw(g);
  // Erasing foreground changes occlusion, not the visible object artwork.
  // Draw erased fragments behind actors, then the remainder at object depth.
  for(const a of assetStudio.assets)if(a.origin&&a.visible&&a.layer!=='back')drawPlacedAsset(a,'behind');
@@ -1665,6 +1638,7 @@ function draw(){
   liveActors.push({type:'npc',y:p.y,x:p.x,p});
  }
  const dj=djState();if(dj.visible)liveActors.push({type:'dj',x:dj.x,y:dj.y,p:dj});
+ const shopkeepers=shopkeeperStates();for(const person of shopkeepers)if(person.visible)liveActors.push({type:'shopkeeper',x:person.x,y:person.sortY,p:person});
  liveActors.push({type:'player',y:player.y,x:player.x});
  const scene=[...liveActors];
  for(const part of foregroundParts)scene.push({type:'foreground',y:(part.sortY??part.y),part});
@@ -1678,6 +1652,9 @@ function draw(){
   }
   if(item.type==='editor-paint'){if(foregroundEnabled){if(developerConsole)developerConsole.drawUnliftedPixels(g,item.patch.canvas,item.patch.x,item.patch.y);else g.drawImage(item.patch.canvas,item.patch.x,item.patch.y);}continue;}
   if(item.type==='placed-asset'){drawPlacedAsset(item.part);continue;}
+  if(item.type==='shopkeeper'){
+   g.save();g.globalAlpha=item.p.opacity;characterRenderer.drawPlayer(g,item.p.appearance,{x:item.p.x,y:item.p.y,facing:item.p.facing,walking:false},clock);g.restore();continue;
+  }
   if(item.type==='dj'){
    g.save();g.globalAlpha=item.p.opacity;
    characterRenderer.drawNPC(g,{...item.p,id:'dj',activity:'playing',appearance:npcLooks.dj},clock);g.restore();continue;
@@ -1692,6 +1669,7 @@ function draw(){
  }
  renderAssetsOfLayer('front');
  worldLighting?.drawLanterns(g);
+ drawLearningDoors();
  // Soft club color haze touches characters too, without changing occlusion order.
  // Skip it while editing or inspecting collision/foreground masks.
  if(effectsOn()&&!collisionDebug&&!depthDebug&&!layerState.active){
@@ -1712,6 +1690,7 @@ function draw(){
   if(nearby||following||chatting){t((following?'↓ ':'')+p.name,p.x,p.y-characterRenderer.labelOffset(p.appearance,p.id),11,chatting?'#ffe3ac':following?'#c4ffab':'#e8dfff');}
   g.restore();
  }
+ for(const person of shopkeepers)if(person.visible&&person.approaches.some(point=>Math.hypot(point.x-player.x,point.y-player.y)<170)){g.save();g.globalAlpha=person.opacity;t(person.name,person.x,person.y-characterRenderer.labelOffset(person.appearance),11,'#ffe2a5');g.restore();}
  if(dj.visible&&Math.hypot(dj.approachX-player.x,dj.approachY-player.y)<170)t('DJ Coda',dj.x,dj.y-characterRenderer.labelOffset(npcLooks.dj,'dj'),11,'#a8ffec');
 
  if(collisionDebug){
@@ -1755,7 +1734,7 @@ function draw(){
   g.restore();
  }
  if(near&&!layerState.active){const promptY=near.y-(near.type==='npc'?98:93);g.globalAlpha=.91;r(near.x-62,promptY,124,25,'#18132e');g.globalAlpha=1;
-  t('E · '+(near.type==='game'?'PLAY':near.type==='piano'?'ENTER':'INTERACT'),near.x,promptY+17,11,'#c8fff6');}
+  t('E · '+(near.type==='game'?'PLAY':['piano','classroom'].includes(near.type)?'ENTER':'INTERACT'),near.x,promptY+17,11,'#c8fff6');}
  drawEditorOverlay();
  if(!developerConsole||!developerConsole.isPlaytest())drawAssetEditorOverlay();
  developerConsole?.drawOverlay(g,cam);
@@ -1768,7 +1747,17 @@ window.CodaArcadeQA=Object.freeze({
   worldObjects:()=>window.CodaWorldObjectCatalog.map(part=>{const object=worldObjects.state(part.name),anchor=part.anchor||[part.bounds[0]+part.bounds[2]/2,part.bounds[1]+part.bounds[3]/2];return {name:part.name,visible:object.visible,opacity:object.opacity,anchor:worldObjects.point(object,...anchor),spin:object.asset?.discoSpin??part.spin,rays:object.visible&&object.asset?.discoRays!==false,game:part.gameIndex!==undefined?runtimeGames().find(g=>g.index===part.gameIndex)||null:null};}),
   camera:()=>({x:cam.x,y:cam.y,zoom:cam.zoom,targetZoom:cam.targetZoom,visibleWidth:W/cam.zoom,visibleHeight:H/cam.zoom}),
   dj:()=>({...djState()}),
+  shopkeepers:()=>shopkeeperStates().map(person=>({...person,appearance:{...person.appearance},approaches:person.approaches.map(point=>({...point}))})),
+  notes:()=>notesWallet?.snapshot()||null,
+  progression:()=>progression?.getState()||null,
+  missions:()=>missions?.snapshot()||null,
+  hallOfFame:()=>hallFame?.snapshot()||null,
+  hallFame:()=>hallFame?.snapshot()||null,
+  piano:()=>pianoLab?.getState()||null,
+  classroom:()=>musicClassroom?.getState()||null,
+  entrances:()=>[{name:'Piano Lab',x:1290,y:185,approach:{x:1290,y:235}},{name:'Music Classroom',x:1583,y:400,approach:{x:1555,y:415}}],
   lighting:()=>worldLighting?.snapshot()||null,
+  danceFloor:()=>danceFloor?.snapshot()||null,
   jukebox:()=>({playing:!!songPlayer||musicEngine.active,title:jukeboxTitle,source:jukeboxSource,audioState:songPlayer?.ctx.state||musicEngine.ctx?.state||'closed',bpm:jukeboxVisual?.bpm||musicEngine.bpm}),
   cameraPoint:(x,y)=>({x:cam.x+x/cam.zoom,y:cam.y+y/cam.zoom}),
   setZoom:setCameraZoom,
@@ -1790,12 +1779,12 @@ window.CodaArcadeQA=Object.freeze({
   leafPassage:{blue:[[797,597],[835,654]],leaves:[754,609,65,72]},
   cornerRepair:{openFootStrip:[798,646,821,759],solidWall:[821,699,849,735]},
   debugState:()=>({collisionDebug,depthDebug,foregroundEnabled,greenMasksReady:greenMaskCache.size}),
-  menu:()=>({gameOpen,game:gameoverlay.hidden,panelOpen:!document.querySelector('#panel').hidden,pianoOpen:!document.querySelector('#pianoroom').hidden})
+  menu:()=>({gameOpen,game:gameoverlay.hidden,panelOpen:!document.querySelector('#panel').hidden,pianoOpen:!document.querySelector('#pianoroom').hidden,classroomOpen:!document.querySelector('#musicClassroom').hidden})
 });
 let pausedBackdrop=false;
 function frame(ms){const dt=Math.min(.05,(ms-last)/1000||0);last=ms;
  tickAmbientMusic();
- const paused=gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden;
+ const paused=gameOpen||!document.querySelector('#panel').hidden||learningRoomOpen();
  try{if(!gameOpen)update(dt);
  // Full panels already pause movement. Retain that backdrop instead of
  // repainting room lights behind four small, independently animated previews.
@@ -1807,9 +1796,9 @@ function frame(ms){const dt=Math.min(.05,(ms-last)/1000||0);last=ms;
  g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.globalCompositeOperation='source-over';
  g.fillStyle='#10142b';g.fillRect(0,0,W,H);
  g.fillStyle='#ffb9e5';g.font='bold 25px monospace';g.fillText('Arcade error: '+err.message,55,110);
- }requestAnimationFrame(frame)}window.addEventListener('keydown',e=>{if(e.defaultPrevented||e.isComposing||typingTarget(e.target))return;if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const k=e.key.toLowerCase();if(developerConsole&&!e.repeat&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&(k==='c'||k==='l'&&e.shiftKey)){e.preventDefault();developerConsole.open(k==='c'?'collision':'layers');return;}if(dialog.style.display==='block'){if((k==='e'||k==='escape')&&!e.repeat){e.preventDefault();musicianUI.closeConversation();}return;}if(k==='a'&&e.shiftKey&&!e.repeat&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();toggleAssetStudio();return;}if(assetStudio.active&&!developerConsole?.isPlaytest()){if(k==='escape'){e.preventDefault();if(assetStudio.capturing){assetStudio.capturing=null;studioMessage('Crop cancelled.')}else toggleAssetStudio(false);return;}if((e.ctrlKey||e.metaKey)&&k==='z'&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUndoRedo(!e.shiftKey);return;}if((e.ctrlKey||e.metaKey)&&k==='y'&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUndoRedo(false);return;}if(['delete','backspace'].includes(k)&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUI('assetRemove').click();return;}if(k.startsWith('arrow')&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();const a=assetSelected();if(a&&!a.locked){const before=assetSnapshot(),step=e.shiftKey?8:1;a.x=numberBound(a.x+(k==='arrowright'?step:k==='arrowleft'?-step:0),-1000,3000,a.x);a.y=numberBound(a.y+(k==='arrowdown'?step:k==='arrowup'?-step:0),-1000,2200,a.y);assetRecordHistory(before);}return;}if(!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)&&['+','=','-','_','0'].includes(k)){e.preventDefault();setCameraZoom(k==='0'?1:cam.targetZoom+((k==='+'||k==='=')?ZOOM_STEP:-ZOOM_STEP));return;}if(!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName))e.preventDefault();return;}if(k==='l'&&e.shiftKey&&!e.repeat){e.preventDefault();developerConsole.open('layers');return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='z'&&!e.repeat){e.preventDefault();editorEl(e.shiftKey?'editRedo':'editUndo').click();return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='y'&&!e.repeat){e.preventDefault();editorEl('editRedo').click();return;}if(layerState.active&&k==='escape'&&!e.repeat){e.preventDefault();toggleLayerEditor(false);return;}if(layerState.active&&!layerState.preview){if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q',' '].includes(k))e.preventDefault();return;}if(e.ctrlKey||e.metaKey||e.altKey)return;if(!e.repeat&&['=','+','-','_','0'].includes(k)&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){
+ }requestAnimationFrame(frame)}window.addEventListener('keydown',e=>{if(e.defaultPrevented||e.isComposing||typingTarget(e.target))return;if(gameOpen||!document.querySelector('#panel').hidden||learningRoomOpen())return;const k=e.key.toLowerCase();if(developerConsole&&!e.repeat&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&(k==='c'||k==='l'&&e.shiftKey)){e.preventDefault();developerConsole.open(k==='c'?'collision':'layers');return;}if(dialog.style.display==='block'){if((k==='e'||k==='escape')&&!e.repeat){e.preventDefault();musicianUI.closeConversation();}return;}if(k==='a'&&e.shiftKey&&!e.repeat&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();toggleAssetStudio();return;}if(assetStudio.active&&!developerConsole?.isPlaytest()){if(k==='escape'){e.preventDefault();if(assetStudio.capturing){assetStudio.capturing=null;studioMessage('Crop cancelled.')}else toggleAssetStudio(false);return;}if((e.ctrlKey||e.metaKey)&&k==='z'&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUndoRedo(!e.shiftKey);return;}if((e.ctrlKey||e.metaKey)&&k==='y'&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUndoRedo(false);return;}if(['delete','backspace'].includes(k)&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();assetUI('assetRemove').click();return;}if(k.startsWith('arrow')&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();const a=assetSelected();if(a&&!a.locked){const before=assetSnapshot(),step=e.shiftKey?8:1;a.x=numberBound(a.x+(k==='arrowright'?step:k==='arrowleft'?-step:0),-1000,3000,a.x);a.y=numberBound(a.y+(k==='arrowdown'?step:k==='arrowup'?-step:0),-1000,2200,a.y);assetRecordHistory(before);}return;}if(!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)&&['+','=','-','_','0'].includes(k)){e.preventDefault();setCameraZoom(k==='0'?1:cam.targetZoom+((k==='+'||k==='=')?ZOOM_STEP:-ZOOM_STEP));return;}if(!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName))e.preventDefault();return;}if(k==='l'&&e.shiftKey&&!e.repeat){e.preventDefault();developerConsole.open('layers');return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='z'&&!e.repeat){e.preventDefault();editorEl(e.shiftKey?'editRedo':'editUndo').click();return;}if(layerState.active&&(e.ctrlKey||e.metaKey)&&k==='y'&&!e.repeat){e.preventDefault();editorEl('editRedo').click();return;}if(layerState.active&&k==='escape'&&!e.repeat){e.preventDefault();toggleLayerEditor(false);return;}if(layerState.active&&!layerState.preview){if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q',' '].includes(k))e.preventDefault();return;}if(e.ctrlKey||e.metaKey||e.altKey)return;if(!e.repeat&&['=','+','-','_','0'].includes(k)&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){
  e.preventDefault();setCameraZoom(k==='0'?1:cam.targetZoom+((k==='+'||k==='=')?ZOOM_STEP:-ZOOM_STEP));return;}
- if(k==='c'&&!e.repeat){if(developerConsole){developerConsole.open('collision');return;}collisionDebug=!collisionDebug;return;}if(k==='l'&&!e.repeat){depthDebug=!depthDebug;return;}if(k==='f'&&!e.repeat){foregroundEnabled=!foregroundEnabled;return;}if(k==='x'&&collisionDebug&&!e.repeat){exportCollision();return;}if(k==='r'&&e.shiftKey&&collisionDebug&&!e.repeat){localStorage.removeItem('codaCollisionEditsV891');window.location.reload();return;}if(k===' '||e.code==='Space'){if(e.target?.closest?.('button,a,[role=button],summary'))return;e.preventDefault();if(!e.repeat&&!keys.has(' ')){keys.add(' ');startJump();}c.focus({preventScroll:true});return;}if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k)){e.preventDefault();keys.add(k);c.focus({preventScroll:true});if(k==='e'&&!e.repeat)talk();if(k==='q'&&!e.repeat){emoteStarted=clock;emote=clock+2.4;avatar.emotesUsed=(avatar.emotesUsed||0)+1;}}});window.addEventListener('keyup',e=>keys.delete(e.code==='Space'?' ':e.key.toLowerCase()));window.addEventListener('blur',clearHeldKeys);document.addEventListener('visibilitychange',()=>{if(document.hidden)clearHeldKeys();});c.addEventListener('pointerdown',e=>{if(dialog.style.display==='block')return;if(gameOpen||!document.querySelector('#panel').hidden||!document.querySelector('#pianoroom').hidden)return;const b=c.getBoundingClientRect();
+ if(k==='c'&&!e.repeat){if(developerConsole){developerConsole.open('collision');return;}collisionDebug=!collisionDebug;return;}if(k==='l'&&!e.repeat){depthDebug=!depthDebug;return;}if(k==='f'&&!e.repeat){foregroundEnabled=!foregroundEnabled;return;}if(k==='x'&&collisionDebug&&!e.repeat){exportCollision();return;}if(k==='r'&&e.shiftKey&&collisionDebug&&!e.repeat){localStorage.removeItem('codaCollisionEditsV891');window.location.reload();return;}if(k===' '||e.code==='Space'){if(e.target?.closest?.('button,a,[role=button],summary'))return;e.preventDefault();if(!e.repeat&&!keys.has(' ')){keys.add(' ');startJump();}c.focus({preventScroll:true});return;}if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e','q'].includes(k)){e.preventDefault();keys.add(k);c.focus({preventScroll:true});if(k==='e'&&!e.repeat)talk();if(k==='q'&&!e.repeat){emoteStarted=clock;emote=clock+2.4;avatar.emotesUsed=(avatar.emotesUsed||0)+1;}}});window.addEventListener('keyup',e=>keys.delete(e.code==='Space'?' ':e.key.toLowerCase()));window.addEventListener('blur',clearHeldKeys);document.addEventListener('visibilitychange',()=>{if(document.hidden)clearHeldKeys();});c.addEventListener('pointerdown',e=>{if(dialog.style.display==='block')return;if(gameOpen||!document.querySelector('#panel').hidden||learningRoomOpen())return;const b=c.getBoundingClientRect();
  if(developerConsole?.pointerDown(e))return;
  if((!developerConsole||developerConsole.isEditing())&&assetPointerStart(e))return;
  if(editorPointerDown(e))return;
@@ -1842,9 +1831,25 @@ function msg(s){const el=panelBody.querySelector('.panelMsg');if(el)el.textConte
 function openPanel(title){if(assetStudio.active)toggleAssetStudio(false);musicianUI?.closeConversation();walking=false;keys.clear();dest=null;dialog.style.display='none';panelTitle.textContent=title;panel.hidden=false;panelBody.classList.remove('boutique-panel');panelBody.replaceChildren();panel.scrollTop=0;}
 function closePanel(){panel.hidden=true;keys.clear();c.focus()}
 document.querySelector('#panelClose').onclick=closePanel;
+panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-labelledby','panelTitle');
+panel.addEventListener('keydown',event=>{
+ if(event.key==='Escape'){event.preventDefault();closePanel();return;}
+ if(event.key!=='Tab')return;
+ const controls=Array.from(panel.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),a[href],[tabindex="0"]')).filter(node=>node.getClientRects().length);
+ if(!controls.length)return;const first=controls[0],last=controls[controls.length-1];
+ if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+ else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+});
 function addAction(text,callback){const b=document.createElement('button');b.textContent=text;b.onclick=callback;panelBody.append(b);return b}
 function refreshAvatar(){try{avatar={...avatar,...window.CodaAvatarDefaults.migrate(JSON.parse(localStorage.getItem('musicArcadeV1')||'{}'))}}catch{}}
 const rewards={bowtie:a=>a.customized,starclip:a=>(a.jumps||0)>=10,partyglasses:a=>(a.emotesUsed||0)>=5,halo:a=>(a.walked||0)>=450};
+const recordedAvatarAchievements=new Set();
+function recordAvatarAchievements(){
+ if(!progression)return;
+ for(const [id,earned]of Object.entries(rewards))if(!recordedAvatarAchievements.has(id)&&earned(avatar)){
+  const result=progression.recordAchievement(id);if(result.ok)recordedAvatarAchievements.add(id);
+ }
+}
 const NPC_LOOKS_KEY='codaNPCOutfitsV1';
 let npcLooks={};
 function loadNPCLooks(){
@@ -1870,9 +1875,10 @@ function applyBoutiqueLook(id,look){
  }catch{msg('Browser storage is unavailable. Your draft is still here; saving has not completed.');return false;}
 }
 function openBoutique(){if(characterRenderer?.isReady())boutiqueUI.open();}
+function openNotesShop(){if(characterRenderer?.isReady())notesShop?.open();}
 function openAccount(){openPanel('Arcade Passport');const p=document.createElement('p');p.textContent=cloudUser?(profileReady?'Signed in. Your avatar is linked to your existing profile.':'Signed in; profile is loading. Please wait before editing your avatar.'):'Play as a guest, or sign in to sync your avatar and achievements.';panelBody.append(p);const status=document.createElement('p');status.className='panelMsg';status.textContent=authMessage;panelBody.append(status);const b=addAction(cloudUser?'Sign out':'Continue with Google',async()=>{if(!firebaseApi||!cloudAuth)return msg('Google sign-in is still connecting.');try{if(cloudUser)await firebaseApi.signOut(cloudAuth);else await firebaseApi.signInWithPopup(cloudAuth,new firebaseApi.GoogleAuthProvider());closePanel()}catch(e){msg(e.code?.includes('popup-closed')?'Sign-in cancelled.':e.message||'Sign-in failed.')}});b.disabled=!firebaseApi||Boolean(cloudUser&&!profileReady)}
 async function syncProfile(){if(!cloudUser||!profileReady||!firebaseApi)return;try{await firebaseApi.set(firebaseApi.ref(cloudDb,'arcadeProfiles/'+cloudUser.uid),{profile:avatar,updatedAt:firebaseApi.serverTimestamp(),schemaVersion:1})}catch(e){authMessage='Could not save profile: '+e.message}}
-async function loadProfile(user){profileReady=false;try{const snap=await firebaseApi.get(firebaseApi.ref(cloudDb,'arcadeProfiles/'+user.uid));if(!cloudUser||cloudUser.uid!==user.uid)return;const remote=snap.val()?.profile;if(remote&&typeof remote==='object'){avatar={...avatar,...window.CodaAvatarDefaults.migrate(remote)};localStorage.setItem('musicArcadeV1',JSON.stringify(avatar))}profileReady=true;authMessage='Signed in · '+(remote?'Saved profile loaded':'New profile ready');if(!remote)await syncProfile()}catch(e){authMessage='Profile unavailable: '+e.message}}
+async function loadProfile(user){profileReady=false;try{const snap=await firebaseApi.get(firebaseApi.ref(cloudDb,'arcadeProfiles/'+user.uid));if(!cloudUser||cloudUser.uid!==user.uid)return;const remote=snap.val()?.profile;if(remote&&typeof remote==='object'){avatar={...avatar,...window.CodaAvatarDefaults.migrate(remote)};localStorage.setItem('musicArcadeV1',JSON.stringify(avatar));notesWallet?.preserveEquipped(avatar)}profileReady=true;authMessage='Signed in · '+(remote?'Saved profile loaded':'New profile ready');if(!remote)await syncProfile()}catch(e){authMessage='Profile unavailable: '+e.message}}
 async function initCloud(){if(!config?.enabled||!config?.firebase){authMessage='Firebase account settings unavailable.';return}try{const [app,auth,database]=await Promise.all([import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'),import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js'),import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js')]);firebaseApi={...auth,...database};const instance=app.initializeApp(config.firebase,'arcade-connected-preview');cloudAuth=auth.getAuth(instance);cloudDb=database.getDatabase(instance);await auth.setPersistence(cloudAuth,auth.browserLocalPersistence);auth.onAuthStateChanged(cloudAuth,async user=>{cloudUser=user;profileReady=false;document.querySelector('#accountBtn').textContent=user?'◉ Account':'◉ Guest';authMessage=user?'Loading your arcade profile…':'Guest mode';if(user)await loadProfile(user)})}catch(e){authMessage='Cloud connection failed: '+e.message}}
 function stopSong(){
  songSerial++;clearTimeout(songFinishTimer);songFinishTimer=null;
@@ -1897,6 +1903,7 @@ async function playSong(song,details={}){
   const output=ctx.createGain();output.gain.value=.7;output.connect(ctx.destination);
   function note(p,t,d,sound,volume){
    if(volume<=0)return;
+   if(window.CodaSongSounds?.scheduleTone(ctx,p,t,d,sound,volume,output,voices))return;
    const o=ctx.createOscillator(),gain=ctx.createGain();
    o.type=['square','triangle','triangle','sine','sawtooth','sawtooth','sine','triangle','square','sawtooth'][sound]||'triangle';
    o.frequency.value=440*2**((p-69)/12)*(sound===3?2:1);
@@ -1977,20 +1984,48 @@ worldLighting=window.createCodaWorldLighting({
    visible:object.visible,rays:asset?.discoRays!==false,opacity:object.opacity,matrix:object.matrix,animate:!asset||assetStudio.animate};
  })
 });
+danceFloor=window.createCodaDanceFloor({getPlayer:()=>({...player,jumpHeight}),getTime:()=>clock,reducedMotion:()=>reduceMotion,getQuality:()=>fxMode});
 npcBrain=window.createCodaNPCBehavior({npcs:npc,inside,route:pathTo,getGames:runtimeGames,getPlayer:()=>player});
 musicianUI=window.createCodaMusicianUI({
  npcs:npc,getBrain:()=>npcBrain,renderer:characterRenderer,canvas:c,panelBody,
- openPanel,closePanel,openWardrobe:openBoutique,
+ openPanel,closePanel,openWardrobe:openBoutique,openMissions:id=>missions?.open(npc.find(person=>person.id===id)||id),
  clearInput:()=>{keys.clear();dest=null;clickPath=[];walking=false;},
  distance:person=>Math.hypot(person.x-player.x,person.y-player.y),
  faceTo:person=>{const dx=person.x-player.x,dy=person.y-player.y;facing=Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'down':'up';},
  walkTo:person=>{followedMusician=person.id;followTimer=.65;dest={x:person.x,y:person.y};clickPath=pathTo(player.x,player.y,person.x,person.y);if(!clickPath.length){dest=null;status.textContent='No walking route to '+person.name+'. Open Collision to inspect the path.';}c.focus();}
 });
+notesWallet=window.CodaNotesShop.createWallet({getAvatar:()=>avatar,catalog:characterRenderer.catalog});
+progression=window.CodaPlayerProgression.create({panelBody,openPanel});
+// Reconcile earned quests after a partial browser write failure; XP IDs dedupe.
+for(const reason of notesWallet.snapshot().rewards){if(reason.startsWith('npc-mission:'))progression.recordQuest(reason.slice('npc-mission:'.length));else if(reason.startsWith('piano-lesson:')||reason.startsWith('piano-interval:'))progression.recordQuest(reason);}
+hallFame=window.CodaHallOfFame.create({panelBody,openPanel,getAvatar:()=>avatar,getNotes:()=>notesWallet.snapshot()});
+const updateMusicianLevel=value=>{
+ const button=document.querySelector('#levelBtn');button.textContent='Level '+value.level+' · '+value.xp+' XP';
+ button.setAttribute('aria-label','Level '+value.level+', '+value.xp+' experience points · View level rewards');
+ button.title=value.nextLevelXP===null?'All current level rewards unlocked':(value.nextLevelXP-value.xp)+' XP until level '+(value.level+1);
+ notesShop?.refresh();
+};
+progression.subscribe(updateMusicianLevel);updateMusicianLevel(progression.getState());
+document.querySelector('#levelBtn').onclick=()=>progression.open();document.querySelector('#hallFameBtn').onclick=()=>hallFame.open();
+notesShop=window.CodaNotesShop.createShopUI({unlocked:id=>progression.unlocked(id),wallet:notesWallet,renderer:characterRenderer,panelBody,openPanel,openWardrobe:openBoutique,getAvatar:()=>avatar,applyAvatar:look=>applyBoutiqueLook('player',look)});
+const updateNotesBalance=value=>{const button=document.querySelector('#notesBtn');button.textContent='♫ '+value.balance+' Notes';button.setAttribute('aria-label',value.balance+' Notes · Open accessory shop');};
+notesWallet.subscribe(updateNotesBalance);updateNotesBalance(notesWallet.snapshot());
+document.querySelector('#notesBtn').onclick=openNotesShop;
+missions=window.CodaMusicianMissions.create({wallet:notesWallet,frame:gameiframe,panelBody,openPanel,
+ openGame:key=>{const index={pitch:0,triad:1,rhythm:2}[key];const game=runtimeGames().find(game=>game.index===index);if(game){closePanel();openCabinet(game);}},
+ onVerifiedResult:(game,id,result)=>{progression.recordGameEvent(game,id,result);hallFame.record(game,id,result);const bonus=window.CodaNotesShop.gameReward(game,result);if(bonus)notesWallet.grantReward('game:'+game+':'+id,bonus);},
+ onMissionRewarded:mission=>progression.recordQuest(mission.id)
+});
+pianoLab=window.createCodaPianoLab({host:document.querySelector('#pianoroom'),backgroundUrl:'assets/world/piano-lab-room.png?v=rooms-27',renderer:characterRenderer,getAvatar:()=>avatar,onClose:()=>{keys.clear();walking=false;c.focus();},onReward:(reason,amount)=>{const result=notesWallet.grantReward(reason,amount);if(result.ok)progression.recordQuest(reason);return result;}});
+musicClassroom=window.createCodaMusicClassroom({host:document.querySelector('#musicClassroom'),backgroundSrc:'assets/world/music-classroom-room.png?v=rooms-27',renderer:characterRenderer,getAvatar:()=>avatar,onClose:()=>{keys.clear();walking=false;c.focus();}});
+document.querySelector('#pianoLabBtn').onclick=openPiano;document.querySelector('#classroomBtn').onclick=openClassroom;
 boutiqueUI=window.createCodaBoutiqueUI({
  renderer:characterRenderer,panelBody,openPanel,closePanel,getPreviewUI:()=>musicianUI,
  getTargets:()=>[{id:'player',label:'Your avatar'},...npc.map(person=>({id:person.id,label:person.name})),{id:'dj',label:'DJ Coda'}],
  getProfile:id=>id==='player'?avatar:{...characterRenderer.appearanceFor(id),...(id==='dj'?npcLooks.dj:npc.find(person=>person.id===id)?.appearance),name:id==='dj'?'DJ Coda':npc.find(person=>person.id===id)?.name},
- applyProfile:applyBoutiqueLook,unlocked:id=>!rewards[id]||!!rewards[id](avatar)
+ applyProfile:applyBoutiqueLook,openShop:openNotesShop,
+ lockedReason:id=>{const level=window.CodaPlayerProgression.COSMETICS.find(item=>item.id===id)?.level;return notesWallet.isStock(id)?'Buy with Notes'+(level?' or reach level '+level:''): 'Unlock the achievement'+(level?' or reach level '+level:'');},
+ unlocked:id=>progression.unlocked(id)||notesWallet.owns(id)||(!notesWallet.isStock(id)&&(!rewards[id]||!!rewards[id](avatar)))
 });
 for(const id of ['avatarBtn','musiciansBtn'])document.getElementById(id).disabled=true;
 characterRenderer.ready.then(()=>{
@@ -1998,7 +2033,7 @@ characterRenderer.ready.then(()=>{
 }).catch(error=>{status.textContent='Character renderer unavailable. Reload to retry.';console.error('Character sprite loading failed:',error);});
 developerConsole=window.createCodaDeveloperConsole({
  W,H,c,studio:assetStudio,layer:layerState,parts:foregroundParts,catalog:window.CodaWorldObjectCatalog,worldArt,foregroundArt,
- publishedProjectUrl:'published-world-project.json?v=nightlife-26',
+ publishedProjectUrl:'published-world-project.json?v=rooms-27',
  cell:COLLISION_CELL,gridWidth:GRID_W,gridHeight:GRID_H,navGrid,baseGrid:defaultNavGrid,
  legacyCollision:[...edits].filter(([i,v])=>Number.isInteger(i)&&i>=0&&i<navGrid.length&&(v===0||v===1)),
  panByScreen:(dx,dy)=>{zoomAnchor=null;const b=c.getBoundingClientRect();cam.x=Math.max(0,Math.min(W-W/cam.zoom,cam.x+dx*W/b.width/cam.zoom));cam.y=Math.max(0,Math.min(H-H/cam.zoom,cam.y+dy*H/b.height/cam.zoom));},

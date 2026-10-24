@@ -117,6 +117,25 @@ test('the expanded collection has real drawings in every direction and preserves
   assert.notEqual(signature(draw(r,{headwear:'cap',headwearColor:'#154875'})),signature(draw(r,{headwear:'cap',headwearColor:'#e95486'})));
 });
 
+test('the new Notes-shop props add distinct visible pixel drawings in every facing',()=>{
+  const {value:r}=renderer({reducedMotion:()=>true});
+  const props=['umbrella','shield','sword','lantern','vinyl','camera','book','bouquet','balloon','skateboard','paintpalette','compass','telescope','trophy','handbag','magicorb','gamepad','keytar','flute','accordion'];
+  assert.ok(r.catalog.accessories.length>=48);
+  for(const facing of directions){
+    const plain=draw(r,{}, {facing}),plainSignature=signature(plain),seen=[];
+    for(const accessory of props){
+      const item=r.catalog.accessories.find(item=>item.id===accessory);assert.ok(item?.label,accessory+' must be a labeled choice');
+      assert.equal(r.normalizeProfile({accessory}).accessory,accessory);
+      const equipped=draw(r,{accessory},{facing});
+      assert.ok(rectangles(equipped).length>rectangles(plain).length,accessory+' must add painted pixels');
+      const next=signature(equipped);assert.notEqual(next,plainSignature,accessory+' / '+facing);seen.push(next);
+    }
+    assert.equal(new Set(seen).size,props.length,'Every prop must have its own drawing in '+facing);
+  }
+  for(const accessory of ['umbrella','balloon'])assert.ok(r.labelOffset({accessory})>=74,'Labels must clear '+accessory);
+  assert.equal(r.normalizeProfile({}).accessory,'none','New shop stock must never equip a guest automatically');
+});
+
 test('every selected emote changes the pose and remains stable with reduced motion',()=>{
   const {value:r}=renderer(),{value:quiet}=renderer({reducedMotion:()=>true});
   assert.ok(r.catalog.emotes.length>=16);

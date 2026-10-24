@@ -8,7 +8,7 @@ window.createCodaCharacterRenderer=function(api){
   const OUTFITS=['pants','shorts','dress','overalls','suit','coat','hoodie','tuxedo','waistcoat','gown','robe','leather','tracksuit','tutu','kimono'];
   const HEADWEAR=['none','cap','beanie','bucket','crown','headwrap','witch','wizard','cowboy','fedora','tophat','beret','pirate','astronaut','flowercrown','tiara','viking','cat','bunny','chef','santa','party','straw','sunvisor','boater','bowler'];
   const EYEWEAR=['none','glasses','sunglasses','partyglasses','round','cateye','aviator','heartglasses','starglasses','steampunk','cybervisor','monocle','3d','shutter','sport','rimless'];
-  const ACCESSORIES=['none','bow','headphones','bowtie','starclip','halo','earrings','pixelheadphones','trumpet','microphone','scarf','cape','wings','necklace','pearls','flower','satchel','backpack','guitar','violin','saxophone','wand','fan','watchchain','score','boombox','coffee','teddy'];
+  const ACCESSORIES=['none','bow','headphones','bowtie','starclip','halo','earrings','pixelheadphones','trumpet','microphone','scarf','cape','wings','necklace','pearls','flower','satchel','backpack','guitar','violin','saxophone','wand','fan','watchchain','score','boombox','coffee','teddy','umbrella','shield','sword','lantern','vinyl','camera','book','bouquet','balloon','skateboard','paintpalette','compass','telescope','trophy','handbag','magicorb','gamepad','keytar','flute','accordion'];
   const SHOES=['sneakers','boots','hightops','neon','gold','loafers','heels','platforms','rollerskates','iceskates','clown','slippers','barefoot','sandals','ballet','chelsea','oxfords','combat'];
   const EMOTES=['wave','dance','spin','robot','disco','bow','cheer','clap','shrug','heart','peace','airguitar','moonwalk','breakdance','curtsy','salute','facepalm','think'];
   const DEFAULTS=Object.freeze({name:'Guest',skin:'#e5ad75',hair:'#171424',shirt:'#999ca6',lowerColor:'#626875',hairstyle:'bald',outfit:'pants',headwear:'none',eyewear:'none',accessory:'none',shoes:'sneakers',emote:'wave',headwearColor:'#db687f',eyewearColor:'#30374b'});
@@ -47,6 +47,7 @@ window.createCodaCharacterRenderer=function(api){
   function appearanceFor(id){const key=String(id||'').toLowerCase();return appearances[aliases[key]||key]||fallback;}
   const labels={none:'None',short:'Short',bob:'Bob',long:'Long',curly:'Curly',ponytail:'Ponytail',spiky:'Spiky',bald:'No hair',buns:'Space buns',pants:'Shirt and pants',shorts:'Shirt and shorts',dress:'Dress',overalls:'Overalls',suit:'Suit',coat:'Long coat',cap:'Baseball cap',beanie:'Beanie',bucket:'Bucket hat',crown:'Crown',headwrap:'Headwrap',glasses:'Everyday glasses',sunglasses:'Sunglasses',partyglasses:'Party glasses',bow:'Bow',headphones:'Headphones',bowtie:'Bow tie',starclip:'Neon star clip',halo:'Neon halo',earrings:'Earrings',pixelheadphones:'Pixel headphones',trumpet:'Trumpet',microphone:'Microphone',sneakers:'Sneakers',boots:'Boots',hightops:'High tops',neon:'Neon trainers',gold:'Gold shoes',wave:'Wave',dance:'Dance',spin:'Spin',robot:'Robot',disco:'Disco point'};
   Object.assign(labels,{pixie:'Pixie cut',undercut:'Undercut',braids:'Braids',locs:'Locs',afro:'Afro',slick:'Side part',pompadour:'Pompadour',mohawk:'Mohawk',powderwig:'Powdered wig',hoodie:'Oversized hoodie',tuxedo:'Tuxedo',waistcoat:'Waistcoat',gown:'Evening gown',robe:'Fantasy robe',leather:'Leather jacket',tracksuit:'Tracksuit',tutu:'Ballet tutu',kimono:'Wrap robe',witch:'Crooked witch hat',wizard:'Starry wizard hat',cowboy:'Cowboy hat',fedora:'Fedora',tophat:'Top hat',beret:'Beret',pirate:'Pirate tricorn',astronaut:'Space helmet',flowercrown:'Flower crown',tiara:'Tiara',viking:'Horned helmet',cat:'Cat ears',bunny:'Bunny ears',chef:'Chef hat',santa:'Santa hat',party:'Party cone',straw:'Wide straw hat',sunvisor:'Sun visor',boater:'Boater',bowler:'Bowler',round:'Round spectacles',cateye:'Cat-eye frames',aviator:'Aviators',heartglasses:'Heart glasses',starglasses:'Star glasses',steampunk:'Clockwork goggles',cybervisor:'Cyber visor',monocle:'Monocle','3d':'3D glasses',shutter:'Shutter shades',sport:'Sport goggles',rimless:'Rimless glasses',scarf:'Long scarf',cape:'Hero cape',wings:'Angel wings',necklace:'Pendant necklace',pearls:'Pearl necklace',flower:'Buttonhole flower',satchel:'Crossbody satchel',backpack:'Backpack',guitar:'Electric guitar',violin:'Violin',saxophone:'Saxophone',wand:'Magic wand',fan:'Folding fan',watchchain:'Pocket watch chain',score:'Music manuscript',boombox:'Boombox',coffee:'Coffee cup',teddy:'Teddy bear',loafers:'Penny loafers',heels:'Evening heels',platforms:'Platform boots',rollerskates:'Roller skates',iceskates:'Ice skates',clown:'Clown shoes',slippers:'Bunny slippers',barefoot:'Bare feet',sandals:'Strappy sandals',ballet:'Ballet slippers',chelsea:'Chelsea boots',oxfords:'Two-tone Oxfords',combat:'Laced combat boots',cheer:'Big cheer',clap:'Applause',shrug:'Shrug',heart:'Make a heart',peace:'Peace sign',airguitar:'Air guitar',moonwalk:'Moonwalk',breakdance:'Breakdance',curtsy:'Curtsy',salute:'Salute',facepalm:'Facepalm',think:'Thinking'});
+  Object.assign(labels,{umbrella:'City umbrella',shield:'Starlight shield',sword:'Toy hero sword',lantern:'Little lantern',vinyl:'Vinyl record',camera:'Instant camera',book:'Spellbook',bouquet:'Flower bouquet',balloon:'Star balloon',skateboard:'Skateboard',paintpalette:'Artist palette',compass:'Explorer compass',telescope:'Pocket telescope',trophy:'Golden trophy',handbag:'Chic handbag',magicorb:'Crystal orb',gamepad:'Game controller',keytar:'Neon keytar',flute:'Silver flute',accordion:'Mini accordion'});
   // The accessory bow and the bow emote share an id; each remains a separate
   // equipment slot, with contextual labels in the catalog.
   const choices=ids=>Object.freeze(ids.map(id=>Object.freeze({id,label:labels[id]})));
@@ -267,6 +268,74 @@ window.createCodaCharacterRenderer=function(api){
     if(a==='boombox'){r(7,-15,22,15,'#5a5a83');r(10,-19,16,4,'#343451');r(9,-11,6,7,'#242b45');r(21,-11,6,7,'#242b45');r(11,-9,2,3,'#8acbd1');r(23,-9,2,3,'#e0a0cc');r(16,-11,4,2,'#e6ce81');r(16,-6,3,3,'#26364c');}
     if(a==='coffee'){r(12,-16,8,11,'#efe3ce');r(20,-14,3,6,'#e8d4bd');r(13,-17,6,2,'#875b4d');r(14,-23,2,4,'#c2d8df');r(17,-26,1,5,'#c2d8df');r(13,-9,6,2,'#ca799b');}
     if(a==='teddy'){r(10,-18,11,14,'#bc8a66');r(9,-25,13,10,'#d0a27b');r(8,-27,4,5,'#a6795c');r(19,-27,4,5,'#a6795c');r(8,-7,5,6,'#a6795c');r(18,-7,5,6,'#a6795c');r(11,-22,2,2,'#302b40');r(18,-22,2,2,'#302b40');r(14,-18,3,2,'#70494a');}
+    // Small carried props stay on the same hand anchor in all facings. The
+    // renderer mirrors side poses as a unit, including the prop and its grip.
+    const handX=side?11:13,handY=-12-swing;
+    if(a==='umbrella'){
+      r(17,-58,2,49,'#bda3b6');r(13,-10,6,3,'#d5bbca');r(12,-13,3,4,'#bda3b6');
+      for(let tier=0;tier<5;tier++)r(-5-tier*4,-61+tier*3,10+tier*8,4,tier%2?'#d176ac':'#b55591');
+      r(-23,-47,48,3,'#6e3d78');for(const xx of [-20,-8,4,16])r(xx,-46,8,3,'#e4a4cd');r(-1,-65,3,5,'#e5c68a');r(16,-13,4,4,c.skin);
+    }
+    if(a==='shield'){
+      const x=handX-3;r(x,-23,18,15,'#e8c36c');r(x+2,-25,14,19,'#dcb165');r(x+4,-23,10,17,'#527eac');r(x+6,-7,6,5,'#e8c36c');r(x+8,-4,2,3,'#dcb165');
+      pixelStar(r,x+9,-16,1,'#a5e5df');if(back){r(x+7,-21,3,13,'#b68f5b');r(x+5,-15,7,3,'#f0d99e');}
+    }
+    if(a==='sword'){
+      r(handX+7,-44,3,27,'#becddd');r(handX+8,-48,2,7,'#e9f2ed');r(handX+5,-39,2,22,'#8297b4');r(handX+2,-18,13,3,'#cfaa66');r(handX+7,-15,3,12,'#7b5576');r(handX+6,-4,5,3,'#ebca7e');r(handX+7,-12,4,4,c.skin);
+    }
+    if(a==='lantern'){
+      const x=handX+1,y=handY-7;r(x+3,y-6,8,2,'#c99c63');r(x+1,y-5,2,6,'#c99c63');r(x+10,y-5,2,6,'#c99c63');r(x,y,14,3,'#72546b');r(x+1,y+3,12,13,'#a37651');r(x+3,y+3,8,12,'#ffd883');r(x+5,y+5,4,8,'#fff0be');r(x+1,y+15,12,3,'#74536b');r(x+6,y+2,2,13,'#ba8d5a');
+    }
+    if(a==='vinyl'){
+      const x=handX-1,y=handY-12;r(x+3,y,12,2,'#25293f');r(x,y+3,18,12,'#25293f');r(x+3,y+16,12,2,'#25293f');r(x+2,y+4,14,10,'#41425d');r(x+5,y+2,8,14,'#34374f');r(x+6,y+6,6,6,'#d77da5');r(x+8,y+8,2,2,'#f5d69a');r(x+2,y+5,2,5,'#8b8ca6');r(x+3,y+12,4,1,'#868299');
+    }
+    if(a==='camera'){
+      const x=side?6:3;r(x,-23,23,15,'#dbc7c6');r(x+1,-24,8,3,'#8b6b82');r(x+2,-21,5,4,'#bbddda');r(x+10,-22,11,11,'#343b54');r(x+12,-20,7,7,'#7596aa');r(x+14,-18,3,3,'#d1efeb');r(x+1,-9,21,5,'#93768d');r(x+5,-4,12,7,'#f5e6d1');r(x+7,-3,8,4,'#759f9c');
+    }
+    if(a==='book'){
+      const x=handX-3;r(x,-25,16,22,'#553f71');r(x+2,-24,13,19,'#8262a0');r(x+1,-25,3,22,'#3f355d');r(x+4,-24,10,2,'#d1ae6a');r(x+4,-5,10,2,'#d1ae6a');pixelStar(r,x+10,-15,1,'#efd58f');r(x+13,-17,4,4,'#d9b473');if(back)r(x+6,-21,1,14,'#ac87be');
+    }
+    if(a==='bouquet'){
+      const x=handX+3;r(x-1,-18,3,14,'#698b65');r(x-6,-18,5,3,'#8ab47f');r(x+2,-20,5,3,'#8ab47f');
+      for(const [xx,yy,color] of [[-6,-25,'#c9649b'],[0,-29,'#e697b4'],[6,-24,'#d5aa62'],[-1,-20,'#c5a5d2']]){r(x+xx-3,yy,7,6,color);r(x+xx-1,yy+2,3,2,'#f7dfb0');}
+      for(let tier=0;tier<4;tier++)r(x-6+tier,-15+tier*3,13-tier*2,4,'#ddd7cb');r(x-4,-5,8,3,'#c37499');
+    }
+    if(a==='balloon'){
+      const x=side?15:19;r(x,-45,1,33,'#bda3b9');r(x-1,-13,4,4,c.skin);pixelStar(r,x,-56,3,'#d47bb6');pixelStar(r,x-1,-57,2,'#e9a3cc');r(x+2,-60,2,2,'#ffe4df');r(x-2,-46,4,3,'#9d5c9b');
+    }
+    if(a==='skateboard'){
+      const x=handX+1;r(x+3,-29,8,3,'#b6917a');r(x+1,-27,12,29,'#d6b18b');r(x+3,2,8,3,'#b6917a');r(x+3,-25,8,25,'#5a8298');r(x+5,-20,4,12,'#a1d9cb');r(x+4,-21,6,3,'#da94b6');r(x-1,-24,3,5,'#c3c8cb');r(x+12,-24,3,5,'#c3c8cb');r(x-1,-4,3,5,'#c3c8cb');r(x+12,-4,3,5,'#c3c8cb');
+    }
+    if(a==='paintpalette'){
+      const x=handX-2;r(x+3,-22,13,2,'#c6a072');r(x,-20,18,13,'#d6b486');r(x+2,-7,12,3,'#c6a072');r(x+11,-10,6,4,'#6e5b5b');for(const [xx,yy,col] of [[3,-18,'#d7718d'],[9,-19,'#82b6b2'],[13,-16,'#e7c66e'],[4,-11,'#9e83ba']])r(x+xx,yy,3,3,col);r(x+17,-30,2,26,'#96735d');r(x+16,-33,4,7,'#b6d2cb');
+    }
+    if(a==='compass'){
+      const x=handX+1;r(x+2,-20,10,3,'#dfbb75');r(x,-17,14,10,'#dfbb75');r(x+3,-7,8,3,'#b68d59');r(x+2,-16,10,9,'#dce1ca');r(x+6,-18,2,12,'#9a85a2');r(x+2,-13,10,2,'#9a85a2');r(x+6,-17,3,5,'#d16e85');r(x+5,-12,3,4,'#54758d');r(x+5,-23,4,3,'#f0d48f');
+    }
+    if(a==='telescope'){
+      const x=handX-2;r(x,-18,7,8,'#ba915f');r(x+5,-21,10,10,'#dab579');r(x+13,-24,8,14,'#ac8259');r(x+16,-23,6,12,'#d8c38f');r(x+18,-22,3,10,'#426779');r(x+19,-20,2,4,'#97d4d5');r(x+7,-21,2,10,'#f0d5a1');r(x+3,-13,4,5,c.skin);
+    }
+    if(a==='trophy'){
+      const x=handX+1;r(x+2,-27,12,3,'#ebc575');r(x+3,-24,10,10,'#d6a454');r(x+6,-14,4,8,'#d6a454');r(x+2,-6,12,3,'#b28450');r(x,-3,16,4,'#65516a');r(x-2,-24,4,9,'#e8c27b');r(x+13,-24,4,9,'#e8c27b');r(x,-16,5,3,'#e8c27b');r(x+11,-16,5,3,'#e8c27b');r(x+5,-23,3,6,'#f7dda2');r(x+4,-1,7,1,'#e1c484');
+    }
+    if(a==='handbag'){
+      const x=handX-1,y=handY+1;r(x+3,y-7,10,2,'#bb9877');r(x+1,y-5,2,7,'#bb9877');r(x+12,y-5,2,7,'#bb9877');r(x,y,16,13,'#ab6487');r(x+2,y+2,12,10,'#c17a98');r(x+1,y+1,14,4,'#d795ad');r(x+7,y+4,3,4,'#e8c47b');r(x+1,y+11,14,2,'#744d71');
+    }
+    if(a==='magicorb'){
+      const x=handX+4;r(x-5,-25,10,2,'#b3c2df');r(x-7,-23,14,9,'#9298ce');r(x-5,-14,10,3,'#767eb8');r(x-4,-22,9,7,'#b7d8e4');r(x-2,-23,3,3,'#e0f5ea');r(x+2,-18,3,3,'#cf9acb');r(x-7,-11,14,3,'#ba986d');r(x-5,-8,10,3,'#78627f');r(x-9,-5,18,3,'#ac8c64');
+    }
+    if(a==='gamepad'){
+      const x=side?6:0;r(x+2,-19,21,9,'#a99bbd');r(x,-16,7,9,'#8b80a5');r(x+18,-16,7,9,'#8b80a5');r(x+4,-17,3,7,'#38384f');r(x+2,-15,7,3,'#38384f');r(x+17,-17,3,3,'#80c5bc');r(x+21,-14,2,3,'#da91b3');r(x+11,-15,4,2,'#d2c0d3');r(x+8,-10,3,3,'#6b6589');r(x+15,-10,3,3,'#6b6589');
+    }
+    if(a==='keytar'){
+      const x=side?2:-1;r(x,-21,22,12,'#bb6199');r(x+20,-28,5,18,'#d879ad');r(x+22,-31,6,5,'#c98fbc');r(x+2,-19,17,7,'#eee2d9');for(let i=0;i<7;i++)r(x+3+i*2,-18,1,i%3?3:5,'#38354e');r(x+3,-10,16,2,'#77d6cb');r(x+21,-25,2,8,'#6c4c7d');
+    }
+    if(a==='flute'){
+      const x=side?6:1;r(x,-23,29,3,'#aec0d3');r(x+2,-24,25,1,'#e6eae3');r(x+28,-24,3,5,'#859bb4');for(const xx of [7,11,15,19,23])r(x+xx,-24,2,2,'#65839e');r(x+6,-20,4,4,c.skin);r(x+19,-20,4,4,c.skin);
+    }
+    if(a==='accordion'){
+      const x=side?1:-10;r(x,-23,28,17,'#523e62');r(x+1,-22,7,15,'#b87088');r(x+21,-22,6,15,'#b87088');for(let j=0;j<6;j++)r(x+9+j*2,-22,1,15,j%2?'#d4a4ab':'#b2859e');r(x+2,-21,4,12,'#e6dbd3');for(let j=0;j<4;j++)r(x+2,-19+j*3,2,1,'#453a50');for(const yy of [-20,-16,-12])r(x+23,yy,2,2,'#e8c985');
+    }
 
   }
   function drawShoe(r,x,y,kind,c){
@@ -413,7 +482,8 @@ window.createCodaCharacterRenderer=function(api){
     const base=id?appearanceFor(id):{},p={...base,...normalizeProfile({...base,...raw})};
     const hats={witch:66,wizard:66,tophat:62,bunny:66,chef:61,party:65,santa:61,viking:58,astronaut:56,cat:56,crown:54,headwrap:55};
     const hairTop=p.hairstyle==='mohawk'?60:p.hairstyle==='spiky'||p.hairstyle==='afro'||p.hairstyle==='pompadour'?56:p.hairstyle==='bald'?44:52;
-    const top=Math.max(hairTop,p.headwear==='none'?0:hats[p.headwear]||53,p.accessory==='halo'?56:0,p.emote==='think'?59:0);
+    const gearTop={halo:56,umbrella:65,balloon:66}[p.accessory]||0;
+    const top=Math.max(hairTop,p.headwear==='none'?0:hats[p.headwear]||53,gearTop,p.emote==='think'?59:0);
     return Math.max(59,Math.ceil(top*finite(base.bodyScaleY,1))+9);
   }
   const getState=()=>({ready:true,mode:'javascript-characters',base:'bald-gray',motion:'javascript-animation',artStyle:'procedural-pixel',sourcePolicy:'javascript-drawn',layers:0,tintedFrames:0,paletteCount:palettes.size,cacheLimit,cell:[80,96],totalFrames:0});

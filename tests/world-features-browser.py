@@ -167,7 +167,15 @@ class WorldFeatureTests(unittest.TestCase):
             silhouettes.append(metrics[0]['image'])
         self.assertNotEqual(*silhouettes,'Witch and wizard hats need visibly different drawings')
         self.page.get_by_role('button',name='Save my look',exact=True).click()
-        self.assertTrue(self.page.locator('#panel').is_hidden(),'Fantasy wardrobe items must be guest-usable')
+        self.assertTrue(self.page.locator('#panel').is_visible(),'Unpurchased premium items remain previews')
+        self.assertIn('Notes',self.page.locator('.panelMsg').inner_text())
+        self.page.locator('#boutiqueOpenShop').click()
+        self.page.locator('[data-shop-item="wizard"] button').click()
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),60)
+        self.page.get_by_role('button',name='Open my wardrobe',exact=True).click()
+        self.page.get_by_label('Hats',exact=True).select_option(ids[-1])
+        self.page.get_by_role('button',name='Save my look',exact=True).click()
+        self.assertTrue(self.page.locator('#panel').is_hidden(),'Purchased fantasy items must be guest-usable')
         self.assertEqual(self.page.evaluate('CodaArcadeQA.characters().player.appearance.headwear'),ids[-1])
         self.load()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.characters().player.appearance.headwear'),ids[-1])
@@ -216,7 +224,7 @@ class WorldFeatureTests(unittest.TestCase):
         self.page.locator('#assetVisible').uncheck();self.frames()
         self.assertFalse(self.page.evaluate('CodaArcadeQA.dj().visible'))
 
-    def test_lantern_cores_pulse_and_disco_pins_move_on_open_floor(self):
+    def test_lantern_cores_pulse_and_disco_pins_ignore_collision(self):
         self.quality('full')
         sample=self.page.evaluate('CodaArcadeQA.lighting()')
         self.assertGreater(sample['rayCount'],0)
@@ -239,7 +247,7 @@ class WorldFeatureTests(unittest.TestCase):
         self.assertGreater(len({tuple(x['pixel']) for x in witnesses}),2,
                            'The actual painted lantern core must pulse, beyond an invisible outer glow')
         self.assertGreater(len({str(x['spots']) for x in witnesses}),2)
-        self.assertTrue(all(x['closed']==0 for x in witnesses),'Disco pins should land on walkable floor')
+        self.assertTrue(any(x['closed']>0 for x in witnesses),'Reflected light must pass across blocked walking cells')
         self.assertLessEqual(max(x['textures'] for x in witnesses),16,'Glow textures must stay bounded')
         self.quality('lite');lite=self.page.evaluate('CodaArcadeQA.lighting()')
         self.assertLessEqual(lite['spotCount'],24)
