@@ -65,7 +65,7 @@
   function connected(a,b,beamY){const first=ink(a.member.note),second=ink(b.member.note);if(first===second){span(a.x,b.x,beamY,first);return;}const mid=(a.x+b.x)/2;span(a.x,mid,beamY,first);span(mid,b.x,beamY,second);}
   ctx.save();
   if(Number.isFinite(left)&&Number.isFinite(right)&&right>left){ctx.beginPath();ctx.rect(left,finite(options.top,0),right-left,finite(options.height,ctx.canvas?.height||4000));ctx.clip();}
-  for(const item of result.singles){const x=xFor(item.note,item.index);if(!visible(x))continue;notation.drawRhythm(ctx,{x,y,beats:item.note.duration,rest:item.note.rest,fontSize:size,color:ink(item.note),stem:'up'});drawnNotes++;}
+  for(const item of result.singles){const x=xFor(item.note,item.index);if(!visible(x))continue;notation.drawRhythm(ctx,{x,y,beats:item.note.notationBeats??item.note.duration,rest:item.note.rest,fontSize:size,color:ink(item.note),stem:'up'});drawnNotes++;}
   for(const group of result.groups){
    const positions=group.members.map(member=>({member,x:xFor(member.note,member.index)+stemCenter}));
    if(positions.some(point=>!Number.isFinite(point.x)))continue;

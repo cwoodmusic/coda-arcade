@@ -10,11 +10,11 @@
  });
  const meterFor=value=>{let id=typeof value==='string'?value:value?.id;if(['cut','cut-time','cuttime'].includes(id))id='2/2';return Object.prototype.hasOwnProperty.call(METERS,id)?METERS[id]:null;};
  const RARITIES=Object.freeze([
-  {id:'common',label:'Common',rank:0,weight:52,bpm:76,window:.19,hitGain:7,missLoss:12,extraLoss:8,description:'Quarter notes and pairs of eighth notes.'},
-  {id:'uncommon',label:'Uncommon',rank:1,weight:28,bpm:82,window:.18,hitGain:7,missLoss:12,extraLoss:8,description:'Eighth notes, longer notes, and rests.'},
-  {id:'rare',label:'Rare',rank:2,weight:13,bpm:88,window:.16,hitGain:6,missLoss:13,extraLoss:9,description:'Offbeat entrances and short sixteenth-note groups.'},
-  {id:'epic',label:'Epic',rank:3,weight:5,bpm:96,window:.145,hitGain:5,missLoss:14,extraLoss:9,description:'Dotted notes, syncopation, and sixteenths.'},
-  {id:'legendary',label:'Legendary',rank:4,weight:2,bpm:104,window:.13,hitGain:4,missLoss:15,extraLoss:10,description:'Quick sixteenths and dotted, offbeat phrases.'}
+  {id:'common',label:'Common',rank:0,weight:52,bpm:76,window:.19,hitGain:7,missLoss:12,extraLoss:8,description:'Quarter notes, eighth-note pairs, and clear rests.'},
+  {id:'uncommon',label:'Uncommon',rank:1,weight:28,bpm:82,window:.18,hitGain:7,missLoss:12,extraLoss:8,description:'Eighth notes, longer notes, and eighth through whole-bar rests.'},
+  {id:'rare',label:'Rare',rank:2,weight:13,bpm:88,window:.16,hitGain:6,missLoss:13,extraLoss:9,description:'Offbeat entrances, held syncopations, and short sixteenth-note groups.'},
+  {id:'epic',label:'Epic',rank:3,weight:5,bpm:96,window:.145,hitGain:5,missLoss:14,extraLoss:9,description:'Dotted notes, rests, sixteenths, and notes held across the beat.'},
+  {id:'legendary',label:'Legendary',rank:4,weight:2,bpm:104,window:.13,hitGain:4,missLoss:15,extraLoss:10,description:'Quick sixteenths, offbeat rests, and dotted syncopated phrases.'}
  ].map(Object.freeze));
  const SPECIES=[
   ['silver-minnow','Silver Minnow','common','#a7c8de','#eef9ff','slender',[5,12],4,8],
@@ -50,35 +50,40 @@
  ];
  const FISH=Object.freeze(SPECIES.map(([id,name,rarity,color,accent,shape,size,notes,xp],index)=>Object.freeze({
   id,name,rarity,rarityLabel:RARITIES.find(value=>value.id===rarity).label,rarityRank:RARITIES.find(value=>value.id===rarity).rank,
-  color,accent,shape,silhouette:shape,size:Object.freeze(size),notes,reward:notes,rewardNotes:notes,xp,patternIndex:index%6,meter:['4/4','6/8','2/2'][index%3],timeSignature:['4/4','6/8','2/2'][index%3]
+  color,accent,shape,silhouette:shape,size:Object.freeze(size),notes,reward:notes,rewardNotes:notes,xp,patternIndex:index%6,meter:['4/4','6/8','2/2'][index%3],timeSignature:['4/4','6/8','2/2'][index%3],
+  // Common/uncommon fish teach every meter. Some rarer species have one
+  // meter habitat; others inhabit two. The preferred meter remains valid.
+  meters:Object.freeze(['common','uncommon'].includes(rarity)?Object.keys(METERS):rarity==='legendary'||index%6<3?[['4/4','6/8','2/2'][index%3]]:[['4/4','6/8','2/2'][index%3],['4/4','6/8','2/2'][(index+1)%3]])
  })));
- const DURATIONS={h:2,q:1,e:.5,s:.25,dq:1.5,de:.75,rh:2,rq:1,re:.5,rs:.25,rdq:1.5};
- const GLYPHS={h:'noteHalfUp',q:'noteQuarterUp',e:'note8thUp',s:'note16thUp',dq:'noteQuarterUp',de:'note8thUp',rh:'restHalf',rq:'restQuarter',re:'rest8th',rs:'rest16th',rdq:'restQuarter'};
+ const DURATIONS={h:2,q:1,e:.5,s:.25,dq:1.5,de:.75,rh:2,rq:1,re:.5,rs:.25,rdq:1.5,rw:4};
+ const GLYPHS={h:'noteHalfUp',q:'noteQuarterUp',e:'note8thUp',s:'note16thUp',dq:'noteQuarterUp',de:'note8thUp',rh:'restHalf',rq:'restQuarter',re:'rest8th',rs:'rest16th',rdq:'restQuarter',rw:'restWhole'};
+ // Six phrases at every rarity and meter alternate notes with silence. A
+ // whole-bar rest is its own phrase, followed by a sounding phrase in rotation.
  const FOUR_FOUR={
-  common:[['q','q','q','q'],['q','e','e','q','q'],['q','q','e','e','e','e']],
-  uncommon:[['q','rq','e','e','q'],['e','re','q','e','e','q'],['h','e','e','rq']],
-  rare:[['q','s','s','e','q','q'],['re','e','e','e','q','e','e'],['e','rs','s','q','e','e','q']],
-  epic:[['dq','e','e','s','s','q'],['e','q','e','q','e','e'],['e','s','s','re','e','de','s','q']],
-  legendary:[['de','s','e','re','s','s','e','q'],['e','q','s','s','re','e','q'],['s','s','e','de','s','e','re','q']]
+  common:[['q','q','q','q'],['q','e','e','q','q'],['q','q','e','e','e','e'],['q','rq','q','q'],['h','rh'],['rw']],
+  uncommon:[['q','rq','e','e','q'],['e','re','q','e','e','q'],['h','e','e','rq'],['rh','e','e','q'],['rq','q','e','re','q'],['rw']],
+  rare:[['q','s','s','e','q','q'],['re','e','e','e','q','e','e'],['e','rs','s','q','e','e','q'],['e','q','e','rq','e','e'],['re','de','s','e','q','e','e'],['rh','re','s','s','e','e']],
+  epic:[['dq','e','e','s','s','q'],['e','q','e','q','e','e'],['e','s','s','re','e','de','s','q'],['re','de','s','de','s','q','e'],['rs','de','e','q','de','s','e'],['rh','s','s','de','s','e']],
+  legendary:[['de','s','e','re','s','s','e','q'],['e','q','s','s','re','e','q'],['s','s','e','de','s','e','re','q'],['rs','de','s','s','de','s','re','s','s','e'],['re','s','de','s','s','e','de','s','e'],['rh','e','de','s','e']]
  };
  const SIX_EIGHT={
-  common:[['dq','dq'],['q','e','q','e'],['dq','e','e','e']],
-  uncommon:[['q','e','re','e','e'],['rdq','q','e'],['e','e','e','q','e']],
-  rare:[['e','s','s','e','q','e'],['re','e','e','e','s','s','e'],['q','s','s','re','e','e']],
-  epic:[['de','s','e','e','q'],['e','q','de','s','e'],['e','s','s','e','re','e','e']],
-  legendary:[['de','s','e','e','s','s','e'],['re','s','s','e','de','s','e'],['s','s','e','de','s','e','e']]
+  common:[['dq','dq'],['q','e','q','e'],['dq','e','e','e'],['q','e','rdq'],['rq','e','dq'],['rw']],
+  uncommon:[['q','e','re','e','e'],['rdq','q','e'],['e','e','e','q','e'],['q','re','e','q'],['re','e','e','rdq'],['rw']],
+  rare:[['e','s','s','e','q','e'],['re','e','e','e','s','s','e'],['q','s','s','re','e','e'],['e','dq','e','e'],['re','e','q','e','e'],['q','q','e','e']],
+  epic:[['de','s','e','e','q'],['e','q','de','s','e'],['e','s','s','e','re','e','e'],['s','de','q','e','e'],['e','s','dq','s','e'],['rq','s','de','e','e']],
+  legendary:[['de','s','e','e','s','s','e'],['re','s','s','e','de','s','e'],['s','s','e','de','s','e','e'],['s','e','dq','s','e'],['re','s','q','s','de','s'],['s','de','de','s','e','e']]
  };
  const CUT_TIME={
-  common:[['h','h'],['h','q','q'],['q','q','h']],
-  uncommon:[['h','rq','q'],['q','e','e','h'],['rh','q','q']],
-  rare:[['q','s','s','e','h'],['re','e','q','q','q'],['q','e','e','re','e','q']],
-  epic:[['dq','e','e','s','s','q'],['e','q','e','h'],['q','e','s','s','rq','q']],
-  legendary:[['de','s','e','re','s','s','e','q'],['e','q','s','s','re','e','q'],['s','s','e','de','s','e','re','q']]
+  common:[['h','h'],['h','q','q'],['q','q','h'],['h','rq','q'],['rh','q','q'],['rw']],
+  uncommon:[['h','rq','q'],['q','e','e','h'],['rh','q','q'],['rq','q','e','re','q'],['e','re','q','h'],['rw']],
+  rare:[['q','s','s','e','h'],['re','e','q','q','q'],['q','e','e','re','e','q'],['e','h','e','q'],['re','q','q','e','q'],['rh','e','e','q']],
+  epic:[['dq','e','e','s','s','q'],['e','q','e','h'],['q','e','s','s','rq','q'],['de','dq','s','e','q'],['re','e','dq','s','s','q'],['rq','de','e','s','q','e']],
+  legendary:[['de','s','e','re','s','s','e','q'],['e','q','s','s','re','e','q'],['s','s','e','de','s','e','re','q'],['s','de','dq','s','s','e','e'],['re','de','q','s','e','q'],['de','e','dq','s','e','e']]
  };
  const PATTERN_SOURCE={'4/4':FOUR_FOUR,'6/8':SIX_EIGHT,'2/2':CUT_TIME};
  const PATTERNS=Object.freeze(Object.values(METERS).flatMap(meter=>RARITIES.flatMap(rarity=>PATTERN_SOURCE[meter.id][rarity.id].map((tokens,index)=>{
   let beat=0;const events=tokens.map((token,at)=>{
-   const duration=DURATIONS[token],rest=token[0]==='r',dotted=token.includes('d'),event={id:at,token,onset:beat,beat,duration,rest,type:rest?'rest':'note',glyph:GLYPHS[token],dotted,dots:dotted?1:0,flags:duration<1?(duration===.25?2:1):0};beat+=duration;return Object.freeze(event);
+   const wholeBarRest=token==='rw',duration=wholeBarRest?meter.barBeats:DURATIONS[token],rest=token[0]==='r',dotted=!wholeBarRest&&token.includes('d'),event={id:at,token,onset:beat,beat,duration,rest,type:rest?'rest':'note',glyph:GLYPHS[token],dotted,dots:dotted?1:0,flags:rest?0:duration<1?(duration===.25?2:1):0,...(wholeBarRest?{wholeBarRest:true,notationBeats:4}:{})};beat+=duration;return Object.freeze(event);
   });
   if(beat!==meter.barBeats)throw Error('Fishing rhythm '+meter.id+'/'+rarity.id+'/'+index+' must fill exactly one bar.');
   return Object.freeze({id:rarity.id+'-'+meter.id.replace('/','-')+'-'+index,rarity:rarity.id,meter:meter.id,beats:meter.barBeats,pulses:meter.pulsesPerBar,events:Object.freeze(events)});
@@ -86,16 +91,21 @@
  const rarityFor=value=>RARITIES.find(rarity=>rarity.id===(typeof value==='string'?value:value?.rarity))||null;
  const fishFor=value=>FISH.find(fish=>fish.id===(typeof value==='string'?value:value?.id))||null;
  function drawRandom(random){const value=Number((typeof random==='function'?random:Math.random)());return Number.isFinite(value)?clamp(value,0,.999999999999):0;}
+ function canFishInMeter(value,meter){const fish=fishFor(value),info=meterFor(meter);return !!fish&&!!info&&fish.meters.includes(info.id);}
+ function availableFish(meter,rarity){const info=meter===undefined?null:meterFor(meter),rank=rarity===undefined?null:rarityFor(rarity);if(meter!==undefined&&!info||rarity!==undefined&&!rank)return [];return FISH.filter(fish=>(!info||fish.meters.includes(info.id))&&(!rank||fish.rarity===rank.id));}
  function chooseFish(options={}){
-  const random=options.random||Math.random;let rarity=rarityFor(options.rarity);
-  if(!rarity){let roll=drawRandom(random)*RARITIES.reduce((sum,value)=>sum+value.weight,0);rarity=RARITIES[RARITIES.length-1];for(const candidate of RARITIES){if(roll<candidate.weight){rarity=candidate;break;}roll-=candidate.weight;}}
-  const choices=FISH.filter(fish=>fish.rarity===rarity.id);return choices[Math.floor(drawRandom(random)*choices.length)];
+  if(options.meter!==undefined&&!meterFor(options.meter))throw Error('Choose 4/4, 6/8, or cut time.');
+  const random=options.random||Math.random,eligible=availableFish(options.meter);let rarity=rarityFor(options.rarity);
+  const availableRarities=RARITIES.filter(candidate=>eligible.some(fish=>fish.rarity===candidate.id));
+  if(!rarity){let roll=drawRandom(random)*availableRarities.reduce((sum,value)=>sum+value.weight,0);rarity=availableRarities[availableRarities.length-1];for(const candidate of availableRarities){if(roll<candidate.weight){rarity=candidate;break;}roll-=candidate.weight;}}
+  const choices=eligible.filter(fish=>fish.rarity===rarity?.id);if(!choices.length)throw Error('No fish of that rarity live in this time signature.');return choices[Math.floor(drawRandom(random)*choices.length)];
  }
  let serial=0;
  function sessionID(){try{if(typeof globalThis.crypto?.randomUUID==='function')return 'fishing-'+globalThis.crypto.randomUUID();}catch{}return 'fishing-'+Date.now().toString(36)+'-'+(++serial).toString(36)+'-'+Math.random().toString(36).slice(2,10);}
  function createSession(options={}){
   const fish=options.fish===undefined?chooseFish(options):fishFor(options.fish);if(!fish)throw Error('Choose a known fish species.');
   const rarity=rarityFor(fish),meter=meterFor(options.meter||fish.meter);if(!meter)throw Error('Choose 4/4, 6/8, or cut time.');
+  if(!canFishInMeter(fish,meter))throw Error(fish.name+' can only be caught in '+fish.meters.join(' or ')+'.');
   // Keep the written subdivisions playable while naming the correct conducted
   // pulse: quarter, dotted quarter, or half note respectively.
   const bpm=Math.round(rarity.bpm/meter.pulseBeats),secondsPerPulse=60/bpm,secondsPerBeat=secondsPerPulse/meter.pulseBeats,countInBeats=meter.pulsesPerBar,countInSeconds=countInBeats*secondsPerPulse;
@@ -150,5 +160,5 @@
     notes:events.filter(event=>event.onset+event.duration>=beat-8&&event.onset<=beat+16).map(event=>({...event})),result:result?copy(result):null};}
   return {update,tap,getState,snapshot:getState,abort(){if(!finished)finish('escaped','aborted');return getState();}};
  }
- return Object.freeze({FISH,RARITIES,METERS,PATTERNS,chooseFish,fishFor,rarityFor,meterFor,createSession});
+ return Object.freeze({FISH,RARITIES,METERS,PATTERNS,chooseFish,availableFish,canFishInMeter,fishFor,rarityFor,meterFor,createSession});
 });

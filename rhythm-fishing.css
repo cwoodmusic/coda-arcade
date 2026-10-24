@@ -9,3 +9,19 @@
 .fishing-achievements{padding:16px;margin:18px 0;background:#1b2a40;border:1px solid #5c7e90;border-radius:10px}.fishing-achievements h3{color:#f0d8a9;margin:0 0 12px}.fishing-achievements>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.fishing-achievements article{padding:10px;border:1px solid #53657e;border-radius:7px;background:#172337}.fishing-achievements strong{font-size:13px;color:#d1f1de}.fishing-achievements p{font-size:11px;color:#bccfdb;line-height:1.5;min-height:34px}.fishing-achievements progress{height:10px}@media(max-width:760px){.fishing-achievements>div{grid-template-columns:1fr 1fr}.fishing-achievements{padding:12px}.fishing-achievements strong{font-size:12px}}
 
 #fishingCaptainWords{white-space:pre-line}
+
+.fishing-fish-card .fishing-fish-habitat{color:#b8eee0;margin-top:7px;font-weight:650}
+/* On a short phone, the battle illustration shares the progress area so
+ * the complete rhythm button stays visible beneath the staff. */
+@media(orientation:landscape) and (max-height:550px){
+ .fishing-challenge-panel{display:grid;grid-template-columns:minmax(0,1fr) minmax(170px,220px);column-gap:12px}
+ .fishing-challenge-heading{grid-column:1;grid-row:1;min-width:0}
+ .fishing-progress-heading{grid-column:1;grid-row:2}
+ #fishingCatchProgress{grid-column:1;grid-row:3}
+ #fishingBattle{grid-column:2;grid-row:1 / 4;height:100%;min-height:72px;max-height:112px;margin:0}
+ .fishing-staff-wrap{grid-column:1 / -1;grid-row:4}
+ .fishing-rhythm-meta{grid-column:1 / -1;grid-row:5}
+ .fishing-tap-button{grid-column:1 / -1;grid-row:6}
+ .fishing-rhythm-feedback{grid-column:1 / -1;grid-row:7}
+ .fishing-challenge-panel>.fishing-small{grid-column:1 / -1}
+}

@@ -15,16 +15,86 @@ test('the lake contains thirty distinct fish, six at each rarity and ten in each
  assert.ok(fishing.FISH.find(fish=>fish.rarity==='legendary').notes>fishing.FISH.find(fish=>fish.rarity==='common').notes);
 });
 
-test('all forty-five written phrases fill the exact bar in all three meters',()=>{
- assert.equal(fishing.PATTERNS.length,45);
+test('all ninety written phrases fill the exact bar in all three meters',()=>{
+ assert.equal(fishing.PATTERNS.length,90);
  for(const meter of Object.values(fishing.METERS))for(const rarity of fishing.RARITIES){
-  const patterns=fishing.PATTERNS.filter(pattern=>pattern.meter===meter.id&&pattern.rarity===rarity.id);assert.equal(patterns.length,3);
+  const patterns=fishing.PATTERNS.filter(pattern=>pattern.meter===meter.id&&pattern.rarity===rarity.id);assert.equal(patterns.length,6);
   for(const pattern of patterns){let onset=0;for(const note of pattern.events){close(note.onset,onset);assert.ok(note.duration>0);assert.ok(note.glyph.startsWith(note.rest?'rest':'note'));onset+=note.duration;}close(onset,meter.barBeats);}
  }
  for(const meter of Object.keys(fishing.METERS)){
   const simple=fishing.PATTERNS.filter(pattern=>pattern.meter===meter&&pattern.rarity==='common').flatMap(pattern=>pattern.events);
   const advanced=fishing.PATTERNS.filter(pattern=>pattern.meter===meter&&pattern.rarity==='legendary').flatMap(pattern=>pattern.events);
-  assert.ok(simple.every(note=>note.duration>=.5&&!note.rest));assert.ok(advanced.some(note=>note.duration===.25));assert.ok(advanced.some(note=>note.dotted));assert.ok(advanced.some(note=>note.rest));
+  assert.ok(simple.every(note=>note.duration>=.5));assert.ok(simple.some(note=>note.wholeBarRest));assert.ok(advanced.some(note=>note.duration===.25));assert.ok(advanced.some(note=>note.dotted));assert.ok(advanced.some(note=>note.rest));
+ }
+});
+
+test('quarter, half, eighth and whole-bar rests have correct durations and written symbols',()=>{
+ const notes=fishing.PATTERNS.flatMap(pattern=>pattern.events);
+ for(const [token,duration,glyph]of [['rq',1,'restQuarter'],['rh',2,'restHalf'],['re',.5,'rest8th']]){
+  const rests=notes.filter(note=>note.token===token);assert.ok(rests.length);
+  assert.ok(rests.every(note=>note.rest&&note.duration===duration&&note.glyph===glyph&&note.flags===0));
+ }
+ for(const meter of Object.values(fishing.METERS)){
+  const rests=fishing.PATTERNS.filter(pattern=>pattern.meter===meter.id).flatMap(pattern=>pattern.events).filter(note=>note.wholeBarRest);
+  assert.ok(rests.length);assert.ok(rests.every(note=>note.rest&&note.duration===meter.barBeats&&note.notationBeats===4&&note.glyph==='restWhole'&&!note.dotted&&note.dots===0));
+  for(const rarity of fishing.RARITIES){
+   const patterns=fishing.PATTERNS.filter(pattern=>pattern.meter===meter.id&&pattern.rarity===rarity.id);
+   for(let index=0;index<patterns.length;index++)if(patterns[index].events.every(note=>note.rest))assert.ok(patterns[(index+1)%patterns.length].events.some(note=>!note.rest),'An all-rest bar is followed by playable notes');
+  }
+ }
+});
+
+test('rare fish gain real syncopations across the selected meter’s main pulse',()=>{
+ for(const meter of Object.values(fishing.METERS)){
+  const syncopated=pattern=>pattern.events.some(note=>{const offset=note.onset%meter.pulseBeats;return !note.rest&&offset>1e-8&&note.duration>meter.pulseBeats-offset+1e-8;});
+  for(const [rarity,minimum]of [['rare',2],['epic',3],['legendary',3]]){
+   const phrases=fishing.PATTERNS.filter(pattern=>pattern.meter===meter.id&&pattern.rarity===rarity);
+   assert.ok(phrases.filter(syncopated).length>=minimum,meter.id+' '+rarity+' needs notes held from weak subdivisions across a main pulse');
+  }
+  assert.equal(fishing.PATTERNS.filter(pattern=>pattern.meter===meter.id&&pattern.rarity==='common').filter(syncopated).length,0,'Common fish remain introductory');
+ }
+});
+
+test('every written rest stays silent without losing progress and clear rest taps are mistakes',()=>{
+ for(const [fish,token]of [['yellow-perch','rq'],['brook-trout','rh'],['crystal-carp','re'],['stone-loach','rw']]){
+  const game=session({fish,meter:'4/4'}),rest=game.getState().notes.find(note=>note.token===token);assert.ok(rest,token);
+  for(const note of game.getState().notes.filter(note=>!note.rest&&note.time<rest.time))game.tap(note.time);
+  const before=game.getState(),middle=rest.time+rest.durationSeconds/2;game.update(middle);
+  assert.equal(game.getState().progress,before.progress,token+' does not drain progress');assert.equal(game.getState().misses,before.misses);assert.equal(game.getState().hits,before.hits);
+  assert.equal(game.tap(middle).kind,'extra',token+' is not a playable target');assert.equal(game.getState().hits,before.hits);
+ }
+ for(const meter of Object.values(fishing.METERS)){
+  const game=session({fish:'stone-loach',meter:meter.id}),rest=game.getState().notes.find(note=>note.wholeBarRest);assert.equal(rest.onset,0);
+  close(rest.durationSeconds,meter.barBeats*game.getState().secondsPerBeat);game.update(rest.time+rest.durationSeconds-.001);
+  assert.equal(game.getState().progress,45);assert.equal(game.getState().misses,0);assert.equal(game.getState().hits,0);
+ }
+});
+
+test('fish habitats include every meter but reserve some rarities for specific signatures',()=>{
+ for(const fish of fishing.FISH){assert.ok(Object.isFrozen(fish.meters));assert.ok(fish.meters.includes(fish.meter));assert.ok(fish.meters.every(meter=>Object.hasOwn(fishing.METERS,meter)));}
+ for(const meter of Object.keys(fishing.METERS)){
+  assert.equal(fishing.canFishInMeter('silver-minnow',meter),true);
+  assert.ok(fishing.availableFish(meter).every(fish=>fish.meters.includes(meter)));
+  for(const rarity of fishing.RARITIES){
+   const choices=fishing.availableFish(meter,rarity.id);assert.ok(choices.length);assert.ok(choices.every(fish=>fish.rarity===rarity.id&&fish.meters.includes(meter)));
+   for(const draw of [0,.15,.5,.999999])assert.ok(choices.includes(fishing.chooseFish({meter,rarity:rarity.id,random:()=>draw})));
+  }
+  assert.ok(fishing.availableFish(meter,'legendary').some(fish=>fish.meters.length===1));
+  for(let index=0;index<100;index++)assert.ok(fishing.canFishInMeter(fishing.chooseFish({meter,random:()=>index/100}),meter));
+ }
+ assert.deepEqual(fishing.availableFish('cut'),fishing.availableFish('2/2'));
+ assert.deepEqual(fishing.availableFish('invalid'),[]);assert.deepEqual(fishing.availableFish('4/4','invalid'),[]);
+ assert.equal(fishing.canFishInMeter('unknown','4/4'),false);assert.equal(fishing.canFishInMeter('silver-minnow','invalid'),false);
+ assert.throws(()=>fishing.chooseFish({meter:'invalid'}),/4\/4/);
+});
+
+test('sessions enforce fish habitats and every eligible fish/meter remains catchable',()=>{
+ for(const fish of fishing.FISH)for(const meter of Object.keys(fishing.METERS)){
+  if(!fish.meters.includes(meter)){assert.throws(()=>session({fish,meter}),/can only be caught/);continue;}
+  const result=perfectCatch(session({fish,meter})).result;assert.equal(result.caught,true);assert.equal(result.meter,meter);assert.equal(result.fishId,fish.id);assert.equal(result.notes,fish.notes);
+ }
+ for(const meter of Object.keys(fishing.METERS)){
+  const game=fishing.createSession({meter,random:()=>.999999});assert.ok(game.getState().fish.meters.includes(meter));
  }
 });
 

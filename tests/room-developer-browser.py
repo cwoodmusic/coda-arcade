@@ -292,7 +292,7 @@ class RoomDeveloperTests(_world.WorldBrowserCase):
         self.open_editor('fishing')
         field=self.panel('fishing').locator('[data-room-field="entity"]')
         field.select_option('fish-slot-0')
-        species=self.panel('fishing').locator('[data-room-field="species"] option').last.get_attribute('value')
+        species=self.page.evaluate("CodaRhythmFishing.availableFish('4/4').at(-1).id")
         self.panel('fishing').locator('[data-room-field="species"]').select_option(species)
         self.field('fishing','fish-size',2)
         self.field('fishing','fish-color','#335599')

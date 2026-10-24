@@ -27,11 +27,12 @@ class Handler(SimpleHTTPRequestHandler):
 <title>Rhythm Fishing browser checks</title>
 <link rel="stylesheet" href="/rhythm-fishing.css">
 <link rel="stylesheet" href="/music-notation.css">
+<link rel="stylesheet" href="/fishing-battle.css">
 <style>*{box-sizing:border-box}body{margin:0;background:#0c1329;color:#fff;font:15px system-ui}#enter{min-height:44px} :root{--coda-touch-controls-height:190px}</style>
 <button id="enter">Enter the cave</button><section id="fishing" hidden></section>
 <script src="/character-renderer.js"></script><script src="/finger-follow.js"></script>
 <script src="/music-notation.js"></script>
-<script src="/rhythm-fishing-engine.js"></script><script src="/fishing-cave-layout.js"></script><script src="/fishing-cave-effects.js"></script><script src="/fish-shadow-motion.js"></script><script src="/rhythm-beaming.js"></script><script src="/rhythm-fishing.js"></script>
+<script src="/rhythm-fishing-engine.js"></script><script src="/fishing-cave-layout.js"></script><script src="/fishing-cave-effects.js"></script><script src="/fish-shadow-motion.js"></script><script src="/rhythm-beaming.js"></script><script src="/cave-camera.js"></script><script src="/fishing-battle.js"></script><script src="/rhythm-fishing.js"></script>
 <script>
 window.rewards=[];window.rewardCalls=[];window.exits=0;window.failReward=false;
 window.failStorage=false;
