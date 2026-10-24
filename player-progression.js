@@ -62,7 +62,7 @@
    const before=levelForXP(state.xp),next={version:1,xp:state.xp+amount,events:[...state.events,{id,xp:amount,reason:String(reason).slice(0,150)}]};
    try{if(!storage||typeof storage.setItem!=='function')throw Error('storage');storage.setItem(KEY,JSON.stringify(next));state=next;persistent=true;error='';}
    catch{persistent=false;error='Browser saving is unavailable. This experience has not been saved; try the activity again.';changed();return {ok:false,error};}
-   changed();return {ok:true,alreadyAwarded:false,amount,leveledUp:levelForXP(next.xp)>before,...getState()};
+   changed();const result={ok:true,alreadyAwarded:false,amount,leveledUp:levelForXP(next.xp)>before,...getState()};try{api.onAward?.({id,amount,reason:String(reason).slice(0,150),levelBefore:before,level:result.level});}catch{}return result;
   }
   function recordGameEvent(game,runId,result){
    if(typeof runId!=='string'||!runId.length||runId.length>128||!validResult(game,result))return {ok:false,error:'A verified game result is required.'};

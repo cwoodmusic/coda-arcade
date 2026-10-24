@@ -14,7 +14,7 @@ window.createCodaMusicianUI=function(api){
     selected=data.id;api.clearInput();dialog.style.display='block';$('who').textContent=data.name;details.textContent=data.description;$('words').textContent=data.line;
     choices.replaceChildren();
     for(const choice of data.choices){const button=document.createElement('button');button.type='button';button.textContent=choice.label;button.onclick=()=>{$('words').textContent=api.getBrain().say(selected,choice.id);};choices.append(button);}
-    if(api.openMissions){const mission=document.createElement('button');mission.type='button';mission.textContent='Any missions for me? · Earn Notes';mission.onclick=()=>{const id=selected;closeConversation();api.openMissions(id);};choices.append(mission);}
+    if(api.openMissions){const mission=document.createElement('button');mission.type='button';const entry=api.getMission?.(selected);mission.textContent=entry?.status==='complete'?'I finished your mission · Collect reward':entry?.status==='active'?'My mission · Check progress':'Any missions for me? · Earn Notes';mission.onclick=()=>{const id=selected;closeConversation();api.openMissions(id);};choices.append(mission);}
     $('close').textContent='See you around · E';$('close').focus();
   }
   $('close').onclick=closeConversation;

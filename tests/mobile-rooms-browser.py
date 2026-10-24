@@ -17,11 +17,11 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path!='/mobile-rooms':return super().do_GET()
         html='''<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<link rel="stylesheet" href="/piano-lab.css"><link rel="stylesheet" href="/music-classroom.css">
+<link rel="stylesheet" href="/piano-lab.css"><link rel="stylesheet" href="/music-classroom.css"><link rel="stylesheet" href="/classroom-tutorials.css">
 <style>body{margin:0;background:#101628}#fixturePad{position:fixed;bottom:0;left:0;right:0;z-index:110;display:flex;justify-content:space-between;padding:16px;background:#122136b0}#fixturePad[hidden]{display:none}#fixturePad button{min-width:60px;min-height:50px;font-size:16px;touch-action:none} :root{--coda-touch-controls-height:100px}</style>
 <button id="enterPiano">Piano</button><button id="enterClassroom">Classroom</button><section id="pianoroom" hidden></section><section id="classroom" hidden></section>
 <div id="fixturePad" hidden><button data-key="d">Move right</button><button data-key=" ">Jump</button><button data-key="e">Interact</button></div>
-<script src="/character-renderer.js"></script><script src="/piano-lab.js"></script><script src="/music-classroom.js"></script><script>
+<script src="/character-renderer.js"></script><script src="/finger-follow.js"></script><script src="/classroom-tutorials.js"></script><script src="/piano-lab.js"></script><script src="/music-classroom.js"></script><script>
 const renderer=createCodaCharacterRenderer();window.rewards=[];
 window.lab=createCodaPianoLab({host:pianoroom,renderer,backgroundUrl:'/assets/world/piano-lab-room.png',onReward:(id,amount)=>{rewards.push({id,amount});return {ok:true,amount};}});
 window.classroomUI=createCodaMusicClassroom({host:classroom,renderer,backgroundSrc:'/assets/world/music-classroom-room.png'});
@@ -67,8 +67,12 @@ class MobileRoomTests(unittest.TestCase):
 
     def walk(self,x,y):
         box=self.page.locator('#pianoRoomCanvas').bounding_box()
-        self.page.touchscreen.tap(box['x']+x/1000*box['width'],box['y']+y/620*box['height'])
-        self.page.wait_for_function('p=>Math.hypot(lab.getState().player.x-p.x,lab.getState().player.y-p.y)<4',arg={'x':x,'y':y})
+        client=self.context.new_cdp_session(self.page)
+        try:
+            client.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'id':1,'x':box['x']+x/1000*box['width'],'y':box['y']+y/620*box['height']}]})
+            self.page.wait_for_function('p=>Math.hypot(lab.getState().player.x-p.x,lab.getState().player.y-p.y)<4',arg={'x':x,'y':y})
+        finally:
+            client.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]});client.detach()
 
     def hold_touch(self,selector,milliseconds=180):
         box=self.page.locator(selector).bounding_box();client=self.context.new_cdp_session(self.page)
@@ -130,7 +134,7 @@ class MobileRoomTests(unittest.TestCase):
         self.assertAlmostEqual(self.page.evaluate('classroomUI.getState().player.x'),x,delta=.01)
         self.page.locator('#classroomSearch').fill('interval')
         self.page.locator('[data-topic="intervals"]').tap()
-        self.page.get_by_role('button',name='G4',exact=True).tap()
+        self.page.get_by_role('button',name='G',exact=True).tap()
         self.assertEqual(self.page.locator('.classroom-feedback').get_attribute('data-correct'),'true')
         self.assert_fits('#classroom')
         self.page.get_by_role('button',name='Room',exact=True).tap()

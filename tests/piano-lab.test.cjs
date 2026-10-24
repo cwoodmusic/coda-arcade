@@ -1,6 +1,11 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {frequency,noteName,LESSONS,INTERVALS,paintedFloorKeys,polygonContains}=require('../piano-lab.js');
+const {frequency,noteName,noteLetter,keyPositionName,LESSONS,INTERVALS,paintedFloorKeys,polygonContains}=require('../piano-lab.js');
+test('learner labels use letters and words to distinguish repeated keys',()=>{
+ assert.equal(noteLetter(60),'C');assert.equal(noteLetter(61),'C♯');assert.equal(noteLetter(72),'C');
+ assert.equal(keyPositionName(60,60),'lower C');assert.equal(keyPositionName(72,60),'higher C');assert.equal(keyPositionName(84,60),'highest C');
+ for(let midi=48;midi<=96;midi++)assert.doesNotMatch(noteLetter(midi),/\d/);
+});
 test('piano tuning follows equal temperament and middle C naming',()=>{
  assert.equal(frequency(69),440);assert.equal(frequency(81),880);
  assert.ok(Math.abs(frequency(60)-261.625565)<.00001);

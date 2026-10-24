@@ -16,7 +16,7 @@
 /* Coda Asset Studio v11: stays separate from collision + pixel masks. */
 #assetStudio{position:fixed;left:12px;top:80px;z-index:65;width:min(334px,calc(100vw - 24px));max-height:calc(100dvh - 99px);overflow:auto;background:#171529f5;border:1px solid #eac17d;box-shadow:0 12px 50px #05010de0,0 0 22px #fdac4a24;border-radius:12px;padding:13px;color:#f8efff;font:12px system-ui;backdrop-filter:blur(9px)}
 #assetStudio[hidden]{display:none}#assetStudio .studioHead{display:flex;align-items:center;justify-content:space-between;color:#ffe4a4;font-size:14px;gap:9px;margin-bottom:7px}#assetStudio .studioActions{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0}#assetStudio button{font:inherit;min-height:28px;padding:5px 7px}#assetStudio .studioActions button{flex:1 0 90px}#assetStudio button:disabled{opacity:.36;cursor:not-allowed}#assetStudio hr{border:0;border-top:1px solid #655374;margin:13px 0}#assetStudio .studioField{display:grid;gap:3px;margin:7px 0}#assetStudio .studioField>label{font-weight:650;color:#dccdf3}#assetStudio input:not([type=checkbox]),#assetStudio select{background:#131024;border:1px solid #866e9b;color:#fff;padding:7px;border-radius:5px;width:100%;font:inherit;min-width:0}#assetStudio input[type=checkbox]{accent-color:#f9c880}#assetStudio .studioGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}#assetStudio .studioTip{color:#c9b9d6;line-height:1.45;font-size:11px;margin:6px 0}#assetStudio #assetList{height:108px;padding:2px}#assetStudio #assetList option{padding:6px}#assetStudio #assetMessage{color:#bbf5e5;min-height:18px;overflow-wrap:anywhere}#assetStudio #assetSelection[hidden]{display:none}#assetStudio .studioCheck{display:inline-flex;align-items:center;gap:6px;margin:5px 11px 5px 0}#assetStudio .studioCollapsible{border:1px solid #655374;border-radius:7px;padding:8px}#assetStudio summary{cursor:pointer;color:#ffe4b1;font-weight:650}#assetToggle{border-color:#eecc7c}#view.asset-editing{cursor:crosshair;touch-action:none}#assetStudio #assetAdd{background:#675022;border-color:#e8b85c}#assetStudio #assetImport{border-color:#80d3ed}#assetStudio #assetExport{border-color:#80d3ed}#assetStudio #assetHelp{background:#271d3c}#assetStudio .studioHot{color:#ffcfa4}body.asset-console-open #layerEditor{display:none!important}@media(max-width:650px){#assetStudio{top:120px;max-height:calc(100dvh - 138px)}}
-</style><link rel="stylesheet" href="mobile-controls.css?v=mobile-28"><link rel="stylesheet" href="world-mobile.css?v=mobile-28"><script src="mobile-controls.js?v=mobile-28"></script><link rel="stylesheet" href="developer-console.css?v=mobile-28"><link rel="stylesheet" href="musician-ui.css?v=mobile-28"><link rel="stylesheet" href="boutique-ui.css?v=mobile-28"><script src="collision-editor.js?v=mobile-28"></script><script src="world-object-catalog.js?v=mobile-28"></script><script src="world-object-runtime.js"></script><script src="world-lighting.js?v=mobile-28"></script><script src="dance-floor.js?v=mobile-28"></script><script src="dj-library.js?v=mobile-28"></script><script src="developer-console.js?v=mobile-28"></script><script src="npc-behavior.js?v=mobile-28"></script><script src="character-renderer.js?v=mobile-28"></script><script src="musician-ui.js?v=mobile-28"></script><script src="boutique-ui.js?v=mobile-28"></script><link rel="stylesheet" href="notes-shop.css?v=mobile-28"><link rel="stylesheet" href="piano-lab.css?v=mobile-28"><link rel="stylesheet" href="music-classroom.css?v=mobile-28"><script src="notes-shop.js?v=mobile-28"></script><script src="piano-lab.js?v=mobile-28"></script><script src="music-classroom.js?v=mobile-28"></script><link rel="stylesheet" href="player-progression.css?v=mobile-28"><link rel="stylesheet" href="hall-of-fame.css?v=mobile-28"><script src="player-progression.js?v=mobile-28"></script><script src="hall-of-fame.js?v=mobile-28"></script><script src="musician-missions.js?v=mobile-28"></script><script src="song-machine/sound-library.js?v=mobile-28"></script><header><b>♫ CODA ARCADE · CONNECTED WORLD / WORLD BUILDER</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="levelBtn" type="button" aria-label="Your musician level">Level 1 · 0 XP</button> <button id="hallFameBtn" type="button">Hall of Fame</button> <button id="notesBtn" type="button" aria-label="Open Notes shop">♫ 150 Notes</button> <button id="pianoLabBtn" type="button">Piano Lab</button> <button id="classroomBtn" type="button">Classroom</button> <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="assetToggle" type="button" title="Open Asset Studio (Shift+A)">✥ Assets</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><main id="worldStage" aria-label="Arcade world"><canvas id="view" width="1672" height="941" tabindex="0" aria-label="Connected arcade. Move with WASD or arrow keys. Press Space to jump and E to interact."></canvas></main><footer><span>WASD / arrows · Walk · Space · Jump · Wheel / + / − Zoom · 0 Reset · F2 Developer console · C Edit collision · Shift+L Edit layers · Right-drag to pan in editor &nbsp; E · Interact &nbsp; Q · Emote · Click/tap to walk</span><span id="status">Phase 11 · asset studio · animations · layers · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
+</style><link rel="stylesheet" href="mobile-controls.css?v=student-29"><link rel="stylesheet" href="world-mobile.css?v=student-29"><script src="mobile-controls.js?v=mobile-28"></script><script src="finger-follow.js?v=student-29"></script><link rel="stylesheet" href="reward-notifications.css?v=student-29"><script src="reward-notifications.js?v=student-29"></script><link rel="stylesheet" href="developer-console.css?v=mobile-28"><link rel="stylesheet" href="musician-ui.css?v=mobile-28"><link rel="stylesheet" href="boutique-ui.css?v=mobile-28"><script src="collision-editor.js?v=mobile-28"></script><script src="world-object-catalog.js?v=mobile-28"></script><script src="world-object-runtime.js"></script><script src="world-lighting.js?v=mobile-28"></script><script src="dance-floor.js?v=mobile-28"></script><script src="dj-library.js?v=mobile-28"></script><script src="developer-console.js?v=mobile-28"></script><script src="npc-behavior.js?v=mobile-28"></script><script src="character-renderer.js?v=mobile-28"></script><script src="musician-ui.js?v=student-29"></script><script src="boutique-ui.js?v=mobile-28"></script><link rel="stylesheet" href="notes-shop.css?v=mobile-28"><link rel="stylesheet" href="piano-lab.css?v=mobile-28"><link rel="stylesheet" href="music-classroom.css?v=student-29"><script src="notes-shop.js?v=mobile-28"></script><script src="piano-lab.js?v=student-29"></script><link rel="stylesheet" href="classroom-tutorials.css?v=student-29"><script src="classroom-tutorials.js?v=student-29"></script><script src="music-classroom.js?v=student-29"></script><link rel="stylesheet" href="player-progression.css?v=mobile-28"><link rel="stylesheet" href="hall-of-fame.css?v=mobile-28"><script src="player-progression.js?v=student-29"></script><link rel="stylesheet" href="player-profile.css?v=student-29"><script src="player-profile.js?v=student-29"></script><script src="hall-of-fame.js?v=mobile-28"></script><script src="musician-missions.js?v=student-29"></script><script src="song-machine/sound-library.js?v=mobile-28"></script><header><b>♫ CODA ARCADE · CONNECTED WORLD / WORLD BUILDER</b><span><a href="index.html">← Current arcade</a> &nbsp; <button id="levelBtn" type="button" aria-label="Your profile">Profile · Level 1</button> <button id="hallFameBtn" type="button">Hall of Fame</button> <button id="notesBtn" type="button" aria-label="Open Notes shop">♫ 150 Notes</button> <button id="pianoLabBtn" type="button">Piano Lab</button> <button id="classroomBtn" type="button">Classroom</button> <button id="accountBtn">◉ Guest</button> <button id="jukeboxBtn">♫ Jukebox</button> <button id="assetToggle" type="button" title="Open Asset Studio (Shift+A)">✥ Assets</button> <button id="editorToggle" type="button" title="Edit pixel foreground layers (Shift+L)">✎ Layers</button> <button id="musicBtn" type="button" aria-pressed="false" title="Play or stop optional original arcade groove">♫ Music: Off</button> <button id="fxBtn" type="button" title="Choose full, lite or off visual effects">✧ FX: Full</button> <span id="cameraTools" role="group" aria-label="Camera zoom controls"><button type="button" id="zoomOut" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" id="zoomReset" title="Reset camera zoom (0)" aria-label="Reset zoom to 100%">100%</button><button type="button" id="zoomIn" title="Zoom in (+)" aria-label="Zoom in">+</button></span> <button id="fs">⛶ Fullscreen</button></span></header><main id="worldStage" aria-label="Arcade world"><canvas id="view" width="1672" height="941" tabindex="0" aria-label="Connected arcade. Move with WASD or arrow keys. Press Space to jump and E to interact."></canvas></main><footer><span>WASD / arrows · Walk · Space · Jump · Wheel / + / − Zoom · 0 Reset · F2 Developer console · C Edit collision · Shift+L Edit layers · Right-drag to pan in editor &nbsp; E · Interact &nbsp; Q · Emote · Click to walk · Touch and drag to steer</span><span id="status">Phase 11 · asset studio · animations · layers · C collision · L layers</span></footer><aside id="layerEditor" hidden aria-label="Foreground layer painting editor">
   <div class="editorbanner"><b>✎ FOREGROUND EDITOR</b><button id="editClose" type="button">✕</button></div>
   <div class="mini">Paint with pixels from the existing arcade artwork. Erase removes unwanted foreground coverage; the floor stays unchanged.</div>
   <div class="editorline"><button type="button" id="editPaint" class="current">🖌 Paint</button><button type="button" id="editErase">⌫ Erase</button></div>
@@ -76,7 +76,7 @@
  <p id="assetMessage" role="status">Your assets are saved in this browser. Export scene JSON to publish or move them to another computer.</p>
  <details><summary id="assetHelp">Help · shortcuts and storage</summary><p class="studioTip">Shift+A opens/closes. Delete removes. Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z redo. Arrows nudge selected asset (Shift = 8 px). Escape closes. GIF/APNG playback depends on browser support; sprite sheets offer deterministic frame animation. Crop selects a rectangular section of the *original art* (not the whole live canvas). Imported images are embedded in exported JSON. Browser storage is local to this page/origin; GitHub won't receive edits until you publish the export.</p></details>
 </aside><div id="dialog" role="dialog" aria-label="Arcade conversation"><strong id="who"></strong><p id="words"></p><button id="close">Close · E</button></div><section id="gameoverlay" hidden aria-label="Arcade game"><div class="gamebar"><button id="returnworld" type="button">← Return to world</button><strong id="activegame">Arcade game</strong><a id="externalgame" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameiframe" title="Arcade game" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></section><div id="panel" hidden><div class="panelHead"><strong id="panelTitle">Arcade</strong><button id="panelClose">✕ Close</button></div><div id="panelBody"></div></div><script src="account-config.js?v=phase42"></script><section id="pianoroom" hidden aria-label="Piano Lab"></section><section id="musicClassroom" hidden aria-label="Music Classroom"></section><script>
-(()=>{'use strict';let mobileControls=null,developerConsole=null,worldObjects=null,worldLighting=null,danceFloor=null,npcBrain=null,characterRenderer=null,musicianUI=null,boutiqueUI=null,notesWallet=null,notesShop=null,pianoLab=null,musicClassroom=null,progression=null,missions=null,hallFame=null,playerPhase=0,emoteStarted=0,followedMusician=null,followTimer=0;const c=document.querySelector('#view'),worldContext=c.getContext('2d',{alpha:false}),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}avatar=window.CodaAvatarDefaults.migrate(avatar);const W=1672,H=941,ART_SCALE=1,keys=new Set(),touchKeys=new Set();let player={x:1180,y:388},cam={x:0,y:0,zoom:1,targetZoom:1},dest=null,emote=0,near=null,last=0,clock=0,walking=false,facing="down";const rooms=[{id:'lounge',name:'LOUNGE',x:95,y:145,w:350,h:235},{id:'dance',name:'DANCE',x:90,y:505,w:670,h:325},{id:'arcade',name:'ARCADE',x:648,y:220,w:900,h:580}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:718,y:313,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:831,y:314,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:951,y:315,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1064,y:315,url:'song-machine/index.html?v=mobile-28'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
+(()=>{'use strict';let mobileControls=null,fingerWalk=null,rewardNotifications=null,developerConsole=null,worldObjects=null,worldLighting=null,danceFloor=null,npcBrain=null,characterRenderer=null,musicianUI=null,boutiqueUI=null,notesWallet=null,notesShop=null,pianoLab=null,musicClassroom=null,progression=null,missions=null,hallFame=null,playerProfile=null,playerPhase=0,emoteStarted=0,followedMusician=null,followTimer=0;const c=document.querySelector('#view'),worldContext=c.getContext('2d',{alpha:false}),status=document.querySelector('#status'),dialog=document.querySelector('#dialog');let avatar={};try{avatar=JSON.parse(localStorage.getItem('musicArcadeV1')||'{}')}catch{}avatar=window.CodaAvatarDefaults.migrate(avatar);const W=1672,H=941,ART_SCALE=1,keys=new Set(),touchKeys=new Set();let player={x:1180,y:388},cam={x:0,y:0,zoom:1,targetZoom:1},dest=null,emote=0,near=null,last=0,clock=0,walking=false,facing="down";const rooms=[{id:'lounge',name:'LOUNGE',x:95,y:145,w:350,h:235},{id:'dance',name:'DANCE',x:90,y:505,w:670,h:325},{id:'arcade',name:'ARCADE',x:648,y:220,w:900,h:580}];const bridges=[];const doors=[];const games=[{name:'Pitch Race',x:718,y:313,url:'https://cwoodmusic.github.io/Pitch-Race/'},{name:'Music Triad',x:831,y:314,url:'https://cwoodmusic.github.io/musictriad/'},{name:'Rhythm Room',x:951,y:315,url:'https://cwoodmusic.github.io/rhythmroom/'},{name:'Song Machine',x:1064,y:315,url:'song-machine/index.html?v=student-29'}];const lines=['Nice place to hang out!','I could stay here all day.','Did you see that?','This is my favorite spot.','Hey! Good to see you.']; // Replace these placeholder lines with your own dialogue later.
 
 let g=worldContext;
 
@@ -441,14 +441,14 @@ function updateJump(dt){
 }
 function typingTarget(target){return !!(target?.isContentEditable||target?.closest?.('input,textarea,select'));}
 function keyDown(key){return keys.has(key)||touchKeys.has(key);}
-function clearHeldKeys(){keys.clear();touchKeys.clear();walking=false;}
+function clearHeldKeys(){keys.clear();touchKeys.clear();fingerWalk?.stop('input-cleared');walking=false;}
 
 function update(dt){
  clock+=dt;
  if(!characterRenderer?.isReady()){walking=false;status.textContent=characterRenderer?.error?'Character renderer unavailable. Reload to retry.':'Preparing characters…';return;}
  if(developerConsole&&!developerConsole.loadReady()){walking=false;status.textContent='Loading world layout…';return;}
  const frozen=developerConsole?developerConsole.isEditing():((layerState.active&&!layerState.preview)||assetStudio.active);
- if(frozen||!document.querySelector('#panel').hidden||learningRoomOpen()){walking=false;return;}
+ if(frozen||!document.querySelector('#panel').hidden||learningRoomOpen()){fingerWalk?.stop('paused');walking=false;return;}
  updateJump(dt);
  const chatting=dialog.style.display==='block';
  if(followedMusician&&!chatting){
@@ -461,7 +461,9 @@ function update(dt){
  }
  let dx=chatting?0:(keyDown('d')||keyDown('arrowright')?1:0)-(keyDown('a')||keyDown('arrowleft')?1:0);
  let dy=chatting?0:(keyDown('s')||keyDown('arrowdown')?1:0)-(keyDown('w')||keyDown('arrowup')?1:0);
- if(dx||dy){dest=null;clickPath=[];followedMusician=null;}
+ if(dx||dy){fingerWalk?.stop('direction-controls');dest=null;clickPath=[];followedMusician=null;}
+ const finger=fingerWalk?.getState(),fingerTarget=!chatting&&finger?.following?finger.target:null;
+ if(fingerTarget){const target=canvasToWorld(fingerTarget.clientX,fingerTarget.clientY),box=c.getBoundingClientRect(),deadZone=10*W/(box.width*cam.zoom);dx=target.x-player.x;dy=target.y-player.y;if(Math.hypot(dx,dy)<deadZone)dx=dy=0;}
  if(!chatting&&dest){
   while(clickPath.length&&Math.hypot(clickPath[0].x-player.x,clickPath[0].y-player.y)<3)clickPath.shift();
   if(!clickPath.length){dest=null;dx=dy=0;}else{dx=clickPath[0].x-player.x;dy=clickPath[0].y-player.y;}
@@ -469,7 +471,7 @@ function update(dt){
  const len=Math.hypot(dx,dy),before={x:player.x,y:player.y};
  if(len){
   facing=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');
-  const amount=dest?Math.min(230*dt,len):230*dt,mx=dx/len*amount,my=dy/len*amount,steps=Math.max(1,Math.ceil(amount/3));
+  const amount=dest||fingerTarget?Math.min(230*dt,len):230*dt,mx=dx/len*amount,my=dy/len*amount,steps=Math.max(1,Math.ceil(amount/3));
   for(let k=0;k<steps;k++){const nx=player.x+mx/steps,ny=player.y+my/steps;if(inside(nx,player.y))player.x=nx;if(inside(player.x,ny))player.y=ny;}
  }
  const moved=Math.hypot(player.x-before.x,player.y-before.y);walking=moved>.01;if(walking){playerPhase+=moved/14;avatar.walked=(avatar.walked||0)+moved/9;}
@@ -1029,7 +1031,7 @@ async function loadAssetStudio(){let found=null;
 window.CodaAssetStudioQA={get:()=>({active:assetStudio.active,count:assetStudio.assets.length,selected:assetStudio.selected,assets:assetStudio.assets.map(a=>({id:a.id,name:a.name,kind:a.kind,x:a.x,y:a.y,w:a.w,h:a.h,layer:a.layer,anim:a.anim,frames:a.frames}))}),open:()=>toggleAssetStudio(true),close:()=>toggleAssetStudio(false),preset:()=>assetUI('assetPreset').click(),export:downloadAssetJSON,save:persistAssets};
 // --- END ASSET STUDIO ------------------------------------------------------
 
-window.CODA_BUILD="28.0-mobile-arcade";
+window.CODA_BUILD="29.0-student-lessons-and-profile";
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -1756,10 +1758,15 @@ window.CodaArcadeQA=Object.freeze({
   worldObjects:()=>window.CodaWorldObjectCatalog.map(part=>{const object=worldObjects.state(part.name),anchor=part.anchor||[part.bounds[0]+part.bounds[2]/2,part.bounds[1]+part.bounds[3]/2];return {name:part.name,visible:object.visible,opacity:object.opacity,anchor:worldObjects.point(object,...anchor),spin:object.asset?.discoSpin??part.spin,rays:object.visible&&object.asset?.discoRays!==false,game:part.gameIndex!==undefined?runtimeGames().find(g=>g.index===part.gameIndex)||null:null};}),
   camera:()=>({x:cam.x,y:cam.y,zoom:cam.zoom,targetZoom:cam.targetZoom,visibleWidth:cameraViewport().width/cam.zoom,visibleHeight:cameraViewport().height/cam.zoom,viewport:cameraViewport()}),
   touch:()=>mobileControls?.snapshot()||null,
+  time:()=>clock,
+  fingerWalk:()=>fingerWalk?.getState()||null,
+  rewardNotifications:()=>rewardNotifications?.getState()||null,
   dj:()=>({...djState()}),
   shopkeepers:()=>shopkeeperStates().map(person=>({...person,appearance:{...person.appearance},approaches:person.approaches.map(point=>({...point}))})),
   notes:()=>notesWallet?.snapshot()||null,
   progression:()=>progression?.getState()||null,
+  profile:()=>playerProfile?.getState()||null,
+  tutorials:()=>musicClassroom?.getState().tutorials||window.CodaClassroomTutorials?.readProgress()||null,
   missions:()=>missions?.snapshot()||null,
   hallOfFame:()=>hallFame?.snapshot()||null,
   hallFame:()=>hallFame?.snapshot()||null,
@@ -1797,7 +1804,7 @@ function touchWorldKey(key,pressed){
  if(dialog.style.display==='block'){if(key==='e')musicianUI.closeConversation();return;}
  if(!characterRenderer?.isReady()||!developerConsole?.loadReady())return;
  if(touchKeys.has(key))return;touchKeys.add(key);
- if(['w','a','s','d'].includes(key)){dest=null;clickPath=[];followedMusician=null;}
+ if(['w','a','s','d'].includes(key)){fingerWalk?.stop('direction-controls');dest=null;clickPath=[];followedMusician=null;}
  if(key===' ')startJump();
  if(key==='e')talk();
  if(key==='q'){emoteStarted=clock;emote=clock+2.4;avatar.emotesUsed=(avatar.emotesUsed||0)+1;}
@@ -1829,7 +1836,7 @@ function installMobileWorld(){
  c.addEventListener('pointerdown',event=>{
   if(event.pointerType!=='touch'||!mobileControls.isMobile()||developerConsole?.isEditing())return;
   fingers.set(event.pointerId,{x:event.clientX,y:event.clientY});
-  if(fingers.size===2){const [a,b]=[...fingers.values()];pinch={distance:Math.hypot(a.x-b.x,a.y-b.y),zoom:cam.targetZoom};dest=null;clickPath=[];clearHeldKeys();event.preventDefault();event.stopImmediatePropagation();}
+  if(fingers.size===2){const [a,b]=[...fingers.values()];pinch={distance:Math.hypot(a.x-b.x,a.y-b.y),zoom:cam.targetZoom};dest=null;clickPath=[];keys.clear();touchKeys.clear();walking=false;event.preventDefault();event.stopImmediatePropagation();}
  },true);
  c.addEventListener('pointermove',event=>{
   if(!fingers.has(event.pointerId))return;fingers.set(event.pointerId,{x:event.clientX,y:event.clientY});
@@ -1837,6 +1844,7 @@ function installMobileWorld(){
  },true);
  for(const name of ['pointerup','pointercancel'])c.addEventListener(name,event=>{fingers.delete(event.pointerId);if(fingers.size<2)pinch=null;},true);
  window.addEventListener('blur',()=>{fingers.clear();pinch=null;});
+ fingerWalk=window.createCodaFingerWalk({canvas:c,enabled:()=>mobileControls.isMobile()&&!gameOpen&&panel.hidden&&!learningRoomOpen()&&dialog.style.display!=='block'&&!developerConsole?.isEditing()&&!document.body.classList.contains('world-menu-open'),onStart:()=>{dest=null;clickPath=[];followedMusician=null;c.focus({preventScroll:true});},onStop:()=>{walking=false;}});
 }
 let pausedBackdrop=false;
 function frame(ms){const dt=Math.min(.05,(ms-last)/1000||0);last=ms;
@@ -1859,6 +1867,7 @@ function frame(ms){const dt=Math.min(.05,(ms-last)/1000||0);last=ms;
  if(developerConsole?.pointerDown(e))return;
  if((!developerConsole||developerConsole.isEditing())&&assetPointerStart(e))return;
  if(editorPointerDown(e))return;
+ if(e.pointerType==='touch'&&mobileControls?.isMobile()&&!developerConsole?.isEditing())return;
  if(collisionDebug&&e.shiftKey){
   if(developerConsole){developerConsole.open('collision');return;}
   const {x:xx,y:yy}=canvasToWorld(e.clientX,e.clientY);
@@ -1928,14 +1937,14 @@ function applyBoutiqueLook(id,look){
    const next={...npcLooks,[id]:characterRenderer.normalizeProfile({...look,name:person.name})};
    localStorage.setItem(NPC_LOOKS_KEY,JSON.stringify(next));npcLooks=next;person.appearance=next[id];
   }
-  return true;
+  playerProfile?.refresh();return true;
  }catch{msg('Browser storage is unavailable. Your draft is still here; saving has not completed.');return false;}
 }
 function openBoutique(){if(characterRenderer?.isReady())boutiqueUI.open();}
 function openNotesShop(){if(characterRenderer?.isReady())notesShop?.open();}
 function openAccount(){openPanel('Arcade Passport');const p=document.createElement('p');p.textContent=cloudUser?(profileReady?'Signed in. Your avatar is linked to your existing profile.':'Signed in; profile is loading. Please wait before editing your avatar.'):'Play as a guest, or sign in to sync your avatar and achievements.';panelBody.append(p);const status=document.createElement('p');status.className='panelMsg';status.textContent=authMessage;panelBody.append(status);const b=addAction(cloudUser?'Sign out':'Continue with Google',async()=>{if(!firebaseApi||!cloudAuth)return msg('Google sign-in is still connecting.');try{if(cloudUser)await firebaseApi.signOut(cloudAuth);else await firebaseApi.signInWithPopup(cloudAuth,new firebaseApi.GoogleAuthProvider());closePanel()}catch(e){msg(e.code?.includes('popup-closed')?'Sign-in cancelled.':e.message||'Sign-in failed.')}});b.disabled=!firebaseApi||Boolean(cloudUser&&!profileReady)}
 async function syncProfile(){if(!cloudUser||!profileReady||!firebaseApi)return;try{await firebaseApi.set(firebaseApi.ref(cloudDb,'arcadeProfiles/'+cloudUser.uid),{profile:avatar,updatedAt:firebaseApi.serverTimestamp(),schemaVersion:1})}catch(e){authMessage='Could not save profile: '+e.message}}
-async function loadProfile(user){profileReady=false;try{const snap=await firebaseApi.get(firebaseApi.ref(cloudDb,'arcadeProfiles/'+user.uid));if(!cloudUser||cloudUser.uid!==user.uid)return;const remote=snap.val()?.profile;if(remote&&typeof remote==='object'){avatar={...avatar,...window.CodaAvatarDefaults.migrate(remote)};localStorage.setItem('musicArcadeV1',JSON.stringify(avatar));notesWallet?.preserveEquipped(avatar)}profileReady=true;authMessage='Signed in · '+(remote?'Saved profile loaded':'New profile ready');if(!remote)await syncProfile()}catch(e){authMessage='Profile unavailable: '+e.message}}
+async function loadProfile(user){profileReady=false;try{const snap=await firebaseApi.get(firebaseApi.ref(cloudDb,'arcadeProfiles/'+user.uid));if(!cloudUser||cloudUser.uid!==user.uid)return;const remote=snap.val()?.profile;if(remote&&typeof remote==='object'){avatar={...avatar,...window.CodaAvatarDefaults.migrate(remote)};localStorage.setItem('musicArcadeV1',JSON.stringify(avatar));notesWallet?.preserveEquipped(avatar);playerProfile?.refresh()}profileReady=true;authMessage='Signed in · '+(remote?'Saved profile loaded':'New profile ready');if(!remote)await syncProfile()}catch(e){authMessage='Profile unavailable: '+e.message}}
 async function initCloud(){if(!config?.enabled||!config?.firebase){authMessage='Firebase account settings unavailable.';return}try{const [app,auth,database]=await Promise.all([import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'),import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js'),import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js')]);firebaseApi={...auth,...database};const instance=app.initializeApp(config.firebase,'arcade-connected-preview');cloudAuth=auth.getAuth(instance);cloudDb=database.getDatabase(instance);await auth.setPersistence(cloudAuth,auth.browserLocalPersistence);auth.onAuthStateChanged(cloudAuth,async user=>{cloudUser=user;profileReady=false;document.querySelector('#accountBtn').textContent=user?'◉ Account':'◉ Guest';authMessage=user?'Loading your arcade profile…':'Guest mode';if(user)await loadProfile(user)})}catch(e){authMessage='Cloud connection failed: '+e.message}}
 function stopSong(){
  songSerial++;clearTimeout(songFinishTimer);songFinishTimer=null;
@@ -2000,7 +2009,7 @@ async function openJukebox(){
   title.textContent=record.title||'Untitled';small.textContent=record.composition.bpm+' BPM · '+record.composition.bars+' bars';info.append(title,small);row.append(info);
   const play=document.createElement('button');play.type='button';play.textContent='▶ Play';play.setAttribute('aria-label','Play '+title.textContent);play.dataset.jukeboxTrack=record.id||source;
   play.onclick=()=>playSong(record.composition,{title:title.textContent,source});row.append(play);
-  if(editId){const edit=document.createElement('button');edit.type='button';edit.textContent='Edit ↗';edit.onclick=()=>{stopSong();closePanel();openCabinet({...games[3],url:'song-machine/index.html?song='+encodeURIComponent(editId)+'&v=mobile-28'})};row.append(edit);}
+  if(editId){const edit=document.createElement('button');edit.type='button';edit.textContent='Edit ↗';edit.onclick=()=>{stopSong();closePanel();openCabinet({...games[3],url:'song-machine/index.html?song='+encodeURIComponent(editId)+'&v=student-29'})};row.append(edit);}
   parent.append(row);
  }
  for(const record of window.CodaDJLibrary.songs)songRow(house,record,'house');
@@ -2045,36 +2054,57 @@ danceFloor=window.createCodaDanceFloor({getPlayer:()=>({...player,jumpHeight}),g
 npcBrain=window.createCodaNPCBehavior({npcs:npc,inside,route:pathTo,getGames:runtimeGames,getPlayer:()=>player});
 musicianUI=window.createCodaMusicianUI({
  npcs:npc,getBrain:()=>npcBrain,renderer:characterRenderer,canvas:c,panelBody,
- openPanel,closePanel,openWardrobe:openBoutique,openMissions:id=>missions?.open(npc.find(person=>person.id===id)||id),
+ openPanel,closePanel,openWardrobe:openBoutique,getMission:id=>missions?.get(id),openMissions:id=>missions?.open(npc.find(person=>person.id===id)||id),
  clearInput:()=>{clearHeldKeys();dest=null;clickPath=[];walking=false;},
  distance:person=>Math.hypot(person.x-player.x,person.y-player.y),
  faceTo:person=>{const dx=person.x-player.x,dy=person.y-player.y;facing=Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'down':'up';},
  walkTo:person=>{followedMusician=person.id;followTimer=.65;dest={x:person.x,y:person.y};clickPath=pathTo(player.x,player.y,person.x,person.y);if(!clickPath.length){dest=null;status.textContent='No walking route to '+person.name+'. Open Collision to inspect the path.';}c.focus({preventScroll:true});}
 });
 notesWallet=window.CodaNotesShop.createWallet({getAvatar:()=>avatar,catalog:characterRenderer.catalog});
-progression=window.CodaPlayerProgression.create({panelBody,openPanel});
+progression=window.CodaPlayerProgression.create({panelBody,openPanel,onAward:award=>{if(award.id.startsWith('achievement:'))rewardNotifications?.achievement({id:award.id,title:achievementTitle(award.id,award.reason),xp:award.amount});}});
 // Reconcile earned quests after a partial browser write failure; XP IDs dedupe.
 for(const reason of notesWallet.snapshot().rewards){if(reason.startsWith('npc-mission:'))progression.recordQuest(reason.slice('npc-mission:'.length));else if(reason.startsWith('piano-lesson:')||reason.startsWith('piano-interval:'))progression.recordQuest(reason);}
 hallFame=window.CodaHallOfFame.create({panelBody,openPanel,getAvatar:()=>avatar,getNotes:()=>notesWallet.snapshot()});
 const updateMusicianLevel=value=>{
- const button=document.querySelector('#levelBtn');button.textContent='Level '+value.level+' · '+value.xp+' XP';
- button.setAttribute('aria-label','Level '+value.level+', '+value.xp+' experience points · View level rewards');
+ const button=document.querySelector('#levelBtn');button.textContent='Profile · Level '+value.level;
+ button.setAttribute('aria-label','Your profile · Level '+value.level+', '+value.xp+' experience points');
  button.title=value.nextLevelXP===null?'All current level rewards unlocked':(value.nextLevelXP-value.xp)+' XP until level '+(value.level+1);
- notesShop?.refresh();
+ notesShop?.refresh();playerProfile?.refresh();
 };
 progression.subscribe(updateMusicianLevel);updateMusicianLevel(progression.getState());
-document.querySelector('#levelBtn').onclick=()=>progression.open();document.querySelector('#hallFameBtn').onclick=()=>hallFame.open();
+document.querySelector('#levelBtn').onclick=()=>playerProfile?.open();document.querySelector('#hallFameBtn').onclick=()=>hallFame.open();
 notesShop=window.CodaNotesShop.createShopUI({unlocked:id=>progression.unlocked(id),wallet:notesWallet,renderer:characterRenderer,panelBody,openPanel,openWardrobe:openBoutique,getAvatar:()=>avatar,applyAvatar:look=>applyBoutiqueLook('player',look)});
-const updateNotesBalance=value=>{const button=document.querySelector('#notesBtn');button.textContent='♫ '+value.balance+' Notes';button.setAttribute('aria-label',value.balance+' Notes · Open accessory shop');};
+const updateNotesBalance=value=>{const button=document.querySelector('#notesBtn');button.textContent='♫ '+value.balance+' Notes';button.setAttribute('aria-label',value.balance+' Notes · Open accessory shop');playerProfile?.refresh();};
 notesWallet.subscribe(updateNotesBalance);updateNotesBalance(notesWallet.snapshot());
 document.querySelector('#notesBtn').onclick=openNotesShop;
+function canCollectMission(id){const giver=npc.find(person=>person.id===id&&!person.hidden);return !!giver&&!gameOpen&&!learningRoomOpen()&&Math.hypot(giver.x-player.x,giver.y-player.y)<94;}
+function findQuestGiver(id){const giver=npc.find(person=>person.id===id&&!person.hidden);if(!giver)return;closePanel();followedMusician=id;followTimer=0;dest=null;clickPath=[];c.focus({preventScroll:true});}
+function achievementTitle(id,reason){const titles={'first-pitch-result':'Your first Pitch Race','first-triad-result':'Your first Music Triad match','first-rhythm-result':'Your first Rhythm Room round','triad-first-win':'Your first Music Triad win','pitch-ten-correct':'Ten notes right!','pitch-ten-streak':'Ten notes in a row!','pitch-perfect-run':'A perfect Pitch Race run','rhythm-perfect-round':'A perfect rhythm round','classroom-note-naming':'You know your note names!','classroom-rhythm-tree':'You grew a rhythm tree!'};return titles[id.replace(/^achievement:/,'')]||reason.replace(/^Achievement: /,'');}
 missions=window.CodaMusicianMissions.create({wallet:notesWallet,frame:gameiframe,panelBody,openPanel,
  openGame:key=>{const index={pitch:0,triad:1,rhythm:2}[key];const game=runtimeGames().find(game=>game.index===index);if(game){closePanel();openCabinet(game);}},
  onVerifiedResult:(game,id,result)=>{progression.recordGameEvent(game,id,result);hallFame.record(game,id,result);const bonus=window.CodaNotesShop.gameReward(game,result);if(bonus)notesWallet.grantReward('game:'+game+':'+id,bonus);},
- onMissionRewarded:mission=>progression.recordQuest(mission.id)
+ canTurnIn:canCollectMission,findQuestGiver:id=>findQuestGiver(id),
+ onMissionCompleted:mission=>rewardNotifications?.missionComplete({id:mission.id,title:mission.title,giver:npc.find(person=>person.id===mission.person)?.name,reward:mission.reward,action:{id:'mission:'+mission.person,label:'View mission'}}),
+ onMissionRewarded:mission=>{const result=progression.recordQuest(mission.id);rewardNotifications?.missionReward({id:mission.id,title:mission.title,notes:mission.reward,xp:result.ok?100:0});},
+ onChange:()=>playerProfile?.refresh()
 });
 pianoLab=window.createCodaPianoLab({host:document.querySelector('#pianoroom'),backgroundUrl:'assets/world/piano-lab-room.png?v=mobile-28',renderer:characterRenderer,getAvatar:()=>avatar,onClose:()=>{clearHeldKeys();walking=false;c.focus({preventScroll:true});},onReward:(reason,amount)=>{const result=notesWallet.grantReward(reason,amount);if(result.ok)progression.recordQuest(reason);return result;}});
-musicClassroom=window.createCodaMusicClassroom({host:document.querySelector('#musicClassroom'),backgroundSrc:'assets/world/music-classroom-room.png?v=mobile-28',renderer:characterRenderer,getAvatar:()=>avatar,onClose:()=>{clearHeldKeys();walking=false;c.focus({preventScroll:true});}});
+function rewardClassroomLesson(id){
+ if(!['note-naming','rhythm-tree'].includes(id))return {ok:false,error:'Choose a classroom lesson.'};
+ const result=progression.awardXP('achievement:classroom-'+id,50,id==='note-naming'?'Learned note names':'Learned the rhythm tree');playerProfile?.refresh();return result;
+}
+musicClassroom=window.createCodaMusicClassroom({host:document.querySelector('#musicClassroom'),backgroundSrc:'assets/world/music-classroom-room.png?v=mobile-28',renderer:characterRenderer,getAvatar:()=>avatar,onTutorialComplete:rewardClassroomLesson,onClose:()=>{clearHeldKeys();walking=false;c.focus({preventScroll:true});}});
+// Lesson completion and XP are saved separately; restore a missed XP write
+// from an already completed lesson without paying it a second time.
+for(const id of window.CodaClassroomTutorials.readProgress().completed)rewardClassroomLesson(id);
+playerProfile=window.createCodaPlayerProfile({renderer:characterRenderer,panelBody,openPanel,
+ getAvatar:()=>avatar,getProgression:()=>progression.refresh(),getMissions:()=>missions.snapshot(),getNotes:()=>notesWallet.snapshot(),
+ getTutorials:()=>musicClassroom.getState().tutorials,getMusicians:()=>npc,
+ openWardrobe:openBoutique,openMusicians:()=>musicianUI.openRoster(),openLevels:()=>progression.open(),openClassroom,
+ openMission:id=>missions.open(npc.find(person=>person.id===id)||id),findQuestGiver,
+ openGame:key=>{const index={pitch:0,triad:1,rhythm:2}[key],game=runtimeGames().find(game=>game.index===index);if(game){closePanel();openCabinet(game);}}
+});
+rewardNotifications=window.createCodaRewardNotifications({getTouchState:()=>mobileControls?.snapshot(),onAction:action=>{if(action.id.startsWith('mission:')){const id=action.id.slice(8);if(gameOpen)closeCabinet();pianoLab?.close();musicClassroom?.close();missions.open(npc.find(person=>person.id===id)||id);}}});
 document.querySelector('#pianoLabBtn').onclick=openPiano;document.querySelector('#classroomBtn').onclick=openClassroom;
 boutiqueUI=window.createCodaBoutiqueUI({
  renderer:characterRenderer,panelBody,openPanel,closePanel,getPreviewUI:()=>musicianUI,

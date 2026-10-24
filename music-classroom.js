@@ -6,19 +6,304 @@
 })(typeof window!=='undefined'?window:null,function(){
   'use strict';
   const TOPICS=Object.freeze([
-    {id:'welcome',title:'Professor Haydn’s game guide',shelf:'Games & composing',keywords:'help start win games tutorial',html:`<p>“Welcome to the music classroom! I am Professor Haydn. These shelves will help you hear, read, and build music. Take a book whenever you need a hint.”</p><h3>Choose a cabinet, then prepare</h3><ul><li><strong>Pitch Race:</strong> review pitch names, staff reading, and the piano. First identify the clef, then count lines and spaces carefully.</li><li><strong>Music Triad:</strong> compare note and rest durations, attack neighboring cards, and learn the special cards.</li><li><strong>Rhythm Room:</strong> find the steady beat, read the time signature, and count subdivisions before answering.</li><li><strong>Song Machine:</strong> place notes on its grid, choose durations, listen, and revise. Its guide below explains the actual local controls.</li><li><strong>Piano Lab:</strong> Chopin offers familiar melodies and intervals above or below a starting pitch. Study the matching books first.</li></ul><p class="classroom-example">A good routine: name it → count it → sing or imagine it → check it on the piano.</p><p>The cabinet’s own prompt tells you the exact task and scoring. These books teach the musical skills behind the games.</p>`,quiz:{question:'Which skill helps in Music Triad’s card battles?',answers:['Comparing rhythm durations','Naming instrument colors','Reading only chord roots'],correct:0,explanation:'Music Triad compares durations on matching note or rest edges.'}},
-    {id:'pitch-race',title:'Pitch Race: read, tap & hold',shelf:'Rhythm & games',keywords:'pitch race tap hold treble range streak classic endless level',html:`<p>Pitch Race sends notes toward a treble clef. Identify the <strong>earliest approaching note</strong> and use its on-screen letter control before it reaches the clef.</p><h3>The staff range</h3><p>The game uses these nine treble-clef notes: <strong>E4 F4 G4 A4 B4 C5 D5 E5 F5</strong>. Lines, bottom to top: E4 G4 B4 D5 F5. Spaces: F4 A4 C5 E5. Read the notehead’s position, rather than its stem direction.</p><h3>Tap notes and hold notes</h3><p>Quarter, eighth, and sixteenth notes use a tap. When hold notes are enabled in modes that support them, a <strong>half note needs a two-beat hold</strong> and a <strong>whole note needs a four-beat hold</strong> on the correct letter. Keep watching the progress instead of releasing early.</p><h3>Modes and scoring</h3><ul><li><strong>Classic:</strong> score as well as you can in 60 seconds.</li><li><strong>Endless:</strong> continue until three mistakes.</li><li><strong>Level:</strong> reach the target score before time runs out; a mistake costs five points.</li><li>Correct streaks increase the multiplier after each ten correct answers: ×2, then ×4, then ×8. Accuracy protects your streak.</li></ul><p class="classroom-example">If the notehead is in the second space from the bottom, it is A4. If it is on the middle line, it is B4.</p><p>Use the cabinet’s current mode settings and prompt for its exact hold-note behavior.</p>`,quiz:{question:'What is the treble staff’s middle line?',answers:['B4','A4','C5'],correct:0,explanation:'The treble lines are E4, G4, B4, D5, F5. B4 is the third, or middle, line.'}},
-    {id:'music-triad',title:'Music Triad: rhythm card battles',shelf:'Rhythm & games',keywords:'music triad card battle notes rests duration attack fermata conductor strategy',html:`<p>Music Triad is a <strong>rhythm card strategy game</strong>. Its name does not mean you are being asked to identify three-note chords.</p><h3>Simple mode</h3><ol><li>Place a card into an empty square on the 3 × 3 board.</li><li>Your newly placed card attacks cards immediately above, below, left, and right. Diagonal cards do not touch.</li><li>Compare the values on the touching edges. <strong>Notes battle notes; rests battle rests.</strong></li><li>A longer duration captures a shorter matching duration. Equal durations tie. Only the new card attacks on that turn.</li><li>When all nine squares are filled, control more cards than your opponent to win.</li></ol><h3>Compare total duration</h3><p>A half note lasts two quarter-note beats and beats a quarter note lasting one. A quarter, a pair of eighth notes, and four sixteenths each total one quarter-note beat, so they tie. A dot adds half the original value.</p><h3>Special cards</h3><ul><li><strong>Fermata:</strong> its marked side wins the matching battle.</li><li><strong>Conductor:</strong> flips adjacent cards.</li></ul><p class="classroom-example">Before placing a card, check each touching edge, the symbol type, and the total duration. A large note value cannot capture a rest edge merely because it is longer.</p><h3>Advanced mode</h3><p>The 4 × 4 board adds card meters and more specials. Compare the game’s displayed values in the card’s own meter: 2/2 counts half-note units, 4/4 quarter-note units, and 6/8 eighth-note units. This is a game comparison rule; normal 6/8 musical feel still groups into two dotted-quarter beats.</p><p>A Multi-Measure Rest captures adjacent rest edges, and a Quarter Note Fermata captures adjacent note edges. Conductor flips adjacent cards. Subito removes one target. TURN flips the full row and column while keeping the newly placed card yours. Tacet removes a target and its orthogonal neighbors. Read the special card’s prompt before committing a move.</p>`,quiz:{question:'What happens when a quarter note faces two eighth notes on matching note edges?',answers:['They tie','The quarter always wins','The eighth notes always win'],correct:0,explanation:'Both sides total one quarter-note beat, so their duration values are equal.'}},
-    {id:'rhythm-room',title:'Rhythm Room: listen & repeat',shelf:'Rhythm & games',keywords:'rhythm room tap practice listen follow timing accuracy count in',html:`<p>Rhythm Room gives you a two-bar phrase in <strong>4/4</strong>. In Listen &amp; Follow, listen first, then repeat the phrase. Tap Practice lets you practice the pattern.</p><h3>What to tap</h3><p>Tap the <strong>beginning of each note</strong>, rather than repeatedly tapping while a long note lasts. Keep counting during rests and stay silent for them. Extra taps count against accuracy.</p><ol><li>Wait through the four-beat count-in.</li><li>Keep a steady quarter-note pulse.</li><li>Use “1 &amp; 2 &amp;” for eighths, or “1 e &amp; a” for sixteenths.</li><li>Tap at each note onset. Hold the pulse internally through empty beats.</li></ol><p>The tap pad supports pointer, touch, <strong>Space</strong>, and <strong>Enter</strong>. Use its focused control for keyboard play.</p><h3>Build accuracy</h3><p>Start with a slower tempo and a few note values. Listen for which beats contain sounds and which are silent. A half note is one attack followed by two beats of sound, not two separate taps.</p><p class="classroom-example">Quarter note, quarter rest, two eighth notes, quarter note: tap on <strong>1</strong>, stay silent on <strong>2</strong>, tap <strong>3 &amp;</strong>, then tap <strong>4</strong>.</p>`,quiz:{question:'How should you perform a half note in Rhythm Room?',answers:['Tap once at its beginning','Tap twice, once per beat','Keep tapping until it ends'],correct:0,explanation:'Tap the note onset once, then count its two-beat duration without extra taps.'}},
-    {id:'pitch',title:'Pitch names & the piano',shelf:'Pitch & intervals',keywords:'letters sharp flat octave keyboard c d e f g a b',html:`<p>A <strong>pitch</strong> is how high or low a sound is. The musical alphabet repeats: <strong>A B C D E F G</strong>, then A again.</p><h3>Find your way on the keys</h3><p>Black keys come in groups of two and three. <strong>C is the white key immediately to the left of a group of two black keys.</strong> Moving right makes the pitch higher; moving left makes it lower.</p><p><strong>C D E F G A B C</strong> is the C major scale. Middle C is commonly called <strong>C4</strong>. The next C above it is C5, one octave higher.</p><h3>Sharps, flats, and semitones</h3><ul><li>A <strong>sharp (♯)</strong> raises a written note by one semitone.</li><li>A <strong>flat (♭)</strong> lowers it by one semitone.</li><li>A <strong>natural (♮)</strong> cancels a sharp or flat for that note in context.</li><li>A semitone, or half step, moves to the next piano key, including black keys. A whole tone, or whole step, is two semitones.</li></ul><p>E–F and B–C are neighboring white keys with no black key between them. They are already one semitone apart.</p><p class="classroom-example">C → C♯ → D is two semitones. C♯ and D♭ sound the same on this piano; which spelling you use depends on the music.</p>`,audio:[{label:'Hear C major',notes:[60,62,64,65,67,69,71,72]}],quiz:{question:'Which white key sits just left of two black keys?',answers:['C','F','A'],correct:0,explanation:'Find a group of two black keys. The white key directly to its left is C.'}},
-    {id:'staff',title:'Read the musical staff',shelf:'Pitch & intervals',keywords:'treble bass clef staff lines spaces ledger middle c',html:`<p>A staff has <strong>five lines</strong> and four spaces. Each neighboring line or space moves one letter name through the musical alphabet. Read from the bottom upward.</p><table><thead><tr><th>Clef</th><th>Lines, bottom → top</th><th>Spaces, bottom → top</th></tr></thead><tbody><tr><td>Treble (𝄞)</td><td>E4 G4 B4 D5 F5</td><td>F4 A4 C5 E5</td></tr><tr><td>Bass (𝄢)</td><td>G2 B2 D3 F3 A3</td><td>A2 C3 E3 G3</td></tr></tbody></table><p>Treble-clef spaces spell <strong>FACE</strong>. For bass spaces, “All Cows Eat Grass” gives A C E G.</p><h3>Ledger lines and accidentals</h3><p>Short ledger lines extend the staff. Middle C, C4, uses the first ledger line below the treble staff or the first ledger line above the bass staff.</p><p>Check the clef and key signature before naming a note. A written sharp or flat changes the pitch; it does not move the notehead to a different line or space.</p><ol><li>Identify treble or bass clef.</li><li>Find a nearby note you know.</li><li>Count neighboring lines and spaces, one letter per step.</li><li>Apply the key signature and any accidental.</li></ol>`,quiz:{question:'What are the treble-clef spaces, bottom to top?',answers:['F A C E','A C E G','E G B D F'],correct:0,explanation:'Treble spaces spell FACE. ACEG are bass spaces.'}},
-    {id:'intervals',title:'Intervals higher & lower',shelf:'Pitch & intervals',keywords:'interval second third fourth fifth sixth seventh octave semitone above below challenge',html:`<p>An <strong>interval</strong> is the distance between two pitches. Name its number by counting letter names inclusively, starting with 1 on the first note. C–E counts C(1), D(2), E(3): a third.</p><table><thead><tr><th>Interval</th><th>Semitones</th><th>Example upward from C</th></tr></thead><tbody><tr><td>Unison</td><td>0</td><td>C–C</td></tr><tr><td>Minor / major second</td><td>1 / 2</td><td>C–D♭ / C–D</td></tr><tr><td>Minor / major third</td><td>3 / 4</td><td>C–E♭ / C–E</td></tr><tr><td>Perfect fourth</td><td>5</td><td>C–F</td></tr><tr><td>Tritone</td><td>6</td><td>C–F♯ (augmented fourth)</td></tr><tr><td>Perfect fifth</td><td>7</td><td>C–G</td></tr><tr><td>Minor / major sixth</td><td>8 / 9</td><td>C–A♭ / C–A</td></tr><tr><td>Minor / major seventh</td><td>10 / 11</td><td>C–B♭ / C–B</td></tr><tr><td>Octave</td><td>12</td><td>C4–C5</td></tr></tbody></table><p>The number and quality both matter: C–D♯ sounds like C–E♭ on this piano, but the written intervals are an augmented second and a minor third.</p><h3>Chopin’s interval challenge</h3><ol><li>Find and play the exact starting pitch, including its octave.</li><li>For <strong>higher</strong>, move right; for <strong>lower</strong>, move left.</li><li>Count semitone moves, counting the starting key as zero moves.</li><li>During a game, stand on the answer key and press <strong>E</strong> to submit it.</li></ol><p class="classroom-example">Start C4, perfect fifth higher: C4 → G4, seven semitones right.<br>Start C5, major third lower: C5 → A♭4, four semitones left.</p>`,audio:[{label:'Hear a major third up',notes:[60,64]},{label:'Hear a perfect fifth down',notes:[72,65]}],quiz:{question:'A perfect fifth above C4 is…',answers:['G4','F4','E4'],correct:0,explanation:'A perfect fifth spans seven semitones. C4 up to G4 is a perfect fifth.'}},
-    {id:'triads',title:'Triads & chord qualities',shelf:'Chords & composing',keywords:'triad chord major minor diminished augmented root third fifth inversion',html:`<p>A <strong>triad</strong> has three notes, built in thirds: a root, a third, and a fifth. Its quality depends on the intervals above the root.</p><table><thead><tr><th>Quality</th><th>Semitones from root</th><th>C example</th><th>Stacked thirds</th></tr></thead><tbody><tr><td>Major</td><td>0, 4, 7</td><td>C E G</td><td>Major + minor</td></tr><tr><td>Minor</td><td>0, 3, 7</td><td>C E♭ G</td><td>Minor + major</td></tr><tr><td>Diminished</td><td>0, 3, 6</td><td>C E♭ G♭</td><td>Minor + minor</td></tr><tr><td>Augmented</td><td>0, 4, 8</td><td>C E G♯</td><td>Major + major</td></tr></tbody></table><h3>Build or identify a triad</h3><ol><li>Find the root. For a C triad, use the letter pattern C–E–G.</li><li>Count from the root to the third and fifth.</li><li>Apply sharps or flats to create the requested quality.</li><li>Check the entire chord, rather than guessing from one note.</li></ol><h3>Inversions</h3><p>Moving a chord note into a different octave changes its arrangement, not its basic identity. C–E–G is root position; E–G–C is first inversion; G–C–E is second inversion. The root is still C.</p><p class="classroom-example">To change C major into C minor, lower only the third: E becomes E♭. Keep C and G.</p>`,audio:[{label:'Hear C major chord',notes:[60,64,67],chord:true},{label:'Hear C minor chord',notes:[60,63,67],chord:true}],quiz:{question:'Which notes make C minor?',answers:['C E♭ G','C E G','C E♭ G♭'],correct:0,explanation:'C minor uses a minor third (3 semitones) and perfect fifth (7): C, E♭, G.'}},
-    {id:'rhythm',title:'Rhythm, rests & counting',shelf:'Rhythm & games',keywords:'rhythm beat note duration whole half quarter eighth sixteenth rest dotted tie subdivision tempo',html:`<p>The <strong>beat</strong> is the steady pulse. <strong>Rhythm</strong> is the pattern of sounds and silences over that pulse. Tempo, measured in beats per minute (BPM), tells you how fast the beat moves.</p><table><thead><tr><th>Duration</th><th>Quarter-note beats</th><th>Sixteenth-note grid cells</th></tr></thead><tbody><tr><td>Whole note / rest</td><td>4</td><td>16</td></tr><tr><td>Half</td><td>2</td><td>8</td></tr><tr><td>Quarter</td><td>1</td><td>4</td></tr><tr><td>Eighth</td><td>½</td><td>2</td></tr><tr><td>Sixteenth</td><td>¼</td><td>1</td></tr></tbody></table><p>A rest lasts as long as its matching note value. Keep counting through silence.</p><h3>Subdivide one beat</h3><ul><li>Quarters: <strong>1 2 3 4</strong>.</li><li>Eighths: <strong>1 &amp; 2 &amp; 3 &amp; 4 &amp;</strong>.</li><li>Sixteenths: <strong>1 e &amp; a 2 e &amp; a 3 e &amp; a 4 e &amp; a</strong>.</li></ul><p>A dot adds half the original value: a dotted quarter lasts 1½ quarter-note beats. A tie joins the lengths of notes at the same pitch. A triplet fits three equal notes into the time normally taken by two of that value.</p><p class="classroom-example">Quarter + two eighths + half = 1 + ½ + ½ + 2 = four quarter-note beats.</p>`,quiz:{question:'How many eighth notes equal one quarter note?',answers:['2','3','4'],correct:0,explanation:'An eighth is half a quarter note, so two eighth notes fill one quarter-note beat.'}},
-    {id:'meter',title:'Time signatures & bars',shelf:'Rhythm & games',keywords:'meter bar measure 4/4 3/4 6/8 compound simple time signature',html:`<p>A <strong>bar</strong>, or measure, groups beats. The time signature’s top number gives the number of the bottom-number note values in each bar.</p><table><thead><tr><th>Meter</th><th>Contents of one bar</th><th>Typical count</th></tr></thead><tbody><tr><td>2/4</td><td>2 quarter notes</td><td>1 2</td></tr><tr><td>3/4</td><td>3 quarter notes</td><td>1 2 3</td></tr><tr><td>4/4</td><td>4 quarter notes</td><td>1 2 3 4</td></tr><tr><td>6/8</td><td>6 eighth notes</td><td>ONE two three FOUR five six</td></tr><tr><td>9/8</td><td>9 eighth notes</td><td>3 groups of 3</td></tr><tr><td>12/8</td><td>12 eighth notes</td><td>4 groups of 3</td></tr></tbody></table><p>In common compound meter, each group of three eighths forms one dotted-quarter beat. <strong>6/8 usually has two big beats; 3/4 usually has three.</strong> Both contain six eighth notes, but their grouping and feel differ.</p><h3>Check your answer</h3><p>Add all note and rest durations in the bar. In 4/4, they total four quarter-note beats. In 6/8, they total six eighth notes. Listen for accents and subdivisions as well as the total.</p><p>Changing BPM changes speed; changing meter changes how the beats are grouped.</p>`,quiz:{question:'In the usual 6/8 feel, how many big dotted-quarter beats are in a bar?',answers:['2','3','6'],correct:0,explanation:'Six eighth notes group as 3 + 3, making two dotted-quarter beats.'}},
-    {id:'piano',title:'Prepare for Chopin',shelf:'Pitch & intervals',keywords:'piano chopin melody twinkle mary london bridge notes game free play e',html:`<p>In Piano Lab, the giant floor keyboard sounds as you walk over it during <strong>free play</strong>. The back wall shows the sounded pitch. You can turn letter names on or off.</p><p>During a <strong>Chopin game</strong>, walking is silent. Stand on a key and press <strong>E</strong> to play and submit it. This lets you pass over other keys without accidentally answering. The accessible piano buttons also let you intentionally play a note.</p><h3>Familiar melody starts in C</h3><ul><li><strong>Twinkle, Twinkle, Little Star:</strong> C C G G A A G · F F E E D D C.</li><li><strong>Mary Had a Little Lamb:</strong> E D C D E E E · D D D · E G G.</li><li><strong>London Bridge:</strong> G A G F E F G · D E F · E F G.</li></ul><p>Repeated letters mean play the same key again. In games, release E and press it again for each repeated note. Focus on pitch order; take the rhythm at a comfortable pace.</p><h3>Two kinds of challenge</h3><p>For a melody, follow the tune from the beginning. For an interval, play Chopin’s starting pitch first, then the requested distance higher or lower. The interval book explains both directions.</p><p>Completing a new challenge awards Notes for Riff’s shop. Replaying is useful practice; a previously collected reward is not paid twice.</p>`,audio:[{label:'Hear Twinkle’s opening',notes:[60,60,67,67,69,69,67]},{label:'Hear Mary’s opening',notes:[64,62,60,62,64,64,64]}],quiz:{question:'During a Chopin game, how do you submit a floor-piano key?',answers:['Stand on it and press E','Walk past it','Press Jump'],correct:0,explanation:'Game mode requires an intentional E press while standing on the chosen key.'}},
-    {id:'song-machine',title:'Compose in Song Machine',shelf:'Chords & composing',keywords:'song machine grid notes drums duration bpm clef score save load undo instruments composition',html:`<p>Song Machine is your composition studio. Its melodic tracks and three percussion rows let you build a piece, listen, and revise.</p><h3>Use the grid</h3><ol><li>Choose a note duration. A single grid cell represents one sixteenth note.</li><li>Click an empty cell to place a note at that pitch and time; click an existing note to erase it.</li><li>Drag across a row to set a longer note. In 4/4, 16 cells make one bar.</li><li>Use <strong>Add instrument</strong> for another melodic part. Choose its sound, treble or bass clef, volume, and mute setting.</li><li>Press <strong>Play</strong> to listen, <strong>Stop</strong> to stop, and <strong>Undo</strong> to reverse an edit.</li></ol><h3>Make a small musical plan</h3><ul><li>Start with a short melody using C D E F G A B in C major.</li><li>Add a bass part that supports the chord roots.</li><li>Try C major (C E G), F major (F A C), and G major (G B D).</li><li>Add a steady kick, snare, or hi-hat pattern. Leave some space.</li></ul><h3>Settings and saving</h3><p>Settings lets you choose meter, key/scale filter, and number of bars. Tempo ranges from 40 to 240 BPM. A scale filter can hide existing notes outside the chosen scale without deleting them.</p><p><strong>Save</strong> downloads a Song Machine JSON file; <strong>Load</strong> opens one. You can also load a saved composition into DJ Coda’s jukebox. The connected world’s cloud library needs a supported signed-in deployment.</p><p>To clear one instrument’s notes, hold its clear button for three seconds. Undo can restore the cleared notes.</p>`,quiz:{question:'In Song Machine’s 4/4 grid, how many sixteenth-note cells fill a bar?',answers:['16','4','8'],correct:0,explanation:'Four quarter-note beats, each divided into four sixteenths, make 16 cells.'}}
-  ]);
+  {
+    "id": "welcome",
+    "title": "Professor Haydn’s game guide",
+    "shelf": "Games & composing",
+    "keywords": "help start win games tutorial",
+    "html": "<p>“Welcome! I’m Professor Haydn. Let’s try a little music together.”</p><p>You can learn a new skill, have a go, and try again. You do not need to get everything right the first time.</p><h3>Pick your next adventure</h3><ul><li><strong>Note naming:</strong> find C, learn the musical alphabet, and name notes on a staff.</li><li><strong>Rhythm tree:</strong> split long notes into shorter notes and hear how they fit together.</li><li><strong>Pitch Race:</strong> name the notes before they reach the clef.</li><li><strong>Music Triad:</strong> use rhythm values to win card battles.</li><li><strong>Rhythm Room:</strong> listen to a pattern and tap it back.</li><li><strong>Piano Lab:</strong> play a familiar tune or solve Chopin’s interval challenge.</li><li><strong>Song Machine:</strong> build a tune of your own.</li></ul><p class=\"classroom-example\">Try this: look → listen → have a go → check your answer.</p>",
+    "quiz": {
+      "question": "Which skill helps in Music Triad’s card battles?",
+      "answers": [
+        "Comparing how long notes last",
+        "Naming instrument colors",
+        "Playing every card as fast as possible"
+      ],
+      "correct": 0,
+      "explanation": "Compare the rhythm values on the sides that touch."
+    }
+  },
+  {
+    "id": "note-naming",
+    "title": "Note naming",
+    "shelf": "Hands-on lessons",
+    "keywords": "note naming pitch letters piano keyboard treble staff tutorial lesson",
+    "tutorial": "note-naming",
+    "html": "<p>Let’s learn the note letters together. First find them on a piano. Then try notes on a musical staff. You can listen, retry, and go one step at a time.</p>"
+  },
+  {
+    "id": "rhythm-tree",
+    "title": "The rhythm tree",
+    "shelf": "Hands-on lessons",
+    "keywords": "rhythm tree split join whole half quarter eighth sixteenth counting tutorial lesson",
+    "tutorial": "rhythm-tree",
+    "html": "<p>How can one long note become lots of shorter notes? Split the rhythm tree, hear what changes, then build a four-beat rhythm of your own.</p>"
+  },
+  {
+    "id": "pitch-race",
+    "title": "Pitch Race: read, tap & hold",
+    "shelf": "Rhythm & games",
+    "keywords": "pitch race tap hold treble range streak classic endless level",
+    "html": "<p>Notes move toward the clef. Name the <strong>first note coming toward it</strong>, then tap its letter before it reaches the clef.</p><h3>Read its place</h3><p>The notehead is the round part. Look at which line or space it sits on.</p><ul><li>Treble lines, bottom to top: <strong>E G B D F</strong>.</li><li>Treble spaces, bottom to top: <strong>F A C E</strong>. The spaces spell FACE!</li></ul><p class=\"classroom-example\">The second space from the bottom is A. The middle line is B.</p><h3>Watch for a hold</h3><p>Tap short notes. When a hold note appears, keep the correct letter pressed until its progress finishes. A half note lasts two beats; a whole note lasts four beats.</p><h3>Build your streak</h3><p>A streak means getting several answers right in a row. Every ten correct answers increases your score boost. Take a careful look before you tap.</p><details><summary>Which game mode?</summary><ul><li><strong>Classic:</strong> a 60-second race.</li><li><strong>Endless:</strong> keep going until three mistakes.</li><li><strong>Level Challenge:</strong> reach the target before time runs out. A mistake costs five points.</li></ul><p>The cabinet shows which notes need a hold in the mode you choose.</p></details>",
+    "quiz": {
+      "question": "What is the treble staff’s middle line?",
+      "answers": [
+        "B",
+        "A",
+        "C"
+      ],
+      "correct": 0,
+      "explanation": "The treble lines go E, G, B, D, F. B is the middle one."
+    }
+  },
+  {
+    "id": "music-triad",
+    "title": "Music Triad: rhythm card battles",
+    "shelf": "Rhythm & games",
+    "keywords": "music triad card battle notes rests duration attack fermata conductor strategy",
+    "html": "<p>Your cards have notes or rests on their sides. A <strong>rest</strong> means silence for a set amount of time.</p><h3>Your turn</h3><ol><li>Put a card in an empty square.</li><li>Look at the cards touching it: above, below, left, and right.</li><li>Compare the two sides that touch. Notes battle notes. Rests battle rests.</li><li>The side that lasts longer wins that battle and captures the other card. Equal lengths tie.</li></ol><p>Only the card you just placed attacks. In the 3 × 3 game, try to own more cards when all nine squares are full.</p><h3>Count the whole group</h3><p>Two eighth notes last as long as one quarter note. Four sixteenth notes do too!</p><p class=\"classroom-example\">Quarter note = two eighth notes = four sixteenth notes. They tie when their note sides meet.</p><p>A half note lasts longer than a quarter note, so it wins that matching battle.</p><h3>Watch the special cards</h3><p>A <strong>Fermata</strong> wins on its marked side. A <strong>Conductor</strong> flips nearby touching cards. Read the card’s message before you place it.</p><details><summary>Ready for the bigger board?</summary><p>Advanced mode uses 4 × 4 squares and more special cards. Follow the values printed for each card’s meter: half-note units in 2/2, quarter-note units in 4/4, and eighth-note units in 6/8.</p><p>Multi-Measure Rest captures touching rest sides. Quarter Note Fermata captures touching note sides. Subito removes one target. TURN flips its row and column but keeps your new card yours. Tacet removes a target and its neighbors above, below, left, and right.</p></details>",
+    "quiz": {
+      "question": "What happens when a quarter note faces two eighth notes on matching note sides?",
+      "answers": [
+        "They tie",
+        "The quarter always wins",
+        "The eighth notes always win"
+      ],
+      "correct": 0,
+      "explanation": "Both sides last the same amount of time: one quarter-note beat."
+    }
+  },
+  {
+    "id": "rhythm-room",
+    "title": "Rhythm Room: listen & repeat",
+    "shelf": "Rhythm & games",
+    "keywords": "rhythm room tap practice listen follow timing accuracy count in",
+    "html": "<p>First, listen to a short pattern. Then tap it back. Each pattern fills two bars in 4/4.</p><p>The <strong>beat</strong> is the steady pulse underneath the music. A <strong>bar</strong> is a group of beats. Here, each bar has four beats.</p><h3>Try it in four steps</h3><ol><li>Listen through the count-in: <strong>1, 2, 3, 4</strong>.</li><li>Keep that steady beat in your head.</li><li>Tap once when each note begins.</li><li>Keep counting during rests, but stay silent.</li></ol><p>A long note still needs only one tap at its beginning. Extra taps count against your accuracy.</p><h3>Fit smaller notes between the beats</h3><p>For eighth notes, say <strong>1 &amp; 2 &amp; 3 &amp; 4 &amp;</strong>. For sixteenths, say <strong>1 e &amp; a</strong> in each beat.</p><p class=\"classroom-example\">Quarter note, quarter rest, two eighths, quarter note: tap on <strong>1</strong>, stay quiet on <strong>2</strong>, tap on <strong>3 &amp;</strong>, and tap on <strong>4</strong>.</p><p>You can tap the big pad, or use Space or Enter when the pad is selected. Start slowly and speed up when the pattern feels comfortable.</p>",
+    "quiz": {
+      "question": "How should you perform a half note in Rhythm Room?",
+      "answers": [
+        "Tap once at its beginning",
+        "Tap twice, once per beat",
+        "Keep tapping until it ends"
+      ],
+      "correct": 0,
+      "explanation": "Tap when the note starts. Count its two beats without adding another tap."
+    }
+  },
+  {
+    "id": "pitch",
+    "title": "Pitch names & the piano",
+    "shelf": "Pitch & intervals",
+    "keywords": "letters sharp flat octave keyboard c d e f g a b",
+    "html": "<p><strong>Pitch</strong> tells us how high or low a sound is. The musical alphabet has seven letters: <strong>A B C D E F G</strong>. After G, start again at A.</p><h3>Find C and F</h3><p>Black piano keys make groups of <strong>two</strong> and <strong>three</strong>.</p><ul><li><strong>C</strong> is the white key just left of two black keys.</li><li><strong>F</strong> is the white key just left of three black keys.</li></ul><p>Starting on C, the white keys go <strong>C D E F G A B C</strong>. The next C has the same letter name, but sounds higher.</p><h3>Choose a direction</h3><p>Move right for higher sounds. Move left for lower sounds.</p><p class=\"classroom-example\">Find two black keys. Touch the white key just to their left. You found C!</p><details><summary>What do sharps and flats mean?</summary><p>A <strong>sharp (♯)</strong> means the next piano key higher. A <strong>flat (♭)</strong> means the next key lower. Include black keys when you count these small steps.</p><p>E–F and B–C are neighboring white keys. There is no black key between them.</p></details>",
+    "audio": [
+      {
+        "label": "Hear C major",
+        "notes": [
+          60,
+          62,
+          64,
+          65,
+          67,
+          69,
+          71,
+          72
+        ]
+      }
+    ],
+    "quiz": {
+      "question": "Which white key sits just left of two black keys?",
+      "answers": [
+        "C",
+        "F",
+        "A"
+      ],
+      "correct": 0,
+      "explanation": "Find two black keys together. C is the white key just to their left."
+    }
+  },
+  {
+    "id": "staff",
+    "title": "Read the musical staff",
+    "shelf": "Pitch & intervals",
+    "keywords": "treble bass clef staff lines spaces ledger middle c",
+    "html": "<p>The <strong>staff</strong> is music’s ladder: five lines and four spaces. A note can sit on a line or in a space.</p><p>Count from the <strong>bottom</strong>. Every next line or space moves one letter up the musical alphabet.</p><h3>Treble clef</h3><ul><li>Lines: <strong>E G B D F</strong>.</li><li>Spaces: <strong>F A C E</strong>. The spaces spell FACE.</li></ul><p class=\"classroom-example\">Start on the bottom line, E. The space just above it is F. The next line is G.</p><h3>Three helpful steps</h3><ol><li>Check which clef you are reading.</li><li>Find a note you already know.</li><li>Count each line and space until you reach the new note.</li></ol><p>A tiny extra line is called a <strong>ledger line</strong>. Middle C sits on the first little line below a treble staff.</p><details><summary>Try the bass clef next</summary><p>Bass clef helps us read lower sounds. Its lines go <strong>G B D F A</strong>. Its spaces go <strong>A C E G</strong>: “All Cows Eat Grass.”</p></details>",
+    "quiz": {
+      "question": "What are the treble-clef spaces, bottom to top?",
+      "answers": [
+        "F A C E",
+        "A C E G",
+        "E G B D F"
+      ],
+      "correct": 0,
+      "explanation": "The treble spaces spell FACE. Start with F in the bottom space."
+    }
+  },
+  {
+    "id": "intervals",
+    "title": "Intervals higher & lower",
+    "shelf": "Pitch & intervals",
+    "keywords": "interval second third fourth fifth sixth seventh octave semitone above below challenge",
+    "html": "<p>An <strong>interval</strong> is the distance from one note to another.</p><h3>Count the letter names</h3><p>Count the first note as 1. From C to E, count <strong>C (1), D (2), E (3)</strong>. That is a third.</p><p>From C to G, count C, D, E, F, G. Five letter names make a fifth.</p><h3>Big and small steps</h3><p>A <strong>half step</strong> moves to the very next piano key, including black keys. A <strong>whole step</strong> is two half steps.</p><table><thead><tr><th>Chopin asks for…</th><th>Move this many half steps</th></tr></thead><tbody><tr><td>Minor second / major second</td><td>1 / 2</td></tr><tr><td>Minor third / major third</td><td>3 / 4</td></tr><tr><td>Perfect fourth</td><td>5</td></tr><tr><td>Perfect fifth</td><td>7</td></tr><tr><td>Octave: the next same-letter note</td><td>12</td></tr></tbody></table><h3>Try Chopin’s challenge</h3><ol><li>Find and play his starting key.</li><li>Move right for higher, or left for lower.</li><li>Count the key moves. Your starting key is zero moves.</li><li>Stand on your answer and press E, or use the touch Play note button.</li></ol><p class=\"classroom-example\">A perfect fifth above C is G. It is seven half-step moves to the right.</p>",
+    "audio": [
+      {
+        "label": "Hear a major third up",
+        "notes": [
+          60,
+          64
+        ]
+      },
+      {
+        "label": "Hear a perfect fifth down",
+        "notes": [
+          72,
+          65
+        ]
+      }
+    ],
+    "quiz": {
+      "question": "A perfect fifth above C is…",
+      "answers": [
+        "G",
+        "F",
+        "E"
+      ],
+      "correct": 0,
+      "explanation": "Count seven half-step moves to the right from C. You land on G."
+    }
+  },
+  {
+    "id": "triads",
+    "title": "Three-note chords",
+    "shelf": "Chords & composing",
+    "keywords": "triad chord major minor diminished augmented root third fifth inversion",
+    "html": "<p>A <strong>chord</strong> is a group of notes played together. A <strong>triad</strong> is a chord with three notes.</p><h3>Build a C major chord</h3><ol><li>Start on C. This is the chord’s home note, called its <strong>root</strong>.</li><li>Skip D and add E.</li><li>Skip F and add G.</li></ol><p>Now play <strong>C E G</strong> together. Listen to how the notes work as a team.</p><h3>Try a new sound</h3><p>To change C major into C minor, move E one small key step lower, to E♭. Keep C and G.</p><p class=\"classroom-example\">C major: <strong>C E G</strong>.<br>C minor: <strong>C E♭ G</strong>.</p><details><summary>Two more chord colors</summary><p>C diminished uses C E♭ G♭. C augmented uses C E G♯. Change one note, listen, and compare.</p></details>",
+    "audio": [
+      {
+        "label": "Hear C major chord",
+        "notes": [
+          60,
+          64,
+          67
+        ],
+        "chord": true
+      },
+      {
+        "label": "Hear C minor chord",
+        "notes": [
+          60,
+          63,
+          67
+        ],
+        "chord": true
+      }
+    ],
+    "quiz": {
+      "question": "Which notes make C minor?",
+      "answers": [
+        "C E♭ G",
+        "C E G",
+        "C E♭ G♭"
+      ],
+      "correct": 0,
+      "explanation": "Start with C major, C E G. Move only E down to E♭."
+    }
+  },
+  {
+    "id": "rhythm",
+    "title": "Rhythm, rests & counting",
+    "shelf": "Rhythm & games",
+    "keywords": "rhythm beat note duration whole half quarter eighth sixteenth rest dotted tie subdivision tempo",
+    "html": "<p>The <strong>beat</strong> is a steady pulse you can tap with your foot. <strong>Rhythm</strong> is the pattern you clap over that pulse.</p><p>For this lesson, each quarter note lasts one beat.</p><table><thead><tr><th>Note</th><th>How long?</th></tr></thead><tbody><tr><td>Whole</td><td>4 beats</td></tr><tr><td>Half</td><td>2 beats</td></tr><tr><td>Quarter</td><td>1 beat</td></tr><tr><td>Eighth</td><td>Half of a beat</td></tr><tr><td>Sixteenth</td><td>A quarter of a beat</td></tr></tbody></table><h3>Make a rhythm tree</h3><p>Split a whole note into two half notes. Split each half into two quarters. Keep splitting to find eighths and sixteenths. Every row fills the same amount of time.</p><h3>Count smaller notes</h3><ul><li>Quarters: <strong>1 2 3 4</strong>.</li><li>Eighths: <strong>1 &amp; 2 &amp; 3 &amp; 4 &amp;</strong>.</li><li>Four sixteenths in one beat: <strong>1 e &amp; a</strong>.</li></ul><p>A <strong>rest</strong> means stay quiet for that amount of time. Keep the beat going in your head.</p><p class=\"classroom-example\">Try clapping four quarters. Now clap eight eighths in the same four beats. The beat stays steady while your claps get closer together.</p>",
+    "quiz": {
+      "question": "How many eighth notes equal one quarter note?",
+      "answers": [
+        "2",
+        "3",
+        "4"
+      ],
+      "correct": 0,
+      "explanation": "Two eighth notes fit in the time of one quarter-note beat."
+    }
+  },
+  {
+    "id": "meter",
+    "title": "Beats, bars & time signatures",
+    "shelf": "Rhythm & games",
+    "keywords": "meter bar measure 4/4 3/4 6/8 compound simple time signature",
+    "html": "<p>We often count beats in small groups. One group is a <strong>bar</strong>, also called a measure.</p><h3>Start with 4/4</h3><p>In 4/4, count <strong>1 2 3 4</strong>, then start again at 1. Each bar holds four quarter-note beats.</p><ul><li><strong>2/4:</strong> count 1 2.</li><li><strong>3/4:</strong> count 1 2 3.</li><li><strong>4/4:</strong> count 1 2 3 4.</li></ul><p class=\"classroom-example\">In 4/4, two half notes fill a bar: 2 beats + 2 beats = 4 beats.</p><h3>What about 6/8?</h3><p>A 6/8 bar holds six eighth notes. Usually we group them in threes: <strong>ONE two three FOUR five six</strong>. That gives two big beats, each made of three little sounds.</p><p>Try swaying twice while counting all six little sounds. In 3/4, you usually feel three steady beats instead.</p><p><strong>Tempo</strong> means speed. Changing tempo makes the beat faster or slower. The time signature tells you how to group it.</p>",
+    "quiz": {
+      "question": "In the usual 6/8 feel, how many big beats are in a bar?",
+      "answers": [
+        "2",
+        "3",
+        "6"
+      ],
+      "correct": 0,
+      "explanation": "Group the six eighth notes as three plus three. That makes two big beats."
+    }
+  },
+  {
+    "id": "piano",
+    "title": "Prepare for Chopin",
+    "shelf": "Pitch & intervals",
+    "keywords": "piano chopin melody twinkle mary london bridge notes game free play e",
+    "html": "<p>In <strong>free play</strong>, walk across Piano Lab’s big keys to make music. The back wall shows each note’s letter name. You can switch the key labels on or off.</p><h3>When a game begins</h3><p>Walking stays quiet so you can pass over keys. Stand on the key you want, then press <strong>E</strong> or tap <strong>Play note</strong>. Each press gives one answer.</p><h3>Try a familiar tune</h3><ul><li><strong>Twinkle, Twinkle:</strong> C C G G A A G.</li><li><strong>Mary Had a Little Lamb:</strong> E D C D E E E.</li><li><strong>London Bridge:</strong> G A G F E F G.</li></ul><p>Play the same key again when you see a repeated letter. You can take your time; Chopin checks the notes in order.</p><h3>Two kinds of game</h3><p><strong>Melody:</strong> play the tune from its beginning.<br><strong>Interval:</strong> play Chopin’s starting note, then find a note the right distance higher or lower.</p><p>Finish a new challenge to earn Notes for Riff’s shop. You can replay it for practice after collecting its reward.</p>",
+    "audio": [
+      {
+        "label": "Hear Twinkle’s opening",
+        "notes": [
+          60,
+          60,
+          67,
+          67,
+          69,
+          69,
+          67
+        ]
+      },
+      {
+        "label": "Hear Mary’s opening",
+        "notes": [
+          64,
+          62,
+          60,
+          62,
+          64,
+          64,
+          64
+        ]
+      }
+    ],
+    "quiz": {
+      "question": "During a Chopin game, how do you submit a floor-piano key?",
+      "answers": [
+        "Stand on it and press E",
+        "Walk past it",
+        "Press Jump"
+      ],
+      "correct": 0,
+      "explanation": "Stand on the key, then press E or tap Play note."
+    }
+  },
+  {
+    "id": "song-machine",
+    "title": "Make a tune in Song Machine",
+    "shelf": "Chords & composing",
+    "keywords": "song machine grid notes drums duration bpm clef score save load undo instruments composition",
+    "html": "<p>Song Machine is your music sketchbook. Make a short idea, listen, and change anything you like.</p><h3>Your first tune</h3><ol><li>Choose how long your note should last.</li><li>Tap or click a grid square to add a note. Higher rows make higher sounds.</li><li>Add a few more notes, then press <strong>Play</strong>.</li><li>Press <strong>Stop</strong> when you want to edit. <strong>Undo</strong> takes back your last change.</li></ol><p>On a phone, swipe to see more of the grid. Choose <strong>Draw notes</strong> to drag a note longer.</p><h3>Add another musical part</h3><p>Use <strong>Add instrument</strong> for another track. A track is one instrument’s part. Try a low bass part, or use the three drum rows below the pitched tracks.</p><p class=\"classroom-example\">Try C E G as your first three notes. Listen, move one note, and hear what changes.</p><h3>Helpful settings</h3><p><strong>Tempo</strong> changes speed. A <strong>scale</strong> chooses a set of note rows to show. Hidden notes stay in your song. In 4/4, sixteen little grid squares fill one bar.</p><p>Open Settings for bars, scale, import, and the save/account controls. You can load a saved composition into DJ Coda’s jukebox.</p><p>To clear a track, hold its Clear button for three seconds. Undo can bring the notes back.</p>",
+    "quiz": {
+      "question": "In Song Machine’s 4/4 grid, how many sixteenth-note squares fill a bar?",
+      "answers": [
+        "16",
+        "4",
+        "8"
+      ],
+      "correct": 0,
+      "explanation": "One beat holds four sixteenths. Four beats hold sixteen squares."
+    }
+  }
+]);
   const SHELVES=Object.freeze([
     {id:'pitch',label:'Pitch & intervals',x:58,y:80,w:216,h:190,topic:'pitch',approach:{x:175,y:315}},
     {id:'chords',label:'Chords & composing',x:724,y:80,w:215,h:190,topic:'triads',approach:{x:825,y:315}},
@@ -30,17 +315,19 @@
   function createCodaMusicClassroom(api={}){
     const host=api.host;if(!host)throw new Error('Music classroom needs a host element.');
     const doc=host.ownerDocument,win=doc.defaultView||root,renderer=api.renderer;
+    let tutorial=null;
     let opened=false,destroyed=false,priorFocus=null,selected='welcome',frame=0,last=0,clock=0,walking=false,near=null,destination=null,audio=null,voices=[],audioTimers=[];
     let mobileView='room';const touchHeld=new Set(),mobileLayout=()=>win.matchMedia?.('(max-width:760px), (pointer:coarse)').matches===true;
     const keys=new Set(),player={x:500,y:510,facing:'up',phase:0};
     host.classList.add('music-classroom');host.setAttribute('role','dialog');host.setAttribute('aria-modal','true');host.setAttribute('aria-labelledby','classroomTitle');
-    host.innerHTML=`<div class="classroom-shell"><header class="classroom-heading"><div><span class="classroom-eyebrow">CODA ARCADE · MUSIC ROOMS</span><h1 id="classroomTitle">The Music Classroom</h1><p>Professor Haydn’s shelves are always open.</p></div><button id="classroomClose" type="button" aria-label="Return to arcade"><span class="room-return-full">← Return to arcade</span><span class="room-return-short" aria-hidden="true">← Arcade</span> <small>Esc</small></button></header><nav class="classroom-mobile-nav" aria-label="Music classroom views"><button type="button" data-classroom-view="room">Room</button><button type="button" data-classroom-view="books">Study books</button></nav><section class="classroom-room" aria-label="Walkable music classroom"><canvas id="classroomCanvas" width="1000" height="600" tabindex="0" aria-label="Music classroom. Walk with WASD or arrows. E talks to Professor Haydn or reads a nearby bookshelf. The study guide below offers the same books."></canvas><div class="classroom-room-controls"><p><span class="room-keyboard-hint">WASD / arrows · Walk &nbsp; E · Talk or read &nbsp; Click / tap · Walk</span><span class="room-touch-hint">Tap the floor to walk, or use the movement pad · Talk / Read</span></p><div><button type="button" id="classroomTalk">Talk to Professor Haydn</button><button type="button" id="classroomRead">Read a nearby shelf</button></div></div></section><p class="classroom-professor-message" id="classroomStatus" role="status" aria-live="polite">Haydn: “Welcome! Come in, choose a book, and ask questions.”</p><main class="classroom-library"><nav aria-label="Classroom books"><h2>The study shelves</h2><label class="classroom-search">Find a topic<input id="classroomSearch" type="search" placeholder="Try intervals, triads, or rhythm"></label><div class="classroom-topic-list" id="classroomTopics"></div></nav><article id="classroomBook" class="classroom-book" tabindex="-1" aria-labelledby="classroomBookTitle"></article></main></div>`;
+    host.innerHTML=`<div class="classroom-shell"><header class="classroom-heading"><div><span class="classroom-eyebrow">CODA ARCADE · MUSIC ROOMS</span><h1 id="classroomTitle">The Music Classroom</h1><p>Professor Haydn’s shelves are always open.</p></div><button id="classroomClose" type="button" aria-label="Return to arcade"><span class="room-return-full">← Return to arcade</span><span class="room-return-short" aria-hidden="true">← Arcade</span> <small>Esc</small></button></header><nav class="classroom-mobile-nav" aria-label="Music classroom views"><button type="button" data-classroom-view="room">Room</button><button type="button" data-classroom-view="books">Study books</button></nav><section class="classroom-room" aria-label="Walkable music classroom"><canvas id="classroomCanvas" width="1000" height="600" tabindex="0" aria-label="Music classroom. Walk with WASD or arrows. E talks to Professor Haydn or reads a nearby bookshelf. Hold a finger on the floor to steer; lift to stop. The study guide below offers the same books."></canvas><div class="classroom-room-controls"><p><span class="room-keyboard-hint">WASD / arrows · Walk &nbsp; E · Talk or read &nbsp; Click · Walk</span><span class="room-touch-hint">Hold and drag on the floor to walk · Lift to stop · Or use the movement pad</span></p><div><button type="button" id="classroomTalk">Talk to Professor Haydn</button><button type="button" id="classroomRead">Read a nearby shelf</button></div></div></section><p class="classroom-professor-message" id="classroomStatus" role="status" aria-live="polite">Haydn: “Welcome! Come in, choose a book, and ask questions.”</p><div class="classroom-lesson-shortcuts" role="group" aria-label="Hands-on music lessons"><button type="button" data-start-lesson="note-naming">♫ Learn note names</button><button type="button" data-start-lesson="rhythm-tree">♩ Explore the rhythm tree</button></div><main class="classroom-library"><nav aria-label="Classroom books"><h2>The study shelves</h2><label class="classroom-search">Find a topic<input id="classroomSearch" type="search" placeholder="Try intervals, triads, or rhythm"></label><div class="classroom-topic-list" id="classroomTopics"></div></nav><article id="classroomBook" class="classroom-book" tabindex="-1" aria-labelledby="classroomBookTitle"></article></main></div>`;
     const el=id=>host.querySelector('#'+id),canvas=el('classroomCanvas');let g=canvas.getContext('2d');
+    const fingerWalk=win.createCodaFingerWalk?.({canvas,enabled:()=>opened&&mobileLayout()&&mobileView==='room',onStart:()=>{keys.clear();destination=null;walking=false;},onStop:()=>{destination=null;walking=false;}})||null;
     const background=doc.createElement('canvas');background.width=1000;background.height=600;let backgroundReady=false,backgroundImage=null;
     if(api.backgroundSrc){backgroundImage=new win.Image();backgroundImage.onload=()=>{if(opened)draw();};backgroundImage.src=api.backgroundSrc;}
     function status(text){el('classroomStatus').textContent=text;}
     function setMobileView(view,focus=false){
-      if(!['room','books'].includes(view))return;releaseControls();clearKeys();mobileView=view;host.dataset.mobileView=view;
+      if(!['room','books'].includes(view))return;if(view==='room')stopAudio();releaseControls();clearKeys();mobileView=view;host.dataset.mobileView=view;
       for(const button of host.querySelectorAll('[data-classroom-view]'))button.setAttribute('aria-pressed',String(button.dataset.classroomView===view));
       if(focus&&mobileLayout()){host.scrollTop=0;(view==='room'?canvas:el('classroomSearch')).focus({preventScroll:true});}
     }
@@ -51,15 +338,22 @@
       if(!matches.length){const p=doc.createElement('p');p.className='classroom-no-results';p.textContent='No matching books. Try another word.';list.append(p);}
     }
     function selectTopic(id,focus=false){
-      const topic=topicFor(id);selected=topic.id;stopAudio();
+      const topic=topicFor(id);selected=topic.id;tutorial?.destroy();tutorial=null;stopAudio();
       const article=el('classroomBook');article.innerHTML='<p class="classroom-book-kicker"></p><h2 id="classroomBookTitle"></h2>'+topic.html;
       article.querySelector('.classroom-book-kicker').textContent=topic.shelf.toUpperCase();el('classroomBookTitle').textContent=topic.title;
+      if(topic.tutorial){
+        const mount=doc.createElement('div');article.append(mount);
+        if(win.CodaClassroomTutorials){tutorial=win.CodaClassroomTutorials.create({host:mount,storage:api.storage,onComplete:(id,details)=>api.onTutorialComplete?.(id,details)});tutorial.open(topic.tutorial);}
+        else mount.textContent='This lesson is still loading. Reopen the classroom in a moment.';
+        listTopics();status('Haydn: “Let’s try '+topic.title.toLowerCase()+' together.”');
+        if(focus){if(mobileLayout())setMobileView('books');article.focus({preventScroll:true});article.scrollIntoView({behavior:'auto',block:'start'});}return;
+      }
       if(topic.audio){const controls=doc.createElement('div');controls.className='classroom-listen';for(const example of topic.audio){const button=doc.createElement('button');button.type='button';button.textContent='♫ '+example.label;button.onclick=()=>playExample(example);controls.append(button);}const stop=doc.createElement('button');stop.type='button';stop.textContent='Stop example';stop.onclick=stopAudio;controls.append(stop);article.append(controls);}
       const quiz=topic.quiz,check=doc.createElement('section');check.className='classroom-check';check.setAttribute('aria-label','Check your understanding');const heading=doc.createElement('h3');heading.textContent='Quick check';const question=doc.createElement('p');question.textContent=quiz.question;const answers=doc.createElement('div');answers.className='classroom-answers';const feedback=doc.createElement('p');feedback.className='classroom-feedback';feedback.setAttribute('role','status');
       quiz.answers.forEach((answer,index)=>{const button=doc.createElement('button');button.type='button';button.textContent=answer;button.onclick=()=>{const correct=index===quiz.correct;feedback.dataset.correct=String(correct);feedback.textContent=(correct?'Haydn: “Exactly! ':'Haydn: “Try again. ')+quiz.explanation+'”';};answers.append(button);});
       check.append(heading,question,answers,feedback);article.append(check);listTopics();status('Haydn: “'+topic.title+'. A fine place to begin.”');if(focus){if(mobileLayout())setMobileView('books');article.focus({preventScroll:true});article.scrollIntoView({behavior:'auto',block:'start'});}
     }
-    function stopAudio(){for(const timer of audioTimers)win.clearTimeout(timer);audioTimers=[];for(const voice of voices)try{voice.stop();}catch{}voices=[];if(audio){audio.close().catch(()=>{});audio=null;}}
+    function stopAudio(){tutorial?.stopAudio();for(const timer of audioTimers)win.clearTimeout(timer);audioTimers=[];for(const voice of voices)try{voice.stop();}catch{}voices=[];if(audio){audio.close().catch(()=>{});audio=null;}}
     function playExample(example){
       stopAudio();const Constructor=api.AudioContext||win.AudioContext||win.webkitAudioContext;
       if(!Constructor){status('Audio is unavailable. The written note examples are ready to study.');return;}
@@ -115,15 +409,17 @@
     function tick(time){
       if(!opened||destroyed)return;const dt=Math.min(.05,(time-last)/1000||0);last=time;clock+=dt;
       let dx=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),dy=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);
-      if(dx||dy)destination=null;else if(destination){dx=destination.x-player.x;dy=destination.y-player.y;if(Math.hypot(dx,dy)<3){destination=null;dx=dy=0;}}
+      const finger=fingerWalk?.getState(),fingerTarget=finger?.following?finger.target:null;
+      if(dx||dy)destination=null;else if(fingerTarget){const box=canvas.getBoundingClientRect(),x=clamp((fingerTarget.clientX-box.left)*1000/box.width,35,965),y=clamp((fingerTarget.clientY-box.top)*600/box.height,285,575);dx=x-player.x;dy=y-player.y;if(Math.hypot(dx,dy)<3)dx=dy=0;}
+      else if(destination){dx=destination.x-player.x;dy=destination.y-player.y;if(Math.hypot(dx,dy)<3){destination=null;dx=dy=0;}}
       const distance=Math.hypot(dx,dy);walking=distance>0;
-      if(distance){player.facing=Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'down':'up';const amount=destination?Math.min(distance,190*dt):190*dt,nx=player.x+dx/distance*amount,ny=player.y+dy/distance*amount,before={...player};if(passable(nx,player.y))player.x=nx;if(passable(player.x,ny))player.y=ny;const moved=Math.hypot(player.x-before.x,player.y-before.y);walking=moved>.01;player.phase+=moved/14;if(destination&&!walking)destination=null;}
+      if(distance){player.facing=Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'down':'up';const amount=destination||fingerTarget?Math.min(distance,190*dt):190*dt,nx=player.x+dx/distance*amount,ny=player.y+dy/distance*amount,before={...player};if(passable(nx,player.y))player.x=nx;if(passable(player.x,ny))player.y=ny;const moved=Math.hypot(player.x-before.x,player.y-before.y);walking=moved>.01;player.phase+=moved/14;if(destination&&!walking)destination=null;}
       near=nearest();el('classroomRead').disabled=near?.type!=='shelf';draw();frame=win.requestAnimationFrame(tick);
     }
-    function clearKeys(){touchHeld.clear();keys.clear();walking=false;destination=null;}
+    function clearKeys(){fingerWalk?.stop('clear');touchHeld.clear();keys.clear();walking=false;destination=null;}
     function control(raw,pressed){
       const key=String(raw).toLowerCase();if(!opened||destroyed||!['w','a','s','d','arrowup','arrowleft','arrowdown','arrowright','e'].includes(key))return false;
-      if(pressed){if(touchHeld.has(key))return true;canvas.focus({preventScroll:true});touchHeld.add(key);keydown({key,target:canvas,preventDefault(){},repeat:false});}
+      if(pressed){if(touchHeld.has(key))return true;if(key!=='e')fingerWalk?.stop('controls');canvas.focus({preventScroll:true});touchHeld.add(key);keydown({key,target:canvas,preventDefault(){},repeat:false});}
       else{touchHeld.delete(key);keyup({key});}return true;
     }
     function releaseControls(){for(const key of Array.from(touchHeld))control(key,false);touchHeld.clear();}
@@ -137,13 +433,14 @@
     function keyup(event){keys.delete(event.key.toLowerCase());}
     function open(){if(destroyed||opened)return;priorFocus=doc.activeElement;opened=true;host.hidden=false;host.scrollTop=0;setMobileView('room');clearKeys();last=win.performance.now();selectTopic(selected);canvas.focus({preventScroll:true});frame=win.requestAnimationFrame(tick);}
     function close(){if(!opened)return;opened=false;host.hidden=true;win.cancelAnimationFrame(frame);clearKeys();stopAudio();if(priorFocus?.isConnected)priorFocus.focus({preventScroll:true});api.onClose?.();}
-    function destroy(){if(destroyed)return;close();destroyed=true;host.removeEventListener('keydown',keydown);win.removeEventListener('keyup',keyup);win.removeEventListener('blur',clearKeys);}
+    function destroy(){if(destroyed)return;close();tutorial?.destroy();tutorial=null;fingerWalk?.dispose();destroyed=true;host.removeEventListener('keydown',keydown);win.removeEventListener('keyup',keyup);win.removeEventListener('blur',clearKeys);}
     el('classroomClose').onclick=close;el('classroomTalk').onclick=()=>{clearKeys();selectTopic('welcome',true);};el('classroomRead').onclick=()=>{clearKeys();interact();};el('classroomSearch').oninput=listTopics;
-    canvas.addEventListener('pointerdown',event=>{if(!opened||event.button!==0)return;event.preventDefault();canvas.focus({preventScroll:true});const box=canvas.getBoundingClientRect(),x=(event.clientX-box.left)*1000/box.width,y=(event.clientY-box.top)*600/box.height;if(passable(x,y))destination={x,y};});
+    canvas.addEventListener('pointerdown',event=>{if(!opened||event.button!==0)return;if(fingerWalk&&event.pointerType==='touch'&&mobileLayout())return;event.preventDefault();canvas.focus({preventScroll:true});const box=canvas.getBoundingClientRect(),x=(event.clientX-box.left)*1000/box.width,y=(event.clientY-box.top)*600/box.height;if(passable(x,y))destination={x,y};});
     host.addEventListener('keydown',keydown);win.addEventListener('keyup',keyup);win.addEventListener('blur',clearKeys);canvas.addEventListener('blur',clearKeys);
+    for(const button of host.querySelectorAll('[data-start-lesson]'))button.addEventListener('click',()=>{clearKeys();selectTopic(button.dataset.startLesson,true);});
     for(const button of host.querySelectorAll('[data-classroom-view]'))button.addEventListener('click',()=>setMobileView(button.dataset.classroomView,true));
     selectTopic('welcome');setMobileView('room');draw();
-    return {open,close,destroy,selectTopic,control,releaseControls,setMobileView,getState:()=>({open:opened,mobileView,topic:selected,player:{...player},near:near?{...near}:null,audioPlaying:!!audio,professor:{id:HAYDN.id,name:HAYDN.name,x:HAYDN.x,y:HAYDN.y},shelves:SHELVES.map(shelf=>({id:shelf.id,label:shelf.label,x:shelf.approach.x,y:shelf.approach.y}))})};
+    return {open,close,destroy,selectTopic,control,releaseControls,setMobileView,getState:()=>({open:opened,mobileView,fingerWalk:fingerWalk?.getState()||null,tutorials:tutorial?.getState()||win.CodaClassroomTutorials?.readProgress(api.storage)||{lessons:[],completed:[],completedCount:0,total:2},topic:selected,player:{...player},near:near?{...near}:null,audioPlaying:!!audio||!!tutorial?.getState().active?.audioPlaying,professor:{id:HAYDN.id,name:HAYDN.name,x:HAYDN.x,y:HAYDN.y},shelves:SHELVES.map(shelf=>({id:shelf.id,label:shelf.label,x:shelf.approach.x,y:shelf.approach.y}))})};
   }
   return {TOPICS,SHELVES,HAYDN,topicFor,createCodaMusicClassroom};
 });

@@ -4,6 +4,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import threading
 import unittest
+import re
 from playwright.sync_api import sync_playwright
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -38,6 +39,19 @@ class SongProgressionTests(unittest.TestCase):
         self.page.wait_for_function('window.songMachineBridge&&window.CodaSongSounds')
     def tearDown(self):
         self.context.close();self.assertEqual(self.errors,[])
+    def test_pitch_labels_use_letters_and_friendly_ranges_without_changing_song_pitches(self):
+        labels=self.page.locator('#tracks>.track').first.locator('.pitch-label')
+        text=labels.all_inner_texts()
+        self.assertTrue(all(re.fullmatch(r'[A-G][♯♭]?',value) for value in text),text)
+        hints=labels.evaluate_all('(nodes)=>nodes.map(node=>node.title)')
+        self.assertTrue(all(not re.search(r'[A-G][♯♭]?\d',value) for value in hints),hints)
+        for hint in ['C, low notes','C, middle notes','C, high notes','C, highest note']:
+            self.assertIn(hint,hints)
+        before=self.page.evaluate('songMachineBridge.get()')
+        self.assertEqual([note['p'] for note in before['tracks'][0]['notes']],[72,74,76,79])
+        self.page.evaluate('''()=>{const song=songMachineBridge.get();song.tracks[0].notes=[{p:61,t:0,d:4},{p:73,t:4,d:4}];songMachineBridge.load(song);}''')
+        self.assertEqual([note['p'] for note in self.page.evaluate('songMachineBridge.get()')['tracks'][0]['notes']],[61,73])
+
     def test_starter_instruments_stay_available_and_bonus_sounds_show_level_locks(self):
         options=self.page.get_by_label('Melody sound').locator('option')
         self.assertEqual(options.count(),18)

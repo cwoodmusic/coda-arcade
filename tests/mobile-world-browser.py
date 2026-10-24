@@ -75,6 +75,30 @@ class MobileWorldTests(unittest.TestCase):
             head:canvas.top+(p.y-camera.y-58)*scale,stage:stage.toJSON(),width:innerWidth,scrollWidth:document.documentElement.scrollWidth};
         }''')
 
+    def floor_point(self,dx=120,dy=0,touch_id=1):
+        """A visible floor position relative to the camera-followed player."""
+        player=self.screen_position()
+        return {'x':max(20,min(player['width']-20,player['x']+dx)),
+          'y':player['y']+dy,'id':touch_id,'radiusX':3,'radiusY':3,'force':1}
+
+    def settle_camera(self):
+        # Teleportation eases the camera. Wait for it before choosing a held
+        # screen-space target, as a player would after looking around.
+        self.page.evaluate('window.__mobileCameraCheck=null')
+        self.page.wait_for_function('''()=>{
+          const camera=CodaArcadeQA.camera(),last=window.__mobileCameraCheck;
+          const stable=last&&Math.hypot(camera.x-last.x,camera.y-last.y)<.001?(last.stable+1):0;
+          window.__mobileCameraCheck={x:camera.x,y:camera.y,stable};return stable>=3;
+        }''')
+
+    def assert_finger_stopped(self):
+        self.page.wait_for_function('!CodaArcadeQA.fingerWalk().following')
+        self.assertIsNone(self.page.evaluate('CodaArcadeQA.fingerWalk().target'))
+        self.assertIsNone(self.page.evaluate('CodaArcadeQA.characters().player.destination'))
+        self.page.wait_for_timeout(80)
+        position=self.position();self.page.wait_for_timeout(140)
+        self.assertEqual(self.position(),position,'Lifting the finger must stop movement rather than finish a path')
+
     def assert_avatar_visible(self):
         self.page.wait_for_function('''()=>{
           const canvas=view.getBoundingClientRect(),stage=worldStage.getBoundingClientRect(),camera=CodaArcadeQA.camera(),p=CodaArcadeQA.position(),scale=camera.zoom*canvas.width/1672;
@@ -102,6 +126,76 @@ class MobileWorldTests(unittest.TestCase):
             for point in edge_points:
                 with self.subTest(viewport=viewport,point=point):
                     self.place(point['x'],point['y']);self.assert_avatar_visible()
+
+    def test_large_controls_overlay_the_full_height_world_in_portrait_and_landscape(self):
+        for viewport in [{'width':390,'height':844},{'width':360,'height':780},{'width':844,'height':390},{'width':667,'height':375}]:
+            self.page.set_viewport_size(viewport);self.page.wait_for_timeout(100)
+            metric=self.page.evaluate('''()=>{
+              const host=document.querySelector('#codaTouchControls'),dpad=host.querySelector('.coda-dpad').getBoundingClientRect(),actions=host.querySelector('.coda-touch-actions').getBoundingClientRect(),stage=worldStage.getBoundingClientRect();
+              return {stageBottom:stage.bottom,scrollWidth:document.documentElement.scrollWidth,
+                reserve:getComputedStyle(document.body).getPropertyValue('--coda-world-pad-height').trim(),
+                dpad:dpad.toJSON(),actions:actions.toJSON(),
+                center:document.elementFromPoint((dpad.right+actions.left)/2,innerHeight-45)?.id,
+                buttons:[...host.querySelectorAll('button')].filter(button=>!button.hidden).map(button=>{const b=button.getBoundingClientRect();return {width:b.width,height:b.height};})};
+            }''')
+            self.assertEqual(metric['reserve'],'0px');self.assertAlmostEqual(metric['stageBottom'],viewport['height'],delta=1)
+            self.assertLessEqual(metric['scrollWidth'],viewport['width']+1)
+            self.assertGreaterEqual(metric['dpad']['left'],0);self.assertLess(metric['dpad']['right'],metric['actions']['left']);self.assertLessEqual(metric['actions']['right'],viewport['width'])
+            self.assertTrue(all(button['width']>=58 and button['height']>=58 for button in metric['buttons']),metric)
+            self.assertEqual(metric['center'],'view','The space between the thumb controls must remain a playable map')
+
+    def test_held_floor_finger_redirects_with_drag_and_stops_on_lift_without_a_path(self):
+        self.place(1225,675);self.assert_avatar_visible();self.settle_camera();start=self.position();right=self.floor_point()
+        self.touches('touchStart',right)
+        self.page.wait_for_function('x=>CodaArcadeQA.fingerWalk().following&&CodaArcadeQA.position().x>x+18',arg=start['x'])
+        self.assertIsNone(self.page.evaluate('CodaArcadeQA.characters().player.destination'))
+        redirect=self.position();left=self.floor_point(-120)
+        self.touches('touchMove',left)
+        self.page.wait_for_function('x=>CodaArcadeQA.position().x<x-18',arg=redirect['x'])
+        self.assertLess(self.page.evaluate('CodaArcadeQA.fingerWalk().target.clientX'),100)
+        self.touches('touchEnd');self.assert_finger_stopped()
+
+    def test_floor_finger_cancel_and_rotation_stop_until_a_new_gesture(self):
+        self.place(1225,675);self.assert_avatar_visible();self.settle_camera();right=self.floor_point();start=self.position()
+        self.touches('touchStart',right);self.page.wait_for_function('x=>CodaArcadeQA.position().x>x+10',arg=start['x'])
+        self.touches('touchCancel');self.assert_finger_stopped()
+        start=self.position();right=self.floor_point();self.touches('touchStart',right)
+        self.page.wait_for_function('x=>CodaArcadeQA.position().x>x+10',arg=start['x'])
+        self.page.set_viewport_size({'width':844,'height':390});self.assert_finger_stopped();self.touches('touchEnd')
+        self.assert_avatar_visible();self.settle_camera();start=self.position();left=self.floor_point(-120)
+        self.touches('touchStart',left);self.page.wait_for_function('x=>CodaArcadeQA.fingerWalk().following&&CodaArcadeQA.position().x<x-12',arg=start['x'])
+        self.touches('touchEnd');self.assert_finger_stopped()
+
+    def test_floor_finger_and_jump_button_work_together_without_losing_steering(self):
+        self.place(1225,675);self.assert_avatar_visible();self.settle_camera();start=self.position();right=self.floor_point()
+        self.touches('touchStart',right);self.page.wait_for_function('x=>CodaArcadeQA.position().x>x+10',arg=start['x'])
+        jump=self.button_point('Jump',2);self.touches('touchStart',right,jump)
+        self.page.wait_for_function('CodaArcadeQA.characters().player.jumpHeight>6')
+        self.assertTrue(self.page.evaluate('CodaArcadeQA.fingerWalk().following'))
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.fingerWalk().pointerCount'),1)
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.characters().player.jumps'),1)
+        jumping=self.position();self.touches('touchEnd',jump)
+        self.page.wait_for_function('x=>CodaArcadeQA.position().x>x+12',arg=jumping['x'])
+        self.touches('touchEnd');self.assert_finger_stopped()
+
+    def test_held_floor_finger_respects_a_painted_collision_wall(self):
+        # A saved, explicitly painted barrier must block direct touch movement.
+        # Keep it long enough that a held finger cannot drift around its ends.
+        self.page.evaluate('''()=>{
+          const project=CodaDeveloperConsole.getProject(),grid=CodaArcadeQA.collisionGrid(),cells=new Map(project.collision);
+          for(let row=59;row<=77;row++)cells.set(row*grid.width+126,0);
+          project.collision=[...cells];localStorage.setItem('codaWorldProjectV1',JSON.stringify(project));
+        }''')
+        self.load();self.place(1225,675);self.assert_avatar_visible();self.settle_camera()
+        self.assertFalse(self.page.evaluate('CodaArcadeQA.walkable(1265,675)'))
+        right=self.floor_point();self.touches('touchStart',right)
+        self.page.wait_for_function('CodaArcadeQA.position().x>1245')
+        self.page.wait_for_timeout(250);blocked=self.position();self.page.wait_for_timeout(350)
+        self.assertLess(blocked['x'],1260);self.assertAlmostEqual(self.position()['x'],blocked['x'],delta=.01)
+        self.assertTrue(self.page.evaluate('p=>CodaArcadeQA.walkable(p.x,p.y)',self.position()))
+        self.assertTrue(self.page.evaluate('CodaArcadeQA.fingerWalk().following'))
+        self.assertIsNone(self.page.evaluate('CodaArcadeQA.characters().player.destination'))
+        self.touches('touchEnd');self.assert_finger_stopped()
 
     def test_two_fingers_can_walk_and_jump_then_release_without_stuck_movement(self):
         self.place(1225,675);self.assert_avatar_visible()

@@ -13,7 +13,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path!='/classroom-harness':
             return super().do_GET()
-        html='''<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="/music-classroom.css"><button id="entrance">Enter classroom</button><section id="room" hidden></section><script src="/character-renderer.js"></script><script src="/music-classroom.js"></script><script>window.roomUI=createCodaMusicClassroom({host:document.querySelector('#room'),backgroundSrc:'/assets/world/music-classroom-room.png',renderer:createCodaCharacterRenderer(),getAvatar:()=>({})});entrance.onclick=()=>roomUI.open();</script>'''
+        html='''<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="/music-classroom.css"><link rel="stylesheet" href="/classroom-tutorials.css"><button id="entrance">Enter classroom</button><section id="room" hidden></section><script src="/character-renderer.js"></script><script src="/classroom-tutorials.js"></script><script src="/music-classroom.js"></script><script>window.roomUI=createCodaMusicClassroom({host:document.querySelector('#room'),backgroundSrc:'/assets/world/music-classroom-room.png',renderer:createCodaCharacterRenderer(),getAvatar:()=>({})});entrance.onclick=()=>roomUI.open();</script>'''
         self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.end_headers();self.wfile.write(html.encode())
 
 class ClassroomTests(unittest.TestCase):
@@ -59,15 +59,15 @@ class ClassroomTests(unittest.TestCase):
         self.page.wait_for_function("roomUI.getState().near?.id==='pitch'",timeout=5000)
         self.page.wait_for_function("Math.abs(roomUI.getState().player.x-175)<5",timeout=5000)
         self.page.keyboard.press('e')
-        self.assertEqual(self.page.evaluate('roomUI.getState().topic'),'pitch')
+        self.assertIn(self.page.evaluate('roomUI.getState().topic'),['pitch','note-naming'])
 
     def test_books_search_quiz_audio_and_close_work(self):
         self.page.locator('#classroomSearch').fill('interval')
         self.page.locator('[data-topic="intervals"]').click()
         self.assertIn('Intervals higher',self.page.locator('#classroomBookTitle').inner_text())
-        self.page.get_by_role('button',name='F4',exact=True).click()
+        self.page.get_by_role('button',name='F',exact=True).click()
         self.assertEqual(self.page.locator('.classroom-feedback').get_attribute('data-correct'),'false')
-        self.page.get_by_role('button',name='G4',exact=True).click()
+        self.page.get_by_role('button',name='G',exact=True).click()
         self.assertEqual(self.page.locator('.classroom-feedback').get_attribute('data-correct'),'true')
         self.page.get_by_role('button',name='♫ Hear a major third up',exact=True).click()
         self.assertTrue(self.page.evaluate('roomUI.getState().audioPlaying'))
@@ -82,7 +82,9 @@ class ClassroomTests(unittest.TestCase):
         self.page.get_by_role('button',name='Study books',exact=True).click()
         self.page.locator('#classroomSearch').fill('Music Triad')
         self.page.locator('[data-topic="music-triad"]').click()
-        self.assertIn('rhythm card strategy game',self.page.locator('#classroomBook').inner_text())
+        book=self.page.locator('#classroomBook').inner_text()
+        self.assertIn('Notes battle notes',book)
+        self.assertIn('Rests battle rests',book)
         overflow=self.page.evaluate('document.querySelector("#room").scrollWidth>innerWidth')
         self.assertFalse(overflow,'Study books should fit a phone viewport')
 

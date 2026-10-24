@@ -23,7 +23,7 @@ finishMatch.onclick=()=>CodaBridge.report('fixture-'+(++serial),{mode:'computer'
 parent.postMessage({coda:1,type:'ready',game:'triad'},location.origin);
 </script></html>'''
 
-class LearningWorldTests(unittest.TestCase):
+class WorldBrowserCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.playwright=sync_playwright().start()
@@ -69,6 +69,29 @@ class LearningWorldTests(unittest.TestCase):
         self.assertTrue(self.page.evaluate('([x,y])=>CodaArcadeQA.place(x,y)',[x,y]))
         self.page.wait_for_timeout(100);self.page.locator('#view').focus()
 
+    def approach_musician(self,person):
+        self.assertTrue(self.page.evaluate('''id=>{
+          const person=CodaArcadeQA.characters().npcs.find(p=>p.id===id&&!p.hidden);
+          if(!person)return false;
+          for(const [dx,dy]of [[30,0],[-30,0],[0,30],[0,-30]])
+            if(CodaArcadeQA.place(person.x+dx,person.y+dy))return true;
+          return false;
+        }''',person))
+
+    def open_bach_mission(self):
+        self.page.locator('#musiciansBtn').click()
+        self.page.get_by_role('button',name='Missions from J. S. Bach',exact=True).click()
+
+    def leave_musician(self,person):
+        self.assertTrue(self.page.evaluate('''id=>{
+          const person=CodaArcadeQA.characters().npcs.find(p=>p.id===id);
+          for(const [x,y]of [[1180,620],[350,280],[400,740],[1340,725]])
+            if(Math.hypot(x-person.x,y-person.y)>200&&CodaArcadeQA.place(x,y))return true;
+          return false;
+        }''',person))
+
+class LearningWorldTests(WorldBrowserCase):
+
     def test_counter_attendants_open_the_correct_boutique_and_shop(self):
         people=self.page.evaluate('CodaArcadeQA.shopkeepers()')
         self.assertEqual(len(people),2)
@@ -101,17 +124,20 @@ class LearningWorldTests(unittest.TestCase):
             self.page.locator(selector).click();self.assertTrue(self.page.evaluate(f'CodaArcadeQA.{qa}().open'))
             self.page.keyboard.press('Escape')
 
-    def test_completed_mission_awards_notes_xp_and_hall_record_once(self):
-        self.page.locator('#musiciansBtn').click()
-        self.page.get_by_role('button',name='Missions from J. S. Bach',exact=True).click()
+    def test_completed_mission_requires_quest_giver_before_reward_and_keeps_hall_record(self):
+        self.open_bach_mission();self.leave_musician('bach')
         self.page.get_by_role('button',name='Accept mission',exact=True).click()
         self.page.get_by_role('button',name='Play Music Triad',exact=True).click()
         cabinet=self.page.frame_locator('#gameiframe')
         cabinet.locator('#finishMatch').click()
-        self.page.wait_for_function('CodaArcadeQA.notes().balance===256')
+        self.page.wait_for_function('CodaArcadeQA.notes().balance===166')
         self.page.locator('#returnworld').click()
-        self.assertGreater(self.page.evaluate('CodaArcadeQA.progression().xp'),0)
-        self.assertGreater(self.page.evaluate('CodaArcadeQA.progression().level'),1)
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),162)
+        self.open_bach_mission();self.assertTrue(self.page.get_by_role('button',name='Collect reward',exact=True).is_disabled())
+        self.approach_musician('bach');self.open_bach_mission()
+        self.page.get_by_role('button',name='Collect reward',exact=True).click()
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),256)
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),262)
         before=self.page.evaluate('CodaArcadeQA.progression().xp')
         self.page.locator('#notesBtn').click();self.page.locator('[data-shop-item="witch"] button').click()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),before,'Currency spending gives no experience')

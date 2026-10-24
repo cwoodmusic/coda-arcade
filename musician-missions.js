@@ -1,5 +1,5 @@
-/* Authored musician missions. Completion comes from live cabinet gameplay;
- * no dialogue choice can mark a mission complete or award its Notes. */
+/* Authored musician missions. Live cabinet gameplay completes a mission;
+ * its musician gives the reward when the player returns to them. */
 (function(root,factory){
   const library=factory();
   if(typeof module==='object'&&module.exports)module.exports=library;
@@ -20,6 +20,7 @@
     {id:'miles-triad-comeback',person:'miles',title:'Find Another Way',game:'triad',goal:'Win a Music Triad computer match after trailing your opponent during the match.',kind:'triad-comeback',target:1,reward:140}
   ].map(item=>Object.freeze(item)));
   const byPerson=new Map(DEFINITIONS.map(item=>[item.person,item]));
+  const PERSON_NAMES=Object.freeze({bach:'Bach',mozart:'Mozart',beethoven:'Beethoven',clara:'Clara Schumann',joplin:'Scott Joplin',ellington:'Duke Ellington',ella:'Ella Fitzgerald',nina:'Nina Simone',miles:'Miles Davis'});
   const integer=(value,max=1000000)=>Number.isSafeInteger(value)&&value>=0&&value<=max;
   function validResult(game,result){
     if(!result||typeof result!=='object'||Array.isArray(result))return false;
@@ -103,15 +104,28 @@
     }
     function snapshot(){return {persistent,error:lastError,missions:DEFINITIONS.map(entry),connection:session?{game:session.game,connected:session.connected,streak:session.tracker?.snapshot().streak??session.fallbackStreak}:null};}
     function changed(){render();try{api.onChange?.(snapshot());}catch{/* Feedback cannot interrupt gameplay. */}}
-    function settleRewards(){
-      for(const mission of DEFINITIONS){
-        const value=state.missions[mission.id];if(!value?.completedAt||value.rewardedAt)continue;
-        if(!persist())break;
-        let result;try{result=api.wallet?.grantReward('npc-mission:'+mission.id,mission.reward);}catch{result={ok:false};}
-        if(!result?.ok){lastError=result?.error||'Your mission is complete. Notes could not be saved yet; retry the reward.';continue;}
-        value.rewardedAt=now();persist();
-        try{api.onMissionRewarded?.({...mission,rewardId:'npc-mission:'+mission.id});}catch{/* Progress feedback cannot undo an awarded mission. */}
+    function canTurnIn(mission){
+      try{return api.canTurnIn?.(mission.person,entry(mission))===true;}catch{return false;}
+    }
+    function turnIn(person){
+      const mission=missionFor(person),value=mission&&state.missions[mission.id];
+      if(!mission||!value)return {ok:false,error:'Accept this musician\'s mission first.'};
+      if(value.rewardedAt)return {ok:true,alreadyRewarded:true};
+      if(!value.completedAt)return {ok:false,error:'Finish this mission before collecting its reward.'};
+      if(!canTurnIn(mission))return {ok:false,error:'Return to '+PERSON_NAMES[mission.person]+' to collect your reward.'};
+      // Save the completed mission before touching the wallet. Its stable reward
+      // ID also protects a retry if the wallet saves but the final mission save fails.
+      if(!persist()){changed();return {ok:false,error:lastError};}
+      const rewardId='npc-mission:'+mission.id;
+      let result;try{result=api.wallet?.grantReward(rewardId,mission.reward);}catch{result={ok:false};}
+      if(!result?.ok){
+        lastError=result?.error||'Your mission is complete. Your Notes could not be saved. Talk to '+PERSON_NAMES[mission.person]+' to try again.';
+        changed();return {ok:false,error:lastError};
       }
+      value.rewardedAt=now();
+      if(!persist()){value.rewardedAt=0;changed();return {ok:false,error:lastError};}
+      try{api.onMissionRewarded?.({...mission,rewardId});}catch{/* Progress feedback cannot undo an awarded mission. */}
+      changed();return {ok:true,alreadyRewarded:false,rewardId};
     }
     function accept(person){
       const mission=missionFor(person);if(!mission)return {ok:false,error:'This musician has no mission yet.'};
@@ -124,8 +138,10 @@
       if(!value||value.completedAt||!session?.eligible.has(mission.id))return;
       const progress=Math.min(mission.target,Math.max(value.progress,amount));
       if(progress===value.progress)return;
-      value.progress=progress;if(progress>=mission.target)value.completedAt=now();
-      persist();settleRewards();changed();
+      value.progress=progress;const completed=progress>=mission.target;if(completed)value.completedAt=now();
+      persist();
+      if(completed)try{api.onMissionCompleted?.(entry(mission));}catch{/* Completion feedback cannot interrupt gameplay. */}
+      changed();
     }
     function rhythmProgress(best){for(const mission of DEFINITIONS)if(mission.kind==='rhythm-streak')advance(mission,best);}
     function recordResult(game,runId,result){
@@ -209,24 +225,27 @@
       const mission=displayed.mission,value=entry(mission),section=displayed.section;section.replaceChildren();
       section.append(node('h3',mission.title),node('p',mission.goal),node('p','Reward: '+mission.reward+' Notes'));
       const progress=node('p',value.status==='available'?'Accept this mission, then start a fresh game through an arcade cabinet.':
-        value.status==='rewarded'?'Mission complete · '+mission.reward+' Notes awarded!':value.status==='complete'?'Mission complete · Notes reward waiting to save.':
+        value.status==='rewarded'?'Mission complete · '+mission.reward+' Notes collected!':value.status==='complete'?'Mission complete! Return to '+PERSON_NAMES[mission.person]+' to collect your reward.':
         'Mission active · Best progress '+value.progress+' / '+mission.target);
       progress.setAttribute('role','status');section.append(progress);
       if(value.status==='available')section.append(action('Accept mission',()=>accept(mission.person)));
       if(value.status==='active')section.append(action('Play '+GAMES[mission.game],()=>api.openGame?.(mission.game)));
-      if(value.status==='complete')section.append(action('Retry saving Notes',()=>{settleRewards();changed();}));
+      if(value.status==='complete'){
+        const collect=action('Collect reward',()=>turnIn(mission.person));collect.disabled=!canTurnIn(mission);section.append(collect);
+        if(typeof api.findQuestGiver==='function')section.append(action('Find quest giver',()=>api.findQuestGiver(mission.person,entry(mission))));
+      }
       const note=node('p','Results are checked automatically while you play through this arcade. Missions and Notes stay in this browser.');note.className='muted';section.append(note);
       if(lastError){const error=node('p',lastError);error.setAttribute('role','alert');section.append(error);}
     }
     function open(person){
       const mission=missionFor(person);if(!mission)return false;
-      api.openPanel?.((typeof person==='object'?person.name:person)+' · Mission');
+      api.openPanel?.((typeof person==='object'?person.name:PERSON_NAMES[mission.person])+' · Mission');
       const section=node('section');section.className='musician-mission';section.setAttribute('aria-label',mission.title+' mission');
       api.panelBody.append(section);displayed={mission,section};render();return true;
     }
-    host?.addEventListener?.('message',onMessage);settleRewards();
-    return {open,accept,attachGame,detachGame,snapshot,get:person=>{const mission=missionFor(person);return mission?entry(mission):null;},
-      retryRewards(){settleRewards();changed();},dispose(){if(disposed)return;disposed=true;detachGame();host?.removeEventListener?.('message',onMessage);displayed=null;}};
+    host?.addEventListener?.('message',onMessage);
+    return {open,accept,attachGame,detachGame,turnIn,snapshot,refresh:changed,get:person=>{const mission=missionFor(person);return mission?entry(mission):null;},
+      retryRewards(person){return turnIn(person||displayed?.mission.person);},dispose(){if(disposed)return;disposed=true;detachGame();host?.removeEventListener?.('message',onMessage);displayed=null;}};
   }
   return {KEY,DEFINITIONS,GAMES,validResult,createStreakTracker,create};
 });

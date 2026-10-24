@@ -70,7 +70,7 @@ class PlayerControlTests(unittest.TestCase):
         self.assertEqual(self.failures, [], 'Failed local resources')
 
     def state(self):
-        return self.page.evaluate('CodaArcadeQA.characters().player')
+        return self.page.evaluate('({...CodaArcadeQA.characters().player,time:CodaArcadeQA.time()})')
 
     def frames(self, count):
         self.page.evaluate('controlFrames', count)
@@ -105,11 +105,15 @@ class PlayerControlTests(unittest.TestCase):
                 self.assertTrue(after['walking'])
         before, cardinal = self.move(['d'], 18)
         distance = math.hypot(cardinal['x']-before['x'], cardinal['y']-before['y'])
+        cardinal_speed = distance / (cardinal['time']-before['time'])
         before, diagonal = self.move(['d','s'], 18)
         diagonal_distance = math.hypot(diagonal['x']-before['x'], diagonal['y']-before['y'])
         self.assertGreater(diagonal['x'], before['x']+15)
         self.assertGreater(diagonal['y'], before['y']+15)
-        self.assertTrue(.8<diagonal_distance/distance<1.2,
+        # RAF counts cover different elapsed times under shared browser load.
+        # Compare distance per simulation second, including the game's dt cap.
+        diagonal_speed = diagonal_distance / (diagonal['time']-before['time'])
+        self.assertTrue(.8<diagonal_speed/cardinal_speed<1.2,
                         'Diagonal input must be normalized instead of moving sqrt(2) times faster')
 
     def test_space_makes_one_grounded_hop_without_scrolling_or_air_jumps(self):
@@ -225,7 +229,7 @@ class PlayerControlTests(unittest.TestCase):
         self.assertEqual((current['x'],current['y']), (before_dialog['x'],before_dialog['y']))
 
     def test_a_cabinet_receives_its_keys_without_moving_or_jumping_the_world_player(self):
-        self.page.route('**/song-machine/index.html', lambda route:route.fulfill(
+        self.page.route('**/song-machine/index.html*', lambda route:route.fulfill(
             content_type='text/html', body='''<!doctype html><body tabindex="0">Cabinet test
 <script>window.gameKeys=[];addEventListener('keydown',event=>{
 gameKeys.push(event.code);event.preventDefault();});</script>'''))

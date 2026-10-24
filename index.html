@@ -4,8 +4,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>The Coda Arcade • Insert curiosity</title>
 <meta name="description" content="Explore a pixel arcade, customize your character, and play four music games.">
-<link rel="stylesheet" href="style.css?v=mobile-28">
-<link rel="stylesheet" href="mobile-controls.css?v=mobile-28">
+<link rel="stylesheet" href="style.css?v=student-29">
+<link rel="stylesheet" href="mobile-controls.css?v=student-29">
 <body class="landing-page">
 <header class="landing-header">
   <a class="brand" href="./">♫ <span>THE CODA<br>ARCADE</span></a>
@@ -22,10 +22,10 @@
     <div><p class="eyebrow">TUNE IN. POWER UP. PLAY ON.</p><h1>Welcome to<br><em>The Coda Arcade.</em></h1></div>
     <p class="welcome">Neon nights. Pixel beats. Musical adventures.<br>Pick a cabinet. Find your frequency.</p>
   </div>
-  <a id="connectedWorldLink" class="connected-world-launch" href="world-preview.html?v=mobile-28"><span>Explore the connected world</span><small>Piano Lab · Music classroom · Notes shop · Missions</small><b aria-hidden="true">→</b></a>
+  <a id="connectedWorldLink" class="connected-world-launch" href="world-preview.html?v=student-29"><span>Explore the connected world</span><small>Piano Lab · Music classroom · Notes shop · Missions</small><b aria-hidden="true">→</b></a>
   <section class="arcade" aria-label="Original arcade floor">
     <div class="roomtop"><span><i></i> FREE PLAY · 4 CABINETS</span><span id="roomlabel">THE ARCADE / FLOOR 01</span></div>
-    <canvas id="room" width="1000" height="800" tabindex="0" aria-label="Walkable music arcade. Use arrow keys or WASD to walk, E to play, Space to jump. On phones, use the direction pad and action buttons, or tap the floor to walk."></canvas>
+    <canvas id="room" width="1000" height="800" tabindex="0" aria-label="Walkable music arcade. Use arrow keys or WASD to walk, E to play, Space to jump. On phones, use the direction pad and action buttons, or hold the floor and slide to steer. Lift to stop."></canvas>
     <div id="landingTouchControls"></div>
     <div class="roomfoot">
       <p class="keyboard-help"><kbd>W A S D</kbd> or <kbd>↑ ← ↓ →</kbd> Move <b>·</b> <kbd>E</kbd> Play <b>·</b> <kbd>Space</kbd> Jump <b>·</b> <kbd>Q</kbd> Emote</p>
@@ -34,7 +34,7 @@
         <button id="roomswitch">Piano room →</button><button id="loungeswitch">☕ Lounge</button><button id="danceswitch">✦ Dance Floor</button><button id="jukebutton">♫ Jukebox</button>
         <button id="motiontoggle" aria-pressed="true">Animations: On</button><button id="arcadefullscreen" title="Expand the arcade to fullscreen">⛶ Fullscreen</button>
       </div></details>
-      <span class="floor-tap-hint">Click or tap the floor to walk</span>
+      <span class="floor-tap-hint">Click the floor to walk</span>
     </div>
   </section>
   <div class="below"><p><span class="dot"></span> <span id="playername">Guest</span> · <span id="status">Make yourself at home.</span></p><span>NO COINS. JUST CURIOSITY.</span></div>
@@ -50,7 +50,8 @@
 <section id="gameview" hidden aria-label="Open music game"><div class="gametop"><button id="back">← Return to arcade</button><strong id="gametitle"></strong><span id="cabinetstatus" role="status"></span><a id="opengame" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a></div><iframe id="gameframe" title="Music game" allow="autoplay; fullscreen" allowfullscreen></iframe></section>
 <div id="toast" role="status"></div>
 <script src="mobile-controls.js?v=mobile-28"></script>
-<script src="app.js?v=mobile-28"></script>
+<script src="finger-follow.js?v=student-29"></script>
+<script src="app.js?v=student-29"></script>
 <script src="jukebox.js?v=direction1"></script>
 <script src="rooms.js?v=neon-npc-v5"></script>
 <script src="neon-world.js?v=neon-npc-v5"></script>

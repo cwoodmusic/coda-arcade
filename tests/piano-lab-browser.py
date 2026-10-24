@@ -62,12 +62,46 @@ class PianoLabTests(unittest.TestCase):
         self.walk(160,530)
         self.assertEqual(self.state()['floorNote'],60)
         self.assertEqual(self.state()['lastWallNote'],60)
-        self.assertEqual(self.page.locator('#pianoWallNote').inner_text(),'Back wall: C4')
+        self.assertEqual(self.page.locator('#pianoWallNote').inner_text(),'Back wall: C')
         self.assertEqual(self.state()['audioState'],'running')
         self.assertEqual(self.page.locator('.piano-key-name:visible').count(),0)
         self.page.locator('#pianoKeyNames').check()
         self.assertEqual(self.page.locator('.piano-key-name:visible').count(),25)
         self.walk(160,330); self.assertEqual(self.state()['held'],[])
+
+    def test_learner_labels_drop_octave_numbers_but_keep_interval_starts_exact(self):
+        self.page.evaluate('''()=>{
+          window.pianoCanvasWords=[];
+          const original=CanvasRenderingContext2D.prototype.fillText;
+          CanvasRenderingContext2D.prototype.fillText=function(value,...args){
+            if(this.canvas.id==='pianoRoomCanvas')pianoCanvasWords.push(String(value));
+            return original.call(this,value,...args);
+          };
+        }''')
+        self.page.locator('#pianoKeyNames').check()
+        names=self.page.locator('.piano-key-name').all_text_contents()
+        self.assertEqual(names[:3],['C','C♯','D'])
+        self.assertTrue(all(not any(character.isdigit() for character in name) for name in names))
+        for name in ['Play lower C','Play higher C','Play highest C']:
+            self.assertEqual(self.page.get_by_role('button',name=name,exact=True).count(),1)
+        self.play(72)
+        self.assertEqual(self.state()['lastWallNote'],72,'The real sounding pitch keeps its internal range')
+        self.assertEqual(self.page.locator('#pianoWallNote').inner_text(),'Back wall: C')
+        self.page.locator('#pianoInterval').select_option('down-4')
+        self.page.locator('#pianoStartInterval').click()
+        self.assertIn('higher C',self.page.locator('#pianoIntervalPrompt').inner_text())
+        self.play(60);self.assertEqual(self.state()['intervalStep'],0,'The lower C is still the wrong starting key')
+        self.play(72);self.assertEqual(self.state()['intervalStep'],1)
+        self.play(68);self.assertEqual(self.state()['intervalStep'],2)
+        self.page.wait_for_timeout(40)
+        import re
+        visible=self.page.locator('#pianoroom').inner_text()
+        self.assertIsNone(re.search(r'\b[A-G][♯♭]?[0-9]\b',visible))
+        self.assertTrue(self.page.evaluate("pianoCanvasWords.some(word=>word==='C')"))
+        self.assertFalse(self.page.evaluate("pianoCanvasWords.some(word=>/\\b[A-G][♯♭]?[0-9]\\b/.test(word))"))
+        self.page.locator('#pianoOctave').select_option('3')
+        self.assertEqual(self.page.locator('#pianoOctave option:checked').inner_text(),'Low notes')
+        self.assertEqual(self.page.get_by_role('button',name='Play lower C',exact=True).get_attribute('data-midi'),'48')
 
     def test_chopin_melody_requires_e_on_floor_and_only_rewards_complete_correct_tune(self):
         self.page.locator('#pianoLesson').select_option('twinkle')

@@ -40,6 +40,17 @@ test('failed saving never grants unsaved levels, and journals refresh between ca
  assert.equal(a.awardXP('quest:second',100,'Second').alreadyAwarded,true);
 });
 
+test('award announcements happen only after a new saved award, never on reload or retry',()=>{
+ const saved=storage(),announced=[],player=progression.create({storage:saved,onAward:award=>announced.push(award)});
+ player.recordAchievement('first-triad-result');
+ assert.equal(announced.length,1);assert.equal(announced[0].id,'achievement:first-triad-result');
+ assert.equal(announced[0].amount,50);assert.equal(announced[0].levelBefore,1);
+ assert.equal(progression.create({storage:saved,onAward:award=>announced.push(award)}).getState().xp,50);
+ player.recordAchievement('first-triad-result');assert.equal(announced.length,1);
+ const blocked=progression.create({storage:{getItem:()=>null,setItem(){throw Error('quota');}},onAward:award=>announced.push(award)});
+ blocked.recordAchievement('failed');assert.equal(announced.length,1);
+});
+
 test('all reward identifiers correspond to actual character catalog and sound voices',()=>{
  const fs=require('node:fs'),vm=require('node:vm'),sandbox={window:{}};
  vm.runInNewContext(fs.readFileSync(require('node:path').join(__dirname,'../character-renderer.js'),'utf8'),sandbox);

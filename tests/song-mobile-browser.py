@@ -26,9 +26,11 @@ class SongMobileTests(unittest.TestCase):
         self.context.add_init_script('''(()=>{
           window.mobileSources=[];const Base=window.AudioContext;
           window.AudioContext=class extends Base{
-            createOscillator(){const node=super.createOscillator(),original=node.stop.bind(node);node.mobileStops=[];
+            createOscillator(){const node=super.createOscillator(),original=node.stop.bind(node);node.mobileStops=[];node.mobileEnded=false;
+              node.addEventListener('ended',()=>node.mobileEnded=true);
               node.stop=(when)=>{node.mobileStops.push(when===undefined?'now':when);return original(when);};mobileSources.push(node);return node;}
-            createBufferSource(){const node=super.createBufferSource(),original=node.stop.bind(node);node.mobileStops=[];
+            createBufferSource(){const node=super.createBufferSource(),original=node.stop.bind(node);node.mobileStops=[];node.mobileEnded=false;
+              node.addEventListener('ended',()=>node.mobileEnded=true);
               node.stop=(when)=>{node.mobileStops.push(when===undefined?'now':when);return original(when);};mobileSources.push(node);return node;}
           };
         })()''')
@@ -89,8 +91,12 @@ class SongMobileTests(unittest.TestCase):
         notes=self.song()['tracks'][0]['notes'];self.assertEqual(len(notes),len(before['tracks'][0]['notes'])+1)
         self.assertTrue(any(note['p']==point['pitch'] and note['t']==point['step'] and note['d']==4 for note in notes))
         wrap=self.page.locator('#tracks .grid-wrap').first
-        self.assertEqual(wrap.evaluate('(node)=>({left:node.scrollLeft,top:node.scrollTop})'),offset,
-                         'Editing must retain the visible bar and pitch instead of jumping to the start')
+        after_scroll=wrap.evaluate('(node)=>({left:node.scrollLeft,top:node.scrollTop})')
+        for axis in ['left','top']:
+            # Native touch scrolling may round by one CSS pixel when the grid
+            # is rebuilt; a jump to an earlier bar or pitch is still a failure.
+            self.assertAlmostEqual(after_scroll[axis],offset[axis],delta=1,
+                                   msg='Editing must retain the visible bar and pitch')
         self.page.touchscreen.tap(point['x'],point['y']);self.assertEqual(self.song(),before)
     def test_touch_draw_sets_duration_and_cancel_never_places_a_note(self):
         self.page.locator('#duration').select_option('1')
@@ -118,10 +124,18 @@ class SongMobileTests(unittest.TestCase):
         self.assertEqual(self.song()['tracks'][0]['notes'],[])
         self.page.locator('#undo').tap();self.assertEqual(self.song(),before)
     def test_play_and_stop_silence_scheduled_audio_from_the_fixed_touch_dock(self):
+        # Capture active audio in the same click event that invokes Stop. Short
+        # percussion may finish naturally while Playwright waits to tap; those
+        # historical sources correctly need no second stop() call.
+        self.page.evaluate('''()=>document.querySelector('#stop').addEventListener('click',()=>{
+          window.mobileSourcesAtStop=mobileSources.filter(source=>!source.mobileEnded);
+        },{capture:true})''')
         self.page.locator('#play').tap();self.page.wait_for_function('mobileSources.length>0')
         self.assertIn('Playing',self.page.locator('#status').inner_text())
+        self.page.wait_for_function('mobileSources.some(source=>source.mobileEnded)')
         self.page.locator('#stop').tap();self.assertIn('Stopped',self.page.locator('#status').inner_text())
-        self.assertTrue(self.page.evaluate("mobileSources.every(source=>source.mobileStops.includes('now'))"),
+        self.assertGreater(self.page.evaluate('mobileSourcesAtStop.length'),0,'The stop check must include active audio')
+        self.assertTrue(self.page.evaluate("mobileSourcesAtStop.every(source=>source.mobileStops.includes('now'))"),
                         'Stop releases already sounding and scheduled sources')
         self.page.locator('#settings-toggle').tap()
         self.assertTrue(self.page.locator('#settings-panel').is_visible())
