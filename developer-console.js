@@ -2,7 +2,10 @@
 window.createCodaDeveloperConsole = function (api) {
   'use strict';
   const {W, H, c, studio, layer, parts, worldArt, foregroundArt} = api;
-  const catalog = [...(api.catalog || []), ...parts];
+  // Explicit catalog entries can expand an old foreground-only object while
+  // retaining its stable name, so its original atlas pixels stay suppressed.
+  const explicitCatalog=api.catalog||[];
+  const catalog = [...explicitCatalog,...parts.filter(part=>!explicitCatalog.some(original=>original.name===part.name))];
   const FORMAT = 'CodaArcadeWorldProject', VERSION = 1, STORE = 'codaWorldProjectV1';
   const $ = id => document.getElementById(id);
   const clone = value => JSON.parse(JSON.stringify(value));
@@ -135,7 +138,9 @@ window.createCodaDeveloperConsole = function (api) {
     // PNG headers expose naturalWidth before loading and pixel decoding finish.
     if(!worldArt.complete||!worldArt.naturalWidth||!foregroundArt.complete||!foregroundArt.naturalWidth)return null;
     const [x,y,w,h]=origin.bounds,out=makeCanvas(w,h),ctx=out.getContext('2d'); ctx.imageSmoothingEnabled=false;
-    const part=catalog.find(p=>p.name===origin.name);
+    let part=catalog.find(p=>p.name===origin.name);
+    if(part?.legacyBounds?.some(bounds=>JSON.stringify(bounds)===JSON.stringify(origin.bounds)))
+      part=parts.find(p=>p.name===origin.name&&JSON.stringify(p.bounds)===JSON.stringify(origin.bounds))||part;
     if(part?.source==='world'){
       ctx.save();ctx.translate(-x,-y);ctx.beginPath();
       const polygons=[part.polygon || [[x,y],[x+w,y],[x+w,y+h],[x,y+h]],...(part.holes||[])];
@@ -193,7 +198,20 @@ window.createCodaDeveloperConsole = function (api) {
       for(const [index,a] of originals.entries()) {
         const o=a.origin,[x,y,w,h]=o.bounds,img=sourcePictures[index];
         const patch=makeCanvas(w,h),p=patch.getContext('2d'); p.imageSmoothingEnabled=false;
-        for(let yy=0;yy<h;yy+=16)for(let xx=0;xx<w;xx+=16)p.drawImage(worldArt,o.sample[0],o.sample[1],16,16,xx,yy,16,16);
+        const part=catalog.find(part=>part.name===o.name),repair=part?.cleanup;
+        if(repair?.kind==='dance-passage'&&JSON.stringify(part.bounds)===JSON.stringify(o.bounds)){
+          // Clone the unoccupied right-hand floor strip at the same world Y.
+          // Its 12px half-tiles preserve the corridor's 24px grid; repeating a
+          // square 16px sample here would add broken horizontal grid lines.
+          const fw=repair.floorWidth,sx=Math.min(W-fw,o.sample[0]),sy=Math.min(H-h,o.sample[1]);
+          for(let xx=repair.floorOffsetX-fw;xx<w;xx+=fw)p.drawImage(worldArt,sx,sy,fw,h,xx,0,fw,h);
+          // The left leaves cover a blue wall column and its pink reflection.
+          // Restore those from a clean 24px section directly above the plant.
+          const [lx,ly,lw,lh]=repair.left;
+          for(let yy=repair.leftOffsetY;yy<h;yy+=lh)p.drawImage(worldArt,lx,ly,lw,lh,0,yy,lw,lh);
+        }else{
+          for(let yy=0;yy<h;yy+=16)for(let xx=0;xx<w;xx+=16)p.drawImage(worldArt,o.sample[0],o.sample[1],16,16,xx,yy,16,16);
+        }
         p.globalCompositeOperation='destination-in';p.drawImage(img,0,0);bg.drawImage(patch,x,y);cleanup.drawImage(patch,x,y);
       }
       baseKey=key;
@@ -205,7 +223,7 @@ window.createCodaDeveloperConsole = function (api) {
     if(!o||typeof o.name!=='string'||!Array.isArray(o.bounds)||o.bounds.length!==4||!o.bounds.every(Number.isInteger))return false;
     const [x,y,w,h]=o.bounds;if(x<0||y<0||w<3||h<3||x+w>W||y+h>H)return false;
     const part=catalog.find(p=>p.name===o.name);
-    if(part&&JSON.stringify(part.bounds)!==JSON.stringify(o.bounds))return false;
+    if(part&&JSON.stringify(part.bounds)!==JSON.stringify(o.bounds)&&!part.legacyBounds?.some(bounds=>JSON.stringify(bounds)===JSON.stringify(o.bounds)))return false;
     if(!part&&!/^region-[a-z0-9-]+$/.test(o.name))return false;
     return Array.isArray(o.sample)&&o.sample.length===2&&o.sample.every(Number.isInteger)&&o.sample[0]>=0&&o.sample[0]<=W-16&&o.sample[1]>=0&&o.sample[1]<=H-16;
   }

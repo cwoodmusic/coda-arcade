@@ -32,10 +32,12 @@ function near(actual, expected, message) {
   assert.ok(Math.abs(actual-expected)<1e-8,`${message}: expected ${expected}, got ${actual}`);
 }
 
-test('catalog exposes all six originals and keeps default game links and approach positions',()=>{
+test('catalog exposes the game originals and full passage plant while retaining game links and approach positions',()=>{
   const {catalog,runtime,games} = fixture();
-  assert.equal(catalog.length,6);
-  assert.equal(new Set(catalog.map(p=>p.name)).size,6);
+  assert.equal(catalog.length,7);
+  assert.equal(new Set(catalog.map(p=>p.name)).size,7);
+  assert.equal(catalog.filter(p=>p.ballIndex!==undefined).length,2);
+  assert.ok(catalog.some(p=>p.name==='dance_passage_plant_leaves'&&p.source==='world'));
   assert.deepEqual(Array.from(catalog.filter(p=>p.gameIndex!==undefined),p=>p.gameIndex),[0,1,2,3]);
   const liveGames=runtime.games(games);
   assert.equal(liveGames.length,4);

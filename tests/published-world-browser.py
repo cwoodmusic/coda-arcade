@@ -15,7 +15,7 @@ import unittest
 from playwright.sync_api import sync_playwright
 
 ROOT=Path(__file__).resolve().parents[1]
-EXPORT_FINGERPRINT='0050f10cb074abc858aa05827b38767597597f2e260c0b99f45abb14d1de6786'
+EXPORT_FINGERPRINT='9092f9068146c80d8a89d49354c982195a87eb574b7b75e0ebe0a2338f14e073'
 BLANK={'format':'CodaArcadeWorldProject','version':1,
        'world':{'width':1672,'height':941},'assets':[],'collision':[],'strokes':[]}
 
@@ -107,13 +107,13 @@ class PublishedWorldTests(unittest.TestCase):
     def field(self,name,value):
         target=self.page.locator('#'+name);target.fill(str(value));target.press('Tab')
 
-    def test_fresh_browser_gets_the_exact_export_and_current_play_controls(self):
+    def test_fresh_browser_gets_the_reviewed_layout_and_current_play_controls(self):
         canonical=json.dumps(self.published,sort_keys=True,separators=(',',':')).encode()
         self.assertEqual(hashlib.sha256(canonical).hexdigest(),EXPORT_FINGERPRINT,
-                         'Publish the supplied world data without silently rewriting edits')
+                         'Publish the reviewed layout, including the authorized corridor-plant removal')
         self.load();self.assertEqual(self.project(),self.published)
         self.assertEqual((len(self.published['assets']),len(self.published['collision']),
-                          len(self.published['strokes'])),(8,242,11))
+                          len(self.published['strokes'])),(8,984,81))
         games=self.page.evaluate('''()=>CodaArcadeQA.worldObjects().filter(x=>x.game).map(x=>({
           name:x.game.name,walkable:CodaArcadeQA.walkable(x.game.npcX??x.game.x,x.game.npcY??x.game.y),
           route:CodaArcadeQA.route(1180,388,x.game.x,x.game.y).length
@@ -151,6 +151,19 @@ class PublishedWorldTests(unittest.TestCase):
         private['assets'][0]['x']+=24
         self.load(local=private);self.assertEqual(self.project(),private)
         self.reload();self.assertEqual(self.project(),private)
+
+    def test_previous_leaf_only_plant_projects_still_load_and_save(self):
+        legacy=copy.deepcopy(self.published)
+        plant=next(asset for asset in legacy['assets'] if asset['id']=='asset-8')
+        plant.update(name='dance passage plant leaves',crop=[0,0,65,72],
+                     x=786.5,y=645,w=65,h=72,visible=True)
+        plant['origin'].update(bounds=[754,609,65,72],sample=[787,705])
+        self.load(local=legacy)
+        self.assertEqual(self.project(),legacy,
+                         'Expanding the published plant source must not invalidate existing local edits')
+        self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getProjectSource()'),'local')
+        self.assertTrue(self.page.evaluate('CodaDeveloperConsole.save()'))
+        self.reload();self.assertEqual(self.project(),legacy)
 
     def test_movement_and_jump_wait_for_the_published_collision_map(self):
         pending=[]
@@ -223,7 +236,8 @@ class PublishedWorldTests(unittest.TestCase):
         self.page.locator('#assetList').select_option('asset-4')
         original=next(x for x in self.published['assets'] if x['id']=='asset-4')
         raw=self.pixel('boutique_mirror',619,406,'raw')
-        self.field('assetX',original['x']+160);self.field('assetY',original['y']+80)
+        # Move clear of both the original erasures and the later boutique/stair strokes.
+        self.field('assetX',original['x']+400);self.field('assetY',original['y']+80)
         self.field('assetW',original['w']*2);self.field('assetRotate',25)
         self.page.evaluate('publishFrames(3)')
         self.assertEqual(self.pixel('boutique_mirror',619,406,'above'),raw,
@@ -237,7 +251,8 @@ class PublishedWorldTests(unittest.TestCase):
         self.open_tab('layers');self.page.locator('#devLayerTool').select_option('erase')
         self.page.locator('#devLayerSize').select_option('8')
         self.map_click(*destination)
-        self.page.wait_for_function('CodaDeveloperConsole.getProject().strokes.length===12')
+        self.page.wait_for_function('(count)=>CodaDeveloperConsole.getProject().strokes.length===count',
+                                    arg=len(self.published['strokes'])+1)
         self.page.evaluate('publishFrames(3)')
         self.assertEqual(self.pixel('boutique_mirror',619,406,'above')[3],0)
         self.assertEqual(self.pixel('boutique_mirror',619,406,'behind'),raw)

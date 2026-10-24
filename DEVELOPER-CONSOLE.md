@@ -36,6 +36,8 @@ Open the **Collision** tab, or press **C** from gameplay. Drag to paint **Block 
 
 The displayed cell grid is the shared authority for walking and pathfinding. Original room geometry generates its initial values; additional invisible geometry checks do not override the cells during play. Select **Playtest** after painting to walk the edited map, or close the console with **F2**. Editing mode pauses character movement.
 
+Route smoothing checks every crossed collision cell and prevents shortcuts through blocked corners. This keeps NPCs from receiving a route that appears clear at widely spaced sample points but catches their walking position on a red-cell corner.
+
 Object art and collision are separate. For an edited original, **Open collision at original position** releases its old rectangular source area. Enable **Solid collision footprint** to add a footprint that follows the object's position, size, and rotation; its left/top/width/height fields use percentages of the object's dimensions. Explicit collision paint takes priority over object footprints and released source areas. Restore removes painted overrides and returns those cells to the original map.
 
 ## Foreground and background masks
@@ -54,7 +56,9 @@ Undo and redo apply to complete project edits, including objects, collision, and
 
 Edits save locally in this browser and origin. The Project tab's **Save project** reports storage success or failure. **Export project JSON** backs up the whole project, including embedded uploaded images, source cleanup patches, collision overrides, and local foreground strokes. **Import project JSON** validates a backup before replacing the current project and can be undone. **Reset project** replaces the current layout with the shared published layout and saves that copy locally; it can also be undone. Individual object and collision **Restore original** tools still return to the underlying original artwork or collision cells.
 
-Fresh browsers load `published-world-project.json` as the shared default. The checked-in file is the supplied version-1 export, including 8 lifted objects, 242 collision overrides, and 11 foreground erasure strokes. Valid local projects, including deliberately empty projects, take priority; legacy local asset, collision, and layer edits are also preserved. Use **Project → Reset project** to replace those local edits with the current published layout. Merely visiting the world does not save a local override, so browsers without local edits receive later published updates. Movement waits for the layout to finish loading. If the shared file fails to load or validate, existing local edits remain intact and the editor reports the failure.
+Fresh browsers load `published-world-project.json` as the shared default. The checked-in file uses the second supplied version-1 export, including 8 lifted objects, 984 collision overrides, and 81 foreground strokes. The dance-passage plant is hidden with a cleanup silhouette covering its leaves, trunk, and pot. Its floor repair preserves the corridor's horizontal grid rows and adjoining wall. The other seven objects and all uploaded collision and layer edits are preserved; the corridor's existing green cells already permit NPC passage, while the neighboring red wall cells remain solid.
+
+Valid local projects, including deliberately empty projects, take priority; legacy local asset, collision, and layer edits are also preserved. Use **Project → Reset project** to replace those local edits with the current published layout. Merely visiting the world does not save a local override, so browsers without local edits receive later published updates. Movement waits for the layout to finish loading. If the shared file fails to load or validate, existing local edits remain intact and the editor reports the failure.
 
 Export before switching browsers, clearing site data, or moving to another server origin. Browser storage is not a shared project database. The editor does not write source files, commit changes, update Firebase rules, or publish a live site. To publish a new shared default, replace `published-world-project.json` with a validated complete project export and deploy the site. Other browser sessions can import the export directly. The original PNG files remain unchanged.
 
@@ -71,6 +75,7 @@ python3 tests/clean-world-art.py
 python3 tests/developer-console-browser.py
 python3 tests/published-world-browser.py
 python3 tests/collision-integration-browser.py
+python3 tests/dance-passage-browser.py
 ```
 
 The collision tests exercise override restoration, atomic rejection of invalid imports, and coordinate-aware interpolated pointer strokes. The browser runner requires Python Playwright and Chromium, starts its own temporary local server, and exercises the editor through its UI in disposable browser contexts. Existing local projects are preserved.
@@ -78,5 +83,7 @@ The collision tests exercise override restoration, atomic rejection of invalid i
 The published-world checks cover the exact shared export, local-save priority, Reset and undo, loading and failure handling, cabinet reachability, and lifted-object erasures, including transformed masks and actual character occlusion.
 
 The collision integration checks compare walkability with every displayed cell, test a restored cell at a former hidden wall edge, and exercise real walking and click navigation against painted walls, opening cells and reloading saves, editor shortcuts, conversations, fullscreen controls, and portrait phone map access.
+
+The dance-passage checks pin the uploaded object, collision, and layer data outside the authorized plant removal, preserve neighboring solid walls, and exercise the production NPC movement code through the former plant footprint in both directions.
 
 The art checks require Pillow and verify that pixels outside the 33 repair regions are unchanged and that foreground atlas coordinates and alpha masks remain stable. To rebuild art from a new image-generated empty-room plate, run `node scripts/build-clean-world.cjs /path/to/empty-room-plate.png`. The plate must be exactly 1672 × 941. This uses Chromium to align repaired areas to surrounding pixels, feather their seams, and update only the affected foreground texels. The original images and live character atlas are retained.

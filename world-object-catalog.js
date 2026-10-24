@@ -39,5 +39,13 @@ window.CodaWorldObjectCatalog = [
     bounds: [1028, 166, 107, 138], layer: 'world', sortY: 303, gameIndex: 3,
     collision: [1011,171,108,109], screen: [1033,205,63,42],
     polygon: [[1040,168],[1123,168],[1132,174],[1134,285],[1128,300],[1120,302],[1116,295],[1049,295],[1045,302],[1035,302],[1031,292],[1029,181],[1033,173]]
+  },
+  {
+    name: 'dance_passage_plant_leaves', label: 'Plant · Dance passage (leaves and pot)', group: 'Plants', source: 'world',
+    bounds: [754,609,70,95], legacyBounds: [[754,609,65,72]], layer: 'world', sortY: 704,
+    // Include the pot and its shadow, not just the former foreground foliage.
+    polygon: [[779,609],[799,609],[799,621],[823,621],[823,673],[812,673],[812,704],[769,704],[769,674],[754,674],[754,623],[779,623]],
+    sample: [818,609],
+    cleanup: {kind:'dance-passage', floorWidth:12, floorOffsetX:4, left:[754,590,47,24], leftOffsetY:-19}
   }
 ];
