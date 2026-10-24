@@ -1,4 +1,4 @@
-"""Exercise actual raster character assets and independent wardrobe layers.
+"""Exercise JavaScript-drawn characters and independent wardrobe controls.
 
 Starts a temporary server and uses disposable Chromium profiles. Requires the
 environment's Python Playwright package and Chromium; no external service access.
@@ -8,7 +8,6 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import threading
 import unittest
-from urllib.parse import parse_qs, urlparse
 
 from playwright.sync_api import sync_playwright
 
@@ -71,10 +70,9 @@ class SpriteBoutiqueTests(unittest.TestCase):
         self.page.get_by_label('Customize',exact=True).select_option(target)
         self.page.locator('#avatarPreviewMode').select_option('idle')
 
-    def test_raster_assets_render_detailed_directional_frames_and_walking_animation(self):
+    def test_javascript_characters_render_directional_previews_without_sprite_assets(self):
         state=self.page.evaluate('CodaArcadeQA.characters().spriteState')
-        self.assertEqual(state['mode'],'raster-sprites');self.assertTrue(state['ready'])
-        self.assertGreater(state['layers'],10);self.assertGreaterEqual(state['totalFrames'],100)
+        self.assertEqual(state['mode'],'javascript-characters');self.assertTrue(state['ready'])
         self.open_boutique()
         views=self.page.locator('.avatar-preview-views canvas')
         self.assertEqual(views.count(),4)
@@ -86,7 +84,7 @@ class SpriteBoutiqueTests(unittest.TestCase):
         })''')
         for view in metrics:
             self.assertGreater(view['visible'],150,'Loaded sprite must contain visible artwork')
-            self.assertGreater(view['colors'],24,'Sprite detail should retain authored shading')
+            self.assertGreater(view['colors'],8,'Pixel characters should retain distinct outline and shading colors')
             self.assertEqual(view['topEdge'],0,'Preview must fit the full head and hair, without clipping')
         self.assertGreater(len(set(views.evaluate_all('(canvases)=>canvases.map(canvas=>canvas.toDataURL())'))),2)
         self.page.locator('#avatarPreviewMode').select_option('walk')
@@ -94,14 +92,10 @@ class SpriteBoutiqueTests(unittest.TestCase):
         for _ in range(5):
             frames.append(views.first.evaluate('(canvas)=>canvas.toDataURL()'))
             self.page.wait_for_timeout(160)
-        self.assertGreater(len(set(frames)),1,'Walking must advance real raster frames')
+        self.assertGreater(len(set(frames)),1,'Walking must advance the JavaScript character pose')
         resources=self.page.evaluate('performance.getEntriesByType("resource").map(entry=>entry.name)')
-        sprites=[urlparse(name) for name in resources if '/assets/characters/' in name]
-        self.assertTrue(any(resource.path.endswith('/manifest.json') for resource in sprites),'The sprite manifest must be loaded')
-        self.assertTrue(any(resource.path.endswith('.png') for resource in sprites),'Raster sprite layers must be loaded')
-        for resource in sprites:
-            if resource.path.endswith(('/manifest.json','.png')):
-                self.assertEqual(parse_qs(resource.query).get('v'),['plain-base-20'],resource.geturl())
+        self.assertEqual([name for name in resources if '/assets/characters/' in name],[],
+                         'JavaScript characters must not depend on sprite manifests or image layers')
 
     def test_new_guests_start_bald_in_gray_without_automatically_equipped_items(self):
         profile=self.appearance()

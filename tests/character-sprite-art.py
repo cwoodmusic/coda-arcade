@@ -1,4 +1,4 @@
-"""Read-only validation of the shipped layered raster character assets.
+"""Optional read-only validation of retained, inactive image sprite artifacts.
 
 Run from the repository root: python3 tests/character-sprite-art.py
 Requires Pillow; does not regenerate or modify any artwork.
