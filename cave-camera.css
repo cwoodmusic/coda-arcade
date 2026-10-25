@@ -4,3 +4,9 @@
 .rhythm-fishing .cave-camera-controls button:nth-child(2){min-width:60px;color:#b8fff0;font-size:12px}
 .rhythm-fishing .cave-camera-controls button:disabled{opacity:.4}
 .room-developer-open .cave-camera-controls{display:none!important}
+@media(max-width:760px),(pointer:coarse){
+ .fishing-cave-scene .cave-camera-controls{top:8px;right:8px;bottom:auto}
+ .rhythm-fishing .cave-camera-controls button{min-width:52px;min-height:52px;font-size:16px}
+ .rhythm-fishing .cave-camera-controls button:nth-child(2){min-width:68px;font-size:14px}
+ .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-location-badge{max-width:calc(100% - 200px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}

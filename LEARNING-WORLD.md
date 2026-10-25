@@ -14,6 +14,8 @@ Phones and tablets use the same page with touch movement, a compact menu, a foll
 
 Rooms use detailed pixel-art backgrounds, with live JavaScript characters, note displays, interactions, and lighting over the art. Escape releases room audio and returns to the arcade. Main-world movement pauses inside a room or full panel.
 
+On phones, the Piano Lab and cave use a closer following camera with pinch zoom and larger movement/action controls. Fishing has original background music and separate metronome and guide-note switches under **Audio**. Tap short notes and hold quarter notes or longer through their visible tails; rests stay silent. Blue bar lines mark the measures. An escaped fish disappears, and a new shadow may appear elsewhere after 24 seconds. The boat rocks and rows while exploring, respecting reduced motion and the effects preference.
+
 The Piano Lab and fishing cave have contextual **Developer / F2** consoles for room artwork, collision, layers, and character/fish placement. Their cameras support close zoom and panning without resetting when switching tools. Cave fish also have editable species, size, colors, and visibility. Edited rooms travel with the complete world project export; see [DEVELOPER-CONSOLE.md](DEVELOPER-CONSOLE.md).
 
 ## Notes and wardrobe
@@ -40,7 +42,7 @@ The dance floor has 78 measured quadrilateral tiles. Grounded footsteps illumina
 
 ## Storage and art
 
-New local keys: `codaNotesWalletV1`, `codaMusicianMissionsV1`, `codaPlayerProgressV1`, `codaHallOfFameV1`, `codaPianoTakeV1`, `codaClassroomLessonsV1`, and `codaRhythmFishingV1`. Existing avatar, NPC costume, and editor data keep their current keys. Currency, quests, levels, and records currently remain in this browser; existing avatar cloud sync is unchanged.
+New local keys: `codaNotesWalletV1`, `codaMusicianMissionsV1`, `codaPlayerProgressV1`, `codaHallOfFameV1`, `codaPianoTakeV1`, `codaClassroomLessonsV1`, `codaRhythmFishingV1`, and `codaFishingAudioV1`. Existing avatar, NPC costume, and editor data keep their current keys. Currency, quests, levels, and records currently remain in this browser; existing avatar cloud sync is unchanged.
 
 The four pictured plants, including pots and shadows, were rebuilt in both world and foreground art. `scripts/build-plant-repairs.cjs` stitches the generated repair plate into the approved crop, rephases the floor grid, and retains the fifth plant outside the screenshot. It pins the already character-cleaned input revision for deterministic rebuilding. Legacy passage-plant project entries remain valid but render transparently, preventing old local layouts from repainting the permanently removed plant.
 

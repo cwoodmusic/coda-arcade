@@ -140,7 +140,7 @@
    if(seconds<rampEndSeconds)return startBeat+q0*Math.expm1(slope*(seconds-rampStartSeconds)/60)/slope;
    return endBeat+(seconds-rampEndSeconds)*q1/60;
   }
-  const patterns=PATTERNS.filter(pattern=>pattern.rarity===rarity.id&&pattern.meter===meter.id),events=[];
+  const patterns=PATTERNS.filter(pattern=>pattern.rarity===rarity.id&&pattern.meter===meter.id),events=[],pressedSources=new Map();
   let now=startTime,phase='count-in',progress=45,hits=0,misses=0,extras=0,bar=0,sequence=0,lastJudgement=null,result=null,finished=false;
   function makeUntil(beat){
    while(bar*meter.barBeats<=beat){const pattern=patterns[(bar+fish.patternIndex)%patterns.length],barNumber=bar++;
@@ -148,7 +148,8 @@
      // Dense fast subdivisions need disjoint judgement windows. Written rest
      // boundaries count too, so tapping silence cannot steal a nearby target.
      const window=source.rest?0:rarity.rank<2?rarity.window:Math.min(rarity.window,durationSeconds*.42,previous?(time-previous.time)*.42:Infinity);
-     events.push({...source,id:'note-'+sequence++,bar:barNumber,pattern:pattern.id,meter:meter.id,onset,beat:onset,time,at:time,durationSeconds,window,judgementWindow:window,beamingGroup:!source.rest&&source.duration<1?'beam-'+barNumber+'-'+beam:null,beam:!source.rest&&source.duration<1?beam:null,judgement:source.rest?'rest':'pending',hitAt:null});
+     const requiresHold=!source.rest&&source.duration>=1;
+     events.push({...source,id:'note-'+sequence++,bar:barNumber,pattern:pattern.id,meter:meter.id,onset,beat:onset,time,at:time,durationSeconds,window,judgementWindow:window,requiresHold,holdEndTime:requiresHold?timeAtBeat(onset+source.duration):null,holdReleaseWindow:requiresHold?Math.min(.1,window,durationSeconds*.2):0,heldBy:null,holdLatched:false,holdReleased:false,pressedAt:null,beamingGroup:!source.rest&&source.duration<1?'beam-'+barNumber+'-'+beam:null,beam:!source.rest&&source.duration<1?beam:null,judgement:source.rest?'rest':'pending',hitAt:null});
     }
    }
   }
@@ -156,14 +157,16 @@
   function tempoState(beat){const currentQuarterBpm=tempoAtBeat(beat),rampProgress=changing?clamp((beat-startBeat)/(endBeat-startBeat),0,1):0;return {...profile,...tempoMarking(currentQuarterBpm),currentQuarterBpm,currentPulseBpm:currentQuarterBpm/meter.pulseBeats,startBeat,endBeat,active:changing&&beat>=startBeat&&beat<endBeat,settled:changing&&beat>=endBeat,progress:rampProgress};}
   function finish(outcome,reason){
    if(finished)return;finished=true;phase=outcome;progress=outcome==='caught'?100:0;
+   for(const event of events)if(event.judgement==='holding'){event.judgement='canceled';event.heldBy=null;event.holdLatched=false;}
+   pressedSources.clear();
    const tempo=tempoState(beatAtTime(now));
    result={id,fishId:fish.id,fish:copy(fish),rarity:fish.rarity,outcome,caught:outcome==='caught',reason:reason||null,hits,misses,extras,perfect:hits>0&&misses===0&&extras===0,
     notes:outcome==='caught'?fish.notes:0,xp:outcome==='caught'?fish.xp:0,elapsed:Math.max(0,now-startTime),duration:Math.max(0,now-startTime-countInSeconds),bpm:tempo.currentPulseBpm,quarterBpm:tempo.currentQuarterBpm,tempo,meter:meter.id,timeSignature:meter.id,pulseUnit:meter.pulseUnit};
    try{options.onFinish?.(copy(result));}catch{/* Feedback cannot change a completed result. */}
   }
   function judge(kind,event){
-   if(kind==='hit'){event.judgement='hit';event.hitAt=now;hits++;progress=Math.min(100,progress+rarity.hitGain);}
-   else if(kind==='miss'){event.judgement='miss';misses++;progress=Math.max(0,progress-rarity.missLoss);}
+   if(kind==='hit'){event.judgement='hit';event.hitAt=now;event.heldBy=null;event.holdLatched=false;hits++;progress=Math.min(100,progress+rarity.hitGain);}
+   else if(kind==='miss'){event.judgement='miss';event.heldBy=null;event.holdLatched=false;misses++;progress=Math.max(0,progress-rarity.missLoss);}
    else{extras++;progress=Math.max(0,progress-rarity.extraLoss);}
    lastJudgement={kind,time:now,noteId:event?.id||null,progress};
    if(progress>=100)finish('caught');else if(progress<=0)finish('escaped','rhythm');
@@ -172,29 +175,88 @@
    if(!Number.isFinite(time)||time<now||finished)return getState();now=time;
    const beat=beatAtTime(now);
    if(beat<0)return getState();phase='playing';
-   for(const event of events){if(event.rest)continue;if(event.time+event.window>=now)break;if(event.judgement==='pending'){judge('miss',event);if(finished)break;}}
+   for(const event of events){
+    if(event.rest)continue;
+    if(event.judgement==='holding'){
+     if(now+1e-9>=event.holdEndTime){judge('hit',event);if(finished)break;}
+     continue;
+    }
+    if(event.time+event.window>=now)break;
+    if(event.judgement==='pending'){judge('miss',event);if(finished)break;}
+   }
    if(!finished)makeUntil(beat+16);
    // Retain the nearby score for rendering; a long session must not grow forever.
    if(events.length>192){const remove=events.findIndex(event=>event.onset>=beat-8);if(remove>0)events.splice(0,remove);}
    return getState();
   }
+  function nearestTarget(){
+   let nearest=null,distance=Infinity;
+   for(const event of events){if(event.judgement!=='pending')continue;const delta=Math.abs(event.time-now);if(delta<=event.window&&delta<distance){nearest=event;distance=delta;}}
+   return {nearest,distance};
+  }
+  // A discrete activation remains available for assistive technology and old
+  // engine clients. Physical pointer/keyboard input uses press/release below.
   function tap(time){
    if(!Number.isFinite(time)||time<now)return {accepted:false,kind:'ignored',state:getState()};
    update(time);if(finished)return {accepted:false,kind:'finished',state:getState()};
    if(phase==='count-in')return {accepted:false,kind:'count-in',state:getState()};
-   let nearest=null,distance=Infinity;
-   for(const event of events){if(event.judgement!=='pending')continue;const delta=Math.abs(event.time-now);if(delta<=event.window&&delta<distance){nearest=event;distance=delta;}}
+   const {nearest}=nearestTarget();
    if(nearest){judge('hit',nearest);return {accepted:true,kind:'hit',noteId:nearest.id,error:now-nearest.time,state:getState()};}
    judge('extra');return {accepted:true,kind:'extra',state:getState()};
   }
+  function sourceKey(value){return typeof value==='string'&&value.length>0&&value.length<=100?value:typeof value==='number'&&Number.isFinite(value)?String(value):null;}
+  function press(time,sourceId='primary'){
+   const source=sourceKey(sourceId);
+   if(!source||!Number.isFinite(time)||time<now)return {accepted:false,kind:'ignored',state:getState()};
+   update(time);if(finished)return {accepted:false,kind:'finished',state:getState()};
+   if(pressedSources.has(source))return {accepted:false,kind:'held-source',state:getState()};
+   if(pressedSources.size>=32)return {accepted:false,kind:'ignored',state:getState()};
+   pressedSources.set(source,null);
+   if(phase==='count-in')return {accepted:false,kind:'count-in',state:getState()};
+   const {nearest}=nearestTarget();
+   if(nearest){
+    if(!nearest.requiresHold){judge('hit',nearest);return {accepted:true,kind:'hit',noteId:nearest.id,error:now-nearest.time,state:getState()};}
+    nearest.judgement='holding';nearest.heldBy=source;nearest.holdLatched=false;nearest.holdReleased=false;nearest.pressedAt=now;pressedSources.set(source,nearest.id);
+    lastJudgement={kind:'hold-start',time:now,noteId:nearest.id,progress};
+    return {accepted:true,kind:'hold-start',noteId:nearest.id,error:now-nearest.time,state:getState()};
+   }
+   const detached=events.find(event=>event.judgement==='holding'&&event.holdLatched&&!event.holdReleased&&now<event.holdEndTime);
+   if(detached){detached.heldBy=source;detached.holdLatched=false;pressedSources.set(source,detached.id);return {accepted:true,kind:'hold-resume',noteId:detached.id,state:getState()};}
+   judge('extra');return {accepted:true,kind:'extra',state:getState()};
+  }
+  function release(time,sourceId='primary'){
+   const source=sourceKey(sourceId);
+   if(!source||!Number.isFinite(time))return {accepted:false,kind:'ignored',state:getState()};
+   // Releasing a real pointer must not strand it if its queued event timestamp
+   // is slightly older than the last animation frame; the score never rewinds.
+   update(Math.max(now,time));
+   if(!pressedSources.has(source))return {accepted:false,kind:finished?'finished':'ignored',state:getState()};
+   const noteId=pressedSources.get(source);pressedSources.delete(source);
+   const event=events.find(event=>event.id===noteId&&event.judgement==='holding'&&event.heldBy===source);
+   if(!event)return {accepted:true,kind:'released',state:getState()};
+   event.heldBy=null;
+   if(now+event.holdReleaseWindow+1e-9>=event.holdEndTime){event.holdReleased=true;event.holdLatched=true;return {accepted:true,kind:'hold-release',noteId:event.id,state:getState()};}
+   event.holdBroken=true;judge('miss',event);
+   lastJudgement={...lastJudgement,kind:'hold-break',resultKind:'miss'};
+   return {accepted:true,kind:'hold-break',noteId:event.id,state:getState()};
+  }
+  function releaseAllSources(options={}){
+   if(options.preserveHolds===true){
+    for(const event of events)if(event.judgement==='holding'){event.heldBy=null;event.holdLatched=true;}
+    pressedSources.clear();
+   }else for(const source of Array.from(pressedSources.keys()))release(now,source);
+   return getState();
+  }
+  function noteState(event){return {...event,holdProgress:event.requiresHold?(event.judgement==='hit'?1:event.judgement==='holding'?clamp((now-event.time)/event.durationSeconds,0,1):0):0};}
   function getState(){const elapsed=Math.max(0,now-startTime),musicTime=now-musicStart,beat=beatAtTime(now),countInRemaining=Math.max(0,musicStart-now),tempo=tempoState(beat),secondsPerBeat=60/tempo.currentQuarterBpm,secondsPerPulse=secondsPerBeat*meter.pulseBeats,pulses=[],barLines=[];
    for(let pulse=Math.max(-meter.pulsesPerBar,Math.floor(beat/meter.pulseBeats)-1);pulse<=Math.ceil((beat+16)/meter.pulseBeats);pulse++){const at=pulse*meter.pulseBeats;pulses.push({id:'pulse-'+pulse,beat:at,time:timeAtBeat(at),strong:((pulse%meter.pulsesPerBar)+meter.pulsesPerBar)%meter.pulsesPerBar===0,countIn:pulse<0});}
    for(let line=Math.max(0,Math.floor(beat/meter.barBeats)-1);line<=Math.ceil((beat+16)/meter.barBeats);line++){const at=line*meter.barBeats;barLines.push({bar:line,beat:at,time:timeAtBeat(at)});}
    return {id,phase,fish:copy(fish),rarity:copy(rarity),meter:meter.id,timeSignature:meter.id,meterInfo:{...meter},bpm:tempo.currentPulseBpm,displayBpm:tempo.currentPulseBpm,quarterBpm:tempo.currentQuarterBpm,tempo,startTime,musicStart,now,time:now,elapsed,musicTime,beat,secondsPerBeat,secondsPerPulse,pulseBeats:meter.pulseBeats,pulsesPerBar:meter.pulsesPerBar,pulseUnit:meter.pulseUnit,barBeats:meter.barBeats,countInBeats,countInQuarterBeats:meter.barBeats,countInSeconds,
     countInRemaining,countInBeat:phase==='count-in'?Math.max(1,Math.ceil(countInRemaining/initialSecondsPerPulse-1e-9)):0,pulses,barLines,
     progress,hits,misses,extras,window:rarity.window,lastJudgement:lastJudgement?{...lastJudgement}:null,
-    notes:events.filter(event=>event.onset+event.duration>=beat-8&&event.onset<=beat+16).map(event=>({...event})),result:result?copy(result):null};}
-  return {update,tap,getState,snapshot:getState,timeAtBeat,beatAtTime,tempoAtBeat,abort(){if(!finished)finish('escaped','aborted');return getState();}};
+    pressedSources:Array.from(pressedSources.keys()),activeHolds:events.filter(event=>event.judgement==='holding').map(noteState),
+    notes:events.filter(event=>event.onset+event.duration>=beat-8&&event.onset<=beat+16).map(noteState),result:result?copy(result):null};}
+  return {update,tap,press,release,releaseAllSources,getState,snapshot:getState,timeAtBeat,beatAtTime,tempoAtBeat,abort(){if(!finished)finish('escaped','aborted');return getState();}};
  }
  return Object.freeze({FISH,RARITIES,METERS,PATTERNS,chooseFish,availableFish,canFishInMeter,fishFor,rarityFor,meterFor,tempoMarking,createSession});
 });

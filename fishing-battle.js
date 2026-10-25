@@ -69,13 +69,17 @@
    if(!state.active){caption.textContent='Feel the pull. Keep the rhythm.';announcement.hidden=true;return;}
    const time=state.elapsed,moving=!state.calm&&!state.paused,scale=clamp(h/130,.52,1.2),anglerX=Math.round(w*.12),waterY=Math.round(h*.64),fishX=Math.round(w*state.fishX),fishY=Math.round(h*state.fishY),fishScale=scale*(1+state.rank*.09)*clamp(finite(state.fish.visualSize,finite(state.fish.battleSize,1)),.7,1.6);
    if(api.getQuality?.()!=='off')for(let i=0;i<10;i++){const x=(i*101+(state.calm?0:Math.sin(time*1.3+i)*8))%w,y=h*(.53+(i%4)*.1);g.fillStyle=i%2?'#4e8e9c55':'#67acb855';g.fillRect(Math.round(x),Math.round(y),15+i%3*8,1);}
+   // The angler and rod share the boat's small, paused-clock-driven motion.
+   const boatBob=state.calm?0:Math.sin(time*1.7)*1.4*scale,boatRock=state.calm?0:Math.sin(time*1.2)*.012+(state.reaction==='miss'||state.reaction==='extra'?state.kick*.018:state.reaction==='hit'?-state.kick*.007:0);
+   g.save();g.translate(anglerX,waterY+boatBob);g.rotate(boatRock);g.translate(-anglerX,-waterY);
    // The boat, sleeves and rod remain deliberately small so the notation wins.
    g.fillStyle='#80543f';g.beginPath();g.moveTo(anglerX-31*scale,waterY+2);g.lineTo(anglerX+34*scale,waterY+2);g.lineTo(anglerX+23*scale,waterY+15*scale);g.lineTo(anglerX-22*scale,waterY+15*scale);g.closePath();g.fill();g.fillStyle='#d9aa6c';g.fillRect(anglerX-30*scale,waterY,64*scale,3*scale);
    g.fillStyle='#4a6879';g.fillRect(anglerX-6*scale,waterY-24*scale,15*scale,25*scale);g.fillStyle='#d8a078';g.fillRect(anglerX-5*scale,waterY-37*scale,14*scale,14*scale);g.fillStyle='#444159';g.fillRect(anglerX-9*scale,waterY-40*scale,22*scale,5*scale);g.fillStyle='#c3d1d3';g.fillRect(anglerX+8*scale,waterY-20*scale,16*scale,5*scale);
-   const grip={x:anglerX+21*scale,y:waterY-18*scale},tip={x:anglerX+67*scale+state.tension*8*scale,y:waterY-(47-state.tension*15)*scale};
-   g.lineCap='round';g.strokeStyle='#d4a875';g.lineWidth=3*scale;g.beginPath();g.moveTo(grip.x,grip.y);g.quadraticCurveTo(grip.x+12*scale,tip.y-23*scale,tip.x,tip.y);g.stroke();
+   const grip={x:anglerX+21*scale,y:waterY-18*scale},rodTip={x:anglerX+67*scale+state.tension*8*scale,y:waterY-(47-state.tension*15)*scale};
+   g.lineCap='round';g.strokeStyle='#d4a875';g.lineWidth=3*scale;g.beginPath();g.moveTo(grip.x,grip.y);g.quadraticCurveTo(grip.x+12*scale,rodTip.y-23*scale,rodTip.x,rodTip.y);g.stroke();g.restore();
+   const dx=rodTip.x-anglerX,dy=rodTip.y-waterY,tip={x:anglerX+dx*Math.cos(boatRock)-dy*Math.sin(boatRock),y:waterY+boatBob+dx*Math.sin(boatRock)+dy*Math.cos(boatRock)};
    const mouth={x:fishX-24*fishScale,y:fishY-2*fishScale},slack=(1-state.tension)*h*.18;
-   line={rod:{...tip},mouth:{...mouth},fish:{x:fishX,y:fishY,scale:fishScale},slack,tension:state.tension};
+   line={rod:{...tip},mouth:{...mouth},fish:{x:fishX,y:fishY,scale:fishScale},boat:{x:anglerX,y:waterY+boatBob,rock:boatRock},slack,tension:state.tension};
    g.strokeStyle=state.color;g.lineWidth=1.6*scale;g.beginPath();g.moveTo(tip.x,tip.y);g.quadraticCurveTo((tip.x+mouth.x)/2,(tip.y+mouth.y)/2+slack,mouth.x,mouth.y);g.stroke();
    g.save();g.translate(fishX,fishY);g.rotate(Math.PI+(moving?Math.sin(time*5)*.08+(state.reaction==='hit'?-.12:state.reaction?-.2:0)*state.kick:0));
    if(typeof api.drawFish==='function')api.drawFish(g,state.fish,0,0,fishScale,false,state.wiggle);else{g.rotate(Math.PI);fallbackFish(g,state.fish,0,0,fishScale,state.wiggle);}g.restore();

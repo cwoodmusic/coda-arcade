@@ -6,9 +6,11 @@ The enlarged stone landing at the ladder’s foot leads onto the lantern dock. W
 
 Captain Cadence waits on the lantern dock. His original shanty verses explain casting, rests, and the three meters. **Board boat** starts exploring; steer with WASD/arrows, desktop floor clicks, or held-finger movement. Fish shadows swim around the lake, turn away from banks, and gently avoid the boat. Hooked fish stay fixed while their rhythm challenge plays. Move within casting range and press **E / Cast rod**, or click a nearby shadow.
 
-Pinch two fingers on the cave to zoom from 100% to 300%; the camera follows your avatar or boat. The corner’s **− / percentage / +** controls offer the same zoom. Pinching stops steering and casting until both fingers lift. Rotation, cancellation, and leaving the room release captured touches. The developer camera remains independent and can zoom further.
+On phones, the cave fills the available room viewport and starts at a closer 200% view. Pinch two fingers to zoom from 100% to 300%; the camera follows your avatar or boat. The corner’s **− / percentage / +** controls offer the same zoom. Pinching stops steering and casting until both fingers lift. Rotation, cancellation, and leaving the room release captured touches. The developer camera remains independent and can zoom further.
 
-After a bite, listen to one bar of count-in. Notes scroll left across a one-line staff. Tap **Space**, **Enter**, the staff, or **Tap rhythm** when a notehead crosses the gold line. Tap once at the beginning of each note; rests need no tap. Correct taps raise the catch bar. Misses and extra taps lower it. Reaching 100% catches the fish; reaching zero lets it escape. Pause is available, and switching away from the page pauses the hooked fish and its audio.
+After a bite, listen to one bar of count-in. Notes scroll left across a one-line staff, with blue lines dividing bars. Press **Space**, **Enter**, the staff, or **Tap / Hold rhythm** when a notehead crosses the gold line. Short notes need a tap. Hold quarter notes and longer until their colored tail reaches the gold line; releasing early counts as a miss. Rests need no input. Correct notes raise the catch bar. Misses and extra taps lower it. Reaching 100% catches the fish; reaching zero lets it escape. An escaped shadow disappears; a new fish can appear elsewhere after 24 seconds. Pause is available, and switching away from the page pauses the hooked fish and its audio.
+
+The original synthesized **Lantern Lake** theme plays while exploring and during the battle. **Audio** offers separate saved switches for music, metronome, guide notes, and all sound. The metronome follows the selected meter and changing tempo. Opening Audio pauses an active battle; closing it resumes only if it was running before. Leaving the room stops its audio.
 
 A small boat, rod, line, and fish illustrate the battle above the staff. Good taps reel the fish closer; mistakes make it pull away and tighten the line. Its species, edited colors, and size follow the hooked fish. Rare, Epic, and Legendary encounters show a brief announcement at the start of the count-in. The illustration and announcement use the paused game clock and respect reduced motion; neither changes scoring.
 
@@ -38,7 +40,7 @@ Each successful catch records the species, size, meter, result, and stable catch
 
 The catch journal saves before Notes or XP are awarded. Failed writes leave an explicit retry; stable catch IDs prevent duplicate payment after partial saves or reload. Escapes and canceled casts award nothing. Saved collection entries do not replay reward popups. All guest progress stays in this browser, alongside the existing Notes/XP journals.
 
-The cave uses a generated pixel-art background with live boat, avatar, Captain, shadows, and effects. Crystals breathe with teal/violet light, lanterns cast warm reflections, water shimmers with caustics and falling-drop rings, and the boat leaves rippling wakes. **Effects: Full / Lite / Off** shares the arcade’s saved effects setting; reduced motion keeps calm static lighting and removes drifting particles and ripples. Effects never change catch timing or rewards. Bravura 1.482 supplies the actual music glyphs; its SIL Open Font License and source details are bundled under `assets/fonts/bravura`.
+The cave uses a generated pixel-art background with live boat, avatar, Captain, shadows, and effects. Crystals breathe with teal/violet light, lanterns cast warm reflections, water shimmers with caustics and falling-drop rings, and the boat leaves rippling wakes. Its hull gently rocks, with rowing and paddle splashes while moving; the seated rider follows the hull. **Effects: Full / Lite / Off** shares the arcade’s saved effects setting; reduced motion keeps calm static lighting and removes drifting particles, rocking, and ripples. Effects never change catch timing or rewards. Bravura 1.482 supplies the actual music glyphs; its SIL Open Font License and source details are bundled under `assets/fonts/bravura`.
 
 **Developer / F2** opens the cave’s editor while on shore or exploring. Select a fish shadow or a numbered fish in Objects to change its species, position, size, colors, or visibility; fish freeze during editing. The console also edits room artwork, collision, and foreground layers, with zoom up to 800% and drag-to-pan. Room edits save locally and are included in complete world project exports. See [DEVELOPER-CONSOLE.md](DEVELOPER-CONSOLE.md).
 
@@ -57,6 +59,11 @@ python3 tests/fishing-tempo-browser.py
 python3 tests/cave-camera-browser.py
 python3 tests/fishing-battle-browser.py
 node --test tests/cave-camera.test.cjs tests/fishing-battle.test.cjs tests/fishing-tempo.test.cjs
+node --test tests/fishing-music.test.cjs tests/fishing-boat.test.cjs tests/fishing-holds.test.cjs tests/fishing-rhythm-input.test.cjs
+python3 tests/fishing-audio-browser.py
+python3 tests/fishing-rhythm-input-browser.py
+python3 tests/fishing-barlines-browser.py
+python3 tests/cave-mobile-browser.py
 python3 tests/time-signature-lesson-browser.py
 python3 tests/music-notation-browser.py
 ```

@@ -31,7 +31,7 @@ class CaveCameraTests(_fish._world.WorldBrowserCase):
                 'y':box['y']+(y-camera['y'])*camera['zoom']/620*box['height']}
 
     def begin_pinch(self):
-        canvas=self.page.locator('#fishingLakeCanvas');canvas.scroll_into_view_if_needed();box=canvas.bounding_box()
+        canvas=self.page.locator('#fishingLakeCanvas');canvas.scroll_into_view_if_needed();box=self.page.locator('.fishing-cave-scene').bounding_box()
         x,y=box['x'],box['y'];w,h=box['width'],box['height']
         client=self.context.new_cdp_session(self.page)
         points=[{'id':1,'x':x+w*.4,'y':y+h*.5},{'id':2,'x':x+w*.6,'y':y+h*.5}]
@@ -72,6 +72,16 @@ class CaveCameraTests(_fish._world.WorldBrowserCase):
         client.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[point]});self.page.clock.run_for(220)
         client.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]});client.detach();self.page.clock.run_for(32)
         self.assertGreater(self.state()['boat']['x'],boat['x']+20)
+        # A close phone viewport shows less than the full casting radius. Move
+        # close enough to see the shadow before testing its mouse coordinates.
+        for _ in range(15):
+            state=self.state();fish=min((fish for fish in state['shadows'] if fish['visible']),key=lambda fish:math.hypot(fish['x']-state['boat']['x'],fish['y']-state['boat']['y']))
+            dx,dy=fish['x']-state['boat']['x'],fish['y']-state['boat']['y']
+            if math.hypot(dx,dy)<25:break
+            keys=(['d' if dx>0 else 'a'] if abs(dx)>5 else [])+(['s' if dy>0 else 'w'] if abs(dy)>5 else [])
+            for key in keys:self.page.keyboard.down(key)
+            self.page.clock.run_for(80)
+            for key in keys:self.page.keyboard.up(key)
         state=self.state();fish=min((fish for fish in state['shadows'] if fish['visible']),key=lambda fish:math.hypot(fish['x']-state['boat']['x'],fish['y']-state['boat']['y']))
         self.assertLess(math.hypot(fish['x']-state['boat']['x'],fish['y']-state['boat']['y']),135)
         point=self.point(fish['x'],fish['y']);self.page.mouse.click(point['x'],point['y']);self.page.clock.run_for(64)
@@ -81,15 +91,15 @@ class CaveCameraTests(_fish._world.WorldBrowserCase):
 
     def test_normal_camera_controls_and_developer_camera_stay_independent_phone(self):
         self.enter();self.page.locator('[aria-label="Zoom cave in"]').click();self.page.clock.run_for(64)
-        self.assertEqual(self.state()['camera']['zoom'],1.25)
+        self.assertEqual(self.state()['camera']['zoom'],2.25)
         self.page.locator('#fishingLakeCanvas').focus();self.page.keyboard.press('F2');self.page.clock.run_for(64)
         panel=self.page.locator('[data-room-editor="fishing"]');self.assertTrue(panel.is_visible())
         self.assertEqual(self.page.locator('.cave-camera-controls:visible').count(),0)
         self.assertEqual(self.state()['editor']['camera']['zoom'],1)
         panel.locator('[data-room-action="zoom-in"]').click();panel.locator('[data-room-action="zoom-in"]').click()
-        self.assertEqual(self.state()['editor']['camera']['zoom'],1.5);self.assertEqual(self.state()['camera']['zoom'],1.25)
+        self.assertEqual(self.state()['editor']['camera']['zoom'],1.5);self.assertEqual(self.state()['camera']['zoom'],2.25)
         self.page.locator('#fishingLakeCanvas').focus();self.page.keyboard.press('F2');self.page.clock.run_for(64)
-        self.assertFalse(self.state()['editor']['open']);self.assertEqual(self.state()['camera']['zoom'],1.25)
+        self.assertFalse(self.state()['editor']['open']);self.assertEqual(self.state()['camera']['zoom'],2.25)
         self.page.locator('[aria-label="Reset cave zoom"]').click();self.page.clock.run_for(64);self.assertEqual(self.state()['camera']['zoom'],1)
 
 if __name__=='__main__':unittest.main(verbosity=2)

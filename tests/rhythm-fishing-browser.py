@@ -28,11 +28,12 @@ class Handler(SimpleHTTPRequestHandler):
 <link rel="stylesheet" href="/rhythm-fishing.css">
 <link rel="stylesheet" href="/music-notation.css">
 <link rel="stylesheet" href="/fishing-battle.css">
+<link rel="stylesheet" href="/cave-camera.css">
 <style>*{box-sizing:border-box}body{margin:0;background:#0c1329;color:#fff;font:15px system-ui}#enter{min-height:44px} :root{--coda-touch-controls-height:190px}</style>
 <button id="enter">Enter the cave</button><section id="fishing" hidden></section>
 <script src="/character-renderer.js"></script><script src="/finger-follow.js"></script>
 <script src="/music-notation.js"></script>
-<script src="/rhythm-fishing-engine.js"></script><script src="/fishing-cave-layout.js"></script><script src="/fishing-cave-effects.js"></script><script src="/fish-shadow-motion.js"></script><script src="/rhythm-beaming.js"></script><script src="/cave-camera.js"></script><script src="/fishing-battle.js"></script><script src="/rhythm-fishing.js"></script>
+<script src="/rhythm-fishing-engine.js"></script><script src="/fishing-cave-layout.js"></script><script src="/fishing-cave-effects.js"></script><script src="/fish-shadow-motion.js"></script><script src="/rhythm-beaming.js"></script><script src="/cave-camera.js"></script><script src="/fishing-battle.js"></script><script src="/fishing-music.js"></script><script src="/fishing-boat.js"></script><script src="/fishing-rhythm-input.js"></script><script src="/rhythm-fishing.js"></script>
 <script>
 window.rewards=[];window.rewardCalls=[];window.exits=0;window.failReward=false;
 window.failStorage=false;
@@ -123,9 +124,25 @@ class RhythmFishingTests(unittest.TestCase):
         canvas = self.page.locator('#fishingLakeCanvas')
         canvas.scroll_into_view_if_needed()
         box = canvas.bounding_box()
-        point = {'id': 1, 'x': box['x']+x/1000*box['width'],
-                 'y': box['y']+y/620*box['height']}
         touch = self.page.evaluate('navigator.maxTouchPoints>0')
+        def target():
+            box=canvas.bounding_box();scene=self.page.locator('.fishing-cave-scene').bounding_box()
+            state=self.state();camera=state.get('camera',{'x':0,'y':0,'zoom':1});actor=state['player']
+            px=box['x']+(x-camera['x'])*camera['zoom']/1000*box['width']
+            py=box['y']+(y-camera['y'])*camera['zoom']/620*box['height']
+            ax=box['x']+(actor['x']-camera['x'])*camera['zoom']/1000*box['width']
+            ay=box['y']+(actor['y']-camera['y'])*camera['zoom']/620*box['height']
+            bottom=scene['y']+scene['height']-12
+            if touch and self.page.viewport_size['height']>self.page.viewport_size['width']:
+                controls_height=self.page.evaluate("parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--coda-touch-controls-height'))||220")
+                bottom=min(bottom,self.page.viewport_size['height']-controls_height-10)
+            scale=1;dx,dy=px-ax,py-ay
+            if dx>0:scale=min(scale,(scene['x']+scene['width']-12-ax)/dx)
+            elif dx<0:scale=min(scale,(scene['x']+12-ax)/dx)
+            if dy>0:scale=min(scale,(bottom-ay)/dy)
+            elif dy<0:scale=min(scale,(scene['y']+16-ay)/dy)
+            return {'id':1,'x':ax+dx*max(0,scale),'y':ay+dy*max(0,scale)}
+        point=target()
         client = self.context.new_cdp_session(self.page) if touch else None
         if client:
             client.send('Input.dispatchTouchEvent', {'type':'touchStart','touchPoints':[point]})
@@ -137,6 +154,9 @@ class RhythmFishingTests(unittest.TestCase):
                 player = self.state()['player']
                 if (player['x']-x)**2+(player['y']-y)**2 < 8**2:
                     break
+                point=target()
+                if client:client.send('Input.dispatchTouchEvent',{'type':'touchMove','touchPoints':[point]})
+                else:self.page.mouse.click(point['x'],point['y'])
         finally:
             if client:
                 client.send('Input.dispatchTouchEvent', {'type':'touchEnd','touchPoints':[]})
@@ -186,6 +206,14 @@ class RhythmFishingTests(unittest.TestCase):
         # leave the first onset a fraction of a frame inside its count-in.
         self.page.clock.run_for(max(1, round((target+.025-clock)*1000)))
 
+    def play_note(self, note):
+        self.advance_to(note['time'])
+        self.page.keyboard.down('Space')
+        if note.get('requiresHold', note.get('duration', 0)>=1):
+            self.advance_to(note.get('holdEndTime',note['time']+note['durationSeconds']))
+        self.page.keyboard.up('Space')
+        self.page.clock.run_for(1)
+
     def finish_with_hits(self):
         for _ in range(100):
             state = self.state()
@@ -196,9 +224,7 @@ class RhythmFishingTests(unittest.TestCase):
                      if not note.get('rest') and note.get('judgement') in [None, 'pending']
                      and note['time'] >= state['clock']-.03]
             self.assertTrue(notes, state)
-            self.advance_to(notes[0]['time'])
-            self.page.keyboard.press('Space')
-            self.page.clock.run_for(1)
+            self.play_note(notes[0])
         self.fail('A common fish must be catchable by its actual rhythm')
 
     def test_cast_bite_count_in_and_real_rhythm_progress_then_escape(self):
@@ -222,13 +248,12 @@ class RhythmFishingTests(unittest.TestCase):
         self.assertEqual(self.state()['challenge']['progress'], initial,
                          'The count-in is a preparation period, not a penalty')
         note = next(note for note in state['challenge']['notes'] if not note.get('rest'))
-        self.advance_to(note['time'])
-        self.page.keyboard.press('Space')
+        self.play_note(note)
         self.assertGreater(self.state()['challenge']['progress'], initial)
         after_hit = self.state()['challenge']['progress']
         self.page.keyboard.press('Space')
         self.assertLess(self.state()['challenge']['progress'], after_hit,
-                        'Extra taps must lower the reel progress')
+                        'Releasing a long note early must lower the reel progress')
         self.page.clock.run_for(16000)
         self.assertEqual(self.state()['challenge']['phase'], 'escaped')
         self.assertEqual(self.page.evaluate('rewards'), [])
@@ -349,8 +374,9 @@ class RhythmFishingTests(unittest.TestCase):
         box = canvas.bounding_box()
         client = self.context.new_cdp_session(self.page)
         before = self.state()['boat']
-        point = {'id':1,'x':box['x']+680/1000*box['width'],
-                 'y':box['y']+390/620*box['height']}
+        camera=self.state().get('camera',{'x':0,'y':0,'zoom':1})
+        point = {'id':1,'x':box['x']+(before['x']+40-camera['x'])*camera['zoom']/1000*box['width'],
+                 'y':box['y']+(before['y']-camera['y'])*camera['zoom']/620*box['height']}
         client.send('Input.dispatchTouchEvent', {'type':'touchStart','touchPoints':[point]})
         self.page.clock.run_for(500)
         client.send('Input.dispatchTouchEvent', {'type':'touchEnd','touchPoints':[]})

@@ -10,13 +10,15 @@ The same site adapts to a phone or tablet; no separate installation is required.
 - **Menu** contains your profile, Notes, wardrobe, musicians, rooms, Hall of Fame, audio, zoom, fullscreen, and developer tools. Closing a menu or room clears its held touch inputs. Pointer cancellation, rotation, app switching, and screen hiding also release controls.
 - The touch pad hides while shopping, typing, editing, reading books, or playing a cabinet game. Cabinets use their own controls. **Return to world** stays accessible above the iframe.
 
-Large, translucent controls float over the bottom corners in both orientations. The map extends behind them and the middle remains available for finger steering. Layouts account for mobile browser bars and safe areas. A first-time touch device starts with Lite effects; an existing FX preference is preserved.
+Large, translucent controls float over the bottom corners in both orientations. Direction buttons are 64–74 pixels across, and the main action buttons are at least 80 pixels tall. The map extends behind them and the middle remains available for finger steering. Layouts account for mobile browser bars and safe areas. A first-time touch device starts with Lite effects; an existing FX preference is preserved.
 
 Developer tools keep the map’s scale when opening Layers. Zoom and **Pan** controls stay available; enable Pan to drag the map with one finger without painting. The Piano Lab and fishing cave also have **Developer** buttons with room-specific artwork, collision, layers, and sprite tools. In the cave, select a fish to edit its species, size, colors, visibility, or placement. Room edits are included in complete world project backups.
 
 ## Music rooms
 
 Piano Lab offers **Room**, **Chopin games**, **Keyboard**, and **Recording** tabs. Selecting a challenge returns to the floor piano. Free play sounds when you walk over a key; melody and interval games require the touch **Play note / E** action while standing on the chosen key. Letter names remain optional; pitch labels show C, D, E and so on, without octave numbers. Hold and drag on the floor to steer; lifting stops walking. The shared pad controls only the active room, and the arcade avatar pauses outside it.
+
+The Piano Lab and fishing cave fill the available room viewport, start at a closer 200% view on phones, and follow the player or boat. Both support pinch zoom from 100% to 300% and large corner zoom buttons. The piano keeps a readable sounded-note badge above the floor. Room tools and controls stay outside the central playable area, including in landscape.
 
 The classroom offers **Room** and **Study books**. Hold and drag on the room floor, or use the pad, to approach Professor Haydn and the bookshelves, then use **Talk / Read**. Books, quizzes, search, and audio examples remain available without using the virtual movement pad.
 
@@ -26,7 +28,7 @@ Enter through the arcade trapdoor or **Menu → Rhythm Fishing**. On the dock, h
 
 Pinch the cave with two fingers to zoom up to 300%, or use the corner’s **− / percentage / +** controls. The camera follows your avatar or boat. Steering and casting stop during the pinch and resume on a fresh touch after both fingers lift. Some species require 4/4, 6/8, or cut time; choose the meter before casting and check the collection cards for requirements.
 
-During a bite and rhythm challenge, the movement pad hides. Tap the large rhythm button or the one-line staff when each note reaches the gold line. A rest needs no tap; a long note needs one tap at its start. The 4/4, 6/8, and cut-time choices use their proper pulses. Pause and Sound controls remain available, and changing apps pauses a hooked fish. Fish collection and achievement progress are available from the room header. Fish shadows swim, and Full/Lite/Off effects control the cave lights, water shimmer, and wakes. Eighth/sixteenth notes use readable beam groups.
+During a bite and rhythm challenge, the movement pad hides. Press the large rhythm button or the one-line staff when each note reaches the gold line. Tap short notes; hold quarter notes and longer until their colored tail reaches the line. Rests need no input. Alternate thumbs for fast patterns. The rhythm surfaces suppress double-tap zoom, text selection, and long-press menus. Blue lines divide bars. The 4/4, 6/8, and cut-time choices use their proper pulses. Pause and **Audio** remain available, and changing apps pauses a hooked fish. Audio has independent saved music, metronome, guide-note, and master switches. Fish collection and achievement progress are available from the room header. Fish shadows swim, and Full/Lite/Off effects control the cave lights, water shimmer, rowing, and wakes. Eighth/sixteenth notes use readable beam groups. Losing removes that fish shadow; a new fish can appear elsewhere after 24 seconds.
 
 The battle illustration shows the fish tugging on your line and being reeled closer after good taps. Rare catches get a brief announcement. Quarter, half, eighth, and whole-bar rests are silent; rarer fish add more syncopation. Short landscape screens place the illustration beside progress so the full rhythm button remains visible.
 
@@ -54,6 +56,10 @@ python3 tests/finger-follow-browser.py
 python3 tests/mobile-world-browser.py
 python3 tests/mobile-landing-browser.py
 python3 tests/mobile-rooms-browser.py
+python3 tests/piano-mobile-browser.py
+python3 tests/cave-mobile-browser.py
+python3 tests/fishing-rhythm-input-browser.py
+python3 tests/fishing-audio-browser.py
 python3 tests/song-mobile-browser.py
 ```
 

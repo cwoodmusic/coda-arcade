@@ -35,7 +35,8 @@ class FishingBattleTests(unittest.TestCase):
         self.assertEqual(self.page.locator('[role=status] strong').inner_text(),'LEGENDARY FISH!')
         self.page.evaluate("step(.2,70,'hit')");good=self.page.evaluate('battle.getState()');good_hash=self.page.evaluate('hash()')
         self.page.evaluate("step(.4,30,'miss')");bad=self.page.evaluate('battle.getState()');self.assertGreater(bad['line']['mouth']['x'],good['line']['mouth']['x']);self.assertGreater(bad['tension'],good['tension']);self.assertNotEqual(self.page.evaluate('hash()'),good_hash)
-        self.page.evaluate('step(.5,30,null,true)');paused_hash=self.page.evaluate('hash()');self.page.evaluate('step(30,30,null,true)');self.assertEqual(self.page.evaluate('hash()'),paused_hash);self.assertTrue(self.page.evaluate('battle.getState().announcementVisible'))
+        self.assertNotEqual(good['line']['boat'],bad['line']['boat'],'The angler boat should bob and lean while a fish pulls')
+        self.page.evaluate('step(.5,30,null,true)');paused_hash=self.page.evaluate('hash()');paused_boat=self.page.evaluate('battle.getState().line.boat');self.page.evaluate('step(30,30,null,true)');self.assertEqual(self.page.evaluate('hash()'),paused_hash);self.assertEqual(self.page.evaluate('battle.getState().line.boat'),paused_boat);self.assertTrue(self.page.evaluate('battle.getState().announcementVisible'))
         self.page.evaluate('step(30,30)');self.page.evaluate('step(34,30)');self.assertFalse(self.page.evaluate('battle.getState().announcementVisible'));self.assertEqual(self.page.evaluate('battle.getState().announcements'),1)
         self.page.locator('#battle').screenshot(path='/tmp/coda-fishing-battle34.png')
     def test_portrait_and_short_landscape_keep_the_widget_compact_and_the_tap_button_reachable(self):
@@ -46,5 +47,5 @@ class FishingBattleTests(unittest.TestCase):
         self.page.screenshot(path='/tmp/coda-fishing-battle34-phone.png')
     def test_reduced_motion_still_changes_position_with_progress_and_preserves_a_calm_pose(self):
         self.page.emulate_media(reduced_motion='reduce');self.page.evaluate("step(1,75,'hit')");before=self.page.evaluate('battle.getState()');first=self.page.evaluate('hash()');self.page.evaluate("step(2,75,'hit')");after=self.page.evaluate('battle.getState()')
-        self.assertEqual(before['fishX'],after['fishX']);self.assertEqual(before['fishY'],after['fishY']);self.assertEqual(self.page.evaluate('hash()'),first);self.assertEqual(after['wiggle'],0)
+        self.assertEqual(before['fishX'],after['fishX']);self.assertEqual(before['fishY'],after['fishY']);self.assertEqual(self.page.evaluate('hash()'),first);self.assertEqual(after['wiggle'],0);self.assertEqual(before['line']['boat'],after['line']['boat']);self.assertEqual(after['line']['boat']['rock'],0)
 if __name__=='__main__':unittest.main(verbosity=2)

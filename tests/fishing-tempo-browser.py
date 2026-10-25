@@ -41,7 +41,7 @@ class FishingTempoTests(_upgrade._fish._world.WorldBrowserCase):
           Proto.stroke=function(...args){
             const points=paths.get(this);
             if(this.canvas.id==='fishingRhythmCanvas'&&points?.length===2&&
-              Math.abs(points[0][0]-points[1][0])<1e-8&&Math.abs(points[0][1]-points[1][1])===38){
+              Math.abs(points[0][0]-points[1][0])<1e-8&&Math.abs(points[0][1]-points[1][1])===54){
               tempoBars.push({x:points[0][0],clock:CodaArcadeQA.fishing().clock});
               if(tempoBars.length>600)tempoBars.shift();
             }
@@ -141,15 +141,20 @@ class FishingTempoTests(_upgrade._fish._world.WorldBrowserCase):
         window = note.get('window', ready['window'])
         self.assertLess(abs(self.state()['clock']-note['time']), window+.000001)
         self.page.locator('#fishingRhythmCanvas').focus()
-        self.page.keyboard.press('Space')
+        self.page.keyboard.down('Space')
+        self.last_onset_drawing=self.page.evaluate('tempoInk.at(-1)')
+        self.last_onset_state=self.state()
+        holding=note.get('requiresHold',note.get('duration',0)>=1)
+        gain=before['challenge']['rarity']['hitGain'] if holding else 0
+        if maintain and self.state()['challenge']['progress']+gain>65:
+            extras=self.state()['challenge']['extras']
+            self.page.keyboard.press('Enter')
+            self.assertEqual(self.state()['challenge']['extras'],extras+1)
+        if holding:self.advance_to(note.get('holdEndTime',note['time']+note['durationSeconds']))
+        self.page.keyboard.up('Space')
         after = self.state()
         self.assertEqual(after['challenge']['hits'], before['challenge']['hits']+1,
                          'An actual tap on a fast moving target must hit exactly once')
-        if maintain and after['phase']=='rhythm' and after['challenge']['progress']>65:
-            extras = after['challenge']['extras']
-            self.page.keyboard.press('Space')
-            after = self.state()
-            self.assertEqual(after['challenge']['extras'], extras+1)
         return after, note
 
     def play_through_beat(self, beat):
@@ -202,9 +207,9 @@ class FishingTempoTests(_upgrade._fish._world.WorldBrowserCase):
         self.play_through_beat(tempo['startBeat']+(tempo['endBeat']-tempo['startBeat'])*.55)
         state, note = self.tap_next(maintain=True)
         self.page.clock.run_for(1)
-        drawing = self.page.evaluate('tempoInk.at(-1)')
+        drawing = self.last_onset_drawing
         drawn = next(item for item in drawing['positions'] if item['id']==note['id'])
-        frame = self.state()['beaming']
+        frame = self.last_onset_state['beaming']
         self.assertAlmostEqual(drawn['x'], frame['strike']+(drawn['onset']-drawing['beat'])*frame['spacing'],delta=.15)
         self.assertAlmostEqual(drawn['x'],frame['strike'],delta=frame['spacing']*.09,
                                msg='At its exact timed onset, the real scrolling note must cross the strike line')

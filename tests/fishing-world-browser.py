@@ -69,8 +69,25 @@ class FishingWorldTests(_world.WorldBrowserCase):
 
     def walk_to(self,x,y):
         canvas=self.page.locator('#fishingLakeCanvas');canvas.scroll_into_view_if_needed();box=canvas.bounding_box()
-        point={'id':1,'x':box['x']+x/1000*box['width'],'y':box['y']+y/620*box['height']}
         touch=self.page.evaluate('navigator.maxTouchPoints>0')
+        def target():
+            box=canvas.bounding_box();scene=self.page.locator('.fishing-cave-scene').bounding_box()
+            state=self.state();camera=state.get('camera',{'x':0,'y':0,'zoom':1});actor=state['player']
+            px=box['x']+(x-camera['x'])*camera['zoom']/1000*box['width']
+            py=box['y']+(y-camera['y'])*camera['zoom']/620*box['height']
+            ax=box['x']+(actor['x']-camera['x'])*camera['zoom']/1000*box['width']
+            ay=box['y']+(actor['y']-camera['y'])*camera['zoom']/620*box['height']
+            bottom=scene['y']+scene['height']-12
+            if touch and self.page.viewport_size['height']>self.page.viewport_size['width']:
+                controls_height=self.page.evaluate("parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--coda-touch-controls-height'))||220")
+                bottom=min(bottom,self.page.viewport_size['height']-controls_height-10)
+            scale=1;dx,dy=px-ax,py-ay
+            if dx>0:scale=min(scale,(scene['x']+scene['width']-12-ax)/dx)
+            elif dx<0:scale=min(scale,(scene['x']+12-ax)/dx)
+            if dy>0:scale=min(scale,(bottom-ay)/dy)
+            elif dy<0:scale=min(scale,(scene['y']+16-ay)/dy)
+            return {'id':1,'x':ax+dx*max(0,scale),'y':ay+dy*max(0,scale)}
+        point=target()
         client=self.context.new_cdp_session(self.page) if touch else None
         if client:client.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[point]})
         else:self.page.mouse.click(point['x'],point['y'])
@@ -78,6 +95,9 @@ class FishingWorldTests(_world.WorldBrowserCase):
             for _ in range(30):
                 self.page.clock.run_for(120);player=self.state()['player']
                 if (player['x']-x)**2+(player['y']-y)**2<64:break
+                point=target()
+                if client:client.send('Input.dispatchTouchEvent',{'type':'touchMove','touchPoints':[point]})
+                else:self.page.mouse.click(point['x'],point['y'])
         finally:
             if client:client.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]});client.detach()
         self.page.clock.run_for(32)
@@ -101,19 +121,35 @@ class FishingWorldTests(_world.WorldBrowserCase):
         self.fail('Swimming fish should remain approachable within casting range')
 
     def cast(self,meter='4/4'):
+        # Freeze before entering the room, outside the playable rhythm, so
+        # browser protocol latency cannot consume adjacent hold-note windows.
+        self.page.clock.pause_at(self.page.evaluate('Date.now()/1000')+5)
         self.enter();self.page.locator('#fishingMeter').select_option(meter)
         self.board();self.approach_shadow()
         self.page.locator('#fishingCast').click();self.page.clock.run_for(2400)
         self.assertEqual(self.state()['phase'],'rhythm');self.page.locator('#fishingTap').focus()
 
     def catch_with_actual_keys(self):
+        def advance_to(target):
+            delta=target-self.state()['clock']
+            if delta>0:self.page.clock.run_for(max(1,int(delta*1000)))
+            for _ in range(20):
+                if self.state()['clock']>=target-.000001:return
+                self.page.clock.run_for(1)
+            self.fail('The controlled game clock should reach the note target')
         for _ in range(60):
             state=self.state();challenge=state['challenge']
             if challenge['phase'] in ['caught','escaped']:return state
-            upcoming=[note for note in challenge['notes'] if note['judgement']=='pending' and note['time']>=state['clock']-.03]
+            upcoming=[note for note in challenge['notes'] if note['judgement']=='pending'
+                and note['time']+note.get('window',challenge['window'])>=state['clock']]
             self.assertTrue(upcoming,state)
-            self.page.clock.run_for(max(1,round((upcoming[0]['time']-state['clock'])*1000)))
-            self.page.keyboard.press('Space');self.page.clock.run_for(1)
+            note=upcoming[0]
+            advance_to(note['time'])
+            self.page.keyboard.down('Space')
+            if note.get('requiresHold',note.get('duration',0)>=1):
+                end=note.get('holdEndTime',note['time']+note['durationSeconds'])
+                advance_to(end)
+            self.page.keyboard.up('Space');self.page.clock.run_for(1)
         self.fail('The real rhythm did not finish')
 
     def test_trapdoor_enters_the_cave_captain_and_boat_pause_the_world_and_exit_cleans_up(self):
@@ -173,11 +209,73 @@ class FishingWorldTests(_world.WorldBrowserCase):
         self.assertIn('Silver Minnow',self.page.locator('[data-fish-id="silver-minnow"]').inner_text())
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),154)
 
+    def test_leaving_a_held_fish_and_reopening_does_not_strand_its_hidden_slot(self):
+        self.cast();cast=self.state()
+        slot,original=next((index,shadow) for index,shadow in enumerate(cast['shadows']) if not shadow['visible'])
+        note=next(note for note in cast['challenge']['notes'] if note['judgement']=='pending')
+        self.assertTrue(note['requiresHold'])
+        delta=note['time']-self.state()['clock']
+        if delta>0:self.page.clock.run_for(max(1,int(delta*1000)))
+        for _ in range(20):
+            if self.state()['clock']>=note['time']-.000001:break
+            self.page.clock.run_for(1)
+        self.page.keyboard.down('Space')
+        self.assertEqual(len(self.state()['challenge']['activeHolds']),1)
+        self.page.locator('#fishingClose').click(force=True)
+        self.page.keyboard.up('Space');self.page.clock.run_for(64)
+        closed=self.state()
+        self.assertFalse(closed['open']);self.assertIsNone(closed['challenge'])
+        self.assertEqual(closed['voiceCount'],0)
+        self.assertIn(closed['audioState'],['closed','suspended'])
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.touch().held'),[])
+        self.assertEqual(closed['fingerWalk']['pointerCount'],0)
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),150)
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),0)
+        self.enter()
+        self.assertFalse(self.state()['shadows'][slot]['visible'])
+        # No recast changes the selected slot. The ordinary cooldown alone
+        # must let it recover after leaving a battle with a held note.
+        self.page.clock.run_for(9000)
+        recovered=self.state();replacement=recovered['shadows'][slot]
+        self.assertEqual(recovered['phase'],'shore');self.assertIsNone(recovered['challenge'])
+        self.assertTrue(replacement['visible']);self.assertNotEqual(replacement['id'],original['id'])
+        self.assertEqual(recovered['collection']['total'],0)
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),150)
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),0)
+        self.page.locator('#fishingClose').click(force=True);self.page.clock.run_for(32)
+        self.assertEqual(self.state()['voiceCount'],0)
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.touch().held'),[])
+
+    def test_escaped_fish_disappears_and_a_different_shadow_replaces_it_later(self):
+        self.cast();cast=self.state()
+        slot,original=next((index,shadow) for index,shadow in enumerate(cast['shadows']) if not shadow['visible'])
+        balance=self.page.evaluate('CodaArcadeQA.notes().balance')
+        for _ in range(30):
+            if self.state()['phase']=='escaped':break
+            self.page.clock.run_for(500)
+        lost=self.state();self.assertEqual(lost['phase'],'escaped')
+        escaped=lost['shadows'][slot]
+        self.assertFalse(escaped['visible']);self.assertTrue(escaped['escaped'])
+        self.assertEqual(escaped['id'],original['id'])
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),balance)
+        self.assertEqual(lost['collection']['total'],0)
+        self.page.locator('#fishingReturnLake').click()
+        self.page.clock.run_for(23000)
+        self.assertFalse(any(shadow['id']==original['id'] and shadow['visible'] for shadow in self.state()['shadows']))
+        self.page.clock.run_for(1500)
+        replacement=self.state()['shadows'][slot]
+        self.assertTrue(replacement['visible']);self.assertFalse(replacement['escaped'])
+        self.assertNotEqual(replacement['id'],original['id'])
+        self.assertGreater((replacement['x']-original['x'])**2+(replacement['y']-original['y'])**2,25)
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),balance)
+
     def test_touch_entry_held_boat_steering_release_and_compound_meter_phone(self):
         self.enter();self.page.clock.run_for(100);self.assertEqual(self.page.evaluate('CodaArcadeQA.touch().context'),'fishing')
         self.board();self.page.clock.run_for(64);before=self.state()['boat']
         box=self.page.locator('#fishingLakeCanvas').bounding_box();client=self.context.new_cdp_session(self.page)
-        point={'x':box['x']+500/1000*box['width'],'y':box['y']+415/620*box['height'],'id':1}
+        camera=self.state()['camera'];target={'x':before['x']+45,'y':before['y']}
+        point={'x':box['x']+(target['x']-camera['x'])*camera['zoom']/1000*box['width'],
+               'y':box['y']+(target['y']-camera['y'])*camera['zoom']/620*box['height'],'id':1}
         client.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[point]});self.page.clock.run_for(300)
         self.assertGreater(self.state()['boat']['x'],before['x']+15);self.assertTrue(self.state()['fingerWalk']['following'])
         client.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]});self.page.clock.run_for(32);stopped=self.state()['boat'];self.page.clock.run_for(200)

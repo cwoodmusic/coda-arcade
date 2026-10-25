@@ -77,10 +77,14 @@ class FishingUpgradeTests(_fish._world.WorldBrowserCase):
         state=self.state();note=next(note for note in state['challenge']['notes']
             if note['judgement']=='pending' and note['time']>=state['clock']-.03)
         self.advance_to(note['time']);self.page.locator('#fishingRhythmCanvas').focus()
-        self.page.keyboard.press('Space')
-        after=self.state()
-        if maintain and after['phase']=='rhythm' and after['challenge']['progress']>65:
-            self.page.keyboard.press('Space')
+        self.page.keyboard.down('Space')
+        head=self.state()
+        holding=note.get('requiresHold',note.get('duration',0)>=1)
+        gain=head['challenge']['rarity']['hitGain'] if holding else 0
+        if maintain and head['phase']=='rhythm' and head['challenge']['progress']+gain>65:
+            self.page.keyboard.press('Enter')
+        if holding:self.advance_to(note.get('holdEndTime',note['time']+note['durationSeconds']))
+        self.page.keyboard.up('Space')
         self.page.clock.run_for(16)
         return self.state()
 
@@ -112,7 +116,8 @@ class FishingUpgradeTests(_fish._world.WorldBrowserCase):
         self.assertLess(hit['tension'],before['tension']);self.assertLess(hit['fishX'],before['fishX'])
         hit_hash=self.battle_hash();self.page.keyboard.press('Space');self.page.clock.run_for(16)
         bad=self.state()['battle']
-        self.assertEqual(bad['reaction'],'extra');self.assertGreater(bad['tension'],hit['tension'])
+        self.assertEqual(bad['reaction'],'miss','Releasing the next quarter-note hold early must pull the fish away')
+        self.assertGreater(bad['tension'],hit['tension'])
         self.assertGreater(bad['fishX'],hit['fishX']);self.assertNotEqual(hit_hash,self.battle_hash())
         self.assertGreater(bad['line']['mouth']['x'],bad['line']['rod']['x'])
         self.page.locator('#fishingPause').click();self.page.clock.run_for(16)
