@@ -202,6 +202,32 @@ test('live Rhythm Room grading hooks verify 50 consecutive taps without counting
   f.manager.dispose();assert.equal(f.child.gradeTap,child.gradeTap,'Detaching restores the game grading function');
 });
 
+test('free count-in taps preserve live Rhythm missions and an opening-grace repeat never counts twice',()=>{
+  const child={
+    createTapRound:()=>round(8),
+    gradeTap(value,elapsed){
+      if(elapsed<0&&(elapsed<-.22||value.matched.has(0)))return {hit:false,warmup:true,error:null};
+      const target=elapsed<0?0:elapsed,hit=Number.isInteger(target)&&target>=0&&target<value.targets.length&&!value.matched.has(target);
+      const result={hit,error:elapsed<0?elapsed:0,openingGrace:hit&&elapsed<0};
+      value.taps.push({target,...result});if(hit)value.matched.add(target);else value.extras++;return result;
+    },finishTapRound(){return true;}
+  };
+  const f=fixture({game:'rhythm',child});f.manager.accept('joplin');f.manager.accept('ellington');f.attach();
+  for(let i=0;i<6;i++){
+    const value=f.child.createTapRound();
+    f.child.gradeTap(value,-2);f.child.gradeTap(value,-.5);f.child.gradeTap(value,-.18);f.child.gradeTap(value,-.01);
+    for(let target=1;target<8;target++)f.child.gradeTap(value,target);
+    f.child.finishTapRound();
+  }
+  assert.equal(f.manager.get('joplin').status,'complete');assert.equal(f.manager.get('ellington').progress,48);
+  const next=f.child.createTapRound();f.child.gradeTap(next,-1);
+  assert.equal(f.manager.get('ellington').progress,48,'Warm-up taps do not erase the run');
+  f.child.gradeTap(next,-.18);f.child.gradeTap(next,-.01);
+  assert.equal(f.manager.get('ellington').progress,49,'The protected repeat is neither a new hit nor a mistake');
+  f.child.gradeTap(next,1);assert.equal(f.manager.get('ellington').status,'complete');
+  assert.equal(f.wallet.snapshot().balance,150,'Finishing a streak still requires returning to the quest giver for payment');
+});
+
 test('cross-origin Rhythm fallback extends streaks only with complete clean rounds and rejects accumulated accuracy',()=>{
   const f=fixture({game:'rhythm'});f.manager.accept('ellington');f.manager.accept('ella');f.attach();
   for(let i=0;i<5;i++)f.result(rhythm(),'round-'+i);

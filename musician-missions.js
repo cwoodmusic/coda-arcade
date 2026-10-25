@@ -58,7 +58,7 @@
       if(!round||!Array.isArray(round.targets)||round.targets.length>128||!round.targets.every(Number.isFinite)){current=null;reset();}
     }
     function tap(round,result){
-      begin(round);if(!current)return;
+      begin(round);if(!current||result?.warmup)return;
       const last=round.taps?.[round.taps.length-1];
       if(!result?.hit||!integer(last?.target,127)||last.target>=round.targets.length){reset();return;}
       if(last.target!==next)reset();
