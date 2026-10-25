@@ -109,6 +109,44 @@ class ClassroomTutorialTests(unittest.TestCase):
         self.assertTrue(self.page.locator('[data-tutorial-next]').is_disabled())
         self.answer('E');self.assertFalse(self.page.locator('[data-tutorial-next]').is_disabled())
 
+    def test_bass_clef_teaches_lines_spaces_and_requires_a_saved_end_quiz(self):
+        self.open_lesson('bass-clef')
+        self.assertIn('Great Big Dreams For America',self.page.locator('.lesson-learning-card').inner_text())
+        self.assertEqual(self.page.locator('.lesson-staff-wrap [data-staff-clef="bass"]').count(),1)
+        self.answer('E');self.assertTrue(self.page.locator('[data-tutorial-next]').is_disabled())
+        self.page.locator('[data-note-hint]').click()
+        self.assertIn('bottom bass line',self.page.locator('.tutorial-feedback').inner_text())
+        self.page.locator('.lesson-action-cue').scroll_into_view_if_needed();self.page.screenshot(path='/tmp/classroom44-bass.png')
+        for letter in ['G','B','D','F','A','A','C','E','G']:
+            self.answer(letter);self.next()
+        self.assertEqual(self.state()['active']['phase'],'quiz');self.assertEqual(self.page.evaluate('rewards'),[])
+        self.assertEqual(self.page.locator('.classroom-quiz-visual [data-staff-clef="bass"]').count(),1)
+        answer_quiz(self.page,'bass-clef')
+        self.assertIn('bass-clef',self.state()['completed']);self.assertEqual(self.page.evaluate('rewards'),[{'id':'bass-clef','amount':50}])
+        self.assertNotRegex(self.page.locator('#classroomBook').inner_text(),r'\b[A-G][0-8]\b')
+        self.load();self.open_lesson('bass-clef');self.assertTrue(self.state()['active']['complete']);self.assertEqual(self.page.evaluate('rewards'),[])
+
+    def test_grand_staff_middle_c_uses_both_clefs_and_failed_quiz_never_completes(self):
+        self.page.set_viewport_size({'width':390,'height':844});self.open_lesson('grand-staff')
+        for index,letter in enumerate(['E','G','A','C','C','C','D','B']):
+            self.assertEqual(self.page.locator('.lesson-staff-wrap .staff-line').count(),10)
+            self.assertEqual(self.page.locator('.lesson-staff-wrap .staff-note').count(),1)
+            if index==4:
+                self.assertIn('BELOW the treble staff',self.page.locator('.lesson-learning-card').inner_text())
+                self.assertEqual(self.page.locator('.lesson-staff-wrap .staff-note').get_attribute('data-staff-position'),'-2')
+                self.page.locator('.lesson-action-cue').scroll_into_view_if_needed();self.page.screenshot(path='/tmp/classroom44-grand-middle-c.png')
+            if index==5:
+                self.assertIn('SAME piano key',self.page.locator('.lesson-learning-card').inner_text())
+                self.assertEqual(self.page.locator('.lesson-staff-wrap .staff-note').get_attribute('data-staff-position'),'10')
+            self.assertNotRegex(self.page.locator('#classroomBook').inner_text(),r'\b[A-G][0-8]\b')
+            self.assertFalse(self.page.locator('#room').evaluate('host=>host.scrollWidth>innerWidth'))
+            self.answer(letter);self.next()
+        answer_quiz(self.page,'grand-staff',wrong=(3,4),finish=False)
+        self.assertEqual(self.page.locator('[data-quiz-finish]').count(),0);self.assertEqual(self.page.evaluate('rewards'),[])
+        self.assertFalse(self.state()['active']['complete'])
+        self.page.locator('[data-quiz-retry]').click();answer_quiz(self.page,'grand-staff')
+        self.assertIn('grand-staff',self.state()['completed']);self.assertEqual(self.page.evaluate('rewards'),[{'id':'grand-staff','amount':50}])
+
     def test_partial_work_resumes_and_leaving_a_lesson_stops_its_audio(self):
         self.open_lesson('note-naming')
         for letter in ['C','F','D','A']:self.answer(letter);self.next()

@@ -4,7 +4,9 @@ const quiz=require('../classroom-quiz.js');
 const ANSWERS=Object.freeze({
  'note-naming':[0,1,2,0,1],
  'rhythm-tree':[1,0,2,1,0],
- 'time-signatures':[2,1,0,2,1]
+ 'time-signatures':[2,1,0,2,1],
+ 'bass-clef':[0,1,2,0,1],
+ 'grand-staff':[0,1,2,0,2]
 });
 function disk(){
  const values=new Map();

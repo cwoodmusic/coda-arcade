@@ -5,7 +5,7 @@ test('Haydn, every bookshelf and all interactive lessons have useful study conte
   assert.equal(HAYDN.name,'Professor Haydn');
   assert.equal(SHELVES.length,3);
   const ids=new Set(TOPICS.map(topic=>topic.id));assert.equal(ids.size,TOPICS.length);assert.ok(TOPICS.length>=14);
-  for(const id of ['welcome','pitch-race','music-triad','rhythm-room','pitch','staff','intervals','triads','rhythm','meter','piano','song-machine','note-naming','rhythm-tree','time-signatures'])assert.ok(ids.has(id),id);
+  for(const id of ['welcome','pitch-race','music-triad','rhythm-room','pitch','staff','intervals','triads','rhythm','meter','piano','song-machine','note-naming','rhythm-tree','time-signatures','bass-clef','grand-staff'])assert.ok(ids.has(id),id);
   for(const shelf of SHELVES){assert.ok(ids.has(shelf.topic));assert.ok(shelf.approach.y>=285&&shelf.approach.y<=565);}
   for(const topic of TOPICS){
     assert.ok(topic.title&&topic.html,topic.id);

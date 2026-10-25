@@ -1,5 +1,5 @@
 /* Hands-on music lessons. Numeric pitches stay inside the audio engine. */
-(function(root,factory){const node=typeof module==='object'&&module.exports,notation=node?require('./music-notation.js'):root?.CodaMusicNotation,timeLesson=node?require('./time-signature-lesson.js'):root?.CodaTimeSignatureLesson;const api=factory(notation,timeLesson);if(node)module.exports=api;if(root)root.CodaClassroomTutorials=api;})(typeof window!=='undefined'?window:null,function(notation,timeLesson){
+(function(root,factory){const node=typeof module==='object'&&module.exports,notation=node?require('./music-notation.js'):root?.CodaMusicNotation,timeLesson=node?require('./time-signature-lesson.js'):root?.CodaTimeSignatureLesson;const quizModule=node?require('./classroom-quiz.js'):root?.CodaClassroomQuiz;const api=factory(notation,timeLesson,quizModule);if(node)module.exports=api;if(root)root.CodaClassroomTutorials=api;})(typeof window!=='undefined'?window:null,function(notation,timeLesson,quizModule){
  'use strict';
  const KEY='codaClassroomLessonsV1';
  const VALUES=Object.freeze([
@@ -82,7 +82,7 @@
     "pitch": 69,
     "position": 3,
     "prompt": "Tap the letter for the purple note.",
-    "teach": "The spaces spell F A C E, starting at the bottom space.",
+    "teach": "The spaces spell FACE (F A C E), starting at the bottom space.",
     "example": "First space F → second SPACE A.",
     "hint": "Count only the spaces from the bottom: F, A. Tap A."
   },
@@ -92,7 +92,7 @@
     "pitch": 71,
     "position": 4,
     "prompt": "Tap the letter for the purple note.",
-    "teach": "The line letters are E G B D F, starting at the bottom line.",
+    "teach": "The line letters are E G B D F, starting at the bottom line. Remember: Every Good Boy Does Fine.",
     "example": "First line E → second line G → middle LINE B.",
     "hint": "Count only the lines from the bottom: E, G, B. Tap B."
   },
@@ -107,7 +107,30 @@
     "hint": "Count the spaces: F, A, C. The note is in the third space. Tap C."
   }
 ].map(Object.freeze));
- const LESSONS=Object.freeze([{id:'note-naming',title:'Note naming',total:NOTE_STEPS.length},{id:'rhythm-tree',title:'The rhythm tree',total:4},timeLesson?.LESSON||{id:'time-signatures',title:'Time signatures',total:8}].map(Object.freeze));
+ const staffStep=(clef,position,answer,pitch,teach,example,hint,grand=false)=>Object.freeze({kind:'staff',clef,grand,position,answer,pitch,prompt:'Check the clef. Tap the letter for the purple note.',teach,example,hint});
+ const BASS_STEPS=Object.freeze([
+  staffStep('bass',0,'G',43,'Bass clef helps us read lower sounds. It has a curved shape and two dots. Keep counting lines from the bottom.','Bass lines, bottom to top: G B D F A. Remember: Great Big Dreams For America.','The note sits on the bottom bass line. Great begins with G. Tap G.'),
+  staffStep('bass',2,'B',47,'Each word helps you remember one LINE: Great Big Dreams For America. Start at the bottom every time.','First line G → second line B. Big begins with B.','Count only the lines: G, B. This note is B.'),
+  staffStep('bass',4,'D',50,'The middle line is the third of the five lines. Find a line you know, then count upward.','Great Big Dreams: G, B, D. The middle line is D.','The purple head sits on the middle line. Dreams begins with D.'),
+  staffStep('bass',6,'F',53,'The bass clef’s two dots sit on either side of the F line. Use that line as a landmark.','G B D F A: F is the fourth line from the bottom.','Find the line between the two dots. That line is F.'),
+  staffStep('bass',8,'A',57,'Finish the five line names: Great Big Dreams For America. Read upward from the bottom.','G B D F A: America gives A on the top line.','The top line is the fifth line. America begins with A.'),
+  staffStep('bass',1,'A',45,'Spaces have their own reminder. Bass spaces, bottom to top: A C E G. Remember: All Cows Eat Grass.','The first bass SPACE is A. All begins with A.','The round head is between the bottom two lines. The bottom space is A.'),
+  staffStep('bass',3,'C',48,'For a space note, use All Cows Eat Grass. Count spaces from the bottom.','First space A → second space C.','Count only spaces: All, Cows. Cows begins with C.'),
+  staffStep('bass',5,'E',52,'Keep the lines and spaces separate when using a reminder. This note sits in a space.','All Cows Eat: A, C, E. The third space is E.','Count three spaces upward: A, C, E. Tap E.'),
+  staffStep('bass',7,'G',55,'You can now use both bass reminders: Great Big Dreams For America for lines; All Cows Eat Grass for spaces.','A C E G: Grass gives G in the top space.','The note sits in the fourth space. Grass begins with G.')
+ ]);
+ const GRAND_STEPS=Object.freeze([
+  staffStep('treble',0,'E',64,'A grand staff joins two staffs: treble above bass. Check which clef belongs to the purple note before naming it.','Treble lines, bottom to top: Every Good Boy Does Fine = E G B D F.','This note belongs to the upper, treble staff. Its bottom line is E.',true),
+  staffStep('bass',0,'G',43,'The lower staff uses bass clef. A note in the same place on a different clef can have a different letter.','Bass lines, bottom to top: Great Big Dreams For America = G B D F A.','This note belongs to the lower, bass staff. Its bottom line is G.',true),
+  staffStep('treble',3,'A',69,'Treble spaces spell FACE. Count F A C E from the bottom space of the upper staff.','First treble space F → second treble space A.','Check the treble clef, then count two spaces: F, A.',true),
+  staffStep('bass',3,'C',48,'Bass spaces use All Cows Eat Grass. Count A C E G from the bottom space of the lower staff.','First bass space A → second bass space C.','Check the bass clef, then count two spaces: A, C.',true),
+  staffStep('treble',-2,'C',60,'A short extra line is a ledger line. Middle C sits on one ledger line BELOW the treble staff, between the two staffs.','Middle C → D in the space → E on the bottom treble line.','Find the little line below treble. The note on it is Middle C. Tap C.',true),
+  staffStep('bass',10,'C',60,'Middle C can also sit on one ledger line ABOVE the bass staff. It is the SAME piano key and sound as Middle C below treble.','Top bass line A → space B → ledger line Middle C.','Find the little line above bass. It is another way to write Middle C. Tap C.',true),
+  staffStep('treble',-1,'D',62,'Use Middle C as a stepping stone. Each next line or space moves one letter forward.','Middle C on its little line → D in the space just above it → E on the treble staff.','The note is one place above Middle C and just below the bottom treble line. C → D.',true),
+  staffStep('bass',9,'B',59,'Middle C connects the two staffs. You can count down from it as well as up from it.','Top bass line A → space B → Middle C on its little line.','The note is one place below Middle C and just above the top bass line. C → B.',true)
+ ]);
+ const NOTE_LESSONS=Object.freeze({'note-naming':NOTE_STEPS,'bass-clef':BASS_STEPS,'grand-staff':GRAND_STEPS});
+ const LESSONS=Object.freeze([{id:'note-naming',title:'Note naming',total:NOTE_STEPS.length},{id:'rhythm-tree',title:'The rhythm tree',total:4},timeLesson?.LESSON||{id:'time-signatures',title:'Time signatures',total:8},{id:'bass-clef',title:'Bass clef',total:BASS_STEPS.length},{id:'grand-staff',title:'Grand staff & Middle C',total:GRAND_STEPS.length}].map(Object.freeze));
  const recipe=[4,2,2,8];
  const valueFor=units=>VALUES.find(value=>value.units===units);
  function validBar(notes){return Array.isArray(notes)&&notes.length===recipe.length&&notes.every(note=>Number.isInteger(note))&&[...notes].sort((a,b)=>a-b).join(',')===[...recipe].sort((a,b)=>a-b).join(',');}
@@ -116,7 +139,7 @@
  function storageFor(storage){if(storage!==undefined)return storage;try{return window.localStorage;}catch{return null;}}
  function readProgress(storage){storage=storageFor(storage);let data=defaultProgress(),persistent=false,error='';try{data=normalize(JSON.parse(storage?.getItem(KEY)||'null'));persistent=!!storage;}catch{error='Lesson progress could not be read.';}const lessons=LESSONS.map(lesson=>({...lesson,...data.lessons[lesson.id]})),completed=lessons.filter(lesson=>lesson.completed).map(lesson=>lesson.id);return {version:1,lessons,completed,completedCount:completed.length,total:LESSONS.length,persistent,error};}
  function glyph(units,colour='currentColor'){return notation.glyphSVG(units/4,{colour});}
- function staffSVG(position){return notation.staffSVG(position);}
+ function staffSVG(position,options={}){return (quizModule?.staffSVG||notation.staffSVG)(position,options);}
  function treeSVG(level){let lines='',nodes='';for(let row=0;row<=level;row++){const count=2**row,y=28+row*58;for(let at=0;at<count;at++){const x=(at+.5)*800/count;if(row){const px=(Math.floor(at/2)+.5)*800/(count/2);lines+='<path d="M'+px+' '+(y-45)+'L'+x+' '+(y-13)+'" stroke="#8c76b6" stroke-width="2"/>';}nodes+='<g data-tree-level="'+row+'" data-tree-index="'+at+'" transform="translate('+(x-14)+' '+(y-18)+')" color="'+(row===level?'#b8ffdd':'#d4bdeb')+'">'+glyph(VALUES[row].units).replace('<svg ','<svg x="0" y="0" ').replace('width="30" height="36"','width="28" height="34"')+'</g>';}}return '<svg viewBox="0 0 800 '+(55+level*58)+'" class="lesson-tree-picture" style="--lesson-tree-min-width:'+(2**level*40)+'px" aria-hidden="true" focusable="false">'+lines+nodes+'</svg>';}
  function create(api={}){
   const host=api.host;if(!host)throw Error('A tutorial needs a host element.');const doc=host.ownerDocument,win=doc.defaultView,storage=storageFor(api.storage);
@@ -149,15 +172,16 @@
    notifyCompletion();render();
   }
   function notifyCompletion(){const lesson=LESSONS.find(lesson=>lesson.id===id);try{const result=api.onComplete?.(id,{title:lesson.title,correct:lesson.total,total:lesson.total});if(result&&typeof result.then==='function')result.then(value=>{award=value;render();}).catch(()=>{award={ok:false};render();});else award=result||null;}catch{award={ok:false};}}
+  const namingSteps=()=>NOTE_LESSONS[id]||NOTE_STEPS;
   function answerNote(letter,pitch){
-   if(complete||answered)return;play([pitch||60]);const expected=NOTE_STEPS[step];
+   if(complete||answered)return;play([pitch||60]);const expected=namingSteps()[step];
    if(letter!==expected.answer){feedback('That was '+letter+'. '+expected.hint+' You can try again.',false);return;}
-   answered=true;persist(step+1);feedback('Yes! '+letter+' is correct. Tap '+(step===NOTE_STEPS.length-1?'Start quiz':'Next step')+' when you are ready.',true);
+   answered=true;persist(step+1);feedback('Yes! '+letter+' is correct. Tap '+(step===namingSteps().length-1?'Start quiz':'Next step')+' when you are ready.',true);
    for(const choice of host.querySelectorAll('[data-note-answer],[data-note-hint]'))choice.disabled=true;
    const advance=host.querySelector('[data-tutorial-next]');advance.disabled=false;host.querySelector('progress').value=step+1;advance.focus({preventScroll:true});
   }
   function revealNoteHint(){
-   if(answered)return;hintShown=true;const question=NOTE_STEPS[step];feedback(question.hint,null);
+   if(answered)return;hintShown=true;const question=namingSteps()[step];feedback(question.hint,null);
    for(const key of host.querySelectorAll('.lesson-white-key'))key.classList.toggle('is-hint',key.dataset.noteAnswer===question.answer);
    const staff=host.querySelector('.lesson-staff-wrap');if(staff)staff.classList.add('is-hint');
    const hint=host.querySelector('[data-note-hint]');if(hint)hint.setAttribute('aria-expanded','true');
@@ -180,14 +204,14 @@
   function buildKeyboard(section){
    const wrapper=element('div','lesson-keyboard-scroll'),keyboard=element('div','lesson-keyboard');keyboard.setAttribute('role','group');keyboard.setAttribute('aria-label','Piano white keys');
    const whites=[['C',60],['D',62],['E',64],['F',65],['G',67],['A',69],['B',71],['C',72]];
-   whites.forEach(([letter,pitch],index)=>{const key=button('',()=>answerNote(letter,pitch),{'aria-label':letter+' key','data-note-answer':letter,'data-pitch':pitch});key.className='lesson-white-key';if(hintShown&&letter===NOTE_STEPS[step].answer)key.classList.add('is-hint');key.style.left=index*12.5+'%';const label=element('span','lesson-key-name',letter);label.hidden=!names;key.append(label);keyboard.append(key);});
+   whites.forEach(([letter,pitch],index)=>{const key=button('',()=>answerNote(letter,pitch),{'aria-label':letter+' key','data-note-answer':letter,'data-pitch':pitch});key.className='lesson-white-key';if(hintShown&&letter===namingSteps()[step].answer)key.classList.add('is-hint');key.style.left=index*12.5+'%';const label=element('span','lesson-key-name',letter);label.hidden=!names;key.append(label);keyboard.append(key);});
    for(const boundary of [1,2,4,5,6]){const black=element('span','lesson-black-key');black.style.left=(boundary*12.5-3.8)+'%';black.setAttribute('aria-hidden','true');keyboard.append(black);}wrapper.append(keyboard);section.append(wrapper);
    const label=element('label','lesson-name-toggle'),toggle=element('input');toggle.type='checkbox';toggle.checked=names;toggle.onchange=()=>{names=toggle.checked;for(const name of host.querySelectorAll('.lesson-key-name'))name.hidden=!names;};label.append(toggle,doc.createTextNode('Show note letters'));section.append(label,element('p','lesson-small','If the keyboard is wider than your screen, swipe sideways to see the other keys.'));
   }
   function namingExample(question){
    const example=element('div','lesson-naming-example');example.dataset.noteExample=question.kind;
    if(question.kind==='staff'){
-    example.classList.add('lesson-reference-staff');example.innerHTML=staffSVG(0);example.append(element('p','','Start here: bottom line = E.'));
+    example.classList.add('lesson-reference-staff');const clef=question.clef||'treble',middle=question.position===-2||question.position===10;example.innerHTML=staffSVG(middle?question.position:0,question);example.append(element('p','',middle?'Middle C: one little line below treble or above bass. The same key and sound.':'Start here: '+clef+' bottom line = '+(clef==='bass'?'G.':'E.')));
    }else{
     const letters=['C','D','E','F','G','A','B','C'],target=letters.indexOf(question.answer),anchor=question.answer==='A'?3:0;
     let keys='';for(let index=0;index<8;index++){const fill=index===target?'#a9f2da':index===anchor?'#f5dda7':'#f9f4e6';keys+='<rect x="'+(index*50+1)+'" y="22" width="48" height="79" rx="3" fill="'+fill+'" stroke="#514861"/>';}
@@ -198,13 +222,13 @@
    return example;
   }
   function renderNaming(section){
-   const question=NOTE_STEPS[step],card=learningCard(section,question.teach,question.example);card.append(namingExample(question));actionCue(section,question.prompt);
+   const question=namingSteps()[step],card=learningCard(section,question.teach,question.example);card.append(namingExample(question));actionCue(section,question.prompt);
    if(question.kind==='keys')buildKeyboard(section);else{
-    const drawing=element('div','lesson-staff-wrap'+(hintShown?' is-hint':''));drawing.innerHTML=staffSVG(question.position);section.append(drawing,element('p','lesson-small','Look at the purple round notehead. Then choose its letter below.'));
+    const drawing=element('div','lesson-staff-wrap'+(hintShown?' is-hint':''));drawing.innerHTML=staffSVG(question.position,question);section.append(drawing,element('p','lesson-small','Look at the purple round notehead. Then choose its letter below.'));
     const choices=element('div','lesson-letter-answers');choices.setAttribute('role','group');choices.setAttribute('aria-label','Choose the note letter');for(const letter of ['A','B','C','D','E','F','G'])choices.append(button(letter,()=>answerNote(letter,question.pitch),{'data-note-answer':letter}));section.append(choices);
    }
    const actions=element('div','lesson-actions lesson-help-actions');actions.append(button('Show me a hint',revealNoteHint,{'data-note-hint':'','aria-expanded':String(hintShown)}),button('Hear the note',()=>play([question.pitch])));section.append(actions);appendFeedback(section);
-   const advance=button(step===NOTE_STEPS.length-1?'Start quiz':'Next step',next,{'data-tutorial-next':''});advance.disabled=!answered;section.append(advance,element('p','lesson-small','No timer. You can use hints and try again.'));
+   const advance=button(step===namingSteps().length-1?'Start quiz':'Next step',next,{'data-tutorial-next':''});advance.disabled=!answered;section.append(advance,element('p','lesson-small','No timer. You can use hints and try again.'));
   }
   function renderTree(section){
    const teaching=[
@@ -244,7 +268,7 @@
   }
   function appendFeedback(section){const feedbackNode=element('p','tutorial-feedback',message);feedbackNode.setAttribute('role','status');feedbackNode.setAttribute('aria-live','polite');feedbackNode.dataset.correct=String(correct);section.append(feedbackNode);}
   function renderComplete(section){
-   section.append(element('h3','','Lesson complete!'),element('p','lesson-teach',id==='note-naming'?'You found notes on the piano and on the staff. You can use those clues in Pitch Race and Piano Lab.':id==='time-signatures'?'You read 4/4, 6/8, and cut time, heard their different pulses, and built a bar for each one. Try feeling those pulses while rhythm fishing!':'You split and joined note values, compared their lengths, and built a four-beat rhythm. Try these skills in Rhythm Room and Music Triad.'));
+   section.append(element('h3','','Lesson complete!'),element('p','lesson-teach',id==='note-naming'?'You found notes on the piano and on the staff. You can use those clues in Pitch Race and Piano Lab.':id==='bass-clef'?'You used the bass clef’s lines, spaces, and F landmark. Try Bass Clef in Pitch Race when you are ready.':id==='grand-staff'?'You read both clefs and found the same Middle C from either staff. Try Grand Staff in Pitch Race.':id==='time-signatures'?'You read 4/4, 6/8, and cut time, heard their different pulses, and built a bar for each one. Try feeling those pulses while rhythm fishing!':'You split and joined note values, compared their lengths, and built a four-beat rhythm. Try these skills in Rhythm Room and Music Triad.'));
    let reward='You can replay this lesson whenever you want.';if(award?.ok===false)reward=award.error||'Your lesson is finished. Try saving your reward again.';else if(award?.alreadyAwarded)reward='You already earned this lesson’s achievement. Keep practicing for fun!';else if(award?.amount>0)reward='Achievement earned! +'+award.amount+' XP.';
    const checked=ensureQuiz()?.getState();if(checked?.passed)section.append(element('p','lesson-teach','Quiz passed · '+checked.score+' of '+checked.total+' correct.'));
    const status=element('p','tutorial-feedback',reward);status.setAttribute('role','status');section.append(status);if(award?.ok===false)section.append(button('Try saving progress again',()=>{if(readProgress(storage).completed.includes(id)){notifyCompletion();render();}else finish();}));
@@ -254,7 +278,7 @@
    if(destroyed||!id)return;const oldFocus=host.contains(doc.activeElement)?doc.activeElement:null;let restore=null;if(oldFocus){for(const attr of ['data-pitch','data-note-answer','data-tree-split','data-tree-join','data-tutorial-next','data-add-value','data-check-rhythm','data-tutorial-replay'])if(oldFocus.hasAttribute(attr)){restore='['+attr+'=\"'+oldFocus.getAttribute(attr)+'\"]';break;}}host.replaceChildren();host.classList.add('classroom-tutorial');host.dataset.tutorial=id;host.dataset.phase=complete?'complete':quizzing?'quiz':'lesson';const lesson=LESSONS.find(item=>item.id===id),heading=element('div','lesson-topline');heading.append(element('span','lesson-step-label',complete?'Lesson finished':quizzing?'End-of-lesson quiz':'Step '+(step+1)+' of '+lesson.total));if(!quizzing&&!complete)heading.append(button('Stop sound',stopAudio));host.append(heading);
    if(!quizzing){const progress=element('progress');progress.max=lesson.total;progress.value=complete?lesson.total:step+(answered?1:0);progress.setAttribute('aria-label',lesson.title+' progress');host.append(progress);}
    const section=element('section','lesson-content');section.setAttribute('aria-label',lesson.title+(quizzing?' quiz':' activity'));host.append(section);
-   if(complete)renderComplete(section);else if(quizzing){if(ensureQuiz())quiz.render(section);else section.append(element('p','lesson-teach','The quiz could not load. Reload the page to try again.'));}else if(id==='note-naming')renderNaming(section);else if(id==='time-signatures'){if(signatureLesson)signatureLesson.render(section,{step,answered});else section.append(element('p','','The time-signature lesson could not load. Reload the page to try again.'));}else renderRhythm(section);if(oldFocus&&!quizzing){let target=restore?host.querySelector(restore):null;if(!target||target.disabled)target=host.querySelector('h3');if(target){if(target.tagName==='H3')target.tabIndex=-1;target.focus({preventScroll:true});}}
+   if(complete)renderComplete(section);else if(quizzing){if(ensureQuiz())quiz.render(section);else section.append(element('p','lesson-teach','The quiz could not load. Reload the page to try again.'));}else if(NOTE_LESSONS[id])renderNaming(section);else if(id==='time-signatures'){if(signatureLesson)signatureLesson.render(section,{step,answered});else section.append(element('p','','The time-signature lesson could not load. Reload the page to try again.'));}else renderRhythm(section);if(oldFocus&&!quizzing){let target=restore?host.querySelector(restore):null;if(!target||target.disabled)target=host.querySelector('h3');if(target){if(target.tagName==='H3')target.tabIndex=-1;target.focus({preventScroll:true});}}
   }
   function reset(resume=true){
    stopAudio();quiz?.destroy();quiz=null;signatureLesson?.reset();const saved=readProgress(storage).lessons.find(lesson=>lesson.id===id),total=LESSONS.find(lesson=>lesson.id===id).total;step=resume?saved.step:0;complete=resume&&saved.completed;quizzing=resume&&!complete&&step>=total;freshQuiz=!resume;answered=false;message='';correct=null;hintShown=false;level=0;explored=new Set([0]);bar=[];award=null;
@@ -263,5 +287,5 @@
   function open(lessonId){if(!LESSONS.some(lesson=>lesson.id===lessonId))return false;id=lessonId;reset();return true;}
   return {open,stopAudio,destroy(){stopAudio();quiz?.destroy();signatureLesson?.destroy();destroyed=true;host.replaceChildren();},getState:()=>({...readProgress(storage),active:id?{id,step,answered,complete,phase:complete?'complete':quizzing?'quiz':'lesson',quiz:quiz?.getState()||null,treeLevel:level,explored:[...explored],bar:[...bar],timeSignatures:id==='time-signatures'?signatureLesson?.getState():null,audioPlaying:!!audio||signatureLesson?.getState().audioPlaying===true,error}:null})};
  }
- return {KEY,LESSONS,VALUES,NOTE_STEPS,validBar,normalize,readProgress,glyph,staffSVG,treeSVG,create};
+ return {KEY,LESSONS,VALUES,NOTE_STEPS,BASS_STEPS,GRAND_STEPS,NOTE_LESSONS,validBar,normalize,readProgress,glyph,staffSVG,treeSVG,create};
 });

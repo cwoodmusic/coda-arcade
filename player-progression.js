@@ -24,6 +24,10 @@
   {id:'lakeotter',label:'Lake otter companion',achievement:'fishing-all-species',requirement:'Catch all 30 fish species.'},
   {id:'pianophoenix',label:'Piano phoenix companion',achievement:'piano-memory-master',requirement:'Complete all nine Piano Lab melodies from memory.'},
   {id:'triadchampion',label:'Triad champion crown',achievement:'triad-hard-advanced-win',requirement:'Win an Advanced Music Triad game on Hard.'},
+  {id:'bassclefpin',label:'Bass clef pin',achievement:'pitch-bass-reader',requirement:'Read 10 bass-clef notes correctly in one Pitch Race run.'},
+  {id:'basslaurel',label:'Bass reader laurel',achievement:'pitch-bass-streak',requirement:'Read 20 bass-clef notes in a row without a mistake in one Pitch Race run.'},
+  {id:'grandstaffbadge',label:'Grand staff badge',achievement:'pitch-grand-reader',requirement:'Read 10 treble and 10 bass notes correctly in one Grand Staff run.'},
+  {id:'grandstaffcrown',label:'Grand staff crown',achievement:'pitch-grand-perfect',requirement:'Read at least 20 notes, including both clefs, without a mistake in one Grand Staff run.'},
   ...[10,20,30,40,50].map(level=>({id:level===50?'starlight':level===40?'pitchcrown40':'pitchlaurel'+level,label:level===50?'Starlight transformation':level===40?'Radiant pitch crown':({10:'Bronze',20:'Silver',30:'Gold'}[level]+' pitch laurel'),achievement:'pitch-level-'+level,requirement:'Complete level '+level+' in Pitch Race Level mode.'}))
  ].map(Object.freeze));
  const requirement=id=>ACHIEVEMENT_REWARDS.find(item=>item.id===id)?.requirement||'';
@@ -39,6 +43,13 @@
   {id:16,label:'FM Electric Piano',level:10},{id:17,label:'Music Box',level:12}
  ].map(Object.freeze));
  const integer=(n,max=1000000)=>Number.isSafeInteger(n)&&n>=0&&n<=max;
+ function validClefStats(result){
+  if(!['treble','bass','grand'].includes(result.staff)||!result.clefStats)return false;
+  const t=result.clefStats.treble,b=result.clefStats.bass;
+  if(![t,b].every(s=>s&&integer(s.correct)&&integer(s.misses)&&integer(s.bestStreak)&&s.bestStreak<=s.correct&&s.bestStreak<=result.streak))return false;
+  return t.correct+b.correct===result.correct&&t.misses+b.misses===result.misses&&
+   (result.staff!=='treble'||b.correct+b.misses===0)&&(result.staff!=='bass'||t.correct+t.misses===0);
+ }
  const levelForXP=xp=>THRESHOLDS.reduce((level,value,index)=>xp>=value?index+1:level,1);
  const soundRequiredLevel=id=>SOUNDS.find(sound=>sound.id===Number(id))?.level||1;
  function clean(value){
@@ -92,13 +103,20 @@
    if(game==='pitch'&&result.correct>=10)achievements.push('pitch-ten-correct');
    if(game==='pitch'&&result.streak>=10)achievements.push('pitch-ten-streak');
    if(game==='pitch')for(const level of [10,20,30,40,50])if(reportedPitchLevel(result)>=level)achievements.push('pitch-level-'+level);
+   if(game==='pitch'&&validClefStats(result)){
+    const {treble,bass}=result.clefStats;
+    if(bass.correct>=10)achievements.push('pitch-bass-reader');
+    if(bass.bestStreak>=20)achievements.push('pitch-bass-streak');
+    if(result.staff==='grand'&&treble.correct>=10&&bass.correct>=10)achievements.push('pitch-grand-reader');
+    if(result.staff==='grand'&&result.correct>=20&&treble.correct>0&&bass.correct>0&&result.misses===0)achievements.push('pitch-grand-perfect');
+   }
    if(game==='rhythm'&&integer(result.streak)&&result.streak>=100&&result.streak<=result.hits)achievements.push('rhythm-hundred-streak');
    if(game==='pitch'&&result.correct>0&&result.misses===0)achievements.push('pitch-perfect-run');
    if(game==='rhythm'&&result.hits===result.total&&result.extra===0&&result.early===0&&result.late===0)achievements.push('rhythm-perfect-round');
    const awarded=[resultAward,...achievements.map(recordAchievement)].filter(value=>value.ok&&!value.alreadyAwarded);
    return {...getState(),ok:true,alreadyAwarded:awarded.length===0,amount:awarded.reduce((sum,value)=>sum+value.amount,0),leveledUp:levelForXP(state.xp)>before};
   }
-  function recordAchievement(id){return awardXP('achievement:'+id,['rhythm-hundred-streak','piano-memory-master','triad-hard-advanced-win','pitch-level-50'].includes(id)?250:50,'Achievement: '+String(id).replace(/[-_]/g,' '));}
+  function recordAchievement(id){return awardXP('achievement:'+id,({'pitch-bass-reader':100,'pitch-bass-streak':150,'pitch-grand-reader':150,'pitch-grand-perfect':250})[id]||(['rhythm-hundred-streak','piano-memory-master','triad-hard-advanced-win','pitch-level-50'].includes(id)?250:50),'Achievement: '+String(id).replace(/[-_]/g,' '));}
   function recordQuest(id,amount=100){return awardXP('quest:'+id,amount,'Quest: '+String(id).replace(/[-_:]/g,' '));}
   function recordRhythmStreak(value){if(!integer(value)||value<100)return {ok:false,error:'A verified streak of 100 notes is required.'};return recordAchievement('rhythm-hundred-streak');}
   function recordPianoMemory(id){

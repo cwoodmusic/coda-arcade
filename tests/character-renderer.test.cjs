@@ -176,9 +176,21 @@ test('premium transformations and mastery hats add actual pixels and unequip cle
  for(const form of ['alien','starlight']){
   assert.equal(r.normalizeProfile({form}).form,form);assert.notEqual(signature(draw(r,{form})),normal);
  }
- for(const headwear of ['celestialcrown','triadchampion','pitchlaurel10','pitchlaurel20','pitchlaurel30','pitchcrown40'])assert.notEqual(signature(draw(r,{headwear})),normal,headwear);
+ for(const headwear of ['celestialcrown','triadchampion','pitchlaurel10','pitchlaurel20','pitchlaurel30','pitchcrown40','basslaurel','grandstaffcrown'])assert.notEqual(signature(draw(r,{headwear})),normal,headwear);
  assert.notEqual(signature(draw(r,{accessory:'nebulaaura'})),normal);
  assert.equal(signature(draw(r,{form:'human',pet:'none'})),normal);
  assert.equal(r.normalizeProfile({form:'bogus',pet:'bogus'}).form,'human');assert.equal(r.normalizeProfile({pet:'bogus'}).pet,'none');
  assert.ok(r.labelOffset({form:'alien'})>=66);
+});
+
+test('clef mastery pins and crowns have distinct art in every facing',()=>{
+ const {value:r}=renderer();
+ for(const facing of ['down','up','left','right']){
+  const seen=new Set([signature(draw(r,{}, {facing}))]);
+  for(const [slot,id]of [['accessory','bassclefpin'],['accessory','grandstaffbadge'],['headwear','basslaurel'],['headwear','grandstaffcrown']]){
+   assert.equal(r.normalizeProfile({[slot]:id})[slot],id);
+   const pixels=signature(draw(r,{[slot]:id},{facing}));assert.ok(!seen.has(pixels),id+' '+facing);seen.add(pixels);
+  }
+ }
+ assert.ok(r.labelOffset({headwear:'grandstaffcrown'})>=70);
 });

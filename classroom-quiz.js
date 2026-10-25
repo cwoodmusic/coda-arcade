@@ -27,8 +27,38 @@
    {id:'cut-time-unit',prompt:'Which note gets one BIG beat in cut time?',answers:['Half note','Quarter note','Eighth note'],correct:0,explanation:'Cut time is 2/2. Each half note gets one big beat.',visual:{kind:'meter',meter:'2/2'}},
    {id:'six-eight-count',prompt:'Which count matches the two groups in 6/8?',answers:['ONE, two, three, four','ONE-and, TWO-and','ONE-la-li, TWO-la-li'],correct:2,explanation:'Six eighth-note lengths form two groups of three: ONE-la-li, TWO-la-li.',visual:{kind:'meter',meter:'6/8'}},
    {id:'cut-time-bar',prompt:'Which notes fill one cut-time bar with TWO big beats?',answers:['2 quarter notes','2 half notes','6 eighth notes'],correct:1,explanation:'Two half notes fill a 2/2 bar. Count ONE-and, TWO-and.',visual:{kind:'meter',meter:'2/2'}}
+  ]),
+  'bass-clef':quiz('Bass clef',[
+   {id:'bass-bottom',prompt:'What is the purple note on the BOTTOM bass line?',answers:['G','E','A'],correct:0,explanation:'Count bass lines from the bottom: G B D F A. Great Big Dreams For America.',visual:{kind:'staff',clef:'bass',position:0}},
+   {id:'bass-middle',prompt:'What is the purple note on the MIDDLE bass line?',answers:['B','D','F'],correct:1,explanation:'Great Big Dreams For America gives G B D F A. The third line is D.',visual:{kind:'staff',clef:'bass',position:4}},
+   {id:'bass-dots',prompt:'Which note sits on the line between the bass clef’s two dots?',answers:['A','C','F'],correct:2,explanation:'The dots sit around the F line. It is the fourth line from the bottom.',visual:{kind:'staff',clef:'bass',position:6}},
+   {id:'bass-space',prompt:'What is the purple note in the SECOND bass space?',answers:['C','A','E'],correct:0,explanation:'All Cows Eat Grass gives A C E G, bottom to top. The second space is C.',visual:{kind:'staff',clef:'bass',position:3}},
+   {id:'bass-top-space',prompt:'What is the purple note in the TOP bass space?',answers:['E','G','F'],correct:1,explanation:'The bass spaces are A C E G. Grass reminds us that the top space is G.',visual:{kind:'staff',clef:'bass',position:7}}
+  ]),
+  'grand-staff':quiz('Grand staff & Middle C',[
+   {id:'grand-treble',prompt:'Read the purple note on the UPPER staff. What is its letter?',answers:['E','G','C'],correct:0,explanation:'Check the clef first. The upper staff has treble clef, so its bottom line is E.',visual:{kind:'staff',clef:'treble',grand:true,position:0}},
+   {id:'grand-bass',prompt:'Read the purple note on the LOWER staff. What is its letter?',answers:['B','D','F'],correct:1,explanation:'The lower staff has bass clef. Its middle line is D: Great Big Dreams For America.',visual:{kind:'staff',clef:'bass',grand:true,position:4}},
+   {id:'middle-c-treble',prompt:'What is the note on the little line BELOW the treble staff?',answers:['A','E','C'],correct:2,explanation:'Middle C sits on one short ledger line below the treble staff.',visual:{kind:'staff',clef:'treble',grand:true,position:-2}},
+   {id:'middle-c-bass',prompt:'What is the note on the little line ABOVE the bass staff?',answers:['C','G','B'],correct:0,explanation:'Middle C also sits on one short ledger line above the bass staff.',visual:{kind:'staff',clef:'bass',grand:true,position:10}},
+   {id:'middle-c-same',prompt:'Middle C is written below treble or above bass. What stays the same?',answers:['It becomes a rest','It must sound different','It is the same piano key and sound'],correct:2,explanation:'These are two ways to write the same Middle C. The clef changes how we find its place.'}
   ])
  });
+ const xml=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[char]));
+ function staffSVG(position,options={}){
+  const clef=options.clef==='bass'?'bass':'treble';
+  function single(at,name){
+   let svg=notation.staffSVG(at,{label:options.label||(name==='bass'?'Bass':'Treble')+' staff. Read the purple notehead’s line or space.'});
+   if(name==='bass')svg=svg.replace('class="coda-music-glyph staff-clef" x="36" y="105"','class="coda-music-glyph staff-clef" x="36" y="65"').replace(notation.glyph('gClef'),notation.glyph('fClef'));
+   return svg.replace('class="lesson-staff coda-notated-staff"','class="lesson-staff coda-notated-staff" data-staff-clef="'+name+'"');
+  }
+  if(!options.grand)return single(position,clef);
+  function inner(name){
+   let svg=single(name===clef?position:0,name);svg=svg.slice(svg.indexOf('>')+1,svg.lastIndexOf('</svg>')).replace(/<rect[^>]*\/>/,'');
+   if(name!==clef)svg=svg.replace(/<text class="coda-music-glyph staff-note"[^>]*>[\s\S]*?<\/text>/,'').replace(/<path[^>]*class="staff-ledger"[^>]*\/>/g,'');
+   return '<g data-staff-clef="'+name+'"'+(name==='bass'?' transform="translate(0 120)"':'')+'>'+svg+'</g>';
+  }
+  return '<svg class="lesson-staff coda-notated-staff lesson-grand-staff" viewBox="0 0 340 290" role="img" aria-label="'+xml(options.label||'Grand staff: treble above bass. Read the purple notehead.')+'"><rect x="1" y="1" width="338" height="288" rx="12" fill="#f9f2df"/><path d="M17 45C4 45 16 115 7 133C3 141 3 149 7 157C16 175 4 245 17 245M22 45V245M320 45V245" fill="none" stroke="#5f526d" stroke-width="2"/>'+inner('treble')+inner('bass')+'</svg>';
+ }
  const copy=value=>JSON.parse(JSON.stringify(value));
  const scoreFor=(id,answers)=>!QUIZZES[id]||!Array.isArray(answers)?0:QUIZZES[id].questions.reduce((score,item,index)=>score+(answers[index]===item.correct?1:0),0);
  function cleanAnswers(id,answers){
@@ -83,7 +113,7 @@
   function visual(parent,value){
    if(!value||!notation)return;
    const figure=element('div','classroom-quiz-visual');
-   if(value.kind==='staff')figure.innerHTML=notation.staffSVG(value.position,{label:'Treble staff with a purple note. Read its line or space.'});
+   if(value.kind==='staff')figure.innerHTML=staffSVG(value.position,value);
    else if(value.kind==='note'){figure.setAttribute('role','img');figure.setAttribute('aria-label','The note shown in the question');figure.innerHTML=notation.glyphSVG(value.beats,{colour:'#fff0cf'});}
    else if(value.kind==='piano'){
     let keys='';for(let index=0;index<8;index++)keys+='<rect x="'+(index*50+1)+'" y="15" width="48" height="88" rx="3" fill="'+(index===value.target?'#f5d98d':'#faf6e8')+'" stroke="#59445d"/>';
@@ -128,5 +158,5 @@
   }
   return{render,restart(){reported=false;return session.restart();},getState:session.getState,destroy(){destroyed=true;}};
  }
- return{KEY,VERSION,PASS_SCORE,QUIZZES,scoreFor,normalize,createSession,create};
+ return{KEY,VERSION,PASS_SCORE,QUIZZES,scoreFor,normalize,staffSVG,createSession,create};
 });

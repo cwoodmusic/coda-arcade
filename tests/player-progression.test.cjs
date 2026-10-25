@@ -103,3 +103,31 @@ test('Pitch Race Level milestones preserve the highest completed level and requi
  assert.equal(player.getState().bestPitchLevel,50);assert.equal(player.unlocked('pitchcrown40'),true);assert.equal(player.unlocked('starlight'),true);
  assert.equal(progression.create({storage:disk}).getState().bestPitchLevel,50);
 });
+
+test('clef mastery requires consistent per-clef evidence and persists each unlock once',()=>{
+ const disk=storage(),player=progression.create({storage:disk});
+ const result={...pitch,staff:'bass',correct:20,streak:20,clefStats:{treble:{correct:0,misses:0,bestStreak:0},bass:{correct:20,misses:0,bestStreak:20}}};
+ const first=player.recordGameEvent('pitch','bass',result);assert.equal(first.ok,true);
+ for(const id of ['bassclefpin','basslaurel'])assert.equal(player.unlocked(id),true);
+ assert.equal(player.unlocked('grandstaffbadge'),false);
+ const grand={...result,staff:'grand',clefStats:{treble:{correct:10,misses:0,bestStreak:10},bass:{correct:10,misses:0,bestStreak:10}}};
+ const award=player.recordGameEvent('pitch','grand',grand);assert.equal(award.amount,480,'80 run XP + 150 reader + 250 perfect');
+ for(const id of ['grandstaffbadge','grandstaffcrown'])assert.equal(player.unlocked(id),true);
+ assert.equal(player.recordGameEvent('pitch','grand',grand).alreadyAwarded,true);
+ const loaded=progression.create({storage:disk});assert.equal(loaded.unlocked('grandstaffcrown'),true);
+ const achievements=loaded.getState().achievementRewards;
+ for(const id of ['bassclefpin','basslaurel','grandstaffbadge','grandstaffcrown'])assert.equal(achievements.filter(item=>item.id===id).length,1);
+});
+
+test('missing, contradictory, or malformed clef details never grant clef cosmetics',()=>{
+ const base={...pitch,correct:20,streak:20,staff:'grand',clefStats:{treble:{correct:10,misses:0,bestStreak:10},bass:{correct:10,misses:0,bestStreak:10}}};
+ const cases=[{...base,clefStats:undefined},{...base,staff:'piano'},{...base,correct:21},{...base,misses:1},{...base,staff:'treble'},
+ {...base,clefStats:{...base.clefStats,bass:{correct:10,misses:0,bestStreak:11}}},
+ {...base,clefStats:{...base.clefStats,bass:{correct:10,misses:-1,bestStreak:10}}}];
+ for(const [i,result]of cases.entries()){
+  const player=progression.create({storage:storage()});assert.equal(player.recordGameEvent('pitch','invalid-'+i,result).ok,true,'Legacy game XP still accepted');
+  for(const id of ['bassclefpin','basslaurel','grandstaffbadge','grandstaffcrown'])assert.equal(player.unlocked(id),false,id+' invalid case '+i);
+ }
+ const player=progression.create({storage:storage()});player.recordGameEvent('pitch','missed',{...base,misses:1,clefStats:{...base.clefStats,treble:{correct:10,misses:1,bestStreak:5}}});
+ assert.equal(player.unlocked('grandstaffbadge'),true);assert.equal(player.unlocked('grandstaffcrown'),false);
+});

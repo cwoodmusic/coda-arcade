@@ -53,7 +53,7 @@
   ].map(([id,slot,label,price])=>Object.freeze({id,slot,label,price})));
   const stock=new Map(STOCK.map(item=>[item.id,item]));
   const FREE_ITEMS=new Set(['none','human','cap','beanie','glasses','sunglasses','bow','headphones','sneakers','boots','wave','dance']);
-  const ACHIEVEMENT_ITEMS=new Set(['bowtie','starclip','partyglasses','halo','lakeotter','rhythmfox','pianophoenix','triadchampion','pitchlaurel10','pitchlaurel20','pitchlaurel30','pitchcrown40','starlight']);
+  const ACHIEVEMENT_ITEMS=new Set(['bowtie','starclip','partyglasses','halo','lakeotter','rhythmfox','pianophoenix','triadchampion','pitchlaurel10','pitchlaurel20','pitchlaurel30','pitchcrown40','starlight','bassclefpin','basslaurel','grandstaffbadge','grandstaffcrown']);
   function stockForCatalog(catalog){
     if(!catalog||typeof catalog!=='object')return STOCK;
     const result=[],seen=new Set(),groups={forms:'form',pets:'pet',visitors:'visitor',headwear:'headwear',eyewear:'eyewear',accessories:'accessory',shoes:'shoes',emotes:'emote'};

@@ -81,10 +81,10 @@ class ClassroomTests(unittest.TestCase):
         start=self.page.locator('#classroomStart')
         self.assertTrue(start.is_visible())
         self.assertEqual(start.locator('button strong').all_inner_texts(),
-            ['1. Note names','2. Note lengths','3. Time signatures'])
+            ['1. Note names','2. Note lengths','3. Time signatures','4. Bass clef','5. Grand staff & Middle C'])
         self.assertEqual(self.page.locator('#classroomBook .classroom-check').count(),0,
             'The welcome page should offer a starting point, not a game quiz')
-        for lesson in ['note-naming','rhythm-tree','time-signatures']:
+        for lesson in ['note-naming','rhythm-tree','time-signatures','bass-clef','grand-staff']:
             self.page.locator('[data-start-lesson="'+lesson+'"]').click()
             self.assertTrue(start.is_hidden())
             self.assertEqual(self.page.evaluate('roomUI.getState().tutorials.active.id'),lesson)

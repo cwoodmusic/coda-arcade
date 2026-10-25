@@ -51,6 +51,21 @@ class ClassroomQuizWorldTests(_world.WorldBrowserCase):
     def assert_score(self,score):
         self.assertRegex(self.page.locator('.classroom-quiz-score').inner_text(),str(score)+r'\s*(?:/|of)\s*5')
 
+    def test_bass_and_grand_quizzes_award_real_classroom_xp_once(self):
+        for lesson in ['bass-clef','grand-staff']:
+            before=self.xp();self.ready_quiz(lesson)
+            answer_quiz(self.page,lesson,wrong=(3,4),finish=False)
+            self.assert_score(3);self.assertEqual(self.xp(),before)
+            self.assertNotIn(lesson,self.state()['completed'])
+            self.page.locator('[data-quiz-retry]').click();answer_quiz(self.page,lesson,finish=False)
+            self.assertEqual(self.xp(),before,'A passing score still needs Finish lesson')
+            self.page.locator('[data-quiz-finish]').click()
+            self.assertEqual(self.xp(),before+50);self.assertIn(lesson,self.state()['completed'])
+            self.page.locator('[data-tutorial-quiz]').click();answer_quiz(self.page,lesson)
+            self.assertEqual(self.xp(),before+50,'Replaying a lesson cannot award its XP again')
+            self.load();self.open_lesson(lesson)
+            self.assertTrue(self.state()['active']['complete']);self.assertEqual(self.xp(),before+50)
+
     def test_failed_quiz_has_no_reward_and_four_of_five_passes_only_after_finish(self):
         self.ready_quiz('note-naming');self.assertEqual(self.xp(),0)
         self.assertNotIn('note-naming',self.state()['completed'])
