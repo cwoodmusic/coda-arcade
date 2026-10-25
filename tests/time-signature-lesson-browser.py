@@ -4,6 +4,9 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import threading
 import unittest
+import sys
+sys.dont_write_bytecode=True
+from classroom_quiz_helpers import answer_quiz
 from playwright.sync_api import sync_playwright
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -14,8 +17,8 @@ class Handler(SimpleHTTPRequestHandler):
         html='''<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="/music-classroom.css"><link rel="stylesheet" href="/classroom-tutorials.css"><link rel="stylesheet" href="/music-notation.css"><link rel="stylesheet" href="/time-signature-lesson.css">
 <button id="enter">Classroom</button><section id="room" hidden></section>
-<script src="/character-renderer.js"></script><script src="/music-notation.js"></script><script src="/time-signature-lesson.js"></script><script src="/classroom-tutorials.js"></script><script src="/music-classroom.js"></script>
-<script>window.writeFail=false;window.rewards=[];const storage={getItem:key=>localStorage.getItem(key),setItem:(key,value)=>{if(writeFail)throw Error('quota');localStorage.setItem(key,value);}};
+<script src="/character-renderer.js"></script><script src="/music-notation.js"></script><script src="/time-signature-lesson.js"></script><link rel="stylesheet" href="/classroom-quiz.css"><script src="/classroom-quiz.js"></script><script src="/classroom-tutorials.js"></script><script src="/music-classroom.js"></script>
+<script>window.writeFail=false;window.writeFailLesson=false;window.writeFailQuiz=false;window.rewards=[];const storage={getItem:key=>localStorage.getItem(key),setItem:(key,value)=>{if(writeFail||(writeFailLesson&&key==='codaClassroomLessonsV1')||(writeFailQuiz&&key==='codaClassroomQuizzesV1'))throw Error('quota');localStorage.setItem(key,value);}};
 window.roomUI=createCodaMusicClassroom({host:room,renderer:createCodaCharacterRenderer(),storage,onTutorialComplete:(id)=>{const key='claimed:'+id;if(localStorage.getItem(key))return {ok:true,alreadyAwarded:true,amount:0};localStorage.setItem(key,'yes');rewards.push(id);return {ok:true,amount:50};}});enter.onclick=()=>roomUI.open();</script>'''
         self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.end_headers();self.wfile.write(html.encode())
 class TimeSignatureLessonTests(unittest.TestCase):
@@ -49,6 +52,7 @@ class TimeSignatureLessonTests(unittest.TestCase):
         self.answer(0);self.next();self.answer(1);self.next();self.build(1,4);self.next();self.answer(2);self.next();self.answer(0);self.next();self.build(.5,6);self.next()
     def finish(self):
         self.through_six();self.answer(1);self.next();self.build(2,2);self.next()
+        answer_quiz(self.page,'time-signatures')
     def test_correct_answers_and_all_three_note_recipes_are_required_before_saved_completion(self):
         self.answer(1);self.assertTrue(self.page.locator('[data-tutorial-next]').is_disabled());self.assertEqual(self.page.evaluate('rewards'),[])
         self.answer(0);self.next();self.answer(1);self.next()
@@ -59,6 +63,8 @@ class TimeSignatureLessonTests(unittest.TestCase):
         self.page.locator('.signature-optional-tap > summary').click();self.page.locator('[data-signature-tap]').click();self.page.locator('[data-signature-tap]').click();self.assertEqual(self.state()['active']['timeSignatures']['tapCount'],2)
         self.answer(2);self.assertFalse(self.state()['active']['answered']);self.answer(0);self.next();self.assertFalse(self.state()['active']['audioPlaying'])
         self.build(.5,6);self.next();self.answer(1);self.next();self.build(2,2);self.next()
+        self.assertEqual(self.state()['active']['phase'],'quiz');self.assertEqual(self.page.evaluate('rewards'),[])
+        answer_quiz(self.page,'time-signatures')
         self.assertIn('time-signatures',self.state()['completed']);self.assertIn('+50 XP',self.page.locator('.tutorial-feedback').inner_text());self.assertEqual(self.page.evaluate('rewards'),['time-signatures'])
         self.load();self.assertTrue(self.state()['active']['complete']);self.assertIn('already earned',self.page.locator('.tutorial-feedback').inner_text())
         self.page.locator('[data-tutorial-replay]').click();self.finish();self.assertEqual(self.page.evaluate('rewards'),[],'A replay does not pay a second achievement')
@@ -66,8 +72,10 @@ class TimeSignatureLessonTests(unittest.TestCase):
         self.answer(0);self.next();self.answer(1);self.next();self.assertEqual(self.state()['active']['step'],2)
         self.load();self.assertEqual(self.state()['active']['step'],2)
         self.build(1,4);self.next();self.answer(2);self.next();self.answer(0);self.next();self.build(.5,6);self.next();self.answer(1);self.next();self.build(2,2)
-        self.page.evaluate('writeFail=true');self.next();self.assertEqual(self.page.evaluate('rewards'),[]);self.assertNotIn('time-signatures',self.state()['completed'])
-        self.page.evaluate('writeFail=false');self.page.get_by_role('button',name='Try saving progress again',exact=True).click();self.assertIn('time-signatures',self.state()['completed']);self.assertEqual(self.page.evaluate('rewards'),['time-signatures'])
+        self.next();self.assertEqual(self.state()['active']['phase'],'quiz')
+        self.page.evaluate('writeFailLesson=true');answer_quiz(self.page,'time-signatures')
+        self.assertEqual(self.page.evaluate('rewards'),[]);self.assertNotIn('time-signatures',self.state()['completed'])
+        self.page.evaluate('writeFailLesson=false');self.page.get_by_role('button',name='Try saving progress again',exact=True).click();self.assertIn('time-signatures',self.state()['completed']);self.assertEqual(self.page.evaluate('rewards'),['time-signatures'])
     def test_examples_and_guided_recipe_make_the_next_action_clear(self):
         teach=self.page.locator('.signature-learning-card').inner_text()
         self.assertIn('A beat is a steady tap',teach)

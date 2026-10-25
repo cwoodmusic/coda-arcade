@@ -20,7 +20,7 @@ Piano Lab offers **Room**, **Chopin games**, **Keyboard**, and **Recording** tab
 
 The Piano Lab and fishing cave fill the available room viewport, start at a closer 200% view on phones, and follow the player or boat. Both support pinch zoom from 100% to 300% and large corner zoom buttons. The piano keeps a readable sounded-note badge above the floor. Room tools and controls stay outside the central playable area, including in landscape.
 
-The classroom offers **Room** and **Lessons & books**. Choose **Start a lesson** for the numbered beginner path. **All lessons** returns from an activity to that path. Hold and drag on the room floor, or use the pad, to approach Professor Haydn and the bookshelves, then use **Talk / Read**. Books, quizzes, search, and audio examples remain available without using the virtual movement pad.
+The classroom offers **Room** and **Lessons & books**. Choose **Start a lesson** for the numbered beginner path. **All lessons** returns from an activity to that path. Each lesson ends with five quiz questions, shown one at a time with large answer buttons. Get four correct to pass; you can retry without a timer. Hold and drag on the room floor, or use the pad, to approach Professor Haydn and the bookshelves, then use **Talk / Read**. Books, quizzes, search, and audio examples remain available without using the virtual movement pad.
 
 ## Underground Rhythm Fishing
 

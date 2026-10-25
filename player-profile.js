@@ -76,7 +76,7 @@
    const completed=array(progress.completed),lessons=entries.map(item=>typeof item==='string'?{id:item,title:item,completed:completed.includes(item)}:item).filter(item=>item&&typeof item==='object');
    if(!lessons.length&&!completed.length)return null;
    const part=node('section','profile-lessons');part.append(node('h3','','Your classroom practice'));
-   if(lessons.length)for(const lesson of lessons){const done=lesson.completed===true||lesson.complete===true||completed.includes(lesson.id),steps=Number.isFinite(lesson.step)&&Number.isFinite(lesson.total)&&lesson.total>0?' · '+Math.min(lesson.step,lesson.total)+' / '+lesson.total+' steps':' · Keep practicing';part.append(node('p',done?'profile-lesson-done':'profile-lesson-pending',(done?'✓ ':'○ ')+(lesson.title||lesson.name||lesson.id)+(done?' · Finished':steps)));}
+   if(lessons.length)for(const lesson of lessons){const done=lesson.completed===true||lesson.complete===true||completed.includes(lesson.id),steps=Number.isFinite(lesson.step)&&Number.isFinite(lesson.total)&&lesson.total>0?(lesson.step>=lesson.total?' · Quiz ready':' · '+Math.min(lesson.step,lesson.total)+' / '+lesson.total+' steps'):' · Keep practicing';part.append(node('p',done?'profile-lesson-done':'profile-lesson-pending',(done?'✓ ':'○ ')+(lesson.title||lesson.name||lesson.id)+(done?' · Finished':steps)));}
    else part.append(node('p','',completed.length+' classroom lesson'+(completed.length===1?'':'s')+' finished'));
    if(api.openClassroom)part.append(button('Practice in the classroom',()=>api.openClassroom()));
    return part;

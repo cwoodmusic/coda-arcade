@@ -4,6 +4,9 @@ from http.server import SimpleHTTPRequestHandler,ThreadingHTTPServer
 from pathlib import Path
 import threading
 import unittest
+import sys
+sys.dont_write_bytecode=True
+from classroom_quiz_helpers import answer_quiz
 from playwright.sync_api import sync_playwright
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -14,9 +17,9 @@ class Handler(SimpleHTTPRequestHandler):
         html='''<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="/music-classroom.css"><link rel="stylesheet" href="/classroom-tutorials.css">
 <button id="enter">Classroom</button><section id="room" hidden></section>
-<script src="/character-renderer.js"></script><link rel="stylesheet" href="/music-notation.css"><script src="/music-notation.js"></script><link rel="stylesheet" href="/time-signature-lesson.css"><script src="/time-signature-lesson.js"></script><script src="/classroom-tutorials.js"></script><script src="/finger-follow.js"></script><script src="/music-classroom.js"></script>
-<script>window.writeFail=false;window.rewards=[];window.calls=[];
-const storage={getItem:key=>localStorage.getItem(key),setItem:(key,value)=>{if(writeFail)throw Error('quota');localStorage.setItem(key,value);}};
+<script src="/character-renderer.js"></script><link rel="stylesheet" href="/music-notation.css"><script src="/music-notation.js"></script><link rel="stylesheet" href="/time-signature-lesson.css"><script src="/time-signature-lesson.js"></script><link rel="stylesheet" href="/classroom-quiz.css"><script src="/classroom-quiz.js"></script><script src="/classroom-tutorials.js"></script><script src="/finger-follow.js"></script><script src="/music-classroom.js"></script>
+<script>window.writeFail=false;window.writeFailLesson=false;window.writeFailQuiz=false;window.rewards=[];window.calls=[];
+const storage={getItem:key=>localStorage.getItem(key),setItem:(key,value)=>{if(writeFail||(writeFailLesson&&key==='codaClassroomLessonsV1')||(writeFailQuiz&&key==='codaClassroomQuizzesV1'))throw Error('quota');localStorage.setItem(key,value);}};
 window.roomUI=createCodaMusicClassroom({host:room,renderer:createCodaCharacterRenderer(),storage,onTutorialComplete:(id,details)=>{calls.push({id,details});const claimed=JSON.parse(localStorage.getItem('fixtureLessonClaims')||'[]');if(claimed.includes(id))return {ok:true,alreadyAwarded:true,amount:0};claimed.push(id);localStorage.setItem('fixtureLessonClaims',JSON.stringify(claimed));rewards.push({id,amount:50});return {ok:true,amount:50};}});enter.onclick=()=>roomUI.open();</script>'''
         self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.end_headers();self.wfile.write(html.encode())
 
@@ -44,9 +47,10 @@ class ClassroomTutorialTests(unittest.TestCase):
     def state(self):return self.page.evaluate('roomUI.getState().tutorials')
     def answer(self,letter):self.page.locator('.classroom-tutorial [data-note-answer="'+letter+'"]').first.click()
     def next(self):self.page.locator('[data-tutorial-next]').click()
-    def finish_naming(self):
+    def finish_naming(self,quiz=True):
         for letter in ['C','F','D','A','E','F','G','A','B','C']:
             self.answer(letter);self.next()
+        if quiz:answer_quiz(self.page,'note-naming')
     def test_note_naming_teaches_keys_then_staff_and_rewards_only_correct_completion(self):
         self.open_lesson('note-naming');self.assertEqual(self.state()['active']['step'],0)
         self.assertTrue(self.page.locator('[data-note-example="keys"] svg').is_visible())
@@ -88,6 +92,8 @@ class ClassroomTutorialTests(unittest.TestCase):
         self.assertIn('Tap Check my rhythm',self.page.locator('.lesson-action-cue').inner_text())
         self.page.get_by_role('button',name='Listen and clap along',exact=True).click();self.assertTrue(self.state()['active']['audioPlaying'])
         self.page.locator('[data-check-rhythm]').click();self.assertFalse(self.state()['active']['audioPlaying'])
+        self.assertEqual(self.state()['active']['phase'],'quiz');self.assertEqual(self.page.evaluate('rewards'),[])
+        answer_quiz(self.page,'rhythm-tree')
         self.assertIn('rhythm-tree',self.state()['completed']);self.assertEqual(self.page.evaluate('rewards'),[{'id':'rhythm-tree','amount':50}])
     def test_note_staff_bridge_shows_a_landmark_before_the_first_staff_question(self):
         self.open_lesson('note-naming')
@@ -124,9 +130,11 @@ class ClassroomTutorialTests(unittest.TestCase):
         self.open_lesson('note-naming')
         for letter in ['C','F','D','A','E','F','G','A','B']:
             self.answer(letter);self.next()
-        self.answer('C');self.page.evaluate('writeFail=true');self.next()
+        self.answer('C');self.next()
+        self.assertEqual(self.state()['active']['phase'],'quiz')
+        self.page.evaluate('writeFailLesson=true');answer_quiz(self.page,'note-naming')
         self.assertEqual(self.page.evaluate('rewards'),[]);self.assertFalse(self.state()['lessons'][0]['completed'])
-        self.page.evaluate('writeFail=false');self.page.get_by_role('button',name='Try saving progress again',exact=True).click()
+        self.page.evaluate('writeFailLesson=false');self.page.get_by_role('button',name='Try saving progress again',exact=True).click()
         self.assertIn('note-naming',self.state()['completed']);self.assertEqual(len(self.page.evaluate('rewards')),1)
 
     def test_mobile_finger_steers_until_release_and_keeps_room_collisions(self):

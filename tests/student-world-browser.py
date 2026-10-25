@@ -5,6 +5,7 @@ import sys
 import unittest
 
 sys.dont_write_bytecode=True
+from classroom_quiz_helpers import answer_quiz
 _spec=importlib.util.spec_from_file_location('learning_world_browser',Path(__file__).with_name('learning-world-browser.py'))
 _world=importlib.util.module_from_spec(_spec);_spec.loader.exec_module(_world)
 
@@ -75,6 +76,9 @@ class StudentWorldTests(_world.WorldBrowserCase):
         for letter in ['C','F','D','A','E','F','G','A','B','C']:
             self.page.locator('[data-note-answer="'+letter+'"]').first.click()
             self.page.locator('[data-tutorial-next]').click()
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.tutorials().active.phase'),'quiz')
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),0)
+        answer_quiz(self.page,'note-naming')
         self.assertIn('note-naming',self.page.evaluate('CodaArcadeQA.tutorials().completed'))
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),50)
         self.assertIn('note names',self.reveal_notification('achievement')['title'])
@@ -94,6 +98,7 @@ class StudentWorldTests(_world.WorldBrowserCase):
         self.page.locator('[data-tutorial-replay]').click()
         for letter in ['C','F','D','A','E','F','G','A','B','C']:
             self.page.locator('[data-note-answer="'+letter+'"]').first.click();self.page.locator('[data-tutorial-next]').click()
+        answer_quiz(self.page,'note-naming')
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),50,'Replaying the lesson cannot farm its achievement')
         self.assertIsNone(self.notifications()['current'])
 
@@ -113,6 +118,9 @@ class StudentWorldTests(_world.WorldBrowserCase):
         self.assertTrue(self.page.evaluate('CodaArcadeQA.tutorials().active.audioPlaying'))
         self.page.locator('[data-check-rhythm]').click()
         self.assertFalse(self.page.evaluate('CodaArcadeQA.tutorials().active.audioPlaying'))
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.tutorials().active.phase'),'quiz')
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),0)
+        answer_quiz(self.page,'rhythm-tree')
         self.assertIn('rhythm-tree',self.page.evaluate('CodaArcadeQA.tutorials().completed'))
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),50)
         self.assertIn('rhythm tree',self.reveal_notification('achievement')['title'])

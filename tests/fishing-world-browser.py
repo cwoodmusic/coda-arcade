@@ -5,6 +5,7 @@ import sys
 import unittest
 
 sys.dont_write_bytecode=True
+from classroom_quiz_helpers import answer_quiz
 _spec=importlib.util.spec_from_file_location('learning_world_browser',Path(__file__).with_name('learning-world-browser.py'))
 _world=importlib.util.module_from_spec(_spec);_spec.loader.exec_module(_world)
 
@@ -43,6 +44,9 @@ class FishingWorldTests(_world.WorldBrowserCase):
                     self.page.locator('[data-signature-add="'+str(beats)+'"]').click()
                 self.page.locator('[data-signature-check]').click()
             self.page.locator('#classroomBook [data-tutorial-next]').click()
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.tutorials().active.phase'),'quiz')
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),0)
+        answer_quiz(self.page,'time-signatures')
         self.assertIn('time-signatures',self.page.evaluate('CodaArcadeQA.tutorials().completed'))
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),50)
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),150)

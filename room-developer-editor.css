@@ -12,3 +12,6 @@
 
 .room-dev-console .room-dev-tabs button{font-size:12px;padding:7px 2px;overflow-wrap:anywhere}
 .piano-room-heading-actions{display:flex;align-items:center;gap:6px;min-width:0}
+/* Overlay visibility is independent of the selected paint or object tool. */
+.room-dev-console .room-dev-overlays{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0}
+.room-dev-console .room-dev-overlays button{min-height:44px;font-size:12px;font-weight:650}

@@ -134,6 +134,112 @@ class RoomDeveloperTests(_world.WorldBrowserCase):
             self.close_editor(room)
             self.page.locator('#closepiano' if room=='piano' else '#fishingClose').click()
 
+    def pixel(self,room,x=705,y=405):
+        state=self.state(room)
+        camera=state['camera'] if state['editing'] else {'x':0,'y':0,'zoom':1}
+        return self.canvas(room).evaluate('''(canvas,p)=>Array.from(canvas.getContext('2d').getImageData(
+          Math.round((p.x-p.camera.x)*p.camera.zoom),
+          Math.round((p.y-p.camera.y)*p.camera.zoom),1,1).data)''',{'x':x,'y':y,'camera':camera})
+
+    def test_room_overlay_toggles_preserve_authored_collision_layers_camera_and_undo(self):
+        for room in ['piano','fishing']:
+            with self.subTest(room=room):
+                self.enter(room);self.open_editor(room)
+                project=self.project(room);player=self.room_state(room)['player']
+                actor_point={'x':player['x'],'y':player['y']-30}
+                uncovered_actor=self.pixel(room,**actor_point)
+                project['collision']=[cell for cell in project['collision'] if cell[0]!=4070]+[[4070,0]]
+                project['strokes'].append({'tool':'paint','size':16,'points':[[700,400]]})
+                project['strokes'].append({'tool':'paint','size':32,'points':[[actor_point['x'],actor_point['y']]]})
+                self.assertTrue(self.page.evaluate('([id,project])=>CodaArcadeQA.roomEditor(id).applyProject(project)',[room,project]))
+                self.page.clock.run_for(32)
+                original=self.project(room);undo=self.state(room)['undo'];base=self.pixel(room)
+                covered_actor=self.pixel(room,**actor_point)
+                self.assertNotEqual(covered_actor,uncovered_actor,
+                    'An authored foreground stroke must cover the real character with the debug mask hidden')
+                self.assertFalse(self.page.evaluate('id=>CodaArcadeQA.roomEditor(id).walkable(705,405,true)',room))
+                for overlay,field in [('collision',None),('layers','mask-visible')]:
+                    self.action(room,'show-'+overlay).focus()
+                    self.page.keyboard.press('Space' if overlay=='collision' else 'Enter')
+                    self.page.clock.run_for(32)
+                    self.assertTrue(self.state(room)['overlays'][overlay])
+                    self.assertEqual(self.action(room,'show-'+overlay).get_attribute('aria-pressed'),'true')
+                    self.assertNotEqual(self.pixel(room),base,'The visible overlay must actually change room pixels')
+                    if overlay=='collision':
+                        self.page.keyboard.press('Tab')
+                        self.assertEqual(self.page.evaluate('document.activeElement.dataset.roomAction'),'show-layers',
+                            'Native Tab must move between the visible overlay controls')
+                    if field:self.assertTrue(self.panel(room).locator('[data-room-field="'+field+'"]').is_checked())
+                    self.action(room,'show-'+overlay).click();self.page.clock.run_for(32)
+                    self.assertFalse(self.state(room)['overlays'][overlay])
+                    self.assertEqual(self.pixel(room),base,'Hiding an overlay must restore the authored room rendering')
+                self.action(room,'zoom-in').click();camera=self.state(room)['camera']
+                for overlay in ['collision','layers']:
+                    self.action(room,'show-'+overlay).click()
+                    self.assertEqual(self.state(room)['camera'],camera)
+                self.assertEqual(self.state(room)['tab'],'objects','Visibility does not select a painting tool')
+                self.assertEqual(self.project(room),original);self.assertEqual(self.state(room)['undo'],undo)
+                self.action(room,'zoom-reset').click();self.page.clock.run_for(32)
+                self.action(room,'playtest').click();self.page.clock.run_for(32)
+                self.assertFalse(self.state(room)['overlays']['visible'])
+                self.assertEqual(self.pixel(room),base,'Playtest renders the real foreground without debug colors')
+                self.assertEqual(self.pixel(room,**actor_point),covered_actor,
+                    'The real foreground must still cover the character in Playtest')
+                self.assertTrue(self.action(room,'show-collision').is_disabled())
+                self.assertTrue(self.action(room,'show-layers').is_disabled())
+                self.assertFalse(self.page.evaluate('id=>CodaArcadeQA.roomEditor(id).walkable(705,405,true)',room))
+                self.action(room,'playtest').click();self.page.clock.run_for(32)
+                self.assertTrue(self.state(room)['overlays']['visible'])
+                self.assertNotEqual(self.pixel(room),base)
+                self.close_editor(room);self.page.clock.run_for(32)
+                self.assertFalse(self.state(room)['overlays']['visible'])
+                self.assertEqual(self.pixel(room),base,'Closing the editor must hide debug colors without removing foreground')
+                self.assertEqual(self.pixel(room,**actor_point),covered_actor)
+                self.assertEqual(self.project(room),original);self.assertEqual(self.state(room)['undo'],undo)
+                self.page.locator('#closepiano' if room=='piano' else '#fishingClose').click()
+
+    def test_room_tool_shortcuts_and_typing_guards_do_not_create_accidental_strokes(self):
+        for room in ['piano','fishing']:
+            with self.subTest(room=room):
+                self.enter(room);self.open_editor(room)
+                self.action(room,'zoom-in').click();before=self.state(room);original=self.project(room)
+                self.canvas(room).focus();self.page.keyboard.down('Space')
+                self.assertTrue(self.canvas(room).evaluate('canvas=>canvas.classList.contains("room-dev-panning")'))
+                self.action(room,'show-collision').focus();self.page.keyboard.up('Space')
+                self.assertFalse(self.canvas(room).evaluate('canvas=>canvas.classList.contains("room-dev-panning")'),
+                    'Releasing Space after focus moves must release temporary pan mode')
+                self.canvas(room).focus();self.page.keyboard.down('c');self.page.keyboard.down('c')
+                self.assertEqual(self.state(room)['tab'],'collision','A held shortcut must not toggle repeatedly')
+                self.page.keyboard.up('c');self.page.keyboard.press('c')
+                self.assertEqual(self.state(room)['tab'],'objects');self.assertFalse(self.state(room)['overlays']['collision'])
+                self.page.keyboard.press('l');self.assertEqual(self.state(room)['tab'],'layers')
+                self.page.keyboard.press('l');self.assertEqual(self.state(room)['tab'],'objects')
+                self.assertFalse(self.state(room)['overlays']['layers'])
+                self.page.keyboard.press('Shift+L');self.assertEqual(self.state(room)['tab'],'layers')
+                self.page.keyboard.press('Shift+L');self.assertEqual(self.state(room)['tab'],'objects')
+                for modifiers in [{'ctrlKey':True},{'metaKey':True},{'altKey':True}]:
+                    self.canvas(room).dispatch_event('keydown',{'key':'c','code':'KeyC',**modifiers})
+                    self.assertEqual(self.state(room)['tab'],'objects')
+                self.panel(room).evaluate('''panel=>{const input=document.createElement('input');input.id='shortcutTyping';panel.prepend(input);}''')
+                typing=self.panel(room).locator('#shortcutTyping');typing.focus()
+                self.page.keyboard.press('c');self.page.keyboard.press('Shift+L')
+                self.assertEqual(typing.input_value(),'cL');self.assertEqual(self.state(room)['tab'],'objects')
+                typing.evaluate('node=>node.remove()')
+                self.assertEqual(self.state(room)['camera'],before['camera'])
+                self.assertEqual(self.project(room),original);self.assertEqual(self.state(room)['undo'],before['undo'])
+                # Switching tools may finish the intentional stroke, but the
+                # remaining held pointer must not begin painting the new tool.
+                self.canvas(room).focus();self.page.keyboard.press('l')
+                start=self.point(room,700,400);end=self.point(room,720,420)
+                self.page.mouse.move(**start);self.page.mouse.down();self.page.mouse.move(**end)
+                layer_before=self.project(room)['strokes']
+                self.page.keyboard.press('c');self.page.mouse.move(**self.point(room,740,440));self.page.mouse.up()
+                self.page.clock.run_for(32)
+                self.assertEqual(self.project(room)['collision'],original['collision'])
+                self.assertEqual(self.project(room)['strokes'],layer_before)
+                self.close_editor(room)
+                self.page.locator('#closepiano' if room=='piano' else '#fishingClose').click()
+
     def test_foreground_strokes_follow_zoomed_room_coordinates_and_undo_redo(self):
         self.enter('piano');self.open_editor('piano','layers')
         self.action('piano','zoom-in').click();self.action('piano','zoom-in').click()
@@ -377,7 +483,7 @@ class RoomDeveloperTests(_world.WorldBrowserCase):
         button=self.page.locator('[data-room-dev-open="fishing"]')
         self.assertTrue(button.is_visible());button.click();self.page.clock.run_for(64)
         self.assertTrue(self.state('fishing')['editing'])
-        for name in ['zoom-in','zoom-out','pan']:
+        for name in ['zoom-in','zoom-out','pan','show-collision','show-layers']:
             self.assertTrue(self.action('fishing',name).is_visible())
         self.action('fishing','zoom-in').click()
         self.assertGreater(self.state('fishing')['camera']['zoom'],1)
