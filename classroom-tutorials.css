@@ -17,6 +17,7 @@
 .classroom-tutorial .lesson-naming-example{width:min(100%,550px);margin:0;text-align:center}
 .classroom-tutorial .lesson-example-keyboard{display:block;width:100%;height:auto;max-height:250px;margin:auto}
 .classroom-tutorial .lesson-model-label{font:750 24px/1.3 system-ui;text-align:center;color:#ffe6a8;margin:10px 0 0}
+.classroom-tutorial .lesson-read-direction{font-size:22px;text-align:center;color:#ffe6a8}
 .classroom-tutorial .lesson-staff-wrap{width:min(100%,520px)}
 .classroom-tutorial .lesson-staff,.classroom-tutorial .lesson-grand-staff{display:block;width:100%;height:auto;max-height:36dvh;margin:0 auto}
 .classroom-tutorial .lesson-keyboard-scroll{width:min(100%,520px);padding:3px 4px 10px;overflow:visible}
@@ -48,26 +49,42 @@
 .classroom-tutorial .lesson-rhythm-example{display:flex;align-items:center;justify-content:center;gap:16px;min-height:110px;font-size:34px;color:#f4dfb7;width:min(100%,540px)}
 .classroom-tutorial .lesson-rhythm-example svg{display:block;width:70px;height:88px;max-width:23%}
 .classroom-tutorial .lesson-recipe-example{gap:12px}
-.classroom-tutorial .lesson-pattern{display:flex;align-items:stretch;gap:4px;width:min(100%,600px);min-height:112px;border:2px dashed #9fbac7;border-radius:12px;padding:8px;background:#172236}
-.classroom-tutorial .lesson-pattern-note{display:flex;align-items:center;justify-content:center;min-width:40px;border-radius:8px;background:#2b4c5a}
+.classroom-tutorial .lesson-bar-drawing{width:min(100%,600px)}
+.classroom-tutorial .lesson-pattern{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;width:100%;min-height:96px;border:2px dashed #9fbac7;border-radius:12px;padding:8px;background:#172236}
+.classroom-tutorial .lesson-pattern-note{display:flex;align-items:center;justify-content:center;flex:0 0 48px;min-width:0;min-height:76px;border-radius:8px;background:#2b4c5a}
 .classroom-tutorial .lesson-pattern-note svg{width:48px;height:72px;max-width:100%}
 .classroom-tutorial .lesson-pattern-note.is-playing{background:#357b66;outline:3px solid #ffe6a5}
 .classroom-tutorial .lesson-pattern-space{display:flex;align-items:center;justify-content:center;font-size:22px;color:#b3cada;min-width:0}
+.classroom-tutorial .lesson-bar-count{font-size:24px;font-weight:750;text-align:center;color:#b7f6dd}
+.classroom-tutorial .lesson-bar-picker{display:flex;flex-direction:column;align-items:center;gap:14px;width:min(100%,600px)}
 .classroom-tutorial .lesson-value-buttons{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;width:100%}
 .classroom-tutorial .lesson-value-buttons button{display:flex;align-items:center;justify-content:center;gap:12px;font-size:22px;min-height:64px}
 .classroom-tutorial .lesson-value-buttons svg{width:32px;height:46px}
-.classroom-tutorial .lesson-primary-value .is-next-value{background:#5a5330;border-color:#f8dc90}
+.classroom-tutorial .lesson-all-values{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:min(100%,600px)}
+.classroom-tutorial .lesson-all-values button{gap:8px;padding:8px;min-width:0;min-height:78px;text-align:left}
+.classroom-tutorial .lesson-all-values svg{flex:0 0 30px;width:30px}
+.classroom-tutorial .lesson-value-label{display:flex;flex-direction:column;min-width:0}
+.classroom-tutorial .lesson-value-beats{font-weight:500;color:#d2eee4}
 .classroom-tutorial .lesson-extra-notes{width:min(100%,600px);border:0;margin:0;padding:0;text-align:center}
 .classroom-tutorial .lesson-extra-notes summary{display:inline-block;list-style:none;min-height:48px;font-size:19px;border-color:transparent;background:transparent;color:#c5dae6;padding:10px}
 .classroom-tutorial .lesson-extra-notes[open]{padding:10px;border:1px solid #708a9b;border-radius:10px}
 .classroom-tutorial .lesson-extra-notes .lesson-value-buttons{margin:10px 0}
 .classroom-tutorial [hidden]{display:none!important}
-@media(max-width:600px){.classroom-tutorial{padding:14px 10px}.classroom-tutorial .lesson-action-cue h3{font-size:24px}.classroom-tutorial .lesson-letter-answers{grid-template-columns:repeat(4,minmax(48px,1fr))}.classroom-tutorial .lesson-keyboard{height:174px}.classroom-tutorial .lesson-black-key{height:104px}.classroom-tutorial .lesson-rhythm-example{gap:10px}}
+@media(max-width:600px){.classroom-tutorial{padding:14px 10px}.classroom-tutorial .lesson-action-cue h3{font-size:24px}.classroom-tutorial .lesson-letter-answers{grid-template-columns:repeat(4,minmax(48px,1fr))}.classroom-tutorial .lesson-keyboard{height:174px}.classroom-tutorial .lesson-black-key{height:104px}.classroom-tutorial .lesson-rhythm-example{gap:10px}.classroom-tutorial .lesson-all-values{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:370px){.classroom-tutorial .lesson-all-values button{flex-direction:column;gap:2px;text-align:center}.classroom-tutorial .lesson-all-values svg{flex-basis:40px;height:40px}}
 @media(orientation:landscape) and (max-height:500px){
  .classroom-tutorial{padding:12px 18px}.classroom-tutorial>progress{margin-bottom:12px}.classroom-tutorial .lesson-content[data-kind=note],.classroom-tutorial .lesson-content[data-kind=tree],.classroom-tutorial .lesson-content[data-kind=rhythm]{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 24px;align-items:center}
  .classroom-tutorial .lesson-content[data-kind]>*{grid-column:1;min-width:0}
  .classroom-tutorial .lesson-content[data-kind]>.lesson-naming-example,.classroom-tutorial .lesson-content[data-kind]>.lesson-staff-wrap,.classroom-tutorial .lesson-content[data-kind]>.lesson-keyboard-scroll,.classroom-tutorial .lesson-content[data-kind]>.lesson-split-picture,.classroom-tutorial .lesson-content[data-kind]>.lesson-rhythm-example,.classroom-tutorial .lesson-content[data-kind]>.lesson-pattern{grid-column:2;grid-row:1/span 4}
  .classroom-tutorial .lesson-content[data-kind=tree]>.lesson-tree-caption{grid-column:2;grid-row:5}
+ .classroom-tutorial .lesson-content.lesson-bar-builder>.lesson-action-cue{grid-column:1/-1}
+ .classroom-tutorial .lesson-content.lesson-bar-builder>.lesson-bar-picker{grid-column:1;grid-row:2;align-self:start}
+ .classroom-tutorial .lesson-content.lesson-bar-builder .lesson-all-values{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .classroom-tutorial .lesson-content.lesson-bar-builder>.lesson-bar-drawing{grid-column:2;grid-row:2;align-self:start}
+ .classroom-tutorial .lesson-content.lesson-bar-builder>.lesson-actions{grid-column:2;grid-row:3}
+ .classroom-tutorial .lesson-content.lesson-bar-builder>[data-check-rhythm],.classroom-tutorial .lesson-content.lesson-bar-builder>[data-tutorial-next]{grid-column:2;grid-row:4}
+ .classroom-tutorial .lesson-content.lesson-bar-builder>.tutorial-feedback{grid-column:2;grid-row:5}
+ .classroom-tutorial .lesson-content.lesson-bar-builder .lesson-actions{gap:6px}.classroom-tutorial .lesson-content.lesson-bar-builder .lesson-actions button{padding:8px 10px}
  .classroom-tutorial .lesson-action-cue h3{font-size:24px}.classroom-tutorial .lesson-staff,.classroom-tutorial .lesson-grand-staff{max-height:46dvh}.classroom-tutorial .lesson-keyboard{height:150px}.classroom-tutorial .lesson-black-key{height:90px}.classroom-tutorial .lesson-model-label{font-size:22px}
 }
 @media(prefers-reduced-motion:reduce){.classroom-tutorial *{scroll-behavior:auto!important;transition:none!important}}

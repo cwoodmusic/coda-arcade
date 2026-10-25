@@ -73,7 +73,7 @@ class ClassroomTutorialTests(unittest.TestCase):
         self.load();self.open_lesson('note-naming');self.assertTrue(self.state()['active']['complete']);self.assertEqual(self.page.evaluate('rewards'),[])
         self.assertNotRegex(self.page.locator('#classroomBook').inner_text(),r'\b[A-G][0-8]\b')
 
-    def test_rhythm_tree_requires_exploration_equivalence_and_a_correct_four_beat_recipe(self):
+    def test_rhythm_tree_requires_exploration_equivalence_and_any_four_beat_bar(self):
         self.open_lesson('rhythm-tree');self.assertEqual(self.state()['active']['learningStage'],'explore')
         self.assertEqual(self.page.locator('.lesson-split-picture svg').count(),1)
         for _ in range(4):self.page.locator('[data-tree-split]').click()
@@ -90,13 +90,16 @@ class ClassroomTutorialTests(unittest.TestCase):
         self.page.locator('[data-rhythm-answer="3"]').click();self.assertTrue(self.page.locator('[data-tutorial-next]').is_disabled())
         self.page.locator('[data-rhythm-answer="2"]').click();self.next();self.try_step()
         self.page.locator('[data-rhythm-answer="2"]').click();self.next();self.try_step()
-        self.page.get_by_text('More choices',exact=True).click();self.page.locator('[data-add-value="16"]').click()
-        self.page.locator('[data-check-rhythm]').click();self.assertFalse(self.state()['active']['complete'])
+        self.assertEqual(self.page.locator('[data-add-value]:visible').count(),5)
+        self.assertTrue(self.page.locator('[data-check-rhythm]').is_disabled())
+        self.page.locator('[data-add-value="16"]').click()
+        self.assertFalse(self.page.locator('[data-check-rhythm]').is_disabled())
+        self.assertFalse(self.state()['active']['complete'])
         self.assertEqual(self.page.evaluate('rewards'),[])
-        self.page.get_by_text('More choices',exact=True).click();self.page.locator('[data-rhythm-clear]').click()
+        self.page.locator('[data-rhythm-clear]').click()
         for units in [4,2,2,8]:
             button=self.page.locator('[data-add-value="'+str(units)+'"]:visible').first
-            self.assertTrue(button.evaluate('node=>node.classList.contains("is-next-value")'));button.click()
+            self.assertFalse(button.is_disabled());button.click()
         self.page.get_by_role('button',name='Listen',exact=True).click();self.assertTrue(self.state()['active']['audioPlaying'])
         self.page.locator('[data-check-rhythm]').click();self.next()
         self.assertFalse(self.state()['active']['audioPlaying']);self.assertEqual(self.state()['active']['phase'],'quiz')

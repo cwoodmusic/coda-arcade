@@ -140,26 +140,26 @@
    ['These five lines are a staff.','Bottom line: E','Name the purple note.','The bottom line is E.'],
    ['Notes also fit in the spaces.','First space: F','Name the purple note.','The first space is F.'],
    ['Move up one line or space at a time.','E → F → G','Name the purple note.','Count upward: E, F, G.'],
-   ['Treble spaces spell FACE.','F · A · C · E','Name the purple note.','Count spaces: F, A.'],
-   ['Treble lines: Every Good Boy Does Fine.','E · G · B · D · F','Name the purple note.','Every, Good, Boy. The middle line is B.'],
-   ['Use FACE for the spaces.','F · A · C · E','Name the purple note.','Count spaces: F, A, C.']
+   ['Treble spaces, bottom to top: FACE.','Bottom to top: F · A · C · E','Name the purple note.','Start at the bottom space: F, A.'],
+   ['Treble lines, bottom to top: Every Good Boy Does Fine.','Bottom to top: E · G · B · D · F','Name the purple note.','Start at the bottom line: Every, Good, Boy. B!'],
+   ['Read FACE from the bottom space to the top.','Bottom to top: F · A · C · E','Name the purple note.','Start at the bottom space: F, A, C.']
   ].map(Object.freeze)),
   'bass-clef':Object.freeze([
    ['Bass clef helps us read low notes.','Bottom line: G','Name the purple note.','The bottom bass line is G.'],
-   ['Bass lines: Great Big Dreams For America.','G · B · D · F · A','Name the purple note.','Great, Big. The second line is B.'],
+   ['Bass lines, bottom to top: Great Big Dreams For America.','Bottom to top: G · B · D · F · A','Name the purple note.','Start at the bottom line: Great, Big. B!'],
    ['Count the lines from the bottom.','Middle line: D','Name the purple note.','Great, Big, Dreams. This line is D.'],
    ['The two dots point to F.','Between the dots: F','Name the purple note.','The line between the dots is F.'],
    ['Read the five lines from bottom to top.','Top line: A','Name the purple note.','America reminds us of A.'],
-   ['Bass spaces: All Cows Eat Grass.','A · C · E · G','Name the purple note.','All reminds us of A.'],
-   ['Count only the spaces this time.','Second space: C','Name the purple note.','All, Cows. The second space is C.'],
-   ['Move up one more space.','Third space: E','Name the purple note.','All, Cows, Eat. This space is E.'],
-   ['All Cows Eat Grass names the spaces.','Top space: G','Name the purple note.','Grass reminds us of G.']
+   ['Bass spaces, bottom to top: All Cows Eat Grass.','Bottom to top: A · C · E · G','Name the purple note.','Start at the bottom space. All reminds us of A.'],
+   ['Count only the spaces, from bottom to top.','Second space: C','Name the purple note.','Start at the bottom space: All, Cows. C!'],
+   ['Move up one more space.','Third space: E','Name the purple note.','Start at the bottom space: All, Cows, Eat. E!'],
+   ['Bottom to top: All Cows Eat Grass names the spaces.','Top space: G','Name the purple note.','Start at the bottom space. Grass is last: G.']
   ].map(Object.freeze)),
   'grand-staff':Object.freeze([
-   ['Two staffs work together.','Top staff: treble','Name the purple note.','Treble lines: Every Good Boy Does Fine. Bottom line: E.'],
-   ['The bottom staff uses bass clef.','Bottom line: G','Name the purple note.','Bass lines: Great Big Dreams For America. Bottom line: G.'],
-   ['Use FACE on the top staff.','Second space: A','Name the purple note.','Count treble spaces: F, A.'],
-   ['Use All Cows Eat Grass below.','Second space: C','Name the purple note.','Count bass spaces: A, C.'],
+   ['Two staffs work together.','Top staff: treble','Name the purple note.','Treble lines, bottom to top: Every Good Boy Does Fine.'],
+   ['The bottom staff uses bass clef.','Bottom line: G','Name the purple note.','Bass lines, bottom to top: Great Big Dreams For America.'],
+   ['Treble spaces, bottom to top: FACE.','Second space: A','Name the purple note.','Start at the bottom treble space: F, A.'],
+   ['Bass spaces, bottom to top: All Cows Eat Grass.','Second space: C','Name the purple note.','Start at the bottom bass space: A, C.'],
    ['Middle C has its own tiny line.','Below treble: Middle C','Name the purple note.','The tiny line belongs to Middle C.'],
    ['This is the same Middle C.','Above bass: Middle C','Name the purple note.','It is the same piano key: C.'],
    ['D is one step above Middle C.','C → D','Name the purple note.','Start at Middle C. Move up to D.'],
@@ -170,9 +170,8 @@
   level=Number.isInteger(level)?Math.max(0,Math.min(4,level)):0;const units=VALUES[level].units,notes=Array(level===0?1:2).fill(units);
   return {level,parentUnits:level?VALUES[level-1].units:null,notes,counts:notes.reduce((sum,n)=>sum+n,0)/4};
  }
- const recipe=[4,2,2,8];
- const valueFor=units=>VALUES.find(value=>value.units===units);
- function validBar(notes){return Array.isArray(notes)&&notes.length===recipe.length&&notes.every(note=>Number.isInteger(note))&&[...notes].sort((a,b)=>a-b).join(',')===[...recipe].sort((a,b)=>a-b).join(',');}
+ function validBar(notes){return Array.isArray(notes)&&notes.length>0&&notes.every(note=>VALUES.some(value=>value.units===note))&&notes.reduce((sum,note)=>sum+note,0)===16;}
+ function beatCount(units){const whole=Math.floor(units/4),fraction=['','¼','½','¾'][units%4];return (whole?String(whole):'')+fraction||'0';}
  function defaultProgress(){return {version:1,lessons:Object.fromEntries(LESSONS.map(lesson=>[lesson.id,{step:0,completed:false,completedAt:0}]))};}
  function normalize(raw){const state=defaultProgress();if(!raw||raw.version!==1||!raw.lessons||typeof raw.lessons!=='object')return state;for(const lesson of LESSONS){const saved=raw.lessons[lesson.id];if(saved&&Number.isInteger(saved.step)&&saved.step>=0&&saved.step<=lesson.total){state.lessons[lesson.id]={step:saved.step,completed:saved.completed===true&&saved.step===lesson.total,completedAt:Number.isFinite(saved.completedAt)&&saved.completedAt>=0?saved.completedAt:0};}}return state;}
  function storageFor(storage){if(storage!==undefined)return storage;try{return window.localStorage;}catch{return null;}}
@@ -232,8 +231,9 @@
    if(value!==2){feedback('Not yet. Try again.',false);return;}
    answered=true;persist(step+1);message='Yes! Two notes.';correct=true;render();host.querySelector('[data-tutorial-next]')?.focus({preventScroll:true});
   }
-  function addValue(units){if(complete||answered||learningStage!=='try')return;const total=bar.reduce((sum,value)=>sum+value,0);if(total+units>16){feedback('Too much. Tap Undo.',false);return;}bar.push(units);message='';correct=null;render();}
-  function checkBar(){if(!validBar(bar)){feedback('Not yet. Tap Undo and try again.',false);return;}answered=true;persist(step+1);message='You made four counts!';correct=true;render();host.querySelector('[data-tutorial-next]')?.focus({preventScroll:true});}
+  function redrawBar(){const viewport=host.closest('.classroom-books'),scroll=viewport?.scrollTop;render();if(viewport&&Number.isFinite(scroll))viewport.scrollTop=scroll;}
+  function addValue(units){if(complete||answered||learningStage!=='try'||!VALUES.some(value=>value.units===units))return;const total=bar.reduce((sum,value)=>sum+value,0);if(total+units>16){feedback('That note won’t fit. Choose a shorter note.',false);return;}stopAudio();bar.push(units);message='';correct=null;redrawBar();}
+  function checkBar(){if(complete||answered||learningStage!=='try')return;if(!validBar(bar)){feedback('Add notes until you have four beats.',false);return;}stopAudio();answered=true;persist(step+1);message='You made four beats!';correct=true;render();host.querySelector('[data-tutorial-next]')?.focus({preventScroll:true});}
   function learningCard(section,teach,example){
    const card=element('div','lesson-learning-card');card.append(element('span','lesson-card-label','Learn'),element('p','',teach));
    if(example){const worked=element('p','lesson-worked-example');worked.append(element('strong','','Example: '),doc.createTextNode(example));card.append(worked);}section.append(card);return card;
@@ -265,6 +265,7 @@
    actionCue(section,answered?'That’s '+question.answer+'.':copy[2]);
    if(question.kind==='keys')buildKeyboard(section);else{
     const drawing=element('div','lesson-staff-wrap'+(hintShown?' is-hint':''));drawing.innerHTML=staffSVG(question.position,question);section.append(drawing);
+    if(question.position>=0)drawing.append(element('p','lesson-read-direction','Read from bottom to top.'));
     if(answered)section.append(element('div','lesson-answer-letter',question.answer));
     else{const choices=element('div','lesson-letter-answers');choices.setAttribute('role','group');choices.setAttribute('aria-label','Choose the note letter');for(const letter of ['A','B','C','D','E','F','G'])choices.append(button(letter,()=>answerNote(letter,question.pitch),{'data-note-answer':letter}));section.append(choices);}
    }
@@ -295,19 +296,19 @@
     if(!answered){const answers=element('div','lesson-number-answers');for(const value of [2,3,4])answers.append(button(String(value),()=>answerRhythm(value),{'data-rhythm-answer':value}));section.append(answers,button('Hint',()=>rhythmHint(half?'Each quarter lasts one count.':'Split the quarter in two.')));}
     appendFeedback(section);nextButton(section);return;
    }
-   if(learningStage==='look'){actionCue(section,'Let’s make a bar with four counts.');const example=element('div','lesson-rhythm-example lesson-recipe-example');example.setAttribute('aria-label','One quarter, two eighths, and one half note');example.innerHTML=recipe.map(units=>glyph(units)).join('');section.append(example,element('p','lesson-model-label','One · two-and · three, four'));tryButton(section);return;}
-   const used=new Map();for(const units of bar)used.set(units,(used.get(units)||0)+1);const targets=recipe.map(units=>{const count=used.get(units)||0;used.set(units,Math.max(0,count-1));return{units,filled:count>0};}),nextTarget=targets.find(target=>!target.filled),total=bar.reduce((sum,value)=>sum+value,0);
-   actionCue(section,answered?'Four counts. You did it!':nextTarget?'Add a '+valueFor(nextTarget.units).name+' note.':'Tap Check.');
-   const pattern=element('div','lesson-pattern');pattern.setAttribute('aria-label','Your four-count bar');
-   bar.forEach((units,index)=>{const cell=element('div','lesson-pattern-note');cell.style.flex=String(units);cell.dataset.patternIndex=index;cell.innerHTML=glyph(units);pattern.append(cell);});
-   if(total<16){const space=element('div','lesson-pattern-space');space.style.flex=String(16-total);if(!bar.length)space.textContent='Your bar';pattern.append(space);}section.append(pattern);
+   if(learningStage==='look'){actionCue(section,'Make four beats.');const example=element('div','lesson-rhythm-example lesson-recipe-example');example.setAttribute('aria-label','Four quarter notes, one beat each');example.innerHTML=[4,4,4,4].map(units=>glyph(units)).join('');section.append(example,element('p','lesson-model-label','1 + 1 + 1 + 1 = 4 beats'));tryButton(section);return;}
+   section.classList.add('lesson-bar-builder');const total=bar.reduce((sum,value)=>sum+value,0);
+   actionCue(section,answered?'Four beats. You did it!':'Make four beats.');
+   const drawing=element('div','lesson-bar-drawing'),pattern=element('div','lesson-pattern');pattern.setAttribute('aria-label','Your four-beat bar');
+   bar.forEach((units,index)=>{const cell=element('div','lesson-pattern-note');cell.dataset.patternIndex=index;cell.setAttribute('aria-label',VALUES.find(value=>value.units===units).label);cell.innerHTML=glyph(units);pattern.append(cell);});
+   if(!bar.length)pattern.append(element('div','lesson-pattern-space','Your notes go here'));
+   const count=element('p','lesson-bar-count',beatCount(total)+' / 4 beats');count.setAttribute('aria-live','polite');count.dataset.rhythmCount=total;drawing.append(pattern);
    if(!answered){
-    const makeValue=value=>{const choose=button('',()=>addValue(value.units),{'aria-label':'Add '+value.name+' note','data-add-value':value.units});choose.innerHTML=glyph(value.units);choose.append(element('span','','Add '+value.name));if(value.units===nextTarget?.units)choose.classList.add('is-next-value');return choose;};
-    if(nextTarget&&total<16){const values=element('div','lesson-value-buttons lesson-primary-value');values.append(makeValue(valueFor(nextTarget.units)));section.append(values);}
-    const actions=element('div','lesson-actions');if(bar.length){actions.append(button('Undo',()=>{bar.pop();message='';correct=null;render();},{'data-rhythm-undo':''}),button('Listen',()=>play(bar,{rhythm:true})));}if(actions.children.length)section.append(actions);
-    if(total===16||bar.length>=4)section.append(button('Check',checkBar,{'data-check-rhythm':''}));
-    const extras=element('details','lesson-extra-notes');extras.append(element('summary','','More choices'));const others=element('div','lesson-value-buttons');for(const value of VALUES.filter(value=>value.units!==nextTarget?.units))others.append(makeValue(value));extras.append(others,button('Start again',()=>{bar=[];message='';correct=null;render();},{'data-rhythm-clear':''}));section.append(extras);
-   }
+    const picker=element('div','lesson-bar-picker'),values=element('div','lesson-value-buttons lesson-all-values');values.setAttribute('role','group');values.setAttribute('aria-label','Choose any notes to make four beats');
+    for(const value of VALUES){const choose=button('',()=>addValue(value.units),{'aria-label':'Add '+value.name+' note, '+value.beats,'data-add-value':value.units});choose.innerHTML=glyph(value.units);const label=element('span','lesson-value-label');label.append(element('span','',value.name[0].toUpperCase()+value.name.slice(1)),element('span','lesson-value-beats',beatCount(value.units)+' '+(value.units<=4?'beat':'beats')));choose.append(label);choose.disabled=total+value.units>16;values.append(choose);}picker.append(count,values);section.append(picker,drawing);
+    const actions=element('div','lesson-actions');if(bar.length){actions.append(button('Undo',()=>{stopAudio();bar.pop();message='';correct=null;redrawBar();},{'data-rhythm-undo':''}),button('Listen',()=>play(bar,{rhythm:true})),button('Start again',()=>{stopAudio();bar=[];message='';correct=null;redrawBar();},{'data-rhythm-clear':''}));}if(actions.children.length)section.append(actions);
+    const check=button('Check',checkBar,{'data-check-rhythm':''});check.disabled=total!==16;section.append(check);
+   }else section.append(count,drawing);
    appendFeedback(section);if(answered)nextButton(section,'Start quiz');
   }
   function appendFeedback(section){const feedbackNode=element('p','tutorial-feedback',message);feedbackNode.setAttribute('role','status');feedbackNode.setAttribute('aria-live','polite');feedbackNode.dataset.correct=String(correct);section.append(feedbackNode);}

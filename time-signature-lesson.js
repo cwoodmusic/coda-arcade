@@ -47,12 +47,13 @@
   function add(beats){if(answered)return;const value=STEPS[step];if(bar.reduce((sum,n)=>sum+n,0)+beats>METERS[value.meter].barBeats+1e-8)return;bar.push(beats);message='';correct=null;render(section,{step,answered});}
   function check(){if(!validBar(bar,step)){feedback('Keep filling the empty spaces.',false);return;}markCorrect();}
   function picture(parent,value){
-   const visual=node('div','signature-visual');signature(visual,value.meter);
+   const visual=node('div','signature-visual');visual.dataset.signatureMeter=value.meter;signature(visual,value.meter);
    if(value.noteExample&&value.id!=='six-eighths'){
     const shown=node('div','signature-note-example');shown.innerHTML=notes.glyphSVG(value.noteExample);shown.append(node('span','',value.noteLabel));visual.append(shown);
    }else{
-    const pulse=node('div','signature-pulse-row'),meta=METERS[value.meter];pulse.setAttribute('role','img');pulse.setAttribute('aria-label',value.meter==='6/8'?'Two groups of three small parts':value.meter==='2/2'?'Two big beats':'Four beats');
-    meta.labels.forEach((text,index)=>{const label=node('span','signature-pulse'+(index*meta.subdivisionBeats%meta.pulseBeats===0?' is-big':''),text);label.dataset.signaturePulse=index;if(value.meter==='6/8'&&index===3||value.meter==='2/2'&&index===2)label.classList.add('signature-group-start');pulse.append(label);});visual.append(pulse);
+    const pulse=node('div','signature-pulse-row'),meta=METERS[value.meter];pulse.dataset.signatureMeter=value.meter;pulse.setAttribute('role','img');pulse.setAttribute('aria-label',value.meter==='6/8'?'Two groups of three small parts':value.meter==='2/2'?'Two big beats':'Four beats');
+    const groupSize=value.meter==='6/8'?3:value.meter==='2/2'?2:0;let group=pulse;
+    meta.labels.forEach((text,index)=>{if(groupSize&&index%groupSize===0){group=node('div','signature-pulse-group');pulse.append(group);}const label=node('span','signature-pulse'+(index*meta.subdivisionBeats%meta.pulseBeats===0?' is-big':''),text);label.dataset.signaturePulse=index;group.append(label);});visual.append(pulse);
    }
    parent.append(visual);
   }

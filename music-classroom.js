@@ -151,7 +151,7 @@
     "title": "Read the musical staff",
     "shelf": "Pitch & intervals",
     "keywords": "treble bass clef staff lines spaces ledger middle c",
-    "html": "<p>The <strong>staff</strong> is music’s ladder: five lines and four spaces. A note can sit on a line or in a space.</p><p>Count from the <strong>bottom</strong>. Every next line or space moves one letter up the musical alphabet.</p><h3>Treble clef</h3><ul><li>Lines, bottom to top: <strong>E G B D F</strong>: Every Good Boy Does Fine.</li><li>Spaces: <strong>F A C E</strong>. The spaces spell FACE.</li></ul><p class=\"classroom-example\">Start on the bottom line, E. The space just above it is F. The next line is G.</p><h3>Three helpful steps</h3><ol><li>Check which clef you are reading.</li><li>Find a note you already know.</li><li>Count each line and space until you reach the new note.</li></ol><p>A tiny extra line is called a <strong>ledger line</strong>. Middle C sits on the first little line below a treble staff.</p><details><summary>Try the bass clef next</summary><p>Bass clef helps us read lower sounds. Its lines go <strong>G B D F A</strong>, bottom to top: Great Big Dreams For America. Its spaces go <strong>A C E G</strong>: “All Cows Eat Grass.”</p></details>",
+    "html": "<p>The <strong>staff</strong> is music’s ladder: five lines and four spaces. A note can sit on a line or in a space.</p><p>Count from the <strong>bottom</strong>. Every next line or space moves one letter up the musical alphabet.</p><h3>Treble clef</h3><ul><li>Lines, bottom to top: <strong>E G B D F</strong>: Every Good Boy Does Fine.</li><li>Spaces, bottom to top: <strong>F A C E</strong>. The spaces spell FACE.</li></ul><p class=\"classroom-example\">Start on the bottom line, E. The space just above it is F. The next line is G.</p><h3>Three helpful steps</h3><ol><li>Check which clef you are reading.</li><li>Find a note you already know.</li><li>Count each line and space until you reach the new note.</li></ol><p>A tiny extra line is called a <strong>ledger line</strong>. Middle C sits on the first little line below a treble staff.</p><details><summary>Try the bass clef next</summary><p>Bass clef helps us read lower sounds. Its lines go <strong>G B D F A</strong>, bottom to top: Great Big Dreams For America. Its spaces, bottom to top, go <strong>A C E G</strong>: “All Cows Eat Grass.”</p></details>",
     "quiz": {
       "question": "What are the treble-clef spaces, bottom to top?",
       "answers": [
@@ -160,7 +160,7 @@
         "E G B D F"
       ],
       "correct": 0,
-      "explanation": "The treble spaces spell FACE. Start with F in the bottom space."
+      "explanation": "The treble spaces spell FACE from bottom to top. Start with F in the bottom space."
     }
   },
   {

@@ -12,7 +12,7 @@
    {id:'find-f',prompt:'What is the gold key called?',answers:['G','F','C'],correct:1,explanation:'F is left of three black keys.',visual:{kind:'piano',target:3}},
    {id:'after-g',prompt:'Which letter comes after G?',answers:['F','H','A'],correct:2,explanation:'After G, start again at A.'},
    {id:'bottom-line',prompt:'Name this note.',answers:['E','G','F'],correct:0,explanation:'The bottom treble line is E.',visual:{kind:'staff',position:0}},
-   {id:'second-space',prompt:'Name this space note.',answers:['B','A','C'],correct:1,explanation:'Treble spaces spell FACE. The second space is A.',visual:{kind:'staff',position:3}}
+   {id:'second-space',prompt:'Name this space note.',answers:['B','A','C'],correct:1,explanation:'Treble spaces spell FACE from bottom to top. The second space is A.',visual:{kind:'staff',position:3}}
   ]),
   'rhythm-tree':quiz('Note lengths',[
    {id:'half-length',prompt:'How many beats for this half note?',answers:['1 beat','2 beats','4 beats'],correct:1,explanation:'A half note lasts two beats: ONE, TWO.',visual:{kind:'note',beats:2}},

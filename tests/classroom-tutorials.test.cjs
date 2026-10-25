@@ -11,9 +11,9 @@ test('note-name teaching and staff positions agree with the actual musical pitch
  const staff=NOTE_STEPS.filter(step=>step.kind==='staff');assert.deepEqual(staff.map(step=>step.position),[0,1,2,3,4,5]);assert.deepEqual(staff.map(step=>step.answer),['E','F','G','A','B','C']);
  assert.equal(new Set(LESSONS.map(lesson=>lesson.id)).size,5);
 });
-test('the build-a-bar check requires the actual recipe, not merely any four-beat total',()=>{
- assert.equal(validBar([4,2,2,8]),true);assert.equal(validBar([8,2,4,2]),true);
- for(const notes of [[16],[4,4,4,4],[4,2,2],[4,2,2,8,1],null,['4',2,2,8]])assert.equal(validBar(notes),false);
+test('the build-a-bar check accepts any supported notes totaling four beats',()=>{
+ for(const notes of [[4,2,2,8],[8,2,4,2],[16],[8,8],[4,4,4,4],Array(16).fill(1),[8,4,2,1,1]])assert.equal(validBar(notes),true);
+ for(const notes of [[],[4,2,2],[4,2,2,8,1],[15,1],[0,16],[-4,16,4],[.5,.5,15],null,['4',2,2,8]])assert.equal(validBar(notes),false);
 });
 test('progress never accepts an incomplete lesson as completed and handles damaged saves',()=>{
  const state=normalize({version:1,lessons:{'note-naming':{step:3,completed:true},'rhythm-tree':{step:4,completed:true,completedAt:12}}});
