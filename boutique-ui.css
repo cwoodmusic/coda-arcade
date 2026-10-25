@@ -27,3 +27,9 @@
 .boutique-item small{font-size:10px;color:#e9c489}
 .boutique-item:focus-visible,.boutique-categories button:focus-visible{outline:2px solid #a6f1d7;outline-offset:2px}
 @media(max-width:450px){.boutique-catalog{padding:9px}.boutique-catalog-results{grid-template-columns:repeat(3,minmax(0,1fr));max-height:280px}.boutique-item canvas{width:58px;height:65px}}
+/* Locked styles are future rewards, never wearable drafts. */
+.boutique-catalog-results .boutique-item.is-locked,.boutique-catalog-results .boutique-item.is-locked:hover{background:#292933;border-color:#55535f;color:#aaa9b4;filter:grayscale(1);opacity:1;cursor:not-allowed;box-shadow:none}
+.boutique-item.is-locked small{color:#c4c3cd;font-size:12px;line-height:1.35}
+.boutique-locked-art{display:flex;align-items:center;justify-content:center;width:72px;height:80px;border-radius:5px;background:#1e1e29;color:#b6b5c0;font-size:32px;line-height:1;pointer-events:none}
+.boutique-panel select option.boutique-option-locked{color:#90909d;background:#282835}
+@media(max-width:450px){.boutique-locked-art{width:58px;height:65px}.boutique-item.is-locked small{font-size:11px}}

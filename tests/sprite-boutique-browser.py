@@ -68,9 +68,24 @@ class SpriteBoutiqueTests(unittest.TestCase):
     def set_color(self,label,value):
         self.page.get_by_label(label,exact=True).evaluate('(input,value)=>{input.value=value;input.dispatchEvent(new Event("input",{bubbles:true}));}',value)
 
-    def open_boutique(self,target='player'):
+    def buy_fixture_items(self,*items):
+        self.page.evaluate('''ids=>{
+          const wallet=CodaNotesShop.createWallet({catalog:createCodaCharacterRenderer().catalog});
+          wallet.grantReward('fixture:wardrobe-selection',1000);
+          for(const id of ids){const result=wallet.buy(id);if(!result.ok)throw Error(result.error+' '+id);}
+        }''',list(items))
+
+    def open_boutique(self,target='player',developer=False):
+        if target!='player' or developer:
+            # NPC costuming is an explicit developer feature. Playtest keeps
+            # the real developer console active while allowing counter E.
+            self.page.evaluate("CodaDeveloperConsole.open('objects')")
+            if not self.page.evaluate('CodaDeveloperConsole.getState().playtest'):
+                self.page.locator('#devPlaytest').click()
         open_destination(self.page,'boutique')
-        self.page.get_by_label('Customize',exact=True).select_option(target)
+        target_control=self.page.get_by_label('Customize',exact=True)
+        if not target_control.is_disabled():target_control.select_option(target)
+        else:self.assertEqual(target,'player')
         self.page.locator('#avatarPreviewMode').select_option('idle')
 
     def try_catalog_item(self,category,item):
@@ -83,8 +98,8 @@ class SpriteBoutiqueTests(unittest.TestCase):
         # world tests cover the visible purchase flow and locked-item rejection.
         self.page.evaluate('''()=>{
           const wallet=CodaNotesShop.createWallet({catalog:createCodaCharacterRenderer().catalog});
-          wallet.grantReward('fixture:completed-quests',500);
-          for(const id of ['witch','starglasses','wand','rollerskates','cheer']){
+          wallet.grantReward('fixture:completed-quests',1000);
+          for(const id of ['witch','starglasses','wand','rollerskates','cheer','wizard','cateye','pearls','heels']){
             if(!wallet.buy(id).ok)throw Error('Could not prepare purchased cosmetic '+id);
           }
         }''')
@@ -114,6 +129,7 @@ class SpriteBoutiqueTests(unittest.TestCase):
         self.load();self.assertEqual(self.appearance(),saved)
 
     def test_catalog_search_preserves_current_choice_and_native_controls_stay_in_sync(self):
+        self.buy_fixture_items('wizard','witch')
         self.open_boutique();self.try_catalog_item('Hats','wizard')
         self.assertEqual(self.page.get_by_label('Hats',exact=True).input_value(),'wizard')
         self.page.get_by_label('Search wardrobe',exact=True).fill('witch')
@@ -271,9 +287,10 @@ class SpriteBoutiqueTests(unittest.TestCase):
 
     def test_cancel_and_target_switch_discard_drafts(self):
         self.page.emulate_media(reduced_motion='reduce')
+        self.buy_fixture_items('crown')
         before=self.appearance();npc_before=self.appearance('miles')
         raw_before=self.page.evaluate('localStorage.getItem("musicArcadeV1")')
-        self.open_boutique()
+        self.open_boutique(developer=True)
         self.page.get_by_label('Hats',exact=True).select_option('crown')
         self.page.get_by_label('Glasses',exact=True).select_option('glasses')
         self.set_color('Skin color','#52372a')

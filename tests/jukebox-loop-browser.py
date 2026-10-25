@@ -19,6 +19,8 @@ class JukeboxLoopTests(_world.WorldBrowserCase):
         self.page.evaluate('''()=>{
           const Audio=window.AudioContext||window.webkitAudioContext;
           window.jukeboxAudioProbe={contexts:[],starts:[],cancels:[]};
+          const nativeTime=Object.getOwnPropertyDescriptor(BaseAudioContext.prototype,'currentTime').get;
+          Object.defineProperty(Audio.prototype,'currentTime',{configurable:true,get(){return Number.isFinite(window.__jukeboxVirtualTime)?window.__jukeboxVirtualTime:nativeTime.call(this);}});
           const create=Audio.prototype.createOscillator;
           Audio.prototype.createOscillator=function(...args){
             const probe=window.jukeboxAudioProbe;
@@ -28,6 +30,14 @@ class JukeboxLoopTests(_world.WorldBrowserCase):
             oscillator.start=function(when,...rest){probe.starts.push({context,when,frequency:this.frequency.value,type:this.type});return start.call(this,when,...rest);};
             oscillator.stop=function(...times){if(!times.length)probe.cancels.push(context);return stop.apply(this,times);};
             return oscillator;
+          };
+          const buffers=new WeakMap();let nextBuffer=0;
+          const createBuffer=Audio.prototype.createBufferSource;
+          Audio.prototype.createBufferSource=function(...args){
+            const node=createBuffer.apply(this,args),start=node.start,stop=node.stop,probe=window.jukeboxAudioProbe;
+            let context=probe.contexts.indexOf(this);if(context<0){context=probe.contexts.length;probe.contexts.push(this);}
+            node.start=function(when,...rest){if(node.buffer&&!buffers.has(node.buffer))buffers.set(node.buffer,++nextBuffer);probe.starts.push({context,when,frequency:null,type:'buffer',buffer:node.buffer?buffers.get(node.buffer):0});return start.call(this,when,...rest);};
+            node.stop=function(...times){if(!times.length)probe.cancels.push(context);return stop.apply(this,times);};return node;
           };
         }''')
         open_destination(self.page, 'dj')
@@ -98,6 +108,35 @@ class JukeboxLoopTests(_world.WorldBrowserCase):
         self.assertIn(1,stopped['cancels'])
         self.page.wait_for_timeout(1200)
         self.assertEqual(self.probe()['starts'],stopped['starts'])
+
+
+    def test_sixteen_bar_house_track_uses_a_small_horizon_and_an_exact_repeating_boundary(self):
+        self.page.evaluate('__jukeboxVirtualTime=0')
+        self.page.locator('[data-jukebox-track="neon-afterhours"]').click()
+        self.page.wait_for_function('CodaArcadeQA.jukebox().cyclesScheduled===1')
+        state=self.state();first=self.probe()['starts'][:]
+        self.assertEqual(state['horizonSeconds'],2)
+        self.assertGreater(state['duration'],30)
+        self.assertGreater(state['activeVoices'],0);self.assertLess(state['activeVoices'],128)
+        self.assertLess(len(first),128,'Sixteen bars must not be queued as hundreds of native voices at once')
+        self.assertTrue(all(0<=voice['when']<=2.000001 for voice in first))
+        loop_start=min(voice['when'] for voice in first)
+        self.page.evaluate('time=>__jukeboxVirtualTime=time',loop_start+state['duration']-.01)
+        self.page.wait_for_function('CodaArcadeQA.jukebox().cyclesScheduled>=2')
+        later=self.probe()['starts'][len(first):]
+        boundary=loop_start+state['duration']
+        repeated=[voice for voice in later if boundary-1e-8<=voice['when']<boundary+1.8]
+        initial=[voice for voice in first if voice['when']<loop_start+1.8]
+        self.assertEqual(len(repeated),len(initial),'The next phrase must have the same complete opening voices')
+        for a,b in zip(initial,repeated):
+            self.assertAlmostEqual(b['when']-a['when'],state['duration'],delta=1e-8)
+            self.assertEqual(b['frequency'],a['frequency']);self.assertEqual(b['type'],a['type'])
+            if a['type']=='buffer':self.assertEqual(b['buffer'],a['buffer'],'Repeated drums use the same decoded noise buffer')
+        self.page.locator('#jukeboxStop').click()
+        stopped=self.probe();self.assertFalse(self.state()['playing']);self.assertEqual(stopped['contexts'][0]['state'],'closed')
+        self.assertGreater(len(stopped['cancels']),0)
+        self.page.evaluate('__jukeboxVirtualTime+=500');self.page.wait_for_timeout(250)
+        self.assertEqual(self.probe()['starts'],stopped['starts'],'A stopped long-song scheduler cannot resurrect queued cycles')
 
 
 if __name__ == '__main__':

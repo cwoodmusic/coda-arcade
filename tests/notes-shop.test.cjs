@@ -146,3 +146,17 @@ test('aspirational rewards cost thousands, cannot overspend, and never equip the
  const loaded=createWallet({storage:disk});assert.equal(loaded.owns('alien'),true);assert.equal(loaded.snapshot().spent,12000);
  for(const item of ['lakeotter','rhythmfox','pianophoenix','triadchampion','pitchlaurel10','pitchlaurel20','pitchlaurel30','pitchcrown40','starlight'])assert.equal(wallet.isStock(item),false,'Mastery rewards stay achievement-exclusive');
 });
+
+test('Notes shop lists only priced stock, keeping expensive purchases and excluding mastery-only rewards',()=>{
+ const oldDocument=global.document;global.document={createElement:tag=>new Element(tag)};
+ try{
+  const wallet=createWallet({storage:storage()}),body=new Element('div');
+  const ui=createShopUI({wallet,panelBody:body,renderer:{drawPlayer(){},catalog:{headwear:[{id:'triadchampion',label:'Triad champion crown'}]}},getAvatar:()=>({}),
+   achievementRewards:[{id:'triadchampion',label:'Triad champion crown',achievement:'triad-hard',requirement:'Win on Hard'}],openPanel(){body.replaceChildren();},openWardrobe(){}});
+  ui.open();const all=[];function visit(node){all.push(node);node.children.forEach(visit);}visit(body);
+  assert.equal(all.some(node=>node.attributes['aria-label']==='Shop mastery rewards'),false);
+  const cards=all.filter(node=>node.attributes['data-shop-item']);assert.ok(cards.length>0);assert.equal(cards.some(node=>node.attributes['data-shop-item']==='triadchampion'),false);
+  for(const card of cards){const item=wallet.stock.find(item=>item.id===card.attributes['data-shop-item']);assert.ok(item&&item.price>0);}
+  assert.ok(cards.some(node=>node.attributes['data-shop-item']==='alien'),'A distant Note-saving goal stays visible even when unaffordable');
+ }finally{global.document=oldDocument;}
+});

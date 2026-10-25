@@ -41,9 +41,11 @@ window.createCodaBoutiqueUI=function(api){
     const values=Array.isArray(custom)&&custom.length?custom:DEFAULT_CATALOG[name].map(([id,label])=>({id,label}));
     return values.filter(item=>item&&typeof item.id==='string'&&typeof item.label==='string');
   };
+  const developerMode=()=>api.isDeveloperMode?.()===true;
   function targets(){
-    const entries=api.getTargets?.();
-    return Array.isArray(entries)&&entries.length?entries:[{id:'player',label:'Your avatar'}];
+    const entries=api.getTargets?.(),available=Array.isArray(entries)&&entries.length?entries:[{id:'player',label:'Your avatar'}];
+    const allowed=developerMode()?available:available.filter(item=>item.id==='player');
+    return allowed.length?allowed:[{id:'player',label:'Your avatar'}];
   }
   const getProfile=id=>api.getProfile?api.getProfile(id):api.getAvatar();
   function migrateProfile(raw){
@@ -53,7 +55,7 @@ window.createCodaBoutiqueUI=function(api){
     if(!has(profile,'eyewear')&&old!=='none'&&catalog('eyewear').some(item=>item.id===old)){profile.eyewear=old;profile.accessory='none';}
     return api.renderer.normalizeProfile(profile);
   }
-  const canEquip=(id,isPlayer)=>id==='human'||id==='none'||!isPlayer||!api.unlocked||!!api.unlocked(id);
+  const canEquip=(id,isPlayer)=>id==='human'||id==='none'||!isPlayer&&developerMode()||!api.unlocked||!!api.unlocked(id);
   const lockedReason=id=>{
     const reason=api.lockedReason?.(id);
     return typeof reason==='string'&&reason.trim()?reason.trim():'Locked reward';
@@ -75,9 +77,10 @@ window.createCodaBoutiqueUI=function(api){
     const control=document.createElement(type==='select'?'select':'input');control.id='boutique-'+key;control.setAttribute('aria-label',label);
     if(type==='select'){
       for(const item of choices){
-        const option=document.createElement('option'),locked=!canEquip(item.id,isPlayer);option.value=item.id;
+        const option=document.createElement('option'),locked=key!=='target'&&!canEquip(item.id,isPlayer);option.value=item.id;
         option.textContent=(locked?'🔒 ':'')+item.label+(locked&&api.lockedReason?' · '+lockedReason(item.id):'');
-        if(locked)option.title=lockedReason(item.id);control.append(option);
+        option.disabled=locked&&key!=='target';option.setAttribute('aria-disabled',String(option.disabled));option.className=option.disabled?'boutique-option-locked':'';
+        if(locked)option.title=item.label+' — '+lockedReason(item.id);control.append(option);
       }
     }else control.type=type;
     control.value=value;wrapper.append(control);body.append(wrapper);return control;
@@ -91,7 +94,7 @@ window.createCodaBoutiqueUI=function(api){
   function wardrobeBrowser(controls,draft,isPlayer){
     const section=document.createElement('section');section.className='boutique-catalog';section.setAttribute('aria-label','Wardrobe collection');
     const title=document.createElement('h3');title.textContent='Find your next look';
-    const intro=document.createElement('p');intro.className='muted';intro.textContent='Pick a category, search, and try an item. Save when you like the complete look.';
+    const intro=document.createElement('p');intro.className='muted';intro.textContent='Choose an unlocked item to try it on. Grey items show what you can earn next.';
     const categories=document.createElement('div');categories.className='boutique-categories';categories.setAttribute('role','group');categories.setAttribute('aria-label','Browse wardrobe categories');
     const searchLabel=document.createElement('label');searchLabel.className='formRow';searchLabel.textContent='Search wardrobe';
     const search=document.createElement('input');search.type='search';search.id='boutiqueSearch';search.setAttribute('aria-label','Search wardrobe');searchLabel.append(search);
@@ -107,26 +110,28 @@ window.createCodaBoutiqueUI=function(api){
       const matches=all.filter(item=>(item.label+' '+item.id).toLocaleLowerCase().includes(query));
       search.placeholder='Search '+group.label.toLowerCase();
       for(const entry of groupButtons)entry.button.setAttribute('aria-pressed',String(entry.group===group));
-      count.textContent=matches.length+' of '+all.length+' '+group.label.toLowerCase()+(matches.length?' · click to preview':' · try another search');
+      count.textContent=matches.length+' of '+all.length+' '+group.label.toLowerCase()+(matches.length?' · unlocked items can be tried on':' · try another search');
       results.replaceChildren();
       for(const item of matches){
-        const button=document.createElement('button');button.type='button';button.className='boutique-item';
+        const button=document.createElement('button'),locked=!canEquip(item.id,isPlayer);button.type='button';button.className='boutique-item'+(locked?' is-locked':'');button.disabled=locked;button.setAttribute('aria-disabled',String(locked));
         button.setAttribute('data-item-id',item.id);
-        button.setAttribute('aria-label','Try '+item.label+(canEquip(item.id,isPlayer)?'':' ('+lockedReason(item.id).toLocaleLowerCase()+')'));button.setAttribute('aria-pressed',String(controls[group.key].value===item.id));
-        if(typeof api.renderer.drawPlayer==='function'){
+        button.setAttribute('aria-label',locked?'Locked: '+item.label+'. '+lockedReason(item.id):'Try '+item.label);button.title=locked?item.label+' — '+lockedReason(item.id):'Try '+item.label;button.setAttribute('aria-pressed',String(controls[group.key].value===item.id));
+        if(!locked&&typeof api.renderer.drawPlayer==='function'){
           const canvas=document.createElement('canvas');canvas.width=72;canvas.height=80;canvas.setAttribute('aria-hidden','true');
           const appearance={...draft(),[group.key]:item.id},ctx=canvas.getContext('2d');
           api.renderer.drawPlayer(ctx,appearance,{x:36,y:74,scale:1,facing:'down',walking:false,
             emote:group.key==='emote'?item.id:null,emoteTime:.45,previewPet:true},.45);
           button.append(canvas);
         }
-        const name=document.createElement('span');name.textContent=item.label;button.append(name);
-        if(!canEquip(item.id,isPlayer)){
+        if(locked){const picture=document.createElement('span');picture.className='boutique-locked-art';picture.textContent='🔒';picture.setAttribute('aria-hidden','true');button.append(picture);}
+        const name=document.createElement('span');name.textContent=(locked?'🔒 ':'')+item.label;button.append(name);
+        if(locked){
           const locked=document.createElement('small');locked.textContent=lockedReason(item.id);button.append(locked);
         }
         button.onclick=()=>{
-          controls[group.key].value=item.id;if(group.key==='emote')previewEmote();render();
-          message(canEquip(item.id,isPlayer)?'':lockedReason(item.id));
+          if(!canEquip(item.id,isPlayer)){message('🔒 '+item.label+' — '+lockedReason(item.id));return;}
+          controls[group.key].value=item.id;controls[group.key].onchange?.({target:controls[group.key]});
+          message('Selected '+item.label+'.');
           results.querySelector?.('[data-item-id="'+item.id+'"]')?.focus?.({preventScroll:true});
         };
         results.append(button);
@@ -146,19 +151,20 @@ window.createCodaBoutiqueUI=function(api){
     return {section,refresh:render};
   }
   function open(id='player'){
+    api.refreshUnlocks?.();
     const available=targets();targetId=available.some(item=>item.id===id)?id:available[0].id;
     const target=available.find(item=>item.id===targetId),isPlayer=targetId==='player';
     const source=getProfile(targetId)||{},profile=migrateProfile(isPlayer?window.CodaAvatarDefaults.migrate(source):source);
     api.openPanel(isPlayer?'Pip · Pixel Boutique':'Boutique · '+target.label);
     body.classList.add('boutique-panel');
     const intro=document.createElement('p');intro.className='muted';intro.textContent=isPlayer?
-      (api.openShop?'Mix hats, glasses, accessories, shoes, and moves into your own look. Try any style here; buy shop items with Notes before saving. Achievement rewards are marked.':'Mix hats, glasses, accessories, shoes, and moves into your own look. Everyday and fantasy styles are available to guests; achievement rewards are marked.'):
-      'Customize '+target.label+'’s costume. Their name, musical identity, and behavior stay the same.';body.append(intro);
+      (api.openShop?'Mix hats, glasses, accessories, shoes, and moves into your own look. Choose unlocked styles here. Buy shop items with Notes to unlock them. Achievement rewards are marked.':'Mix hats, glasses, accessories, shoes, and moves into your own look. Everyday and fantasy styles are available to guests; achievement rewards are marked.'):
+      'Developer styling for '+target.label+'. Their name, musical identity, and behavior stay the same.';body.append(intro);
     if(isPlayer&&typeof api.openShop==='function'){
       const shop=document.createElement('button');shop.type='button';shop.id='boutiqueOpenShop';shop.textContent='♫ Shop with Notes';
       shop.setAttribute('aria-label','Shop accessories with Notes');shop.onclick=()=>api.openShop();body.append(shop);
     }
-    const targetControl=field('Customize','target','select',targetId,available.map(item=>({id:item.id,label:item.label})),false);
+    const targetControl=field('Customize','target','select',targetId,available.map(item=>({id:item.id,label:item.label})),false);targetControl.disabled=available.length===1;
     targetControl.onchange=()=>open(targetControl.value);
     const name=field('Arcade nickname','name','text',isPlayer?profile.name:(source.name||target.label),null,isPlayer);name.maxLength=18;name.readOnly=!isPlayer;
     const form=field('Transformation','form','select',profile.form||'human',catalog('forms'),isPlayer);
@@ -176,19 +182,35 @@ window.createCodaBoutiqueUI=function(api){
     const accessory=field('Accessories','accessory','select',profile.accessory||'none',catalog('accessories'),isPlayer);
     const shoes=field('Shoes','shoes','select',profile.shoes,catalog('shoes'),isPlayer);
     const emote=field('Emote','emote','select',profile.emote,catalog('emotes'),isPlayer);
-    const draft=()=>{
+    const rawDraft=()=>{
       const normalized=api.renderer.normalizeProfile({form:form.value,pet:pet.value,name:name.value,hairstyle:hairstyle.value,outfit:outfit.value,skin:skin.value,hair:hair.value,shirt:shirt.value,lowerColor:lowerColor.value,headwear:headwear.value,headwearColor:headwearColor.value,eyewear:eyewear.value,eyewearColor:eyewearColor.value,accessory:accessory.value,shoes:shoes.value,emote:emote.value,hat:false});
       return {...normalized,name:isPlayer?normalized.name:(source.name||target.label),hat:false,
         ...(!isPlayer?{characterId:targetId}:{})};
     };
     const controls={form,pet,hairstyle,hair,skin,outfit,shirt,lowerColor,headwear,headwearColor,eyewear,eyewearColor,accessory,shoes,emote};
+    const allowedValues={};
+    const fallbackFor=group=>typeof allowedValues[group.key]==='string'&&canEquip(allowedValues[group.key],isPlayer)?allowedValues[group.key]:catalog(group.catalog).find(item=>canEquip(item.id,isPlayer))?.id||window.CodaAvatarDefaults.plain[group.key];
+    const itemName=(key,id)=>catalog(browseGroups.find(group=>group.key===key)?.catalog||'accessories').find(item=>item.id===id)?.label||id;
+    for(const group of browseGroups){
+      const control=controls[group.key];
+      const first=catalog(group.catalog).find(item=>canEquip(item.id,isPlayer));
+      allowedValues[group.key]=canEquip(control.value,isPlayer)?control.value:first?.id||control.value;
+      control.value=allowedValues[group.key];
+      control.onchange=()=>{
+        if(!canEquip(control.value,isPlayer)){const id=control.value;control.value=allowedValues[group.key]=fallbackFor(group);message('🔒 '+itemName(group.key,id)+' — '+lockedReason(id));return false;}
+        allowedValues[group.key]=control.value;message('');return true;
+      };
+    }
+    // The preview getter also checks ownership: a stale or programmatically
+    // selected disabled option can never put a locked item on the avatar.
+    const draft=()=>{const next=rawDraft();for(const group of browseGroups){const value=next[group.key];if(canEquip(value,isPlayer))allowedValues[group.key]=value;else next[group.key]=allowedValues[group.key]=fallbackFor(group);}return next;};
     const browser=wardrobeBrowser(controls,draft,isPlayer);body.insertBefore(browser.section,hairstyle.parentElement);
     api.getPreviewUI().addPreview(draft);
     const livePreview=body.querySelector?.('.avatar-live-preview');
     if(livePreview){body.insertBefore(targetControl.parentElement,livePreview);livePreview.after(browser.section);browser.section.after(name.parentElement);}
     const note=document.createElement('p');note.className='muted boutique-note';note.textContent=isPlayer?
-      'Preview as much as you like. Save applies the complete look; closing leaves your saved look unchanged. '+(api.openShop?'Buy marked shop items with Notes. Other rewards unlock through arcade achievements.':'Locked rewards unlock through arcade achievements.'):
-      'NPC costume changes are saved separately from your avatar. All clothing is available for NPC styling.';body.append(note);
+      'Try unlocked styles. Save applies the complete look; closing leaves your saved look unchanged. '+(api.openShop?'Buy marked shop items with Notes. Other rewards unlock through arcade achievements.':'Locked rewards unlock through arcade achievements.'):
+      'Developer NPC costume changes are saved separately from your avatar.';body.append(note);
     const actions=document.createElement('div');actions.className='boutique-actions';
     if(isPlayer){
       for(const [text,id,look]of [['Plain base avatar','boutiqueBaseLook',window.CodaAvatarDefaults.plain],['Classic cap look','boutiqueOriginalLook',window.CodaAvatarDefaults.classic]]){
@@ -201,17 +223,28 @@ window.createCodaBoutiqueUI=function(api){
     const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Cancel';cancel.onclick=api.closePanel;
     actions.append(save,cancel);body.append(actions);
     const status=document.createElement('p');status.className='panelMsg';status.setAttribute('role','status');actions.append(status);
-    current={targetId,source,draft,status};
+    let unlockSignature='';
+    function refreshLocks(){
+      if(api.refreshUnlocks)api.refreshUnlocks();
+      const signature=String(developerMode())+browseGroups.map(group=>catalog(group.catalog).map(item=>canEquip(item.id,isPlayer)?'1':'0').join('')).join('|');
+      if(signature===unlockSignature)return;unlockSignature=signature;
+      for(const group of browseGroups){const control=controls[group.key];for(const option of control.children){const item=catalog(group.catalog).find(item=>item.id===option.value);if(!item)continue;const locked=!canEquip(item.id,isPlayer);option.disabled=locked;option.className=locked?'boutique-option-locked':'';option.setAttribute('aria-disabled',String(locked));option.textContent=(locked?'🔒 ':'')+item.label+(locked?' · '+lockedReason(item.id):'');option.title=locked?item.label+' — '+lockedReason(item.id):item.label;}}
+      browser.refresh();
+    }
+    current={targetId,source,draft,status,save,refresh:refreshLocks};refreshLocks();
     save.onclick=()=>{
-      const next=draft();
-      const locked=[next.form,next.pet,next.hairstyle,next.outfit,next.headwear,next.eyewear,next.accessory,next.shoes,next.emote].filter(item=>!canEquip(item,isPlayer));
+      if(!isPlayer&&!developerMode()){message('Developer mode is required to style NPCs.');return;}
+      const next=rawDraft();
+      const locked=browseGroups.filter(group=>!canEquip(next[group.key],isPlayer)).map(group=>({id:next[group.key],label:itemName(group.key,next[group.key])}));
       if(locked.length){
-        message(api.lockedReason?'That item is still locked. '+[...new Set(locked.map(lockedReason))].join(' · ')+'. Choose an owned or unlocked item before saving.':'That item is still locked. Choose an unlocked item before saving.');return;
+        message('Still locked: '+locked.map(item=>item.label+' — '+lockedReason(item.id)).join('; ')+'. Choose unlocked items before saving.');return;
       }
       try{const result=api.applyProfile?api.applyProfile(targetId,next):api.applyAvatar(next);if(result!==false)api.closePanel();else if(!status.textContent)message('The look could not be saved. Your draft is still here.');}
       catch(error){message('The look could not be saved. '+(error?.message||'Please try again.'));}
     };
     return {targetId,draft};
   }
-  return {open,getDraft:()=>current?.draft()||null,getTarget:()=>current?.targetId||targetId,migrateProfile};
+  const refresh=()=>{if(current&&(!body.contains||body.contains(current.save)))current.refresh();};
+  for(const type of ['coda-progression-change','storage','focus'])window.addEventListener?.(type,refresh);
+  return {open,refresh,getDraft:()=>current?.draft()||null,getTarget:()=>current?.targetId||targetId,migrateProfile};
 };
