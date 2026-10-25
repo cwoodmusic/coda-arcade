@@ -8,11 +8,32 @@ profile and progress.
 
 Guest play continues to work locally. Classroom cloud saving requires the
 Firebase configuration and rules described below; publishing the static site
-alone does not install those rules. Enrollment is currently disabled with
-`classroom.enabled: false` in `account-config.js`. Keep it disabled until the
-live merged rules, trusted school-admin account, authentication providers, and
-published origins have been verified. Classroom privacy protections remain on
-while enrollment is disabled.
+alone does not install those rules. Enrollment is enabled for the configured
+`pitch-race` project after the merged rules, approved school administrator,
+authentication providers, and published origin were checked. When connecting a
+different Firebase project, keep `classroom.enabled: false` until those checks
+are complete. Classroom privacy protections also apply while enrollment is off.
+
+## Activation verification — 2026-10-25
+
+The complete live rules were backed up before adding only `classroomV1`.
+Existing `leaderboards`, `rooms`, `arcadeProfiles`, and `songLibrary` rules were
+preserved exactly, and the installed rules were read back and compared with the
+reviewed candidate. The approved administrator was provisioned through project
+administration, never through a browser self-promotion operation.
+
+The exact merged candidate passed 14 emulator security cases. A live check used
+two temporary anonymous accounts and synthetic profiles to verify saving,
+revision conflicts, cross-profile and listing denial, unknown-field rejection,
+card revocation, and same-profile recovery. All temporary database records and
+both anonymous accounts were removed and their cleanup verified. No existing
+student profile was read by these checks.
+
+The live check used project-administrator access only for synthetic setup,
+rotation, and cleanup; student requests used ordinary Firebase anonymous ID
+tokens. Google-provider staff rules were checked in the emulator. The teacher's
+browser Google-popup class/card workflow remains the final user-facing check;
+this record does not claim it was automated against the deployed site.
 
 ## What is saved
 

@@ -18,8 +18,11 @@ The original arcade remains available at `classic-arcade.html`, linked from the
 title screen. In the connected world's **Settings**, **Title screen** returns
 to the front door. Direct world links and existing picture-card links still work.
 
-Classroom enrollment is currently disabled pending verification of the live
-Firebase rules and trusted school administrator. Guest play is available.
+Classroom profiles are enabled. An approved administrator signs into **For
+teachers**, creates a class, and chooses **Make a new profile card** for each
+student, then **Print card**. Use group labels, not student names. If the teacher
+panel was open before account approval, sign out of that panel and sign in again.
+Guest play is also available.
 See [Private classroom profiles](README-CLASSROOM-PROFILES.md) for activation,
 the allowed progress data, printable cards, and lost-card recovery. The rules
 fragment must be merged into a backup of the full live rules before deployment.

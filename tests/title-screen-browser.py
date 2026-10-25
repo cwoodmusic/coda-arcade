@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 import threading
 import unittest
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 from playwright.sync_api import sync_playwright
 
@@ -180,13 +180,15 @@ class TitleScreenTests(unittest.TestCase):
         finally:self.page.keyboard.up('d')
 
     def test_teacher_entry_opens_teacher_ui_without_signing_in_and_is_consumed_once(self):
-        self.title();self.page.locator('#titleTeacher').tap()
+        self.title()
+        version = parse_qs(urlparse(self.page.locator('#titleTeacher').get_attribute('href')).query)['v']
+        self.page.locator('#titleTeacher').tap()
         self.page.wait_for_function('window.CodaClassroomUIInstance?.getState().open')
         self.assertEqual(self.page.evaluate('CodaClassroomUIInstance.getState().view'), 'admin')
         self.assertTrue(self.page.locator('#classpassAdminSignIn').is_visible())
         self.assertEqual(self.page.locator('#classpassTab-admin').get_attribute('aria-pressed'), 'true')
         self.assertNotIn('profile=', self.page.url)
-        self.assertIn('v=title-55', self.page.url)
+        self.assertEqual(parse_qs(urlparse(self.page.url).query).get('v'), version)
         self.assertFalse(any('firebasejs/' in url for url in self.requests))
         self.page.reload(wait_until='load')
         self.page.wait_for_function('window.CodaClassroomUIInstance')
