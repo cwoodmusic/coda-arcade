@@ -47,7 +47,7 @@ test('every changing-tempo music onset and held duration uses the exact integrat
  }
 });
 
-test('Presto uses a sparse stable arrangement and planning cannot expand without bounds',()=>{
+test('legendary fish use a sparse stable arrangement and planning cannot expand without bounds',()=>{
  for(const meter of ['4/4','6/8','2/2']){
   const fish=fishing.availableFish(meter).find(f=>f.rarity==='legendary'),game=fishing.createSession({fish,meter}),state=game.getState(),bar=state.barBeats;
   const events=music.plan(state,{fromBeat:0,toBeat:bar,timeAtBeat:game.timeAtBeat});assert.equal(events.length,6);

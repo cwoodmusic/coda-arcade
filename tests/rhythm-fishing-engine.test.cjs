@@ -226,6 +226,6 @@ test('upper-tier timings leave mobile-sized hit windows while consecutive target
   const game=session({fish,meter}),state=game.getState();
   assert.ok(state.rarity.missLoss<=5);assert.ok(state.rarity.extraLoss<=3);
   for(const note of state.notes.filter(item=>!item.rest&&item.duration===.25))assert.ok(note.window>=.0499,fish.id+' sixteenths need at least a 50ms head window');
-  assert.ok(Math.max(state.tempo.startQuarterBpm,state.tempo.endQuarterBpm)<=144);
+  assert.ok(Math.max(state.tempo.startQuarterBpm,state.tempo.endQuarterBpm)<=100);
  }
 });

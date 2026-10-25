@@ -3,7 +3,7 @@
  'use strict';
  const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
  const copy=value=>JSON.parse(JSON.stringify(value));
- const TARGET_BARS=8,START_PROGRESS=45,CLEAN_BAR_GAIN=(100-START_PROGRESS)/TARGET_BARS;
+ const TARGET_BARS=8,START_PROGRESS=45,CLEAN_BAR_GAIN=(100-START_PROGRESS)/TARGET_BARS,MAX_SIXTEENTH_BPM=100;
  const METERS=Object.freeze({
   '4/4':Object.freeze({id:'4/4',timeSignature:'4/4',label:'4/4',numerator:4,denominator:4,barBeats:4,pulseBeats:1,pulsesPerBar:4,pulseUnit:'quarter'}),
   '6/8':Object.freeze({id:'6/8',timeSignature:'6/8',label:'6/8',numerator:6,denominator:8,barBeats:3,pulseBeats:1.5,pulsesPerBar:2,pulseUnit:'dotted-quarter'}),
@@ -60,7 +60,11 @@
  }
  function speciesTempo(rarity,index){
   const rank=RARITIES.find(value=>value.id===rarity).rank,range=rank===2?[96,112]:rank===3?[108,126]:rank===4?[120,144]:rank===1?[82,82]:[76,76];
-  const change=rank<2?'steady':['accelerando','ritardando','steady','ritardando','steady','accelerando'][index%6],start=change==='ritardando'?range[1]:change==='steady'?(range[0]+range[1])/2:range[0],end=change==='accelerando'?range[1]:change==='ritardando'?range[0]:start;
+  const change=rank<2?'steady':['accelerando','ritardando','steady','ritardando','steady','accelerando'][index%6],rawStart=change==='ritardando'?range[1]:change==='steady'?(range[0]+range[1])/2:range[0],rawEnd=change==='accelerando'?range[1]:change==='ritardando'?range[0]:rawStart;
+  // Every advanced pattern pool includes sixteenth rhythms, including later
+  // practice bars. Scale the entire curve so they never exceed 100 quarter
+  // notes per minute, while accelerando and ritardando still change speed.
+  const scale=rank<2?1:Math.min(1,MAX_SIXTEENTH_BPM/Math.max(rawStart,rawEnd)),start=rawStart*scale,end=rawEnd*scale;
   return Object.freeze({...tempoMarking(start),initialMarking:tempoMarking(start).marking,endMarking:tempoMarking(end).marking,unit:'quarter',change,startQuarterBpm:start,endQuarterBpm:end,rampAfterBars:1,rampBars:3});
  }
  const FISH=Object.freeze(SPECIES.map(([id,name,rarity,color,accent,shape,size,notes,xp],index)=>Object.freeze({

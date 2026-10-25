@@ -21,7 +21,15 @@ class FishingTempoTests(_upgrade._fish._world.WorldBrowserCase):
     enter = _upgrade.FishingUpgradeTests.enter
     walk_to = _upgrade.FishingUpgradeTests.walk_to
     board = _upgrade.FishingUpgradeTests.board
-    start_exploring = _upgrade.FishingUpgradeTests.start_exploring
+    fishing_option = _upgrade._fish.FishingWorldTests.fishing_option
+    fishing_action = _upgrade._fish.FishingWorldTests.fishing_action
+    fishing_meter = _upgrade._fish.FishingWorldTests.fishing_meter
+
+    def start_exploring(self, meter='4/4'):
+        self.enter()
+        self.fishing_meter(meter)
+        self.board()
+        self.assertEqual(self.state()['phase'], 'explore')
     place_single_fish = _upgrade.FishingUpgradeTests.place_single_fish
 
     def setUp(self):
@@ -100,10 +108,10 @@ class FishingTempoTests(_upgrade._fish._world.WorldBrowserCase):
         if not self.state()['open']:
             self.start_exploring(selected)
         else:
-            self.page.locator('#fishingMeter').select_option(selected)
+            self.fishing_meter(selected)
         self.place_single_fish(fish['id'])
         self.assertFalse(self.page.locator('#fishingCast').is_disabled())
-        self.page.locator('#fishingCast').click(force=True)
+        self.fishing_action('#fishingCast')
         self.page.clock.run_for(1400)
         state = self.state()
         self.assertEqual(state['phase'], 'rhythm')
@@ -132,12 +140,19 @@ class FishingTempoTests(_upgrade._fish._world.WorldBrowserCase):
     def tap_next(self, maintain=False):
         before = self.state()
         self.assertEqual(before['phase'], 'rhythm')
+        self.assertLessEqual(before['challenge']['quarterBpm'], 100)
         notes = [note for note in before['challenge']['notes']
                  if note['judgement']=='pending' and note['time'] >= before['clock']-.02]
         self.assertTrue(notes, before)
         note = notes[0]
         self.advance_to(note['time'])
-        ready = self.state()['challenge']
+        # A clean final rest can finish the catch before the next note.
+        # Do not send that next Space to the newly focused result button.
+        advanced = self.state()
+        if advanced['phase'] != 'rhythm':
+            self.assertEqual(advanced['phase'], 'caught')
+            return advanced, note
+        ready = advanced['challenge']
         window = note.get('window', ready['window'])
         self.assertLess(abs(self.state()['clock']-note['time']), window+.000001)
         self.page.locator('#fishingRhythmCanvas').focus()
@@ -153,7 +168,8 @@ class FishingTempoTests(_upgrade._fish._world.WorldBrowserCase):
         if holding:self.advance_to(note.get('holdEndTime',note['time']+note['durationSeconds']))
         self.page.keyboard.up('Space')
         after = self.state()
-        self.assertEqual(after['challenge']['hits'], before['challenge']['hits']+1,
+        hits = (after['challenge'] or after['result'])['hits']
+        self.assertEqual(hits, before['challenge']['hits']+1,
                          'An actual tap on a fast moving target must hit exactly once')
         return after, note
 
@@ -268,11 +284,11 @@ class FishingTempoTests(_upgrade._fish._world.WorldBrowserCase):
                              'A played metronome click must not replay after resuming')
         self.cancel()
 
-    def test_presto_catch_uses_tight_fast_windows_and_pays_once(self):
+    def test_legendary_sixteenth_rhythms_stay_at_or_below_100_bpm_and_pay_once(self):
         fish = self.choose('accelerando',rarity='legendary',meter='2/2')
         state = self.begin_fish(fish)
-        self.assertEqual(state['challenge']['tempo']['marking'],'Presto')
-        self.assertGreaterEqual(state['challenge']['tempo']['currentQuarterBpm'],168)
+        self.assertLessEqual(state['challenge']['tempo']['currentQuarterBpm'],100)
+        self.assertLessEqual(max(state['challenge']['tempo']['startQuarterBpm'],state['challenge']['tempo']['endQuarterBpm']),100)
         for _ in range(60):
             if self.state()['phase']!='rhythm':break
             self.tap_next()
@@ -286,8 +302,8 @@ class FishingTempoTests(_upgrade._fish._world.WorldBrowserCase):
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),balance)
         self.page.locator('#fishingReturnLake').click(force=True)
         self.place_single_fish('silver-minnow')
-        self.page.locator('#fishingMeter').select_option('4/4')
-        self.page.locator('#fishingCast').click(force=True);self.page.clock.run_for(1400)
+        self.fishing_meter('4/4')
+        self.fishing_action('#fishingCast');self.page.clock.run_for(1400)
         beginner = self.state()['challenge']
         self.assertEqual(beginner['tempo']['currentQuarterBpm'],76)
         self.assertEqual(beginner['tempo']['change'],'steady')
@@ -302,7 +318,8 @@ class FishingTempoTests(_upgrade._fish._world.WorldBrowserCase):
                 self.page.set_viewport_size(size);self.page.clock.run_for(32)
                 self.assertLessEqual(self.page.locator('#rhythmFishing').evaluate('e=>e.scrollWidth'),size['width']+1)
                 text = self.page.locator('#fishingTempoLabel').inner_text()
-                self.assertIn('Presto',text)
+                self.assertIn(self.state()['challenge']['tempo']['marking'],text)
+                self.assertLessEqual(self.state()['challenge']['tempo']['currentQuarterBpm'],100)
                 self.assertTrue('quarter' in text.lower() or '♩' in text,text)
                 self.assertIn('dotted-quarter' if meter=='6/8' else 'half-note',text)
                 button = self.page.locator('#fishingTap').bounding_box()

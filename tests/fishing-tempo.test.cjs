@@ -13,18 +13,56 @@ function advanceAlive(game,target){
  close(game.getState().now,target);assert.equal(game.getState().result,null);
 }
 
-test('species keep bounded quarter-note tempos and upper tiers use playable speeds',()=>{
+test('species keep sixteenth-note phrases at or below 100 quarter-note BPM',()=>{
  for(const fish of fishing.FISH){
   assert.ok(Object.isFrozen(fish.tempo));assert.equal(fish.tempo.unit,'quarter');
-  const tempo=fish.tempo;assert.ok(tempo.startQuarterBpm>=76&&tempo.startQuarterBpm<=144);assert.ok(tempo.endQuarterBpm>=76&&tempo.endQuarterBpm<=144);
+  const tempo=fish.tempo;assert.ok(tempo.startQuarterBpm>=76&&tempo.startQuarterBpm<=100);assert.ok(tempo.endQuarterBpm>=76&&tempo.endQuarterBpm<=100);
   if(fish.rarityRank<2){assert.equal(tempo.change,'steady');assert.equal(tempo.startQuarterBpm,fish.rarity==='common'?76:82);assert.equal(tempo.startQuarterBpm,tempo.endQuarterBpm);}
-  if(fish.rarity==='epic')assert.ok(Math.min(tempo.startQuarterBpm,tempo.endQuarterBpm)>=108&&Math.max(tempo.startQuarterBpm,tempo.endQuarterBpm)<=126);
-  if(fish.rarity==='legendary')assert.ok(Math.min(tempo.startQuarterBpm,tempo.endQuarterBpm)>=120&&Math.max(tempo.startQuarterBpm,tempo.endQuarterBpm)<=144);
+  if(fish.rarityRank>=2){
+   close(Math.max(tempo.startQuarterBpm,tempo.endQuarterBpm),100);
+   assert.equal(tempo.initialMarking,fishing.tempoMarking(tempo.startQuarterBpm).marking);
+   assert.equal(tempo.endMarking,fishing.tempoMarking(tempo.endQuarterBpm).marking);
+   if(tempo.change==='accelerando')assert.ok(tempo.startQuarterBpm<tempo.endQuarterBpm,'The cap preserves an actual acceleration');
+   if(tempo.change==='ritardando')assert.ok(tempo.startQuarterBpm>tempo.endQuarterBpm,'The cap preserves an actual slowdown');
+  }
  }
  for(const rarity of ['rare','epic','legendary'])for(const change of ['steady','accelerando','ritardando'])assert.ok(fishWith(change,rarity),rarity+' '+change);
  for(const meter of Object.keys(fishing.METERS))assert.ok(fishing.availableFish(meter).some(fish=>fish.rarityRank>=2&&fish.tempo.change!=='steady'),meter+' has changing-tempo fish');
  assert.equal(fishing.fishFor('luminous-dragonfish').tempo.change,'accelerando');
+ close(fishing.fishFor('luminous-dragonfish').tempo.startQuarterBpm,100*120/144);
+ close(fishing.fishFor('luminous-dragonfish').tempo.endQuarterBpm,100);
  assert.equal(fishing.tempoMarking(108).marking,'Moderato');assert.equal(fishing.tempoMarking(120).marking,'Allegro');assert.equal(fishing.tempoMarking(156).marking,'Vivace');assert.equal(fishing.tempoMarking(168).marking,'Presto');
+});
+
+test('the sixteenth cap covers normal catches, rests, syncopations, and endless practice in every eligible meter',()=>{
+ const observed=new Set();
+ function check(game,notes,label){
+  for(const note of notes){
+   const subdivision=note.duration===.25||note.duration===.75||Math.abs(note.onset*2-Math.round(note.onset*2))>1e-8;
+   if(!subdivision)continue;
+   observed.add(note.token);
+   assert.ok(game.tempoAtBeat(note.onset)<=100+1e-8,label+' onset must not exceed 100 quarter BPM');
+   assert.ok(game.tempoAtBeat(note.onset+note.duration)<=100+1e-8,label+' tail must not accelerate beyond 100 quarter BPM');
+   assert.ok(note.durationSeconds>=note.duration*.6-1e-8,label+' real subdivision duration respects the quarter-note limit');
+   if(note.duration===.25)assert.ok(note.durationSeconds>=.15-1e-8,label+' sixteenth notes and rests last at least 150 ms');
+  }
+ }
+ for(const fish of fishing.FISH)for(const meter of fish.meters){
+  const normal=create(fish,meter),initial=normal.getState(),label=fish.id+' '+meter;
+  check(normal,initial.notes,label+' catch');
+  for(const beat of [0,initial.tempo.startBeat,(initial.tempo.startBeat+initial.tempo.endBeat)/2,initial.tempo.endBeat,100000]){
+   assert.ok(normal.tempoAtBeat(beat)<=100+1e-8,label+' the immutable timeline never exceeds the cap');
+  }
+  const practice=fishing.createSession({fish,meter,practice:true,startTime:10});
+  for(const bar of [0,2,4,12,64,256]){
+   practice.update(practice.timeAtBeat(bar*initial.barBeats));
+   const state=practice.getState();assert.equal(state.result,null,label+' practice remains endless');
+   assert.ok(state.quarterBpm<=100+1e-8,label+' practice tempo remains capped after the ramp');
+   assert.ok(state.displayBpm<=100+1e-8,label+' conducted pulse cannot hide a faster quarter-note rate');
+   check(practice,state.notes,label+' practice bar '+bar);
+  }
+ }
+ for(const token of ['s','rs','de'])assert.ok(observed.has(token),'The tempo policy exercised '+token+' notation');
 });
 
 test('exact beat/time maps are monotonic inverses before, during and after every fish ramp',()=>{
