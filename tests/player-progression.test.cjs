@@ -83,7 +83,7 @@ test('Piano memory mastery needs all nine saved melodies and deduplicates its bo
 
 test('Hard Advanced Triad mastery requires explicit difficulty, rule mode, and a win',()=>{
  const player=progression.create({storage:storage()}),result={mode:'computer',captures:5,score:10,won:true};
- for(const [id,extra]of [['missing',{}],['hard-only',{difficulty:'hard'}],['advanced-only',{rules:'advanced'}],['lost',{rules:'advanced',difficulty:'hard',won:false}]]){
+ for(const [id,extra]of [['missing',{}],['hard-only',{difficulty:'hard'}],['advanced-only',{rules:'advanced'}],['multiplayer',{mode:'multiplayer',rules:'advanced',difficulty:'hard'}],['lost',{rules:'advanced',difficulty:'hard',won:false}]]){
   assert.equal(player.recordGameEvent('triad',id,{...result,...extra}).ok,true);assert.equal(player.unlocked('triadchampion'),false);
  }
  assert.equal(player.recordGameEvent('triad','winner',{...result,mode:'advanced',difficulty:'hard'}).ok,true);

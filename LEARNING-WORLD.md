@@ -87,7 +87,7 @@ Visit Riff’s Notes Shop for **Big goals**, **Pets**, **Transformations**, **Vi
 | Triad champion crown | Win Advanced Music Triad on Hard |
 | Pitch laurels, radiant crown, Starlight transformation | Complete Pitch Race Level-mode levels 10, 20, 30, 40, and 50 |
 
-External-game milestones use accepted game results. Triad must explicitly report Advanced rules and Hard difficulty, and Pitch Race must report a completed Level-mode level. Missing metadata never grants those rewards. Existing Firebase projects and rules are unchanged.
+External-game milestones use accepted game results. Music Triad now reports its Simple/Advanced rules and the lowest computer difficulty used during the match; a Hard Advanced computer win unlocks the Triad crown. Pitch Race must report a completed Level-mode level. Tutorials, incomplete matches, duplicate reports, and missing metadata never grant those rewards. Existing Firebase projects and rules are unchanged.
 
 Six regular visitors take turns in the arcade, walking through the entrance when they arrive or leave. Active quest givers and people you are talking to remain available. Finding an absent musician asks them to return through the entrance. Invitations unlock Vee Jay, an original TV-headed DJ (6,000 Notes), Zizi, an original alien visitor (8,000), and Metronome, an original robot (10,000). These purchases expand the visitor pool and do not replace your character.
 

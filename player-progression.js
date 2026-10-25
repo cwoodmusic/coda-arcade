@@ -88,7 +88,7 @@
    const before=levelForXP(state.xp),resultAward=awardXP('game:'+game+':'+runId,xp,title,{pitchLevel:game==='pitch'?reportedPitchLevel(result):0});if(!resultAward.ok)return resultAward;
    const achievements=['first-'+game+'-result'];
    if(game==='triad'&&result.won)achievements.push('triad-first-win');
-   if(game==='triad'&&result.won&&String(result.difficulty).toLowerCase()==='hard'&&(result.mode==='advanced'||result.rules==='advanced'||result.gameMode==='advanced'||result.advanced===true))achievements.push('triad-hard-advanced-win');
+   if(game==='triad'&&['computer','advanced'].includes(result.mode)&&result.won&&String(result.difficulty).toLowerCase()==='hard'&&(result.mode==='advanced'||result.rules==='advanced'||result.gameMode==='advanced'||result.advanced===true))achievements.push('triad-hard-advanced-win');
    if(game==='pitch'&&result.correct>=10)achievements.push('pitch-ten-correct');
    if(game==='pitch'&&result.streak>=10)achievements.push('pitch-ten-streak');
    if(game==='pitch')for(const level of [10,20,30,40,50])if(reportedPitchLevel(result)>=level)achievements.push('pitch-level-'+level);
