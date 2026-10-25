@@ -6,6 +6,7 @@ paused modal backdrops must not compete with live character previews.
 import functools
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from world_navigation_helpers import advance_world, enter_room, open_destination, talk_to_musician, open_settings, close_settings
 import threading
 import unittest
 
@@ -85,7 +86,7 @@ class AnimationPerformanceTests(unittest.TestCase):
                              'Volumetric beams must use a smaller cached surface; floor pins stay sharp')
 
     def test_paused_world_backdrop_stays_still_while_the_boutique_keeps_animating(self):
-        self.page.locator('#avatarBtn').click()
+        open_destination(self.page,'boutique')
         self.page.evaluate('displayFrames(3)')
         views = self.page.locator('.avatar-preview-views canvas')
         self.assertEqual(views.count(), 4)
@@ -96,7 +97,9 @@ class AnimationPerformanceTests(unittest.TestCase):
                                    arg=before)
         self.assertEqual(self.page.evaluate('renderWork.worldDraws'), draws,
                          'A paused modal backdrop must not redraw lights or actors')
-        self.page.locator('#fxBtn').click()
+        open_settings(self.page);self.page.locator('#fxBtn').click();close_settings(self.page)
+        self.assertFalse(self.page.locator('body').evaluate("node=>node.classList.contains('world-menu-open')"),'Escape closes Settings first')
+        self.assertTrue(self.page.locator('#panel').is_visible(),'Changing Settings must keep the boutique open')
         self.page.wait_for_function('count=>renderWork.worldDraws>count', arg=draws)
         self.page.evaluate('displayFrames(3)')
         draws = self.page.evaluate('renderWork.worldDraws')

@@ -59,3 +59,47 @@ test('all reward identifiers correspond to actual character catalog and sound vo
  const voices=require('../song-machine/sound-library.js');
  assert.deepEqual(progression.SOUNDS.map(item=>[item.id,item.level]),voices.EXTRA.map(item=>[item.id,item.level]));
 });
+
+
+test('mastery companions unlock from saved achievements without purchases or auto-equipping',()=>{
+ const disk=storage(),player=progression.create({storage:disk});
+ assert.equal(player.unlocked('rhythmfox'),false);assert.equal(player.recordRhythmStreak(99).ok,false);
+ assert.equal(player.recordRhythmStreak(100).ok,true);assert.equal(player.unlocked('rhythmfox'),true);
+ assert.equal(player.recordRhythmStreak(100).alreadyAwarded,true);
+ player.recordAchievement('fishing-all-species');assert.equal(player.unlocked('lakeotter'),true);
+ assert.equal(progression.create({storage:disk}).unlocked('lakeotter'),true);
+ assert.match(player.requirement('lakeotter'),/30 fish/);
+});
+
+test('Piano memory mastery needs all nine saved melodies and deduplicates its bonus',()=>{
+ const disk=storage(),player=progression.create({storage:disk});
+ for(const id of progression.PIANO_MEMORIES.slice(0,-1))player.recordPianoMemory(id);
+ assert.equal(player.unlocked('pianophoenix'),false);assert.equal(player.recordPianoMemory('invented').ok,false);
+ const loaded=progression.create({storage:disk});loaded.recordPianoMemory(progression.PIANO_MEMORIES.at(-1));
+ assert.equal(loaded.unlocked('pianophoenix'),true);const xp=loaded.getState().xp;
+ assert.equal(loaded.recordPianoMemory('twinkle').alreadyAwarded,true);assert.equal(loaded.getState().xp,xp);
+ assert.equal(loaded.getState().achievementRewards.filter(item=>item.id==='pianophoenix').length,1);
+});
+
+test('Hard Advanced Triad mastery requires explicit difficulty, rule mode, and a win',()=>{
+ const player=progression.create({storage:storage()}),result={mode:'computer',captures:5,score:10,won:true};
+ for(const [id,extra]of [['missing',{}],['hard-only',{difficulty:'hard'}],['advanced-only',{rules:'advanced'}],['lost',{rules:'advanced',difficulty:'hard',won:false}]]){
+  assert.equal(player.recordGameEvent('triad',id,{...result,...extra}).ok,true);assert.equal(player.unlocked('triadchampion'),false);
+ }
+ assert.equal(player.recordGameEvent('triad','winner',{...result,mode:'advanced',difficulty:'hard'}).ok,true);
+ assert.equal(player.unlocked('triadchampion'),true);
+});
+
+test('Pitch Race Level milestones preserve the highest completed level and require reported evidence',()=>{
+ const disk=storage(),player=progression.create({storage:disk}),run={...pitch,mode:'levels',won:false,completedLevel:30};
+ player.recordGameEvent('pitch','thirty',run);
+ assert.equal(player.getState().bestPitchLevel,30);
+ for(const id of ['pitchlaurel10','pitchlaurel20','pitchlaurel30'])assert.equal(player.unlocked(id),true);
+ assert.equal(player.unlocked('pitchcrown40'),false);assert.equal(player.unlocked('starlight'),false);
+ player.recordGameEvent('pitch','lower',{...run,completedLevel:10});assert.equal(player.getState().bestPitchLevel,30);
+ player.recordGameEvent('pitch','unwon-current',{...pitch,mode:'levels',won:false,level:50});assert.equal(player.getState().bestPitchLevel,30);
+ player.recordGameEvent('pitch','classic',{...pitch,mode:'classic',completedLevel:50});assert.equal(player.getState().bestPitchLevel,30);
+ player.recordGameEvent('pitch','fifty',{...pitch,mode:'levels',level:50,won:true});
+ assert.equal(player.getState().bestPitchLevel,50);assert.equal(player.unlocked('pitchcrown40'),true);assert.equal(player.unlocked('starlight'),true);
+ assert.equal(progression.create({storage:disk}).getState().bestPitchLevel,50);
+});

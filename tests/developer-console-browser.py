@@ -7,6 +7,7 @@ import functools
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
+from world_navigation_helpers import advance_world, enter_room, open_destination, talk_to_musician, open_settings, close_settings
 import threading
 import unittest
 
@@ -58,11 +59,13 @@ class WorldEditorTests(unittest.TestCase):
         self.page.on('console', lambda msg: self.errors.append(msg.text) if 'Arcade frame error:' in msg.text else None)
         self.page.on('response', lambda response: self.local_failures.append(response.url) if response.status >= 400 and '127.0.0.1' in response.url and not response.url.endswith('favicon.ico') else None)
         self.page.goto(self.url, wait_until='domcontentloaded')
-        self.page.wait_for_function('window.CodaDeveloperConsole?.ready() && window.CodaArcadeQA?.characters().spriteState.ready')
+        try:self.page.wait_for_function('window.CodaDeveloperConsole?.ready() && window.CodaArcadeQA?.characters().spriteState.ready')
+        except Exception as error:
+            raise AssertionError({'errors':self.errors,'failures':self.local_failures,'initialization':self.page.evaluate('({developer:typeof CodaDeveloperConsole,qa:typeof CodaArcadeQA,renderer:typeof createCodaCharacterRenderer})')}) from error
         self.page.wait_for_function('window.CodaArcadeQA?.foregroundPixelAlpha("dance_right_couch",625,650)!==null')
         # Use the shipped FX control to keep pixel assertions and CI timing stable.
-        self.page.locator('#fxBtn').click()
-        self.page.locator('#fxBtn').click()
+        open_settings(self.page);self.page.locator('#fxBtn').click()
+        self.page.locator('#fxBtn').click();close_settings(self.page)
         self.page.keyboard.press('F2')
 
     def tearDown(self):
@@ -135,7 +138,7 @@ class WorldEditorTests(unittest.TestCase):
         # Replacement keeps placement and the original cleanup ownership.
         png = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aFOkAAAAASUVORK5CYII=')
         self.page.locator('#devReplaceFile').set_input_files({'name':'replacement.png','mimeType':'image/png','buffer':png})
-        self.page.wait_for_function('CodaDeveloperConsole.getProject().assets[0].kind==="image"')
+        self.page.wait_for_function('window.CodaDeveloperConsole.getProject().assets[0].kind==="image"')
         self.assertIn('origin', self.project()['assets'][0])
         # Duplicate must detach ownership; saving it must remain valid on reload.
         self.page.locator('#assetDuplicate').click()
@@ -143,7 +146,7 @@ class WorldEditorTests(unittest.TestCase):
         expected = self.project()
         self.assertTrue(self.page.evaluate('CodaDeveloperConsole.save()'))
         self.page.reload(wait_until='domcontentloaded')
-        self.page.wait_for_function('CodaDeveloperConsole.ready() && CodaArcadeQA.characters().spriteState.ready')
+        self.page.wait_for_function('window.CodaDeveloperConsole.ready() && window.CodaArcadeQA.characters().spriteState.ready')
         self.assertEqual(self.project(), expected)
 
     def test_collision_layers_history_export_import_and_rejection(self):
@@ -197,7 +200,7 @@ class WorldEditorTests(unittest.TestCase):
         published=json.loads((ROOT/'published-world-project.json').read_text())
         self.assertEqual(self.project(),published,'Reset must restore the shared published layout')
         self.import_project(exported)
-        self.page.wait_for_function('CodaDeveloperConsole.getProject().strokes.length===1')
+        self.page.wait_for_function('window.CodaDeveloperConsole.getProject().strokes.length===1')
         self.assertEqual(self.project(), expected)
         self.page.locator('#devUndo').click()
         self.assertEqual(self.project(),published,'One undo must revert the entire import')
@@ -268,7 +271,7 @@ class WorldEditorTests(unittest.TestCase):
         self.assertGreater(sum(a!=b for a,b in zip(before,after)),500,'Moving a disco ball must clear its original sphere')
         self.page.locator('#devDiscoRays').check()
         # Exercise the actual transformed light/sphere renderers at the shipped Lite setting.
-        self.page.locator('#fxBtn').click();self.page.locator('#fxBtn').click()
+        open_settings(self.page);self.page.locator('#fxBtn').click();self.page.locator('#fxBtn').click();close_settings(self.page)
         self.page.wait_for_timeout(150)
         self.page.locator('#assetVisible').uncheck()
         state=self.page.evaluate('CodaArcadeQA.worldObjects().find(o=>o.name==="disco_ball_dance")')
@@ -277,7 +280,7 @@ class WorldEditorTests(unittest.TestCase):
         self.assertTrue(self.page.evaluate('CodaArcadeQA.worldObjects().find(o=>o.name==="disco_ball_dance").rays'))
         expected=self.project()
         self.assertTrue(self.page.evaluate('CodaDeveloperConsole.save()'))
-        self.page.reload(wait_until='domcontentloaded');self.page.wait_for_function('CodaDeveloperConsole.ready() && CodaArcadeQA.characters().spriteState.ready')
+        self.page.reload(wait_until='domcontentloaded');self.page.wait_for_function('window.CodaDeveloperConsole.ready() && window.CodaArcadeQA.characters().spriteState.ready')
         self.assertEqual(self.project(),expected,'Catalog originals and light settings must survive reload')
 
     def test_four_cabinet_interactions_follow_moves_and_restoration(self):
@@ -327,9 +330,11 @@ class WorldEditorTests(unittest.TestCase):
 
     def test_musician_cast_moves_directionally_on_the_collision_map(self):
         characters=self.page.evaluate('CodaArcadeQA.characters()')
-        self.assertEqual(len(characters['npcs']),9)
+        self.assertGreaterEqual(len(characters['npcs']),9)
         self.assertIn('Miles Davis',[p['name'] for p in characters['npcs']])
-        self.assertEqual(len({(p['x'],p['y']) for p in characters['npcs']}),9)
+        visible=[person for person in characters['npcs'] if not person['hidden']]
+        self.assertGreaterEqual(len(visible),3)
+        self.assertEqual(len({(p['x'],p['y']) for p in visible}),len(visible))
         self.page.keyboard.press('F2')
         start=self.page.evaluate('CodaArcadeQA.characters().npcs')
         self.page.wait_for_timeout(1200)
@@ -337,27 +342,16 @@ class WorldEditorTests(unittest.TestCase):
         self.assertGreater(sum(abs(a['x']-b['x'])+abs(a['y']-b['y'])>1 for a,b in zip(start,end)),2)
         self.assertTrue(any(p['walking'] and p['facing']!='down' and p['phase']>0 for p in end))
         self.assertTrue(self.page.evaluate('CodaArcadeQA.characters().npcs.every(p=>p.hidden||CodaArcadeQA.walkable(p.x,p.y))'))
-        self.page.locator('#musiciansBtn').click()
-        self.assertEqual(self.page.locator('.musician-card').count(),9)
-        self.assertIn('Miles Davis',self.page.locator('#panelBody').inner_text())
-        self.assertIn('Historic musicians reimagined',self.page.locator('#panelBody').inner_text())
-        self.page.get_by_role('button',name='Find Miles Davis',exact=True).click()
-        start=self.page.evaluate('''()=>{const c=CodaArcadeQA.characters(),p=c.npcs.find(p=>p.id==='miles');return {distance:Math.hypot(p.x-c.player.x,p.y-c.player.y),following:c.player.following}}''')
-        self.assertEqual(start['following'],'miles')
-        self.page.wait_for_timeout(1600)
-        end=self.page.evaluate('''()=>{const c=CodaArcadeQA.characters(),p=c.npcs.find(p=>p.id==='miles');return Math.hypot(p.x-c.player.x,p.y-c.player.y)}''')
-        self.assertLess(end,start['distance']-70,'Find should follow the moving musician rather than stop at stale coordinates')
-        self.page.keyboard.down('d');self.page.wait_for_timeout(50);self.page.keyboard.up('d')
-        self.assertIsNone(self.page.evaluate('CodaArcadeQA.characters().player.following'))
+        talk_to_musician(self.page,'miles')
+        self.assertEqual(self.page.locator('#who').inner_text(),'Miles Davis')
+        self.assertTrue(self.page.locator('.musician-description').inner_text())
+        self.assertTrue(self.page.locator('.musician-choices').get_by_role('button',name='mission',exact=False).is_visible())
+        self.page.keyboard.press('Escape')
+        self.assertFalse(self.page.evaluate('CodaArcadeQA.conversation().open'))
 
     def test_miles_conversation_pauses_only_him_and_has_musical_topics(self):
         self.page.keyboard.press('F2')
-        miles=self.page.evaluate('CodaArcadeQA.characters().npcs.find(p=>p.id==="miles")')
-        # Approach on an open side without changing the NPC's own position.
-        placed=self.page.evaluate('''([x,y])=>{for(const [dx,dy]of [[40,0],[-40,0],[0,40],[0,-40]])if(CodaArcadeQA.place(x+dx,y+dy))return true;return false;}''',[miles['x'],miles['y']])
-        self.assertTrue(placed)
-        self.page.wait_for_timeout(100)
-        self.page.keyboard.press('e')
+        talk_to_musician(self.page,'miles')
         self.assertEqual(self.page.locator('#who').inner_text(),'Miles Davis')
         self.assertTrue(self.page.locator('#dialog').is_visible())
         self.assertIn('Imagined dialogue',self.page.locator('#dialog').inner_text())
@@ -379,21 +373,24 @@ class WorldEditorTests(unittest.TestCase):
         self.assertFalse(self.page.evaluate('CodaArcadeQA.characters().npcs.find(p=>p.id==="miles").conversation'))
 
     def test_npc_recovers_when_editor_blocks_their_standing_position(self):
-        miles=self.page.evaluate('CodaArcadeQA.characters().npcs.find(p=>p.id==="miles")')
+        person=self.page.evaluate('CodaArcadeQA.characters().npcs.find(p=>!p.hidden)')
+        self.assertIsNotNone(person)
+        self.assertTrue(self.page.evaluate('id=>CodaArcadeQA.findMusician(id)',person['id']))
         self.tab('collision')
         self.page.get_by_label('Collision tool',exact=True).select_option('block')
         self.page.get_by_label('Collision brush',exact=True).select_option('5')
-        self.map_click(miles['x'],miles['y'])
-        self.assertTrue(self.page.evaluate('CodaArcadeQA.characters().npcs.find(p=>p.id==="miles").hidden'),'An invalid standing location should despawn rather than walk through a new wall')
-        self.page.keyboard.press('F2');self.page.wait_for_timeout(1000)
+        self.map_click(person['x'],person['y'])
+        self.assertTrue(self.page.evaluate('id=>CodaArcadeQA.characters().npcs.find(p=>p.id===id).hidden',person['id']),'An invalid standing location should despawn rather than walk through a new wall')
+        self.page.keyboard.press('F2')
+        self.page.wait_for_function('id=>!CodaArcadeQA.characters().npcs.find(p=>p.id===id).hidden',arg=person['id'],timeout=10000)
         self.assertTrue(self.page.evaluate('CodaArcadeQA.characters().npcs.every(p=>p.hidden||CodaArcadeQA.walkable(p.x,p.y))'))
-        self.assertFalse(self.page.evaluate('CodaArcadeQA.characters().npcs.find(p=>p.id==="miles").hidden'),'Musician should safely reenter at a nearby open location')
+        self.assertFalse(self.page.evaluate('id=>CodaArcadeQA.characters().npcs.find(p=>p.id===id).hidden',person['id']),'A requested musician should safely reenter through the arcade entrance')
 
     def test_avatar_preview_matches_saved_in_world_customization(self):
         self.page.emulate_media(reduced_motion='reduce')
         self.page.evaluate('localStorage.setItem("musicArcadeV1",JSON.stringify({name:"Guest",walked:600,collectedTokens:7}))')
-        self.page.reload(wait_until='domcontentloaded');self.page.wait_for_function('CodaDeveloperConsole.ready() && CodaArcadeQA.characters().spriteState.ready')
-        self.page.locator('#avatarBtn').click()
+        self.page.reload(wait_until='domcontentloaded');self.page.wait_for_function('window.CodaDeveloperConsole.ready() && window.CodaArcadeQA.characters().spriteState.ready')
+        open_destination(self.page,'boutique')
         self.assertEqual(self.page.locator('.avatar-preview-views canvas').count(),4)
         self.page.locator('#avatarPreviewMode').select_option('idle')
         self.page.wait_for_timeout(50)
@@ -412,7 +409,7 @@ class WorldEditorTests(unittest.TestCase):
         expected=self.page.evaluate('CodaArcadeQA.characters().player.appearance')
         self.assertEqual((expected['name'],expected['shirt'],expected['accessory'],expected['outfit']),('Jazz Explorer','#4678ab','headphones','overalls'))
         self.assertEqual(self.page.evaluate('JSON.parse(localStorage.musicArcadeV1).collectedTokens'),7)
-        self.page.reload(wait_until='domcontentloaded');self.page.wait_for_function('CodaDeveloperConsole.ready() && CodaArcadeQA.characters().spriteState.ready')
+        self.page.reload(wait_until='domcontentloaded');self.page.wait_for_function('window.CodaDeveloperConsole.ready() && window.CodaArcadeQA.characters().spriteState.ready')
         self.assertEqual(self.page.evaluate('CodaArcadeQA.characters().player.appearance'),expected)
 
 

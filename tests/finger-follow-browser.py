@@ -59,11 +59,14 @@ class FingerWalkTests(unittest.TestCase):
         for width,height in [(390,844),(360,780),(844,390),(667,375)]:
             self.page.set_viewport_size({'width':width,'height':height})
             metric=self.page.evaluate('''() => {
-                const host=document.querySelector('.coda-touch-controls'),stage=worldStage.getBoundingClientRect(),pad=host.querySelector('.coda-dpad').getBoundingClientRect(),actions=host.querySelector('.coda-touch-actions').getBoundingClientRect(),centerX=(pad.right+actions.left)/2,centerY=innerHeight-50;
-                return {viewport:innerWidth,scroll:document.documentElement.scrollWidth,stageBottom:stage.bottom,pad:{left:pad.left,right:pad.right,bottom:pad.bottom},actions:{left:actions.left,right:actions.right,bottom:actions.bottom},sizes:[...host.querySelectorAll('button')].filter(b=>!b.hidden).map(b=>{const r=b.getBoundingClientRect();return [r.width,r.height]}),center:document.elementFromPoint(centerX,centerY)?.id};
+                const host=document.querySelector('.coda-touch-controls'),stage=worldStage.getBoundingClientRect(),pad=host.querySelector('.coda-joystick').getBoundingClientRect(),actions=host.querySelector('.coda-touch-actions').getBoundingClientRect(),centerX=(pad.right+actions.left)/2,centerY=innerHeight-50;
+                return {viewport:innerWidth,scroll:document.documentElement.scrollWidth,stageBottom:stage.bottom,pad:{left:pad.left,right:pad.right,bottom:pad.bottom,width:pad.width,height:pad.height},thumb:host.querySelector('.coda-joystick-thumb').getBoundingClientRect().toJSON(),actions:{left:actions.left,right:actions.right,bottom:actions.bottom},sizes:[...host.querySelectorAll('button')].filter(b=>!b.hidden).map(b=>{const r=b.getBoundingClientRect();return [r.width,r.height]}),center:document.elementFromPoint(centerX,centerY)?.id};
             }''')
             self.assertLessEqual(metric['scroll'],width);self.assertAlmostEqual(metric['stageBottom'],height,delta=1)
             self.assertGreaterEqual(metric['pad']['left'],0);self.assertLess(metric['pad']['right'],metric['actions']['left']);self.assertLessEqual(metric['actions']['right'],width)
+            self.assertGreaterEqual(metric['pad']['width'],200 if width>height else 216)
+            self.assertAlmostEqual(metric['pad']['width'],metric['pad']['height'],delta=1)
+            self.assertGreaterEqual(metric['thumb']['width'],88)
             self.assertTrue(all(w>=58 and h>=58 for w,h in metric['sizes']),metric)
             self.assertEqual(metric['center'],'view',metric)
 

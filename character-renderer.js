@@ -6,12 +6,13 @@ window.createCodaCharacterRenderer=function(api){
   const DIRECTIONS=['down','left','up','right'];
   const HAIR=['short','bob','long','curly','ponytail','spiky','bald','buns','pixie','undercut','braids','locs','afro','slick','pompadour','mohawk','powderwig'];
   const OUTFITS=['pants','shorts','dress','overalls','suit','coat','hoodie','tuxedo','waistcoat','gown','robe','leather','tracksuit','tutu','kimono'];
-  const HEADWEAR=['none','cap','beanie','bucket','crown','headwrap','witch','wizard','cowboy','fedora','tophat','beret','pirate','astronaut','flowercrown','tiara','viking','cat','bunny','chef','santa','party','straw','sunvisor','boater','bowler'];
+  const HEADWEAR=['none','cap','beanie','bucket','crown','headwrap','witch','wizard','cowboy','fedora','tophat','beret','pirate','astronaut','flowercrown','tiara','viking','cat','bunny','chef','santa','party','straw','sunvisor','boater','bowler','celestialcrown','triadchampion','pitchlaurel10','pitchlaurel20','pitchlaurel30','pitchcrown40'];
   const EYEWEAR=['none','glasses','sunglasses','partyglasses','round','cateye','aviator','heartglasses','starglasses','steampunk','cybervisor','monocle','3d','shutter','sport','rimless'];
-  const ACCESSORIES=['none','bow','headphones','bowtie','starclip','halo','earrings','pixelheadphones','trumpet','microphone','scarf','cape','wings','necklace','pearls','flower','satchel','backpack','guitar','violin','saxophone','wand','fan','watchchain','score','boombox','coffee','teddy','umbrella','shield','sword','lantern','vinyl','camera','book','bouquet','balloon','skateboard','paintpalette','compass','telescope','trophy','handbag','magicorb','gamepad','keytar','flute','accordion'];
+  const ACCESSORIES=['none','bow','headphones','bowtie','starclip','halo','earrings','pixelheadphones','trumpet','microphone','scarf','cape','wings','necklace','pearls','flower','satchel','backpack','guitar','violin','saxophone','wand','fan','watchchain','score','boombox','coffee','teddy','umbrella','shield','sword','lantern','vinyl','camera','book','bouquet','balloon','skateboard','paintpalette','compass','telescope','trophy','handbag','magicorb','gamepad','keytar','flute','accordion','nebulaaura'];
   const SHOES=['sneakers','boots','hightops','neon','gold','loafers','heels','platforms','rollerskates','iceskates','clown','slippers','barefoot','sandals','ballet','chelsea','oxfords','combat'];
   const EMOTES=['wave','dance','spin','robot','disco','bow','cheer','clap','shrug','heart','peace','airguitar','moonwalk','breakdance','curtsy','salute','facepalm','think'];
-  const DEFAULTS=Object.freeze({name:'Guest',skin:'#e5ad75',hair:'#171424',shirt:'#999ca6',lowerColor:'#626875',hairstyle:'bald',outfit:'pants',headwear:'none',eyewear:'none',accessory:'none',shoes:'sneakers',emote:'wave',headwearColor:'#db687f',eyewearColor:'#30374b'});
+  const FORMS=['human','alien','starlight','tv','robot'],PETS=['none','cosmiccat','neondragon','lakeotter','rhythmfox','pianophoenix'];
+  const DEFAULTS=Object.freeze({form:'human',pet:'none',name:'Guest',skin:'#e5ad75',hair:'#171424',shirt:'#999ca6',lowerColor:'#626875',hairstyle:'bald',outfit:'pants',headwear:'none',eyewear:'none',accessory:'none',shoes:'sneakers',emote:'wave',headwearColor:'#db687f',eyewearColor:'#30374b'});
   const own=(object,key)=>Object.prototype.hasOwnProperty.call(object,key);
   const finite=(value,fallback=0)=>Number.isFinite(value)?value:fallback;
   const choose=(value,values,fallback)=>values.includes(value)?value:fallback;
@@ -20,7 +21,7 @@ window.createCodaCharacterRenderer=function(api){
   const worldScale=Math.max(.125,Math.min(4,finite(api.worldScale,1)));
   function normalizeProfile(raw){
     const p=raw&&typeof raw==='object'?raw:{};
-    return {name:typeof p.name==='string'?p.name.trim().slice(0,18)||DEFAULTS.name:DEFAULTS.name,
+    return {form:choose(p.form,FORMS,'human'),pet:choose(p.pet,PETS,'none'),name:typeof p.name==='string'?p.name.trim().slice(0,18)||DEFAULTS.name:DEFAULTS.name,
       skin:color(p.skin,DEFAULTS.skin),hair:color(p.hair,DEFAULTS.hair),shirt:color(p.shirt,DEFAULTS.shirt),lowerColor:color(p.lowerColor,DEFAULTS.lowerColor),headwearColor:color(p.headwearColor,DEFAULTS.headwearColor),eyewearColor:color(p.eyewearColor,DEFAULTS.eyewearColor),
       hairstyle:choose(p.hairstyle,HAIR,DEFAULTS.hairstyle),outfit:choose(p.outfit,OUTFITS,DEFAULTS.outfit),
       headwear:own(p,'headwear')?choose(p.headwear,HEADWEAR,'none'):p.accessory==='cap'?'cap':'none',
@@ -44,14 +45,15 @@ window.createCodaCharacterRenderer=function(api){
   const appearances=Object.fromEntries(Object.entries(historical).map(([id,p])=>[id,Object.freeze({...normalizeProfile(p),...p,id})]));
   const aliases={'j. s. bach':'bach','johann sebastian bach':'bach','wolfgang amadeus mozart':'mozart','ludwig van beethoven':'beethoven','clara schumann':'clara','scott joplin':'joplin','duke ellington':'ellington','ella fitzgerald':'ella','nina simone':'nina','miles davis':'miles'};
   const fallback=Object.freeze({...DEFAULTS,id:'guest'});
-  function appearanceFor(id){const key=String(id||'').toLowerCase();return appearances[aliases[key]||key]||fallback;}
+  function appearanceFor(id){const key=String(id||'').toLowerCase(),known=appearances[aliases[key]||key];if(known)return known;const visitor=window.CodaNPCVisitors?.get?.(key);return visitor?{...normalizeProfile(visitor.appearance),...visitor.appearance,id:visitor.actorId||visitor.id||key,name:visitor.appearance?.name||visitor.name||visitor.label||key}:fallback;}
   const labels={none:'None',short:'Short',bob:'Bob',long:'Long',curly:'Curly',ponytail:'Ponytail',spiky:'Spiky',bald:'No hair',buns:'Space buns',pants:'Shirt and pants',shorts:'Shirt and shorts',dress:'Dress',overalls:'Overalls',suit:'Suit',coat:'Long coat',cap:'Baseball cap',beanie:'Beanie',bucket:'Bucket hat',crown:'Crown',headwrap:'Headwrap',glasses:'Everyday glasses',sunglasses:'Sunglasses',partyglasses:'Party glasses',bow:'Bow',headphones:'Headphones',bowtie:'Bow tie',starclip:'Neon star clip',halo:'Neon halo',earrings:'Earrings',pixelheadphones:'Pixel headphones',trumpet:'Trumpet',microphone:'Microphone',sneakers:'Sneakers',boots:'Boots',hightops:'High tops',neon:'Neon trainers',gold:'Gold shoes',wave:'Wave',dance:'Dance',spin:'Spin',robot:'Robot',disco:'Disco point'};
   Object.assign(labels,{pixie:'Pixie cut',undercut:'Undercut',braids:'Braids',locs:'Locs',afro:'Afro',slick:'Side part',pompadour:'Pompadour',mohawk:'Mohawk',powderwig:'Powdered wig',hoodie:'Oversized hoodie',tuxedo:'Tuxedo',waistcoat:'Waistcoat',gown:'Evening gown',robe:'Fantasy robe',leather:'Leather jacket',tracksuit:'Tracksuit',tutu:'Ballet tutu',kimono:'Wrap robe',witch:'Crooked witch hat',wizard:'Starry wizard hat',cowboy:'Cowboy hat',fedora:'Fedora',tophat:'Top hat',beret:'Beret',pirate:'Pirate tricorn',astronaut:'Space helmet',flowercrown:'Flower crown',tiara:'Tiara',viking:'Horned helmet',cat:'Cat ears',bunny:'Bunny ears',chef:'Chef hat',santa:'Santa hat',party:'Party cone',straw:'Wide straw hat',sunvisor:'Sun visor',boater:'Boater',bowler:'Bowler',round:'Round spectacles',cateye:'Cat-eye frames',aviator:'Aviators',heartglasses:'Heart glasses',starglasses:'Star glasses',steampunk:'Clockwork goggles',cybervisor:'Cyber visor',monocle:'Monocle','3d':'3D glasses',shutter:'Shutter shades',sport:'Sport goggles',rimless:'Rimless glasses',scarf:'Long scarf',cape:'Hero cape',wings:'Angel wings',necklace:'Pendant necklace',pearls:'Pearl necklace',flower:'Buttonhole flower',satchel:'Crossbody satchel',backpack:'Backpack',guitar:'Electric guitar',violin:'Violin',saxophone:'Saxophone',wand:'Magic wand',fan:'Folding fan',watchchain:'Pocket watch chain',score:'Music manuscript',boombox:'Boombox',coffee:'Coffee cup',teddy:'Teddy bear',loafers:'Penny loafers',heels:'Evening heels',platforms:'Platform boots',rollerskates:'Roller skates',iceskates:'Ice skates',clown:'Clown shoes',slippers:'Bunny slippers',barefoot:'Bare feet',sandals:'Strappy sandals',ballet:'Ballet slippers',chelsea:'Chelsea boots',oxfords:'Two-tone Oxfords',combat:'Laced combat boots',cheer:'Big cheer',clap:'Applause',shrug:'Shrug',heart:'Make a heart',peace:'Peace sign',airguitar:'Air guitar',moonwalk:'Moonwalk',breakdance:'Breakdance',curtsy:'Curtsy',salute:'Salute',facepalm:'Facepalm',think:'Thinking'});
   Object.assign(labels,{umbrella:'City umbrella',shield:'Starlight shield',sword:'Toy hero sword',lantern:'Little lantern',vinyl:'Vinyl record',camera:'Instant camera',book:'Spellbook',bouquet:'Flower bouquet',balloon:'Star balloon',skateboard:'Skateboard',paintpalette:'Artist palette',compass:'Explorer compass',telescope:'Pocket telescope',trophy:'Golden trophy',handbag:'Chic handbag',magicorb:'Crystal orb',gamepad:'Game controller',keytar:'Neon keytar',flute:'Silver flute',accordion:'Mini accordion'});
+  Object.assign(labels,{human:'Human form',alien:'Alien transformation',starlight:'Starlight transformation',cosmiccat:'Cosmic cat companion',neondragon:'Neon dragon companion',lakeotter:'Lake otter companion',rhythmfox:'Rhythm fox companion',pianophoenix:'Piano phoenix companion',celestialcrown:'Celestial crown',triadchampion:'Triad champion crown',pitchlaurel10:'Bronze pitch laurel',pitchlaurel20:'Silver pitch laurel',pitchlaurel30:'Gold pitch laurel',pitchcrown40:'Radiant pitch crown',nebulaaura:'Nebula aura'});
   // The accessory bow and the bow emote share an id; each remains a separate
   // equipment slot, with contextual labels in the catalog.
   const choices=ids=>Object.freeze(ids.map(id=>Object.freeze({id,label:labels[id]})));
-  const catalog=Object.freeze({hairstyles:choices(HAIR),outfits:choices(OUTFITS),headwear:choices(HEADWEAR),eyewear:choices(EYEWEAR),accessories:choices(ACCESSORIES),shoes:choices(SHOES),emotes:Object.freeze(choices(EMOTES).map(item=>item.id==='bow'?Object.freeze({id:'bow',label:'Take a bow'}):item))});
+  const catalog=Object.freeze({forms:choices(['human','alien','starlight']),visitors:Object.freeze([{id:'visitor-vee-jay',label:'Invite Vee Jay'},{id:'visitor-zizi',label:'Invite Zizi'},{id:'visitor-metronome',label:'Invite Metronome'}].map(Object.freeze)),pets:choices(PETS),hairstyles:choices(HAIR),outfits:choices(OUTFITS),headwear:choices(HEADWEAR),eyewear:choices(EYEWEAR),accessories:choices(ACCESSORIES),shoes:choices(SHOES),emotes:Object.freeze(choices(EMOTES).map(item=>item.id==='bow'?Object.freeze({id:'bow',label:'Take a bow'}):item))});
   function shade(hex,amount){return '#'+[1,3,5].map(offset=>Math.max(0,Math.min(255,parseInt(hex.slice(offset,offset+2),16)+amount)).toString(16).padStart(2,'0')).join('');}
   const palettes=new Map(),cacheLimit=Math.max(16,Math.min(256,Math.round(finite(api.cacheLimit,128))));
   function palette(p){const key=p.skin+p.hair+p.shirt+p.lowerColor;if(palettes.has(key))return palettes.get(key);
@@ -64,6 +66,7 @@ window.createCodaCharacterRenderer=function(api){
     const actionTime=finite(m.emoteTime,t),beat=Math.sin(actionTime*7);
     let facing=choose(m.facing,DIRECTIONS,'down');
     if(emote==='spin'&&!quiet)facing=DIRECTIONS[((Math.floor(actionTime*7)%4)+4)%4];
+    if(m.frontEmote&&EMOTES.includes(emote))facing='down';
     const stride=!quiet&&walking?Math.round(Math.sin(phase)*3):0;
     let dx=0,lift=0,bob=0,gesture='',clip=walking?'walk':'idle',sit=false,lean=0;
     if(!quiet){
@@ -78,6 +81,7 @@ window.createCodaCharacterRenderer=function(api){
         else if(EMOTES.includes(emote)){
           gesture=emote;clip='emote';
           if(emote==='bow'){lean=.32+.18*Math.sin(actionTime*3);bob=3;}
+          if(emote==='spin'&&m.frontEmote){lean=Math.sin(actionTime*7)*.18;lift=Math.round(Math.abs(beat)*3);dx=Math.round(Math.sin(actionTime*5)*2);}
           if(emote==='cheer'){lift=Math.round(Math.max(0,beat)*5);}
           if(emote==='clap'){dx=Math.round(Math.sin(actionTime*10));}
           if(emote==='shrug'){bob=-2;}
@@ -442,7 +446,7 @@ window.createCodaCharacterRenderer=function(api){
       if(pose.gesture==='shrug'){r(-22,-18,12,4,c.skinShade);r(10,-18,12,4,c.skin);hand(-24,-22);hand(20,-22);r(-23,-24,5,1,c.skinLight);r(20,-24,5,1,c.skinLight);}
       if(pose.gesture==='heart'){r(-12,-21,11,4,c.skinShade);r(2,-21,11,4,c.skin);hand(-5,-23);hand(1,-23);pixelHeart(r,0,-17,1,'#f78fad');}
       if(pose.gesture==='peace'){r(leftArm,-17,4,11,c.skinShade);r(rightArm,-34,4,16,c.skin);hand(rightArm-1,-38);r(rightArm,-44,2,8,c.skinLight);r(rightArm+4,-43,2,7,c.skinLight);}
-      if(pose.gesture==='airguitar'){r(-13,-20,15,4,c.skinShade);hand(6,-16+Math.round(beat*2));r(8,-20,4,7,c.skin);}
+    if(pose.gesture==='airguitar'){r(-13,-20,15,4,c.skinShade);hand(6,-16+Math.round(beat*2));r(8,-20,4,7,c.skin);}
       if(pose.gesture==='curtsy'){r(-19,-17,10,4,c.skinShade);r(10,-17,10,4,c.skin);hand(-22,-15);hand(18,-15);}
       if(['salute','facepalm','think'].includes(pose.gesture)){r(leftArm,-17,4,11,c.skinShade);r(rightArm,-28,4,13,c.skin);r(4,-29,8,4,c.skin);if(pose.gesture==='salute')r(3,-40,10,4,c.skinLight);}
     }
@@ -479,7 +483,24 @@ window.createCodaCharacterRenderer=function(api){
     }
     const brim={cap:-37,beanie:-40,bucket:-38,headwrap:-39}[p.headwear];
     const hairRect=brim===undefined?r:(x,y,w,h,col)=>{const top=Math.max(y,brim),height=y+h-top;if(height>0)r(x,top,w,height,col);};
+    if(p.form==='alien'){
+      head(-10,-46,20,19,c.skin);head(-7,-49,14,3,c.skinLight);head(-7,-55,2,8,c.skinShade);head(6,-55,2,8,c.skinShade);head(-9,-57,5,4,'#b3ffe4');head(5,-57,5,4,'#b3ffe4');
+      if(!back){if(side){head(4,-40,6,7,'#172b39');head(5,-40,2,2,'#ddfff4');}else{head(-8,-41,6,8,'#172b39');head(3,-41,6,8,'#172b39');head(-7,-40,2,2,'#ddfff4');head(4,-40,2,2,'#ddfff4');}head(-2,-29,5,1,'#31745e');}
+    }
+    if(p.form==='tv'){
+      head(-14,-48,28,23,'#202b46');head(-12,-46,24,19,'#597e92');head(-10,-44,20,15,back?'#344a65':'#8ee6d7');head(-7,-54,2,7,'#c2d8df');head(5,-54,2,7,'#c2d8df');head(-8,-56,4,3,'#f6c66f');head(4,-56,4,3,'#f6c66f');if(!back){head(-6,-39,3,4,'#25314d');head(4,-39,3,4,'#25314d');head(-3,-32,7,1,'#25314d');}
+    }
+    if(p.form==='robot'){
+      head(-12,-46,24,22,'#2d3e58');head(-10,-44,20,18,'#9ab7c8');head(-12,-39,2,9,'#d0e7e8');head(10,-39,3,9,'#526d87');head(-1,-53,2,8,'#d4bd79');head(-3,-56,6,4,'#f7d96d');if(!back){head(-8,-39,6,4,'#71f2da');head(3,-39,6,4,'#71f2da');head(-5,-30,11,3,'#3a536c');head(-3,-30,1,3,'#c9e6e9');head(1,-30,1,3,'#c9e6e9');}
+    }
+    if(p.form==='starlight'){for(const [sx,sy]of [[-16,-46],[17,-33],[-15,-16],[13,-7]])pixelStar(r,sx,sy,1,'#ffef9c');}
     drawHair(hairRect,p,c,side,back);drawHeadwear(r,p,c,side,back);drawEyewear(r,p,side,back);drawGear(r,p,c,pose,side,back);
+      if(['celestialcrown','triadchampion','pitchcrown40'].includes(p.headwear)){
+      const col=p.headwear==='triadchampion'?'#9cfff0':p.headwear==='pitchcrown40'?'#ffb5e9':'#f5d681';r(-13,-49,26,5,'#44315b');r(-12,-48,24,4,col);for(const [xx,yy]of [[-11,-54],[-3,-57],[6,-54]]){r(xx,yy,5,-yy-47,col);r(xx+1,yy,2,2,'#fbf5dc');}r(-1,-47,3,3,'#8777ed');
+    }
+    if(p.headwear.startsWith('pitchlaurel')){const col={pitchlaurel10:'#c98c58',pitchlaurel20:'#c9e0e7',pitchlaurel30:'#f2d36c'}[p.headwear];for(let j=0;j<4;j++){r(-13+j,-44-j*2,4,3,col);r(10-j,-44-j*2,4,3,col);}r(-8,-51,16,2,col);}
+    if(p.accessory==='nebulaaura'){for(const [xx,yy]of [[-21,-34],[20,-25],[-19,-8],[17,-47]])pixelStar(r,xx,yy,1,Math.floor(time*3)%2?'#9ae9f8':'#df9df2');}
+
     if(pose.gesture==='airguitar'){r(-6,-14,15,12,'#d98259');r(-10,-10,8,6,'#e9b36c');for(let j=0;j<5;j++)r(5+j*2,-17-j*2,4,3,'#d7b67b');r(-3,-10,4,4,'#4c3752');}
     if(pose.gesture==='facepalm'){head(1,-38,7,10,c.skin);head(2,-39,4,3,c.skinLight);r(9,-28,4,9,c.skin);}
     if(pose.gesture==='think'){head(3,-29,6,5,c.skinLight);r(11,-57,6,2,'#edce7d');r(15,-55,2,5,'#edce7d');r(12,-50,4,2,'#edce7d');r(12,-46,2,2,'#edce7d');}
@@ -493,11 +514,16 @@ window.createCodaCharacterRenderer=function(api){
     const look=base?{...base,...normalizeProfile({...base,...profile})}:normalizeProfile(profile);
     if(base&&own(profile,'hairstyle')&&profile.hairstyle!==base.hairstyle)delete look.hairDetail;
     if(base&&own(profile,'outfit')&&profile.outfit!==base.outfit)delete look.neckwear;
+    if(look.form==='alien'){look.skin='#82d5a0';look.hairstyle='bald';delete look.hairDetail;look.headWidth=21;}
+    if(look.form==='starlight'){look.skin='#a9b8f5';look.hair='#e9e7ff';}
     return look;
   }
   function drawPlayer(ctx,profile,motion={},time=0){
-    const pose=motion&&typeof motion==='object'?motion:{},target=pose.pixelTarget||profile?.characterId||'player';
-    render(ctx,playerLook(profile),pose,time,pixelPoints(target,pose));return true;
+    const pose={...(motion&&typeof motion==='object'?motion:{})},target=pose.pixelTarget||profile?.characterId||'player';
+    if(EMOTES.includes(pose.emote)){pose.facing='down';pose.frontEmote=true;}
+    const look=playerLook(profile);render(ctx,look,pose,time,pixelPoints(target,pose));
+    if(pose.previewPet&&look.pet!=='none'&&window.CodaPetCompanion?.drawPet)window.CodaPetCompanion.drawPet(ctx,look.pet,{x:finite(pose.x)+20*finite(pose.scale,1),y:finite(pose.y),scale:finite(pose.scale,1)*.7,facing:'down'},time,{reducedMotion:reduced()});
+    return true;
   }
   function renderPixelFrame(target,profile={},motion={},time=0,options={}){
     if(!pixelTargets.includes(target))return null;const canvas=canvasFor(null,80,96);if(!canvas)return null;
@@ -519,7 +545,7 @@ window.createCodaCharacterRenderer=function(api){
     const hats={witch:66,wizard:66,tophat:62,bunny:66,chef:61,party:65,santa:61,viking:58,astronaut:56,cat:56,crown:54,headwrap:55};
     const hairTop=p.hairstyle==='mohawk'?60:p.hairstyle==='spiky'||p.hairstyle==='afro'||p.hairstyle==='pompadour'?56:p.hairstyle==='bald'?44:52;
     const gearTop={halo:56,umbrella:65,balloon:66}[p.accessory]||0;
-    const top=Math.max(hairTop,p.headwear==='none'?0:hats[p.headwear]||53,gearTop,p.emote==='think'?59:0);
+    const top=Math.max(p.form==='alien'||p.form==='tv'||p.form==='robot'?57:0,hairTop,p.headwear==='none'?0:hats[p.headwear]||53,gearTop,p.emote==='think'?59:0);
     const pixelTop=pixelTops[id||raw?.characterId||'player'];return Math.max(59,Math.ceil(top*finite(base.bodyScaleY,1))+9,Number.isFinite(pixelTop)?80-pixelTop+9:0);
   }
   const getState=()=>({ready:true,mode:'javascript-characters',base:'bald-gray',motion:'javascript-animation',artStyle:'procedural-pixel',sourcePolicy:'javascript-drawn',layers:0,tintedFrames:0,paletteCount:palettes.size,cacheLimit,cell:[80,96],totalFrames:0});

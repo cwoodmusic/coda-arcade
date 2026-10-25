@@ -6,6 +6,7 @@ from actual composition edits and playback in its same-origin iframe.
 """
 import importlib.util
 from pathlib import Path
+from world_navigation_helpers import advance_world, enter_room, open_destination, talk_to_musician, open_settings, close_settings, open_cabinet
 import sys
 import unittest
 
@@ -33,13 +34,7 @@ class MusicRewardsWorldTests(_world.WorldBrowserCase):
         self.page.wait_for_function('CodaArcadeQA.menu().gameOpen')
 
     def open_music_question(self,person):
-        if self.page.locator('#panel').is_visible():self.page.locator('#panelClose').click()
-        self.approach_musician(person)
-        self.page.wait_for_timeout(80)
-        if self.page.locator('#worldMenuBtn').is_visible():self.page.locator('#worldMenuBtn').click()
-        self.page.locator('#musiciansBtn').click()
-        name=self.page.evaluate('id=>CodaArcadeQA.characters().npcs.find(person=>person.id===id).name',person)
-        self.page.get_by_role('button',name='Chat with '+name,exact=True).click()
+        talk_to_musician(self.page,person)
         self.page.get_by_role('button',name='Ask me a music question · Earn Notes',exact=True).click()
         self.page.locator('.musician-trivia').wait_for()
         return self.page.evaluate('CodaArcadeQA.trivia()')
@@ -100,6 +95,8 @@ class MusicRewardsWorldTests(_world.WorldBrowserCase):
     def test_a_game_level_up_names_real_prizes_and_opens_the_profile(self):
         self.open_bach_mission();self.page.get_by_role('button',name='Accept mission',exact=True).click()
         self.page.get_by_role('button',name='Play Music Triad',exact=True).click()
+        self.assertFalse(self.page.evaluate('CodaArcadeQA.menu().gameOpen'),'The mission points to the physical cabinet')
+        open_cabinet(self.page,1)
         self.page.frame_locator('#gameiframe').locator('#finishMatch').click()
         self.page.wait_for_function('CodaArcadeQA.progression().level===2')
         notice=self.show_notice('level')
@@ -124,17 +121,17 @@ class MusicRewardsWorldTests(_world.WorldBrowserCase):
         self.assertIsNone(self.notices()['current'])
         self.open_cabinet(3)
         composer=self.page.frame_locator('#gameiframe')
-        composer.locator('.cell[data-track="1"][data-pitch="72"][data-step="16"]').click()
-        composer.locator('.cell[data-track="1"][data-pitch="74"][data-step="20"]').click()
-        composer.locator('#play').click()
+        composer.locator('#simpleSongGrid .cell[data-track="1"][data-pitch="72"][data-step="16"]').click()
+        composer.locator('#simpleSongGrid .cell[data-track="1"][data-pitch="74"][data-step="20"]').click()
+        composer.locator('#simplePlay').click()
         self.page.wait_for_function('CodaArcadeQA.progression().xp===85')
         notice=self.show_notice('level')
         self.assertIn('2',notice['title']);self.assertIn('Crystal Harp',notice['message'])
         self.page.get_by_role('button',name='Dismiss notification',exact=True).click()
-        composer.locator('#stop').click();composer.locator('#play').click()
+        composer.locator('#simpleStop').click();composer.locator('#simplePlay').click()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),85)
         self.assertIsNone(self.notices()['current'],'Playing the unchanged composition must not repeat its level popup')
-        composer.locator('#stop').click();self.page.locator('#returnworld').click()
+        composer.locator('#simpleStop').click();self.page.locator('#returnworld').click()
         self.load();self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().level'),2)
         self.assertIsNone(self.notices()['current'])
 

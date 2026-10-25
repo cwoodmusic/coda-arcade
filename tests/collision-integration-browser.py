@@ -6,6 +6,7 @@ Requires Python Playwright and Chromium; no accounts or external services.
 import functools
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from world_navigation_helpers import advance_world, enter_room, open_destination, talk_to_musician, open_settings, close_settings
 import threading
 import unittest
 
@@ -54,7 +55,9 @@ class CollisionIntegrationTests(unittest.TestCase):
                      and not response.url.endswith('favicon.ico') else None)
         self.page.goto(f'http://127.0.0.1:{self.server.server_port}/world-preview.html',
                        wait_until='domcontentloaded')
-        self.page.wait_for_function('CodaDeveloperConsole?.ready()&&CodaArcadeQA?.characters().spriteState.ready')
+        try:self.page.wait_for_function('window.CodaDeveloperConsole?.ready()&&window.CodaArcadeQA?.characters().spriteState.ready')
+        except Exception as error:
+            raise AssertionError({'errors':self.errors,'failures':self.failures,'initialization':self.page.evaluate('({developer:typeof CodaDeveloperConsole,qa:typeof CodaArcadeQA,renderer:typeof createCodaCharacterRenderer})')}) from error
 
     def tearDown(self):
         self.context.close()
@@ -83,7 +86,7 @@ class CollisionIntegrationTests(unittest.TestCase):
         self.assertTrue(self.page.locator('#dev-collision').is_visible())
 
     def test_collision_shortcut_switches_tabs_and_exits_playtest(self):
-        self.page.locator('#assetToggle').click()
+        self.page.locator('#worldDeveloperBtn').click()
         for tab in ['objects','layers','project']:
             with self.subTest(tab=tab):
                 self.page.locator('#devTab-'+tab).click()
@@ -103,7 +106,7 @@ class CollisionIntegrationTests(unittest.TestCase):
         self.assertTrue(self.page.evaluate('CodaArcadeQA.walkable(1205,505)'))
 
     def test_fullscreen_keeps_collision_controls_and_map_in_the_same_view(self):
-        self.page.locator('#fs').click()
+        open_settings(self.page);self.page.locator('#fs').click();close_settings(self.page)
         self.page.wait_for_function('document.fullscreenElement')
         self.open_collision()
         self.assertTrue(self.page.evaluate('document.fullscreenElement.contains(assetStudio)'),
@@ -115,8 +118,7 @@ class CollisionIntegrationTests(unittest.TestCase):
 
     def test_mobile_collision_controls_leave_the_map_accessible(self):
         self.page.set_viewport_size({'width':390, 'height':844})
-        self.page.locator('#worldMenuBtn').click()
-        self.page.locator('#assetToggle').click()
+        self.page.locator('#worldDeveloperBtn').click()
         self.page.locator('#devTab-collision').click()
         self.paint(1205,505,'open')
         self.assertTrue(self.page.evaluate('CodaArcadeQA.walkable(1205,505)'))
@@ -140,7 +142,7 @@ class CollisionIntegrationTests(unittest.TestCase):
                 if entry=='shortcut':
                     self.open_collision()
                 else:
-                    self.page.locator('#assetToggle').click()
+                    self.page.locator('#worldDeveloperBtn').click()
                     self.page.locator('#devTab-collision').click()
                 self.assertFalse(self.page.evaluate('CodaArcadeQA.conversation().open'))
                 self.paint(1205,505,tool)
@@ -230,7 +232,7 @@ class CollisionIntegrationTests(unittest.TestCase):
                            'Allow walking must release the same painted cells')
         self.assertTrue(self.page.evaluate('CodaDeveloperConsole.save()'))
         self.page.reload(wait_until='domcontentloaded')
-        self.page.wait_for_function('CodaDeveloperConsole.ready()')
+        self.page.wait_for_function('window.CodaDeveloperConsole.ready()')
         self.assertTrue(self.page.evaluate('CodaArcadeQA.walkable(1005,425)'))
         self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getProject().assets.length'),8)
         self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getProjectSource()'),'local')

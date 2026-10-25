@@ -18,7 +18,7 @@ test('overlapping lookahead windows keep event identities, pitches and times unc
  assert.equal(new Set(first.map(e=>e.id)).size,first.length);
  for(const event of second)if(byId.has(event.id))assert.deepEqual(event,byId.get(event.id));
  assert.ok(Object.isFrozen(first)&&first.every(Object.isFrozen));
- assert.ok(first.every(e=>e.frequency>0&&e.frequency<400&&e.volume>0&&e.volume<=.12));
+ assert.ok(first.every(e=>e.frequency>0&&e.frequency<400&&e.volume>0&&e.volume<=.324000001));
  assert.ok(first.every(e=>['sine','triangle'].includes(e.type)));
 });
 
@@ -64,4 +64,28 @@ test('exploration stays gentle and invalid inputs cannot schedule broken oscilla
  for(const options of [{timeAtBeat:()=>NaN},{timeAtBeat:()=>0},{fromBeat:10,toBeat:0},{mode:'unknown'}])assert.deepEqual(music.plan(state,options),[]);
  assert.deepEqual(music.plan({...state,meter:'__proto__'}),[]);
  assert.deepEqual(music.plan(null),[]);assert.deepEqual(music.plan(state,null),[]);
+});
+
+
+test('fish families have distinct original arrangements fixed for each encounter',()=>{
+ const themes=new Set(),scores=new Set();
+ for(const fish of fishing.FISH){
+  const meter=fish.meters[0],game=fishing.createSession({fish,meter}),state=game.getState();
+  const info=music.getThemeInfo(fish),events=music.plan(state,{fromBeat:0,toBeat:state.barBeats*2,timeAtBeat:game.timeAtBeat});
+  themes.add(info.id);scores.add(events.map(e=>e.midi+':'+e.type).join(','));
+  assert.ok(events.length>0);assert.equal(info.bars,8);assert.ok(info.title&&info.credit.includes('Original'));
+  assert.ok(events.every(e=>e.theme===info.id&&e.frequency>60&&e.frequency<1400));
+  assert.deepEqual(music.plan({...state,fish:{...fish}},{fromBeat:0,toBeat:state.barBeats*2,timeAtBeat:game.timeAtBeat}),events);
+ }
+ assert.ok(themes.size>=6,'Fish families should offer clearly different musical themes');
+ assert.ok(scores.size>=18,'Species should vary pitches or motifs within their family');
+});
+
+test('music gain is audible with headroom and never changes the metronome clock',()=>{
+ const state=score(),events=music.plan(state,{fromBeat:0,toBeat:4});
+ const downbeat=events.filter(e=>e.beat===0);
+ assert.ok(downbeat.find(e=>e.part==='bass').volume>=.3,'Bass needs substantially more than the old .12 peak');
+ assert.ok(downbeat.reduce((sum,e)=>sum+e.volume,0)*.13<.1,'The mixed downbeat retains output headroom');
+ assert.ok(events.filter(e=>e.part==='melody').every(e=>e.volume>.13),'The melody should be audible above its old .05 peak');
+ assert.equal(events[0].time,state.musicStart);
 });

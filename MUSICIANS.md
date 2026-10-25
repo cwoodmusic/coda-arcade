@@ -1,6 +1,6 @@
 # Musicians, movement, and wardrobe
 
-The connected world has nine visitors: J. S. Bach, Mozart, Beethoven, Clara Schumann, Scott Joplin, Duke Ellington, Ella Fitzgerald, Nina Simone, and Miles Davis. **Meet musicians** finds them on the map; walk nearby and press **E** to talk. Conversations offer musical background, a practice tip, their current activity, and preferred games.
+The connected world’s historical visitor pool includes J. S. Bach, Mozart, Beethoven, Clara Schumann, Scott Joplin, Duke Ellington, Ella Fitzgerald, Nina Simone, and Miles Davis. Walk nearby and press **E** to talk; the Profile can help you find musicians. Conversations offer musical background, a practice tip, their current activity, and preferred games.
 
 These are original, imagined conversations with historically grounded musical facts, not quotations, recordings, or endorsements. The implementation does not establish likeness, publicity, trademark, or other rights clearance.
 
@@ -41,3 +41,10 @@ Hanging lantern glass and bloom pulse slowly. Disco balls project spinning color
 - `world-preview.html` connects these to movement, cabinets, editing, and storage, while preserving cached lighting and paused modal backdrops.
 
 Image sprites and their build tools are retained but inactive. See [SPRITE-ASSETS.md](SPRITE-ASSETS.md) for the active renderer API and verification commands. Guest play needs no credentials; runtime characters do not call an image-generation or AI service.
+
+
+## Rotating and invited visitors
+
+The main arcade keeps six regular visitors onsite at a time. They arrive and leave through the entrance using normal collision and paths. Conversation partners, authored placements, and active or ready-to-collect quest givers stay protected. Requested musicians return at the entrance rather than appearing beside the player.
+
+Riff’s Visitors collection sells three invitations: Vee Jay (TV-headed DJ, 6,000 Notes), Zizi (alien music explorer, 8,000), and Metronome (clockwork robot, 10,000). They are original fictional characters with their own appearances, greetings, and music tips. Locked visitors do not appear. Invitations persist with the Notes wallet and join future visitor rotations; they do not equip avatar costumes. Mission and trivia buttons only appear when that visitor has an activity implemented.

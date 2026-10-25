@@ -45,8 +45,8 @@
  .rhythm-fishing.room-developer-open #fishingLakeCanvas{position:static;left:auto;top:auto;transform:none;width:100%!important;height:auto!important;max-width:100%;margin:0}
 }
 @media(orientation:landscape) and (max-height:550px) and (pointer:coarse){
- .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-cave-scene{width:calc(100% - (3 * var(--coda-dpad-size,74px) + 28px) - (var(--coda-touch-actions-width,112px) + 24px));margin-left:calc(3 * var(--coda-dpad-size,74px) + 28px);min-height:150px}
- .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) #fishingMessage{top:auto;bottom:8px;left:calc(3 * var(--coda-dpad-size,74px) + 34px);right:calc(var(--coda-touch-actions-width,112px) + 26px);max-height:44px;font-size:10px;padding:5px 7px}
+ .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-cave-scene{width:calc(100% - (var(--coda-joystick-size,226px) + 28px) - (var(--coda-touch-actions-width,112px) + 24px));margin-left:calc(var(--coda-joystick-size,226px) + 28px);min-height:150px}
+ .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) #fishingMessage{top:auto;bottom:8px;left:calc(var(--coda-joystick-size,226px) + 34px);right:calc(var(--coda-touch-actions-width,112px) + 26px);max-height:44px;font-size:10px;padding:5px 7px}
 }
 
 .fishing-fish-card .fishing-fish-habitat{color:#b8eee0;margin-top:7px;font-weight:650}
@@ -89,3 +89,56 @@
  .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-heading-actions{flex-wrap:nowrap}
  .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-heading-actions button{flex:1;min-width:0}
 }
+
+/* Exploration keeps its tools in a menu so the cave can fill the room. */
+.fishing-menu-backdrop{position:fixed;inset:0;z-index:145;display:grid;place-items:center;padding:16px;background:#07101dcc;backdrop-filter:blur(5px)}
+.fishing-menu-backdrop[hidden]{display:none!important}
+.fishing-menu-panel{width:min(660px,100%);max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain;padding:18px;background:#1b2b40;border:2px solid #86c8be;border-radius:13px;box-shadow:0 16px 50px #0009}
+.fishing-menu-heading{position:sticky;top:-18px;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#1b2b40;padding:8px 0}
+.fishing-menu-heading h2{font-size:23px;color:#c3fff0;margin:0}
+.fishing-menu-panel .fishing-menu-intro,.fishing-menu-help p{font-size:13px;line-height:1.5;color:#c5d7dc}
+#fishingMenuPanel .fishing-lake-toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow:visible;flex-wrap:wrap;padding:12px 0;order:initial}
+#fishingMenuPanel .fishing-lake-toolbar label{display:grid;grid-column:1 / -1;order:-1;min-width:0;margin:0;gap:5px;font-size:12px}
+#fishingMenuPanel button,#fishingMenuPanel select{min-height:48px;font-size:15px;white-space:normal}
+#fishingMenuPanel #fishingCollection{width:100%;text-align:left;background:#2c5556;border-color:#82cbbb}
+#fishingMenuPanel #fishingCollectionCount{float:right;color:#b6f8dc}
+#fishingMenuPanel .fishing-instructions{display:none}
+.fishing-menu-help{border-top:1px solid #547582;padding-top:10px}
+.fishing-menu-help summary{min-height:44px;cursor:pointer;font-weight:650;color:#c3fff0;padding:10px 0}
+.rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-heading{padding:2px 0 8px!important;gap:10px;flex-wrap:nowrap;min-height:48px}
+.rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-heading h1{font-size:24px;margin:0;letter-spacing:0}
+.rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-heading-actions{flex-wrap:nowrap;gap:6px}
+.rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-heading-actions button{min-height:44px;padding:7px 11px;white-space:nowrap}
+.rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) #fishingMessage{position:absolute;z-index:3;top:70px;left:12px;right:12px;max-width:610px;max-height:42px;min-height:0;margin:0;padding:5px 8px;overflow:hidden;pointer-events:none;background:#102d3bdc;font-size:11px;line-height:1.4}
+.rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) #fishingMessage:empty{display:none}
+.rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-shell>main{position:relative}
+@media(min-width:761px) and (pointer:fine){
+ .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open){height:100dvh;padding:12px;overflow:hidden}
+ .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-shell{height:100%;display:flex;flex-direction:column;max-width:1220px}
+ .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-shell>main{flex:1;min-height:0;display:flex;flex-direction:column}
+ .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) #fishingLakeView{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+ .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-cave-scene{height:auto;width:min(100%,calc((100dvh - 76px) * 1000 / 620));max-width:100%;aspect-ratio:1000 / 620}
+ .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) #fishingLakeCanvas{width:100%;height:auto;object-fit:contain}
+}
+@media(max-width:760px),(pointer:coarse){
+ .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-heading{display:flex!important;min-height:48px}
+ .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-heading h1{font-size:21px}
+ .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) #fishingMessage{top:45px;left:8px;right:8px;max-height:36px;font-size:10px}
+ .fishing-menu-backdrop{padding:10px}
+ .fishing-menu-panel{padding:14px;max-height:calc(100dvh - 20px)}
+ .fishing-menu-heading{top:-14px}
+}
+@media(orientation:landscape) and (max-height:550px) and (pointer:coarse){
+ .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) #fishingMessage{top:auto;bottom:8px;left:calc(var(--coda-joystick-size,226px) + 34px);right:calc(var(--coda-touch-actions-width,112px) + 26px);max-width:none;max-height:32px}
+}
+@media(max-width:350px){
+ .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-heading h1{font-size:17px}
+ .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-heading-actions button{font-size:12px;padding:6px 8px}
+ .fishing-menu-heading h2{font-size:21px}
+ #fishingMenuPanel .fishing-lake-toolbar{grid-template-columns:1fr}
+}
+
+.fishing-audio-panel .fishing-music-volume{display:grid;gap:8px;font-size:14px;background:transparent;border-color:#547582;margin-top:6px}
+.fishing-music-volume>span{display:flex;justify-content:space-between;gap:15px}
+.fishing-music-volume output{color:#b9ffe4;font-variant-numeric:tabular-nums}
+.fishing-music-volume input[type=range]{width:100%;min-height:30px;accent-color:#a0edce;margin:0;cursor:pointer}

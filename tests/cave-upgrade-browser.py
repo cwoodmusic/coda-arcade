@@ -4,6 +4,7 @@ import math
 from pathlib import Path
 import sys
 import unittest
+from world_navigation_helpers import enter_room
 
 sys.dont_write_bytecode=True
 _spec=importlib.util.spec_from_file_location('fishing_world_browser',Path(__file__).with_name('fishing-world-browser.py'))
@@ -20,6 +21,9 @@ class CaveUpgradeTests(_fish._world.WorldBrowserCase):
     board=_fish.FishingWorldTests.board
     approach_shadow=_fish.FishingWorldTests.approach_shadow
     cast=_fish.FishingWorldTests.cast
+    fishing_option=_fish.FishingWorldTests.fishing_option
+    fishing_action=_fish.FishingWorldTests.fishing_action
+    fishing_meter=_fish.FishingWorldTests.fishing_meter
 
     def assert_shadows_in_water(self):
         actual=self.page.evaluate('''()=>CodaArcadeQA.fishing().shadows.filter(s=>s.visible).map(s=>({
@@ -31,10 +35,13 @@ class CaveUpgradeTests(_fish._world.WorldBrowserCase):
             self.assertTrue(math.isfinite(shadow['heading']),shadow)
 
     def set_fx(self,label):
+        opened=False
         for _ in range(3):
-            if self.page.locator('#fxBtn').inner_text().endswith(label):return
+            if self.page.locator('#fxBtn').inner_text().endswith(label):break
+            if not self.page.locator('#fxBtn').is_visible():self.page.locator('#worldMenuBtn').click();opened=True
             self.page.locator('#fxBtn').click();self.page.clock.run_for(32)
         self.assertTrue(self.page.locator('#fxBtn').inner_text().endswith(label))
+        if opened:self.page.keyboard.press('Escape');self.page.clock.run_for(32)
 
     def test_enlarged_stone_landing_gates_the_boat_and_leads_to_a_working_ladder(self):
         self.enter();outside=self.page.evaluate('CodaArcadeQA.position()')
@@ -51,7 +58,7 @@ class CaveUpgradeTests(_fish._world.WorldBrowserCase):
           const p=CodaArcadeQA.fishing().player;return CodaFishingCaveLayout.isShore(p.x,p.y);
         }'''),'A walking avatar must stop at the stone edge')
         self.walk_to(170,270);self.board();self.assertEqual(self.state()['phase'],'explore')
-        self.page.locator('#fishingMoor').click();self.assertEqual(self.state()['phase'],'shore')
+        self.fishing_action('#fishingMoor');self.assertEqual(self.state()['phase'],'shore')
         pier=self.state()['boardingPoint'];self.assertLess(math.hypot(self.state()['player']['x']-pier['x'],self.state()['player']['y']-pier['y']),8)
         self.walk_to(145,300);ladder=self.state()['ladder'];self.walk_to(ladder['x'],ladder['y'])
         self.assertEqual(self.state()['near'],'ladder')
@@ -73,7 +80,7 @@ class CaveUpgradeTests(_fish._world.WorldBrowserCase):
         self.assertEqual([(s['id'],s['x'],s['y']) for s in self.state()['shadows']],frozen)
         self.page.evaluate("()=>{delete document.hidden;document.dispatchEvent(new Event('visibilitychange'));}")
         self.page.clock.run_for(200);self.board();self.approach_shadow()
-        self.page.locator('#fishingCast').click();hooked=next(s for s in self.state()['shadows'] if not s['visible'])
+        self.fishing_action('#fishingCast');hooked=next(s for s in self.state()['shadows'] if not s['visible'])
         self.page.clock.run_for(1800)
         same=next(s for s in self.state()['shadows'] if s['id']==hooked['id'])
         self.assertEqual((same['x'],same['y'],same['fishId']),(hooked['x'],hooked['y'],hooked['fishId']))
@@ -95,7 +102,7 @@ class CaveUpgradeTests(_fish._world.WorldBrowserCase):
         self.assertNotEqual(first_ink,water_hash(),'The rendered water must visibly change with time')
         self.page.emulate_media(reduced_motion='reduce');self.page.clock.run_for(200)
         quiet=self.state()['effects'];self.assertTrue(quiet['reducedMotion']);self.assertEqual(quiet['moteCount'],0)
-        self.page.locator('#fishingClose').click();self.set_fx('Off');self.page.locator('#fishingBtn').click();self.page.clock.run_for(100)
+        self.page.locator('#fishingClose').click();self.set_fx('Off');enter_room(self.page,'fishing');self.page.clock.run_for(100)
         off=self.state()['effects'];self.assertEqual(off['quality'],'off');self.assertEqual(off['moteCount'],0)
         positions=[(s['x'],s['y']) for s in self.state()['shadows']];self.page.clock.run_for(1000)
         self.assertEqual(self.state()['effects']['waterRefreshes'],off['waterRefreshes'])

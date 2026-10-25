@@ -47,6 +47,15 @@ class MobileLandingTests(unittest.TestCase):
         box=self.page.locator(selector).bounding_box();self.assertIsNotNone(box,selector)
         return {'x':box['x']+box['width']/2,'y':box['y']+box['height']/2,'id':touch_id,'radiusX':3,'radiusY':3,'force':1}
 
+    def joystick(self,x=1,y=0,touch_id=1):
+        base=self.page.locator('#landingTouchControls .coda-joystick').bounding_box()
+        thumb=self.page.locator('#landingTouchControls .coda-joystick-thumb').bounding_box()
+        self.assertIsNotNone(base);self.assertIsNotNone(thumb)
+        radius=max(20,(base['width']-thumb['width'])/2-8)
+        return {'x':base['x']+base['width']/2+x*radius,
+                'y':base['y']+base['height']/2+y*radius,
+                'id':touch_id,'radiusX':3,'radiusY':3,'force':1}
+
     def touches(self,kind,*points):
         self.cdp.send('Input.dispatchTouchEvent',{'type':kind,'touchPoints':list(points)})
 
@@ -72,14 +81,16 @@ class MobileLandingTests(unittest.TestCase):
         self.assertEqual(self.page.evaluate('JSON.parse(localStorage.musicArcadeV1).name'),'Mobile Musician')
 
     def test_multi_touch_walk_jump_release_and_emote_use_real_gameplay(self):
-        right=self.point('#landingTouchControls [data-key="d"]',1)
+        right=self.joystick()
         jump=self.point('#landingTouchControls [data-key=" "]',2)
         start=self.state()['position']['x']
         self.touches('touchStart',right);self.page.wait_for_timeout(180)
         self.assertGreater(self.state()['position']['x'],start+15)
         self.touches('touchStart',right,jump);self.page.wait_for_function('CodaLandingQA.state().jumpHeight>5')
         self.assertEqual(self.state()['jumps'],1)
-        self.touches('touchEnd',right);self.page.wait_for_timeout(120)
+        self.touches('touchEnd',jump);self.page.wait_for_timeout(120)
+        self.assertTrue(self.state()['touch']['joystick']['active'],
+            'Lifting the action finger must keep the joystick finger steering')
         self.assertGreater(self.state()['position']['x'],start+25)
         self.touches('touchEnd');self.page.wait_for_timeout(100)
         stopped=self.state()['position']['x'];self.page.wait_for_timeout(140)
@@ -89,11 +100,19 @@ class MobileLandingTests(unittest.TestCase):
         self.assertEqual(self.state()['emotesUsed'],1)
 
     def test_cancel_rotation_and_animation_preference_do_not_leave_held_controls(self):
-        right=self.point('#landingTouchControls [data-key="d"]',1)
+        right=self.joystick()
         self.touches('touchStart',right);self.page.wait_for_timeout(80);self.touches('touchCancel')
         self.page.wait_for_timeout(100);self.assertEqual(self.state()['heldKeys'],[])
+        self.assertFalse(self.state()['touch']['joystick']['active'])
+        stopped=self.state()['position'];self.page.wait_for_timeout(100)
+        self.assertEqual(self.state()['position'],stopped)
+        self.touches('touchStart',self.joystick());self.page.wait_for_timeout(80)
         self.page.set_viewport_size({'width':844,'height':390});self.page.wait_for_timeout(200)
+        self.touches('touchEnd')
         self.assert_fits();self.assertEqual(self.state()['heldKeys'],[])
+        self.assertFalse(self.state()['touch']['joystick']['active'])
+        stopped=self.state()['position'];self.page.wait_for_timeout(100)
+        self.assertEqual(self.state()['position'],stopped)
         self.page.locator('#landingRoomOptions').evaluate('(details)=>details.open=true')
         self.page.locator('#motiontoggle').tap()
         self.assertEqual(self.page.evaluate('localStorage.arcadeAnimations'),'off')
@@ -114,7 +133,33 @@ class MobileLandingTests(unittest.TestCase):
         self.assertGreaterEqual(self.page.locator('#back').bounding_box()['height'],44)
         self.page.locator('#back').tap();self.page.wait_for_function('!CodaLandingQA.state().gameOpen')
         self.page.wait_for_timeout(200)
-        self.assertTrue(self.page.locator('#landingTouchControls [data-key="d"]').is_visible())
+        self.assertTrue(self.page.locator('#landingTouchControls .coda-joystick').is_visible())
         self.assertEqual(self.state()['heldKeys'],[])
+
+    def test_joystick_deadzone_analog_angle_and_outside_drag_keep_real_movement(self):
+        self.page.evaluate('pos.x=500;pos.y=460;target=null')
+        start=self.state()['position']
+        self.touches('touchStart',self.joystick(0,0));self.page.wait_for_timeout(130)
+        self.assertAlmostEqual(self.state()['position']['x'],start['x'],delta=.1)
+        self.assertAlmostEqual(self.state()['position']['y'],start['y'],delta=.1)
+        self.assertTrue(self.state()['touch']['joystick']['active'])
+        self.assertEqual(self.state()['touch']['joystick']['strength'],0)
+        self.touches('touchMove',self.joystick(.6,.3));self.page.wait_for_timeout(220)
+        diagonal=self.state();dx=diagonal['position']['x']-start['x'];dy=diagonal['position']['y']-start['y']
+        self.assertGreater(dx,12);self.assertGreater(dy,5)
+        self.assertAlmostEqual(dx/dy,2,delta=.18,
+            msg='The landing arcade must follow a 2:1 analog angle rather than snap to a diagonal')
+        self.assertLess(diagonal['touch']['joystick']['strength'],.8)
+        self.touches('touchMove',self.joystick(2.4,1.2));self.page.wait_for_timeout(140)
+        outside=self.state()
+        self.assertTrue(outside['touch']['joystick']['active'])
+        self.assertAlmostEqual(outside['touch']['joystick']['strength'],1,delta=.01)
+        self.assertGreater(outside['position']['x'],diagonal['position']['x']+12,
+            'A captured joystick keeps steering when the thumb leaves its base')
+        self.touches('touchEnd');self.page.wait_for_timeout(70)
+        stopped=self.state()['position'];self.page.wait_for_timeout(140)
+        self.assertEqual(self.state()['position'],stopped)
+        self.assertFalse(self.state()['touch']['joystick']['active'])
+        self.assertEqual(self.state()['touch']['joystick']['strength'],0)
 
 if __name__=='__main__':unittest.main(verbosity=2)

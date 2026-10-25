@@ -8,6 +8,7 @@ import functools
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import math
 from pathlib import Path
+from world_navigation_helpers import advance_world, enter_room, open_destination, talk_to_musician, open_settings, close_settings
 import threading
 import unittest
 
@@ -56,12 +57,14 @@ class PlayerControlTests(unittest.TestCase):
                      and not response.url.endswith('favicon.ico') else None)
         self.page.goto(f'http://127.0.0.1:{self.server.server_port}/world-preview.html',
                        wait_until='domcontentloaded')
-        self.page.wait_for_function('CodaDeveloperConsole?.ready() && CodaArcadeQA?.characters().spriteState.ready')
+        self.page.wait_for_function('window.CodaDeveloperConsole?.ready() && CodaArcadeQA?.characters().spriteState.ready')
+        open_settings(self.page)
         for _ in range(3):
             if self.page.locator('#fxBtn').inner_text().endswith('Off'):
                 break
             self.page.locator('#fxBtn').click()
         self.assertTrue(self.page.locator('#fxBtn').inner_text().endswith('Off'))
+        close_settings(self.page)
         self.place()
 
     def tearDown(self):
@@ -183,10 +186,13 @@ class PlayerControlTests(unittest.TestCase):
 
     def test_forms_buttons_dialogs_and_editors_do_not_trigger_gameplay_keys(self):
         before = self.state()
-        self.page.locator('#avatarBtn').focus()
+        self.page.locator('#levelBtn').focus()
         self.page.keyboard.press('Space')
         self.assertTrue(self.page.locator('#panel').is_visible(),
                         'Space must retain normal button activation')
+        self.assertEqual(self.state()['jumps'],before['jumps'])
+        self.page.locator('#panelClose').click()
+        open_destination(self.page,'boutique');before=self.state()
         nickname = self.page.get_by_label('Arcade nickname', exact=True)
         nickname.fill('Keys ')
         nickname.press_sequentially('wasd ')

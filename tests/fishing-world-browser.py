@@ -3,6 +3,7 @@ import importlib.util
 from pathlib import Path
 import sys
 import unittest
+from world_navigation_helpers import enter_room
 
 sys.dont_write_bytecode=True
 from classroom_quiz_helpers import answer_quiz
@@ -30,7 +31,7 @@ class FishingWorldTests(_world.WorldBrowserCase):
         self.page.clock.install();self.page.clock.run_for(64)
 
     def test_time_signature_lesson_awards_real_profile_xp_once(self):
-        self.page.locator('#classroomBtn').click()
+        enter_room(self.page,'classroom')
         self.page.locator('[data-start-lesson="time-signatures"]').click()
         steps=self.page.evaluate('CodaTimeSignatureLesson.STEPS')
         self.page.locator('[data-signature-answer="1"]').click()
@@ -68,6 +69,18 @@ class FishingWorldTests(_world.WorldBrowserCase):
         portal=self.portal();self.place(portal['x'],portal['y']);self.page.keyboard.press('e');self.page.clock.run_for(64)
         self.assertTrue(self.state()['open']);self.assertTrue(self.page.locator('#rhythmFishing').is_visible())
 
+    def fishing_option(self,selector):
+        option=self.page.locator(selector)
+        if not option.is_visible():self.page.locator('#fishingMenuButton').click()
+        return option
+
+    def fishing_action(self,selector):
+        self.fishing_option(selector).click()
+
+    def fishing_meter(self,meter):
+        self.fishing_option('#fishingMeter').select_option(meter)
+        self.page.locator('#fishingMenuClose').click()
+
     def field(self,selector,value):
         control=self.page.locator('#'+selector);control.fill(str(value));control.dispatch_event('change');self.page.clock.run_for(32)
 
@@ -87,7 +100,7 @@ class FishingWorldTests(_world.WorldBrowserCase):
                 # this room only shows one. Use visible controls rather than
                 # treating that transparent host space as an obstruction.
                 controls_top=self.page.evaluate("""()=>Math.min(innerHeight,...[
-                  ...document.querySelectorAll('.coda-dpad,.coda-touch-actions')]
+                  ...document.querySelectorAll('.coda-joystick,.coda-touch-actions')]
                   .filter(node=>node.getClientRects().length)
                   .map(node=>node.getBoundingClientRect().top))""")
                 bottom=min(bottom,controls_top-10)
@@ -106,8 +119,9 @@ class FishingWorldTests(_world.WorldBrowserCase):
                 self.page.clock.run_for(120);player=self.state()['player']
                 if (player['x']-x)**2+(player['y']-y)**2<64:break
                 point=target()
+                # A mouse click already sets a destination. Re-clicking the
+                # same floor point near Captain Cadence would talk to him.
                 if client:client.send('Input.dispatchTouchEvent',{'type':'touchMove','touchPoints':[point]})
-                else:self.page.mouse.click(point['x'],point['y'])
         finally:
             if client:client.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]});client.detach()
         self.page.clock.run_for(32)
@@ -117,7 +131,7 @@ class FishingWorldTests(_world.WorldBrowserCase):
             landing=self.state().get('shore',{}).get('spawn',{'x':135,'y':285});self.walk_to(landing['x'],landing['y'])
         pier=self.state().get('boardingPoint',{'x':218,'y':380});self.walk_to(pier['x'],pier['y'])
         self.assertFalse(self.page.locator('#fishingBoatBoard').is_disabled())
-        self.page.locator('#fishingBoatBoard').click();self.page.clock.run_for(40)
+        self.fishing_action('#fishingBoatBoard');self.page.clock.run_for(40)
 
     def approach_shadow(self):
         for _ in range(16):
@@ -134,9 +148,9 @@ class FishingWorldTests(_world.WorldBrowserCase):
         # Freeze before entering the room, outside the playable rhythm, so
         # browser protocol latency cannot consume adjacent hold-note windows.
         self.page.clock.pause_at(self.page.evaluate('Date.now()/1000')+5)
-        self.enter();self.page.locator('#fishingMeter').select_option(meter)
+        self.enter();self.fishing_meter(meter)
         self.board();self.approach_shadow()
-        self.page.locator('#fishingCast').click();self.page.clock.run_for(2400)
+        self.fishing_action('#fishingCast');self.page.clock.run_for(2400)
         self.assertEqual(self.state()['phase'],'rhythm');self.page.locator('#fishingTap').focus()
 
     def catch_with_actual_keys(self):
@@ -147,7 +161,7 @@ class FishingWorldTests(_world.WorldBrowserCase):
                 if self.state()['clock']>=target-.000001:return
                 self.page.clock.run_for(1)
             self.fail('The controlled game clock should reach the note target')
-        for _ in range(60):
+        for _ in range(200):
             state=self.state();challenge=state['challenge']
             if challenge['phase'] in ['caught','escaped']:return state
             upcoming=[note for note in challenge['notes'] if note['judgement']=='pending'
@@ -155,6 +169,7 @@ class FishingWorldTests(_world.WorldBrowserCase):
             self.assertTrue(upcoming,state)
             note=upcoming[0]
             advance_to(note['time'])
+            if self.state()['phase'] in ['caught','escaped']:return self.state()
             self.page.keyboard.down('Space')
             if note.get('requiresHold',note.get('duration',0)>=2):
                 end=note.get('holdEndTime',note['time']+note['durationSeconds'])
@@ -166,7 +181,7 @@ class FishingWorldTests(_world.WorldBrowserCase):
         self.assertEqual((self.portal()['x'],self.portal()['y']),(928,760))
         self.enter();outside=self.page.evaluate('CodaArcadeQA.position()')
         self.assertEqual(self.state()['phase'],'shore');self.assertTrue(self.state()['background']['ready'])
-        self.page.locator('#fishingTalkCaptain').click();self.assertEqual(self.state()['phase'],'captain')
+        self.fishing_action('#fishingTalkCaptain');self.assertEqual(self.state()['phase'],'captain')
         self.assertIn('Captain Cadence',self.page.locator('#fishingCaptainName').inner_text())
         self.page.locator('[data-captain-topic="rhythm"]').click();lesson=self.page.locator('#fishingCaptainWords').inner_text().lower()
         self.assertIn('tap',lesson);self.assertIn('rest',lesson);self.assertIn('bar',lesson)
@@ -209,13 +224,13 @@ class FishingWorldTests(_world.WorldBrowserCase):
         self.assertIn('fishing-first-catch',earned);self.assertIn('fishing-perfect-catch',earned)
         notification=self.page.evaluate('CodaArcadeQA.rewardNotifications()');titles=[item['title'] for item in [notification['current'],*notification['queued']] if item]
         self.assertIn('First Catch',titles);self.assertIn('In Perfect Time',titles)
-        self.page.locator('#fishingReturnLake').click();self.page.locator('#fishingCollection').click()
+        self.page.locator('#fishingReturnLake').click();self.fishing_action('#fishingCollection')
         self.assertEqual(self.page.locator('#fishingCollectionGrid article').count(),30)
         self.page.locator('#fishingClose').click();self.page.reload(wait_until='domcontentloaded')
         self.page.wait_for_function('CodaDeveloperConsole?.ready()&&CodaArcadeQA.fishing()?.collection.total===1')
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),154);self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),108)
         self.assertIsNone(self.page.evaluate('CodaArcadeQA.rewardNotifications().current'),'Reload must not repeat fishing achievements or level-up popups')
-        self.page.locator('#fishingBtn').click();self.page.locator('#fishingCollection').click()
+        enter_room(self.page,'fishing');self.fishing_action('#fishingCollection')
         self.assertIn('Silver Minnow',self.page.locator('[data-fish-id="silver-minnow"]').inner_text())
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),154)
 
@@ -290,7 +305,7 @@ class FishingWorldTests(_world.WorldBrowserCase):
         self.assertGreater(self.state()['boat']['x'],before['x']+15);self.assertTrue(self.state()['fingerWalk']['following'])
         client.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]});self.page.clock.run_for(32);stopped=self.state()['boat'];self.page.clock.run_for(200)
         self.assertEqual(self.state()['boat'],stopped);self.assertFalse(self.state()['fingerWalk']['following']);client.detach()
-        self.page.locator('#fishingMeter').select_option('6/8');self.approach_shadow();self.page.locator('#fishingCast').tap();self.page.clock.run_for(1800)
+        self.fishing_meter('6/8');self.approach_shadow();self.fishing_action('#fishingCast');self.page.clock.run_for(1800)
         challenge=self.state()['challenge'];self.assertEqual(challenge['meter'],'6/8');self.assertEqual(challenge['pulseUnit'],'dotted-quarter');self.assertEqual(challenge['countInBeats'],2)
         self.assertFalse(self.page.evaluate('CodaArcadeQA.touch().visible'),'The rhythm tap surface replaces movement controls during the challenge')
         self.assertGreaterEqual(self.page.locator('#fishingTap').bounding_box()['height'],64)

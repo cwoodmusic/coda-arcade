@@ -157,3 +157,28 @@ test('musician identity survives a shared color palette and matches the boutique
   assert.equal(new Set(signatures).size,9,'Distinct people must remain distinct beyond a palette swap');
   assert.equal(r.appearanceFor('dj').name,'DJ Coda');
 });
+
+
+test('player emotes face forward from every movement direction without changing normal facing',()=>{
+ const {value:r}=renderer();
+ for(const emote of ['wave','dance','spin','robot','disco','bow','cheer','airguitar']){
+  for(const time of [.1,.6,1.2]){
+   const front=signature(draw(r,{}, {facing:'down',emote,emoteTime:time},time));
+   for(const facing of directions)assert.equal(signature(draw(r,{}, {facing,emote,emoteTime:time},time)),front,emote+' must face front');
+  }
+ }
+ assert.notEqual(signature(draw(r,{}, {facing:'up'})),signature(draw(r,{}, {facing:'down'})));
+});
+
+
+test('premium transformations and mastery hats add actual pixels and unequip cleanly',()=>{
+ const {value:r}=renderer(),normal=signature(draw(r));
+ for(const form of ['alien','starlight']){
+  assert.equal(r.normalizeProfile({form}).form,form);assert.notEqual(signature(draw(r,{form})),normal);
+ }
+ for(const headwear of ['celestialcrown','triadchampion','pitchlaurel10','pitchlaurel20','pitchlaurel30','pitchcrown40'])assert.notEqual(signature(draw(r,{headwear})),normal,headwear);
+ assert.notEqual(signature(draw(r,{accessory:'nebulaaura'})),normal);
+ assert.equal(signature(draw(r,{form:'human',pet:'none'})),normal);
+ assert.equal(r.normalizeProfile({form:'bogus',pet:'bogus'}).form,'human');assert.equal(r.normalizeProfile({pet:'bogus'}).pet,'none');
+ assert.ok(r.labelOffset({form:'alien'})>=66);
+});

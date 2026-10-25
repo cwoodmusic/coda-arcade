@@ -2,6 +2,7 @@
 import importlib.util
 import json
 from pathlib import Path
+from world_navigation_helpers import talk_to_musician
 import sys
 import unittest
 
@@ -52,8 +53,7 @@ class DialogueEditorTests(_world.WorldBrowserCase):
         self.page.locator('#devUndo').click();self.assertNotIn('dialogue',self.project())
         self.page.locator('#devRedo').click();self.assertEqual(self.project(),changed)
         self.page.locator('#view').focus();self.page.keyboard.press('F2')
-        self.approach_musician('bach');self.page.locator('#musiciansBtn').click()
-        self.page.get_by_role('button',name='Chat with J. S. Bach',exact=True).click()
+        talk_to_musician(self.page,'bach')
         self.assertEqual(self.page.locator('#words').inner_text(),'Welcome, music explorers!')
         self.assertEqual(self.page.locator('.musician-description').inner_text(),'Our friendly music guide.')
         self.page.locator('#dialog').get_by_role('button',name='What makes timbre special?',exact=True).click()

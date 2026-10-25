@@ -7,6 +7,7 @@ import functools
 import json
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from world_navigation_helpers import advance_world, enter_room, open_destination, talk_to_musician, open_settings, close_settings
 import threading
 import unittest
 
@@ -63,7 +64,7 @@ class WorldFeatureTests(unittest.TestCase):
     def load(self):
         self.page.goto(f'http://127.0.0.1:{self.server.server_port}/world-preview.html',
                        wait_until='domcontentloaded')
-        self.page.wait_for_function('CodaDeveloperConsole?.ready()&&CodaArcadeQA?.characters().spriteState.ready')
+        self.page.wait_for_function('window.CodaDeveloperConsole?.ready()&&window.CodaArcadeQA?.characters().spriteState.ready')
         self.page.evaluate('featureFrames(3)')
 
     def frames(self, count=3):
@@ -82,9 +83,10 @@ class WorldFeatureTests(unittest.TestCase):
         }''', [x,y])
 
     def quality(self, name):
+        open_settings(self.page)
         for _ in range(3):
             if self.page.evaluate('CodaArcadeQA.atmosphere().quality') == name:
-                self.frames(); return
+                close_settings(self.page);self.frames(); return
             self.page.locator('#fxBtn').click()
         self.fail('Unable to select FX quality '+name)
 
@@ -139,16 +141,21 @@ class WorldFeatureTests(unittest.TestCase):
         self.assertEqual(len({row['alpha'] for row in result}),9,
                          'Individual musicians must differ in shape and styling as well as colors')
         self.assertTrue(all(row['count']>350 for row in result),result)
-        self.page.locator('#musiciansBtn').click()
-        portraits = self.page.locator('.musician-card canvas')
-        self.assertEqual(portraits.count(),9)
-        self.assertEqual(len(set(portraits.evaluate_all('(list)=>list.map(c=>c.toDataURL())'))),9)
+        visitors=self.page.evaluate('CodaArcadeQA.characters().npcs.filter(person=>!person.hidden).slice(0,2)')
+        self.assertEqual(len(visitors),2)
+        descriptions=[]
+        for person in visitors:
+            talk_to_musician(self.page,person['id'])
+            self.assertEqual(self.page.locator('#who').inner_text(),person['name'])
+            descriptions.append(self.page.locator('.musician-description').inner_text())
+            self.page.keyboard.press('Escape')
+        self.assertNotEqual(*descriptions)
 
     def test_fantasy_boutique_options_render_without_clipping_and_persist(self):
         catalog = self.page.evaluate('createCodaCharacterRenderer().catalog')
         for group,minimum in {'headwear':24,'eyewear':14,'accessories':22,'shoes':16,'emotes':16}.items():
             self.assertGreaterEqual(len(catalog[group]),minimum,group)
-        self.page.locator('#avatarBtn').click()
+        open_destination(self.page,'boutique')
         self.page.locator('#avatarPreviewMode').select_option('idle')
         hats = self.page.get_by_label('Hats',exact=True)
         ids = self.page.evaluate('''()=>{
@@ -169,10 +176,10 @@ class WorldFeatureTests(unittest.TestCase):
         self.page.get_by_role('button',name='Save my look',exact=True).click()
         self.assertTrue(self.page.locator('#panel').is_visible(),'Unpurchased premium items remain previews')
         self.assertIn('Notes',self.page.locator('.panelMsg').inner_text())
-        self.page.locator('#boutiqueOpenShop').click()
+        open_destination(self.page,'shop')
         self.page.locator('[data-shop-item="wizard"] button').click()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),60)
-        self.page.get_by_role('button',name='Open my wardrobe',exact=True).click()
+        open_destination(self.page,'boutique')
         self.page.get_by_label('Hats',exact=True).select_option(ids[-1])
         self.page.get_by_role('button',name='Save my look',exact=True).click()
         self.assertTrue(self.page.locator('#panel').is_hidden(),'Purchased fantasy items must be guest-usable')
@@ -209,7 +216,7 @@ class WorldFeatureTests(unittest.TestCase):
         self.page.wait_for_function('CodaArcadeQA.jukebox().source==="import"&&CodaArcadeQA.jukebox().audioState==="running"')
         self.page.locator('#jukeboxStop').click()
         self.assertFalse(self.page.evaluate('CodaArcadeQA.jukebox().playing'))
-        self.page.locator('#panelClose').click();self.page.locator('#jukeboxBtn').click()
+        self.page.locator('#panelClose').click();open_destination(self.page,'dj')
         self.assertEqual(self.page.get_by_role('button',name='Play classroom-loop',exact=True).count(),1)
 
     def test_dj_follows_the_edited_turntable_and_hides_with_it(self):

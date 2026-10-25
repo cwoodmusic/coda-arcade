@@ -1,6 +1,6 @@
 /* Shared player defaults and draft-only wardrobe controls. */
 window.CodaAvatarDefaults=(()=>{
-  const plain=Object.freeze({hairstyle:'bald',hair:'#171424',skin:'#e5ad75',outfit:'pants',shirt:'#999ca6',lowerColor:'#626875',headwear:'none',eyewear:'none',accessory:'none',shoes:'sneakers',emote:'wave'});
+  const plain=Object.freeze({form:'human',pet:'none',hairstyle:'bald',hair:'#171424',skin:'#e5ad75',outfit:'pants',shirt:'#999ca6',lowerColor:'#626875',headwear:'none',eyewear:'none',accessory:'none',shoes:'sneakers',emote:'wave'});
   const classic=Object.freeze({...plain,hairstyle:'short',shirt:'#e94038',lowerColor:'#235cb9',headwear:'cap'});
   const matches=(profile,look)=>Object.entries(look).every(([key,value])=>profile[key]===undefined||(typeof value==='string'&&value.startsWith('#')?typeof profile[key]==='string'&&profile[key].toLowerCase()===value:profile[key]===value));
   function migrate(raw){
@@ -24,6 +24,7 @@ window.CodaAvatarDefaults=(()=>{
 window.createCodaBoutiqueUI=function(api){
   'use strict';
   const DEFAULT_CATALOG={
+    forms:[['human','Human form'],['alien','Alien transformation'],['starlight','Starlight transformation']],pets:[['none','No companion'],['cosmiccat','Cosmic cat companion'],['neondragon','Neon dragon companion'],['lakeotter','Lake otter companion'],['rhythmfox','Rhythm fox companion'],['pianophoenix','Piano phoenix companion']],
     hairstyles:[['short','Short'],['bob','Bob'],['long','Long'],['curly','Curly'],['ponytail','Ponytail'],['spiky','Spiky'],['bald','No hair'],['buns','Space buns']],
     outfits:[['pants','Shirt and pants'],['shorts','Shirt and shorts'],['dress','Dress'],['overalls','Overalls'],['suit','Suit'],['coat','Long coat']],
     headwear:[['none','No hat'],['cap','Baseball cap'],['beanie','Beanie'],['bucket','Bucket hat'],['crown','Crown'],['headwrap','Headwrap']],
@@ -52,7 +53,7 @@ window.createCodaBoutiqueUI=function(api){
     if(!has(profile,'eyewear')&&old!=='none'&&catalog('eyewear').some(item=>item.id===old)){profile.eyewear=old;profile.accessory='none';}
     return api.renderer.normalizeProfile(profile);
   }
-  const canEquip=(id,isPlayer)=>id==='none'||!isPlayer||!api.unlocked||!!api.unlocked(id);
+  const canEquip=(id,isPlayer)=>id==='human'||id==='none'||!isPlayer||!api.unlocked||!!api.unlocked(id);
   const lockedReason=id=>{
     const reason=api.lockedReason?.(id);
     return typeof reason==='string'&&reason.trim()?reason.trim():'Locked reward';
@@ -64,7 +65,9 @@ window.createCodaBoutiqueUI=function(api){
     {key:'shoes',catalog:'shoes',label:'Shoes'},
     {key:'emote',catalog:'emotes',label:'Emotes'},
     {key:'outfit',catalog:'outfits',label:'Outfits'},
-    {key:'hairstyle',catalog:'hairstyles',label:'Hair'}
+    {key:'hairstyle',catalog:'hairstyles',label:'Hair'},
+    {key:'form',catalog:'forms',label:'Transformations'},
+    {key:'pet',catalog:'pets',label:'Pets'}
   ];
   function message(text){if(current?.status)current.status.textContent=text;}
   function field(label,key,type,value,choices,isPlayer){
@@ -114,7 +117,7 @@ window.createCodaBoutiqueUI=function(api){
           const canvas=document.createElement('canvas');canvas.width=72;canvas.height=80;canvas.setAttribute('aria-hidden','true');
           const appearance={...draft(),[group.key]:item.id},ctx=canvas.getContext('2d');
           api.renderer.drawPlayer(ctx,appearance,{x:36,y:74,scale:1,facing:'down',walking:false,
-            emote:group.key==='emote'?item.id:null,emoteTime:.45},.45);
+            emote:group.key==='emote'?item.id:null,emoteTime:.45,previewPet:true},.45);
           button.append(canvas);
         }
         const name=document.createElement('span');name.textContent=item.label;button.append(name);
@@ -158,6 +161,8 @@ window.createCodaBoutiqueUI=function(api){
     const targetControl=field('Customize','target','select',targetId,available.map(item=>({id:item.id,label:item.label})),false);
     targetControl.onchange=()=>open(targetControl.value);
     const name=field('Arcade nickname','name','text',isPlayer?profile.name:(source.name||target.label),null,isPlayer);name.maxLength=18;name.readOnly=!isPlayer;
+    const form=field('Transformation','form','select',profile.form||'human',catalog('forms'),isPlayer);
+    const pet=field('Companion','pet','select',profile.pet||'none',catalog('pets'),isPlayer);
     const hairstyle=field('Hairstyle','hairstyle','select',profile.hairstyle,catalog('hairstyles'),isPlayer);
     const outfit=field('Outfit','outfit','select',profile.outfit,catalog('outfits'),isPlayer);
     const skin=color('Skin color','skin',profile.skin,['#f4ccb0','#d49a76','#bd825b','#a56b48','#704633','#462c29']);
@@ -172,11 +177,11 @@ window.createCodaBoutiqueUI=function(api){
     const shoes=field('Shoes','shoes','select',profile.shoes,catalog('shoes'),isPlayer);
     const emote=field('Emote','emote','select',profile.emote,catalog('emotes'),isPlayer);
     const draft=()=>{
-      const normalized=api.renderer.normalizeProfile({name:name.value,hairstyle:hairstyle.value,outfit:outfit.value,skin:skin.value,hair:hair.value,shirt:shirt.value,lowerColor:lowerColor.value,headwear:headwear.value,headwearColor:headwearColor.value,eyewear:eyewear.value,eyewearColor:eyewearColor.value,accessory:accessory.value,shoes:shoes.value,emote:emote.value,hat:false});
+      const normalized=api.renderer.normalizeProfile({form:form.value,pet:pet.value,name:name.value,hairstyle:hairstyle.value,outfit:outfit.value,skin:skin.value,hair:hair.value,shirt:shirt.value,lowerColor:lowerColor.value,headwear:headwear.value,headwearColor:headwearColor.value,eyewear:eyewear.value,eyewearColor:eyewearColor.value,accessory:accessory.value,shoes:shoes.value,emote:emote.value,hat:false});
       return {...normalized,name:isPlayer?normalized.name:(source.name||target.label),hat:false,
         ...(!isPlayer?{characterId:targetId}:{})};
     };
-    const controls={hairstyle,hair,skin,outfit,shirt,lowerColor,headwear,headwearColor,eyewear,eyewearColor,accessory,shoes,emote};
+    const controls={form,pet,hairstyle,hair,skin,outfit,shirt,lowerColor,headwear,headwearColor,eyewear,eyewearColor,accessory,shoes,emote};
     const browser=wardrobeBrowser(controls,draft,isPlayer);body.insertBefore(browser.section,hairstyle.parentElement);
     api.getPreviewUI().addPreview(draft);
     const livePreview=body.querySelector?.('.avatar-live-preview');
@@ -199,7 +204,7 @@ window.createCodaBoutiqueUI=function(api){
     current={targetId,source,draft,status};
     save.onclick=()=>{
       const next=draft();
-      const locked=[next.hairstyle,next.outfit,next.headwear,next.eyewear,next.accessory,next.shoes,next.emote].filter(item=>!canEquip(item,isPlayer));
+      const locked=[next.form,next.pet,next.hairstyle,next.outfit,next.headwear,next.eyewear,next.accessory,next.shoes,next.emote].filter(item=>!canEquip(item,isPlayer));
       if(locked.length){
         message(api.lockedReason?'That item is still locked. '+[...new Set(locked.map(lockedReason))].join(' · ')+'. Choose an owned or unlocked item before saving.':'That item is still locked. Choose an unlocked item before saving.');return;
       }

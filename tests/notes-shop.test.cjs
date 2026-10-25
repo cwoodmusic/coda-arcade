@@ -78,9 +78,9 @@ test('wallet snapshots cannot mutate saved state and subscriber failures do not 
 });
 test('every shop item is an actual renderer choice in its equipment slot',()=>{
   const sandbox={window:{}};vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../character-renderer.js'),'utf8'),sandbox);
-  const renderer=sandbox.window.createCodaCharacterRenderer(),slots={headwear:'headwear',eyewear:'eyewear',accessory:'accessories',shoes:'shoes',emote:'emotes'};
+  const renderer=sandbox.window.createCodaCharacterRenderer(),slots={form:'forms',pet:'pets',visitor:'visitors',headwear:'headwear',eyewear:'eyewear',accessory:'accessories',shoes:'shoes',emote:'emotes'};
   assert.equal(new Set(STOCK.map(item=>item.id)).size,STOCK.length);
-  for(const item of STOCK){assert.ok(renderer.catalog[slots[item.slot]].some(choice=>choice.id===item.id),item.id);assert.ok(item.price>0&&item.price<=150);}
+  for(const item of STOCK){assert.ok(renderer.catalog[slots[item.slot]].some(choice=>choice.id===item.id),item.id);assert.ok(item.price>0&&item.price<=12000);}
 });
 test('coin denominations make exact change in sixteenth-note units',()=>{
   for(const value of [0,1,2,3,4,8,15,16,35,70,150,999999]){
@@ -94,9 +94,10 @@ test('coin denominations make exact change in sixteenth-note units',()=>{
 test('the live catalog locks about ninety percent of cosmetics and stocks newly rendered props',()=>{
   const sandbox={window:{}};vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../character-renderer.js'),'utf8'),sandbox);
   const renderer=sandbox.window.createCodaCharacterRenderer(),catalog=renderer.catalog;
-  const all=['headwear','eyewear','accessories','shoes','emotes'].flatMap(group=>Array.from(catalog[group]).filter(item=>item.id!=='none'));
+  const all=['forms','pets','headwear','eyewear','accessories','shoes','emotes'].flatMap(group=>Array.from(catalog[group]).filter(item=>item.id!=='none'&&item.id!=='human'));
   const disk=storage(),wallet=createWallet({storage:disk,catalog});
-  const locked=all.filter(item=>wallet.isStock(item.id)||['bowtie','starclip','partyglasses','halo'].includes(item.id)).length;
+  const achievementIds=require('../player-progression.js').ACHIEVEMENT_REWARDS.map(item=>item.id);
+  const locked=all.filter(item=>wallet.isStock(item.id)||['bowtie','starclip','partyglasses','halo',...achievementIds].includes(item.id)).length;
   assert.ok(locked/all.length>=.88&&locked/all.length<.96,'Premium/achievement percentage should be about ninety: '+locked+'/'+all.length);
   for(const id of ['cap','beanie','glasses','sunglasses','bow','headphones','sneakers','boots','wave','dance'])assert.equal(wallet.isStock(id),false,id);
   const newWallet=createWallet({storage:disk,catalog:{...catalog,accessories:[...catalog.accessories,{id:'new-prop',label:'A new drawn prop'}]}});
@@ -129,4 +130,19 @@ test('the shop buys without changing the avatar, then explicitly equips the owne
     const status=all().find(node=>node.attributes.role==='status');assert.match(status.textContent,/Now wearing/);
     all().find(node=>node.textContent==='Open my wardrobe').onclick();assert.equal(wardrobe,1);
   }finally{global.document=oldDocument;}
+});
+
+
+test('aspirational rewards cost thousands, cannot overspend, and never equip themselves',()=>{
+ const disk=storage(),avatar={form:'human',pet:'none'},wallet=createWallet({storage:disk,getAvatar:()=>avatar});
+ for(const [id,price]of [['alien',12000],['cosmiccat',6000],['neondragon',9000]]){
+  assert.equal(wallet.stock.find(item=>item.id===id).price,price);assert.equal(wallet.buy(id).ok,false);
+ }
+ assert.deepEqual(avatar,{form:'human',pet:'none'});
+ for(let n=0;n<12;n++)assert.equal(wallet.grantReward('long-term:'+n,1000).ok,true);
+ assert.equal(wallet.buy('alien').balance,150);assert.equal(wallet.owns('alien'),true);
+ assert.equal(wallet.buy('alien').alreadyOwned,true);assert.equal(wallet.snapshot().balance,150);
+ assert.deepEqual(avatar,{form:'human',pet:'none'});
+ const loaded=createWallet({storage:disk});assert.equal(loaded.owns('alien'),true);assert.equal(loaded.snapshot().spent,12000);
+ for(const item of ['lakeotter','rhythmfox','pianophoenix','triadchampion','pitchlaurel10','pitchlaurel20','pitchlaurel30','pitchcrown40','starlight'])assert.equal(wallet.isStock(item),false,'Mastery rewards stay achievement-exclusive');
 });

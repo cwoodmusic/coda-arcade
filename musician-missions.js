@@ -24,15 +24,15 @@
   const integer=(value,max=1000000)=>Number.isSafeInteger(value)&&value>=0&&value<=max;
   function validResult(game,result){
     if(!result||typeof result!=='object'||Array.isArray(result))return false;
-    if(game==='triad')return ['computer','multiplayer'].includes(result.mode)&&integer(result.captures,1000)&&integer(result.score,16)&&typeof result.won==='boolean'&&typeof result.comeback==='boolean';
-    if(game==='pitch')return ['classic','endless','levels','multi'].includes(result.mode)&&integer(result.score)&&integer(result.correct)&&integer(result.misses)&&integer(result.streak)&&result.streak<=result.correct&&typeof result.won==='boolean'&&typeof result.perfect==='boolean';
+    if(game==='triad')return ['computer','multiplayer','advanced'].includes(result.mode)&&integer(result.captures,1000)&&integer(result.score,16)&&typeof result.won==='boolean'&&typeof result.comeback==='boolean';
+    if(game==='pitch')return ['classic','endless','levels','level','multi'].includes(result.mode)&&integer(result.score)&&integer(result.correct)&&integer(result.misses)&&integer(result.streak)&&result.streak<=result.correct&&typeof result.won==='boolean'&&typeof result.perfect==='boolean';
     return game==='rhythm'&&result.mode==='tap'&&integer(result.total,128)&&result.total>0&&integer(result.hits,128)&&result.hits<=result.total&&integer(result.extra,1000)&&integer(result.early,128)&&integer(result.late,128)&&result.early+result.late<=result.hits;
   }
   function resultProgress(mission,result){
     switch(mission.kind){
-      case 'triad-win':return result.mode==='computer'&&result.won?1:0;
-      case 'triad-captures':return result.mode==='computer'?result.captures:0;
-      case 'triad-comeback':return result.mode==='computer'&&result.won&&result.comeback?1:0;
+      case 'triad-win':return ['computer','advanced'].includes(result.mode)&&result.won?1:0;
+      case 'triad-captures':return ['computer','advanced'].includes(result.mode)?result.captures:0;
+      case 'triad-comeback':return ['computer','advanced'].includes(result.mode)&&result.won&&result.comeback?1:0;
       case 'pitch-win':return result.mode==='classic'&&result.won&&result.correct>0?1:0;
       case 'pitch-streak':return result.mode!=='multi'?result.streak:0;
       case 'pitch-correct':return result.mode!=='multi'?result.correct:0;
@@ -143,7 +143,7 @@
       if(completed)try{api.onMissionCompleted?.(entry(mission));}catch{/* Completion feedback cannot interrupt gameplay. */}
       changed();
     }
-    function rhythmProgress(best){for(const mission of DEFINITIONS)if(mission.kind==='rhythm-streak')advance(mission,best);}
+    function rhythmProgress(best){try{api.onVerifiedRhythmStreak?.(best);}catch{}for(const mission of DEFINITIONS)if(mission.kind==='rhythm-streak')advance(mission,best);}
     function recordResult(game,runId,result){
       if(!session||session.game!==game||typeof runId!=='string'||!runId.length||runId.length>128||!validResult(game,result))return false;
       const key=game+':'+runId;if(state.seen.includes(key))return false;

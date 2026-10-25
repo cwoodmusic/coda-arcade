@@ -38,6 +38,7 @@ class SongMobileTests(unittest.TestCase):
         self.errors=[];self.page.on('pageerror',lambda error:self.errors.append(str(error)))
         self.page.goto(f'http://127.0.0.1:{self.server.server_port}/song-machine/index.html',wait_until='domcontentloaded')
         self.page.wait_for_function('window.songMachineBridge')
+        self.page.evaluate("songMachineBridge.setEditorMode('advanced')")
         self.cdp=self.context.new_cdp_session(self.page)
     def tearDown(self):
         self.context.close();self.assertEqual(self.errors,[])

@@ -27,7 +27,7 @@ test('every meter and difficulty tier supports endless practice without catch re
   const game=fishing.createSession({practice:true,meter,rarity:rarity.id,random:()=>0,startTime:0});
   let state=game.getState();assert.equal(state.meter,meter);assert.equal(state.fish.rarity,rarity.id);
   assert.equal(state.practice,true);
-  for(let count=0;count<30;count++){
+  for(let count=0;count<100;count++){
    const note=game.getState().notes.find(note=>note.judgement==='pending');assert.ok(note,meter+' '+rarity.id);
    game.press(note.time,'pointer:1');
    if(note.requiresHold)game.update(note.holdEndTime);
@@ -42,8 +42,8 @@ test('every meter and difficulty tier supports endless practice without catch re
 
 test('ordinary sessions still finish and pay their unchanged catch rewards',()=>{
  const game=fishing.createSession({fish:'silver-minnow',meter:'4/4',startTime:0});
- for(let count=0;count<20&&!game.getState().result;count++){
-  const note=game.getState().notes.find(note=>note.judgement==='pending');game.press(note.time,'key:Space');
+ for(let count=0;count<200&&!game.getState().result;count++){
+  const note=game.getState().notes.find(note=>note.judgement==='pending');game.update(note.time);if(game.getState().result)break;game.press(note.time,'key:Space');
   if(note.requiresHold)game.update(note.holdEndTime);
   game.release(note.requiresHold?note.holdEndTime:note.time,'key:Space');
  }

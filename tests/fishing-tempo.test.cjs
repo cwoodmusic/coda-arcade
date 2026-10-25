@@ -13,12 +13,13 @@ function advanceAlive(game,target){
  close(game.getState().now,target);assert.equal(game.getState().result,null);
 }
 
-test('species have bounded, explicit quarter-note tempos and the strongest fish reach Presto',()=>{
+test('species keep bounded quarter-note tempos and upper tiers use playable speeds',()=>{
  for(const fish of fishing.FISH){
   assert.ok(Object.isFrozen(fish.tempo));assert.equal(fish.tempo.unit,'quarter');
-  const tempo=fish.tempo;assert.ok(tempo.startQuarterBpm>=76&&tempo.startQuarterBpm<=192);assert.ok(tempo.endQuarterBpm>=76&&tempo.endQuarterBpm<=192);
+  const tempo=fish.tempo;assert.ok(tempo.startQuarterBpm>=76&&tempo.startQuarterBpm<=144);assert.ok(tempo.endQuarterBpm>=76&&tempo.endQuarterBpm<=144);
   if(fish.rarityRank<2){assert.equal(tempo.change,'steady');assert.equal(tempo.startQuarterBpm,fish.rarity==='common'?76:82);assert.equal(tempo.startQuarterBpm,tempo.endQuarterBpm);}
-  if(fish.rarity==='legendary'){assert.equal(tempo.initialMarking,'Presto');assert.equal(tempo.endMarking,'Presto');}
+  if(fish.rarity==='epic')assert.ok(Math.min(tempo.startQuarterBpm,tempo.endQuarterBpm)>=108&&Math.max(tempo.startQuarterBpm,tempo.endQuarterBpm)<=126);
+  if(fish.rarity==='legendary')assert.ok(Math.min(tempo.startQuarterBpm,tempo.endQuarterBpm)>=120&&Math.max(tempo.startQuarterBpm,tempo.endQuarterBpm)<=144);
  }
  for(const rarity of ['rare','epic','legendary'])for(const change of ['steady','accelerando','ritardando'])assert.ok(fishWith(change,rarity),rarity+' '+change);
  for(const meter of Object.keys(fishing.METERS))assert.ok(fishing.availableFish(meter).some(fish=>fish.rarityRank>=2&&fish.tempo.change!=='steady'),meter+' has changing-tempo fish');
@@ -99,6 +100,7 @@ test('a preannounced advanced score remains playable at its original times for e
  for(const fish of fishing.FISH.filter(fish=>fish.rarityRank>=2))for(const meter of fish.meters){
   const game=create(fish,meter),planned=game.getState().notes.filter(note=>!note.rest);
   for(const note of planned){if(game.getState().result)break;assert.equal(game.tap(note.time).kind,'hit',fish.id+' '+meter+' '+note.id);}
+  for(let index=0;index<100&&!game.getState().result;index++){const note=game.getState().notes.find(note=>note.judgement==='pending');assert.ok(note);game.update(note.time);if(!game.getState().result)assert.equal(game.tap(note.time).kind,'hit');}
   const result=game.getState().result;assert.equal(result?.caught,true,fish.id+' '+meter);assert.equal(result.perfect,true);assert.equal(result.notes,fish.notes);assert.equal(result.xp,fish.xp);assert.equal(result.tempo.change,fish.tempo.change);
  }
 });

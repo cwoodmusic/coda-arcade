@@ -56,6 +56,13 @@ class ArcadeFingerTests(unittest.TestCase):
         return {'x': box['x'] + box['width'] * x / 1000, 'y': box['y'] + box['height'] * y / 800, 'id': touch_id}
 
     def button(self, key, touch_id=2):
+        if key in ['w','a','s','d']:
+            base=self.page.locator('#landingTouchControls .coda-joystick').bounding_box()
+            thumb=self.page.locator('#landingTouchControls .coda-joystick-thumb').bounding_box()
+            radius=max(20,(base['width']-thumb['width'])/2-8)
+            x,y={'w':(0,-1),'a':(-1,0),'s':(0,1),'d':(1,0)}[key]
+            return {'x':base['x']+base['width']/2+x*radius,
+                    'y':base['y']+base['height']/2+y*radius,'id':touch_id}
         box = self.page.locator(f'#landingTouchControls [data-key="{key}"]').bounding_box()
         return {'x': box['x'] + box['width'] / 2, 'y': box['y'] + box['height'] / 2, 'id': touch_id}
 
@@ -109,7 +116,7 @@ class ArcadeFingerTests(unittest.TestCase):
         self.touches('touchEnd')
         self.assert_stopped()
 
-    def test_direction_pad_takes_over_and_does_not_resume_old_finger_target(self):
+    def test_joystick_takes_over_and_does_not_resume_old_finger_target(self):
         floor, right = self.floor(250), self.button('d')
         self.touches('touchStart', floor)
         self.page.wait_for_timeout(100)

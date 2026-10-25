@@ -15,3 +15,6 @@
 /* Overlay visibility is independent of the selected paint or object tool. */
 .room-dev-console .room-dev-overlays{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0}
 .room-dev-console .room-dev-overlays button{min-height:44px;font-size:12px;font-weight:650}
+.room-dev-console .room-dev-overlay-legend{font:11px/1.5 system-ui;margin:0 0 8px;padding:7px;background:#101b2b;border:1px solid #635a79;border-radius:6px}
+.room-dev-console .dev-key-blocked{color:#ff8aa1}.room-dev-console .dev-key-walkable{color:#8bf2bb}.room-dev-console .dev-key-background{color:#8fc8ff}.room-dev-console .dev-key-depth{color:#ffdc84}.room-dev-console .dev-key-foreground{color:#8bffda}
+.room-developer-open canvas.room-dev-layer-brush{cursor:none}

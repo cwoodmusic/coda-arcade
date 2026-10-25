@@ -3,6 +3,7 @@ import importlib.util
 from pathlib import Path
 import sys
 import unittest
+from world_navigation_helpers import enter_room
 
 sys.dont_write_bytecode=True
 from classroom_quiz_helpers import QUIZ_ANSWERS,answer_quiz
@@ -29,8 +30,9 @@ class ClassroomQuizWorldTests(_world.WorldBrowserCase):
 
     def open_lesson(self,lesson):
         if not self.page.evaluate('CodaArcadeQA.classroom().open'):
-            if not self.page.locator('#classroomBtn').is_visible():self.page.locator('#worldMenuBtn').click()
-            self.page.locator('#classroomBtn').click()
+            enter_room(self.page,'classroom')
+        books=self.page.locator('[data-classroom-view="books"]')
+        if books.is_visible() and self.page.evaluate('CodaArcadeQA.classroom().mobileView')!='books':books.click()
         back=self.page.locator('#classroomAllLessons')
         if back.is_visible():back.click()
         self.page.locator('[data-start-lesson="'+lesson+'"]').click()

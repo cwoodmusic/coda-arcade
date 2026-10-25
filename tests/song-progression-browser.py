@@ -37,6 +37,7 @@ class SongProgressionTests(unittest.TestCase):
         self.page.on('pageerror',lambda error:self.errors.append(str(error)))
         self.page.goto(f'http://127.0.0.1:{self.server.server_port}/song-machine/index.html',wait_until='domcontentloaded')
         self.page.wait_for_function('window.songMachineBridge&&window.CodaSongSounds')
+        self.page.evaluate("songMachineBridge.setEditorMode('advanced')")
     def tearDown(self):
         self.context.close();self.assertEqual(self.errors,[])
     def test_pitch_labels_use_letters_and_friendly_ranges_without_changing_song_pitches(self):
@@ -70,7 +71,7 @@ class SongProgressionTests(unittest.TestCase):
         self.assertTrue(any(abs(voice['frequency']-1046.5)<5 for voice in voices),voices)
         self.assertEqual(self.page.evaluate('testAudioContexts[0].state'),'running')
         self.page.locator('#stop').click();self.assertIn('Stopped',self.page.locator('#status').inner_text())
-        self.page.reload(wait_until='domcontentloaded');self.page.wait_for_function('window.songMachineBridge')
+        self.page.reload(wait_until='domcontentloaded');self.page.wait_for_function('window.songMachineBridge');self.page.evaluate("songMachineBridge.setEditorMode('advanced')")
         self.assertIn('level 2',self.page.locator('#song-level-summary').inner_text())
         self.assertFalse(self.page.get_by_label('Melody sound').locator('option[value="10"]').evaluate('(option)=>option.disabled'))
     def test_imported_bonus_voices_are_preserved_and_a_selection_lock_cannot_replace_them(self):
@@ -85,8 +86,8 @@ class SongProgressionTests(unittest.TestCase):
         self.assertEqual(self.page.evaluate('songMachineBridge.get().tracks[0].sound'),17)
         self.assertIn('level 10',self.page.locator('#status').inner_text())
     def test_composing_and_playing_real_edits_earns_xp_once_for_that_composition(self):
-        self.page.locator('.cell[data-track="1"][data-pitch="72"][data-step="16"]').click()
-        self.page.locator('.cell[data-track="1"][data-pitch="74"][data-step="20"]').click()
+        self.page.locator('#tracks .cell[data-track="1"][data-pitch="72"][data-step="16"]').click()
+        self.page.locator('#tracks .cell[data-track="1"][data-pitch="74"][data-step="20"]').click()
         self.assertEqual(self.page.evaluate('songMachineBridge.get().tracks.reduce((n,t)=>n+t.notes.length,0)'),8)
         self.page.locator('#play').click();self.page.wait_for_function('songMachineBridge.progression().xp===35')
         self.page.locator('#stop').click();self.page.locator('#play').click()

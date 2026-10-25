@@ -2,10 +2,12 @@
 import functools
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from world_navigation_helpers import enter_room,open_destination
 import threading
 import unittest
 
 from playwright.sync_api import sync_playwright
+from mobile_joystick_helpers import direction_point
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -43,7 +45,7 @@ class MobileWorldTests(unittest.TestCase):
 
     def load(self):
         self.page.goto(self.url,wait_until='domcontentloaded')
-        self.page.wait_for_function('CodaDeveloperConsole?.ready()&&CodaArcadeQA?.touch()?.mobile')
+        self.page.wait_for_function('window.CodaDeveloperConsole?.ready()&&window.CodaArcadeQA?.touch()?.mobile')
 
     def touch(self):
         return self.page.evaluate('CodaArcadeQA.touch()')
@@ -55,13 +57,15 @@ class MobileWorldTests(unittest.TestCase):
         self.cdp.send('Input.dispatchTouchEvent',{'type':kind,'touchPoints':list(points)})
 
     def button_point(self,label,touch_id):
+        if label.startswith('Move '):return direction_point(self.page,label,touch_id,'#codaTouchControls .coda-joystick')
         box=self.page.locator('#codaTouchControls').get_by_role('button',name=label,exact=True).bounding_box()
         self.assertIsNotNone(box,label)
         return {'x':box['x']+box['width']/2,'y':box['y']+box['height']/2,'id':touch_id,'radiusX':3,'radiusY':3,'force':1}
 
     def menu(self,selector):
-        self.page.locator('#worldMenuBtn').tap()
-        self.page.locator(selector).tap()
+        if selector in ('piano','classroom','fishing'):enter_room(self.page,selector)
+        elif selector in ('shop','boutique','dj','fame'):open_destination(self.page,selector)
+        else:raise ValueError('Unknown physical destination '+selector)
 
     def place(self,x,y):
         self.assertTrue(self.page.evaluate('([x,y])=>CodaArcadeQA.place(x,y)',[x,y]))
@@ -136,23 +140,24 @@ class MobileWorldTests(unittest.TestCase):
         for viewport in [{'width':390,'height':844},{'width':360,'height':780},{'width':320,'height':740},{'width':844,'height':390},{'width':667,'height':375}]:
             self.page.set_viewport_size(viewport);self.page.wait_for_timeout(100)
             metric=self.page.evaluate('''()=>{
-              const host=document.querySelector('#codaTouchControls'),dpad=host.querySelector('.coda-dpad').getBoundingClientRect(),actions=host.querySelector('.coda-touch-actions').getBoundingClientRect(),stage=worldStage.getBoundingClientRect();
+              const host=document.querySelector('#codaTouchControls'),dpad=host.querySelector('.coda-joystick').getBoundingClientRect(),actions=host.querySelector('.coda-touch-actions').getBoundingClientRect(),stage=worldStage.getBoundingClientRect();
               return {stageBottom:stage.bottom,scrollWidth:document.documentElement.scrollWidth,
                 reserve:getComputedStyle(document.body).getPropertyValue('--coda-world-pad-height').trim(),
-                dpad:dpad.toJSON(),actions:actions.toJSON(),
+                dpad:dpad.toJSON(),thumb:host.querySelector('.coda-joystick-thumb').getBoundingClientRect().toJSON(),actions:actions.toJSON(),
                 center:document.elementFromPoint((dpad.right+actions.left)/2,innerHeight-45)?.id,
-                buttons:[...host.querySelectorAll('button')].filter(button=>!button.hidden).map(button=>{const b=button.getBoundingClientRect();return {width:b.width,height:b.height,direction:!!button.closest('.coda-dpad'),emote:button.classList.contains('coda-touch-emote')};})};
+                buttons:[...host.querySelectorAll('button')].filter(button=>!button.hidden).map(button=>{const b=button.getBoundingClientRect();return {width:b.width,height:b.height,direction:!!button.closest('.coda-joystick'),emote:button.classList.contains('coda-touch-emote')};})};
             }''')
             self.assertEqual(metric['reserve'],'0px');self.assertAlmostEqual(metric['stageBottom'],viewport['height'],delta=1)
             self.assertLessEqual(metric['scrollWidth'],viewport['width']+1)
             self.assertGreaterEqual(metric['dpad']['left'],0);self.assertLess(metric['dpad']['right'],metric['actions']['left']);self.assertLessEqual(metric['actions']['right'],viewport['width'])
             landscape=viewport['width']>viewport['height']
-            direction_min=83 if landscape or viewport['width']>=390 else 77 if viewport['width']>=360 else 72
+            self.assertGreaterEqual(metric['dpad']['width'],200 if landscape else 216,metric)
+            self.assertAlmostEqual(metric['dpad']['height'],metric['dpad']['width'],delta=1)
+            self.assertGreaterEqual(metric['thumb']['width'],88,metric)
+            self.assertEqual(self.page.locator('#codaTouchControls .coda-joystick button').count(),0,
+                'Directional movement should use the joystick, without hidden replacement buttons')
             for button in metric['buttons']:
-                if button['direction']:
-                    self.assertGreaterEqual(button['width'],direction_min,metric)
-                    self.assertGreaterEqual(button['height'],direction_min,metric)
-                else:
+                if not button['direction']:
                     self.assertGreaterEqual(button['width'],112 if landscape else 80,metric)
                     self.assertGreaterEqual(button['height'],96 if button['emote'] and landscape else
                                             88 if button['emote'] else 112 if landscape else 104,metric)
@@ -171,10 +176,11 @@ class MobileWorldTests(unittest.TestCase):
                     if opened:break
             if opened:break
         self.assertTrue(opened,'A real nearby musician should open their conversation')
+        self.page.clock.run_for(160)
         for size in [{'width':844,'height':390},{'width':667,'height':375}]:
             self.page.set_viewport_size(size);self.page.clock.run_for(64)
             metrics=self.page.evaluate('''()=>{
-              const d=dialog.getBoundingClientRect(),pad=document.querySelector('.coda-dpad').getBoundingClientRect(),
+              const d=dialog.getBoundingClientRect(),pad=document.querySelector('.coda-joystick').getBoundingClientRect(),
                 actions=document.querySelector('.coda-touch-actions').getBoundingClientRect();
               return {dialog:d.toJSON(),pad:pad.toJSON(),actions:actions.toJSON(),
                 leftHit:document.elementFromPoint(d.left+20,Math.min(d.bottom-20,innerHeight-35))?.closest('#dialog')?.id};
@@ -183,7 +189,7 @@ class MobileWorldTests(unittest.TestCase):
             self.assertLess(metrics['dialog']['right'],metrics['actions']['left']-8)
             self.assertGreaterEqual(metrics['dialog']['top'],0)
             self.assertLessEqual(metrics['dialog']['bottom'],size['height'])
-            self.assertEqual(metrics['leftHit'],'dialog','Conversation text must not sit beneath the direction buttons')
+            self.assertEqual(metrics['leftHit'],'dialog','Conversation text must not sit beneath the movement joystick')
             self.page.screenshot(path='/tmp/coda-controls37-dialog-'+str(size['width'])+'.png')
         self.page.locator('#codaTouchControls .coda-touch-interact').tap();self.page.clock.run_for(64)
         self.assertFalse(self.page.evaluate('CodaArcadeQA.conversation().open'))
@@ -249,11 +255,13 @@ class MobileWorldTests(unittest.TestCase):
         self.touches('touchStart',right,jump)
         self.page.wait_for_function('CodaArcadeQA.characters().player.jumpHeight>6')
         self.assertEqual(self.page.evaluate('CodaArcadeQA.characters().player.jumps'),1)
-        self.touches('touchEnd',right);self.page.wait_for_timeout(90)
-        self.assertGreater(self.position()['x'],start['x']+15)
+        at_release=self.position();self.touches('touchEnd',jump)
+        self.page.wait_for_function('x=>CodaArcadeQA.position().x>x+6',arg=at_release['x'])
+        self.assertTrue(self.touch()['joystick']['active'])
         self.touches('touchEnd');self.page.wait_for_timeout(100)
         stop=self.position();self.page.wait_for_timeout(130)
         self.assertEqual(self.position(),stop);self.assertEqual(self.touch()['held'],[])
+        self.assertFalse(self.touch()['joystick']['active']);self.assertEqual(self.touch()['joystick']['strength'],0)
         self.assertFalse(self.page.evaluate('CodaArcadeQA.characters().player.walking'))
 
     def test_diagonal_cancel_and_rotation_clear_all_held_touch_directions(self):
@@ -264,7 +272,7 @@ class MobileWorldTests(unittest.TestCase):
         self.assertEqual(self.touch()['held'],[])
         right=self.button_point('Move right',1);self.touches('touchStart',right)
         self.page.wait_for_timeout(60);self.page.set_viewport_size({'width':844,'height':390})
-        self.page.wait_for_function('CodaArcadeQA.touch().held.length===0')
+        self.page.wait_for_function('CodaArcadeQA.touch().held.length===0&&!CodaArcadeQA.touch().joystick.active')
         self.touches('touchEnd');self.page.wait_for_timeout(80)
         stop=self.position();self.page.wait_for_timeout(150);self.assertEqual(self.position(),stop)
         self.assert_avatar_visible()
@@ -330,12 +338,13 @@ class MobileWorldTests(unittest.TestCase):
         self.touches('touchEnd');self.assert_finger_stopped();self.assertEqual(self.touch()['held'],[])
 
     def test_touch_menu_purchases_and_text_entry_preserve_outfit_currency_and_position(self):
-        self.menu('#notesBtn');self.page.wait_for_function('!CodaArcadeQA.touch().visible')
-        self.page.locator('[data-shop-item="witch"] button').tap()
+        self.menu('shop');self.page.wait_for_function('!CodaArcadeQA.touch().visible')
         self.page.locator('[data-shop-item="witch"] button').tap()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),70)
+        self.assertNotEqual(self.page.evaluate('CodaArcadeQA.characters().player.appearance.headwear'),'witch')
         self.page.locator('#panelClose').tap();self.page.wait_for_function('CodaArcadeQA.touch().visible')
-        before=self.position();self.menu('#avatarBtn')
+        self.menu('boutique');before=self.position()
+        self.page.get_by_label('Hats',exact=True).select_option('witch')
         name=self.page.get_by_label('Arcade nickname',exact=True);name.fill('Touch Musician')
         name.press('w');self.assertEqual(self.position(),before)
         self.assertFalse(self.touch()['visible'])
@@ -345,15 +354,15 @@ class MobileWorldTests(unittest.TestCase):
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),70)
 
     def test_pad_routes_into_rooms_hides_for_books_and_cabinets_and_returns_to_world(self):
-        main=self.position();self.menu('#pianoLabBtn')
+        self.menu('piano');main=self.position()
         self.page.wait_for_function('CodaArcadeQA.touch().context==="piano"&&CodaArcadeQA.touch().visible')
         start=self.page.evaluate('CodaArcadeQA.piano().player.y');down=self.button_point('Move down',1)
         self.touches('touchStart',down);self.page.wait_for_function('y=>CodaArcadeQA.piano().player.y>y+8',arg=start)
         self.touches('touchEnd');self.assertEqual(self.position(),main)
         self.assertTrue(self.page.locator('#codaTouchControls [data-action="emote"]').is_hidden())
-        self.page.locator('[data-piano-view="games"]').tap();self.page.wait_for_function('!CodaArcadeQA.touch().visible')
-        self.page.locator('#closepiano').tap();self.page.wait_for_function('CodaArcadeQA.touch().context==="world"')
-        self.menu('#classroomBtn');self.page.wait_for_function('CodaArcadeQA.touch().context==="classroom"&&CodaArcadeQA.touch().visible')
+        self.page.locator('#pianoMenuButton').tap();self.page.wait_for_function('!CodaArcadeQA.touch().visible')
+        self.page.locator('#pianoMenuClose').tap();self.page.locator('#closepiano').tap();self.page.wait_for_function('CodaArcadeQA.touch().context==="world"')
+        self.menu('classroom');self.page.wait_for_function('CodaArcadeQA.touch().context==="classroom"&&CodaArcadeQA.touch().visible')
         self.assertTrue(self.page.locator('#codaTouchControls [data-action="jump"]').is_hidden())
         self.page.locator('[data-classroom-view="books"]').tap();self.page.wait_for_function('!CodaArcadeQA.touch().visible')
         self.page.locator('#classroomSearch').fill('interval');self.page.locator('[data-topic="intervals"]').tap()
@@ -363,7 +372,7 @@ class MobileWorldTests(unittest.TestCase):
         self.place(game['x'],game['y']);self.page.locator('#codaTouchControls [data-action="interact"]').tap()
         self.page.wait_for_function('CodaArcadeQA.menu().gameOpen');self.page.wait_for_function('!CodaArcadeQA.touch().visible')
         self.assertIn('song-machine',self.page.locator('#gameiframe').get_attribute('src'))
-        self.page.frame_locator('#gameiframe').locator('#add').wait_for()
+        self.page.frame_locator('#gameiframe').locator('#simpleSongGrid').wait_for()
         self.page.locator('#returnworld').tap();self.page.wait_for_function('CodaArcadeQA.touch().visible')
         self.assertEqual(self.touch()['context'],'world');self.assertEqual(self.touch()['held'],[])
 

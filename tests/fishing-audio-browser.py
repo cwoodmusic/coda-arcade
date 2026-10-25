@@ -7,6 +7,7 @@ import importlib.util
 from pathlib import Path
 import sys
 import unittest
+from world_navigation_helpers import enter_room
 
 sys.dont_write_bytecode = True
 _spec = importlib.util.spec_from_file_location('fishing_audio_upgrade', Path(__file__).with_name('fishing-upgrade-browser.py'))
@@ -21,10 +22,16 @@ class FishingAudioTests(_upgrade._fish._world.WorldBrowserCase):
     enter = _upgrade.FishingUpgradeTests.enter
     walk_to = _upgrade.FishingUpgradeTests.walk_to
     board = _upgrade.FishingUpgradeTests.board
-    start_exploring = _upgrade.FishingUpgradeTests.start_exploring
+    fishing_option = _upgrade._fish.FishingWorldTests.fishing_option
+    fishing_action = _upgrade._fish.FishingWorldTests.fishing_action
+    fishing_meter = _upgrade._fish.FishingWorldTests.fishing_meter
     place_single_fish = _upgrade.FishingUpgradeTests.place_single_fish
     advance_to = _upgrade.FishingUpgradeTests.advance_to
     tap_note = _upgrade.FishingUpgradeTests.tap_note
+
+    def start_exploring(self,meter='4/4'):
+        self.enter();self.fishing_meter(meter);self.board()
+        self.assertEqual(self.state()['phase'],'explore')
 
     def setUp(self):
         _upgrade.FishingUpgradeTests.setUp(self)
@@ -33,17 +40,27 @@ class FishingAudioTests(_upgrade._fish._world.WorldBrowserCase):
           window.fishingAudioSounds=[];
           const Audio=window.AudioContext||window.webkitAudioContext;
           if(!Audio)throw Error('Chromium must supply Web Audio for this check');
+          const gainNode=Audio.prototype.createGain;
+          Audio.prototype.createGain=function(...args){
+            const node=gainNode.apply(this,args),ramp=node.gain.exponentialRampToValueAtTime,connect=node.connect;
+            node.fishingPeaks=[];
+            node.gain.exponentialRampToValueAtTime=function(value,...times){node.fishingPeaks.push(value);return ramp.call(this,value,...times);};
+            node.connect=function(target,...rest){node.fishingTarget=target;return connect.call(this,target,...rest);};
+            return node;
+          };
           const original=Audio.prototype.createOscillator;
           Audio.prototype.createOscillator=function(...args){
             const oscillator=original.apply(this,args),ctx=this;
-            const start=oscillator.start,stop=oscillator.stop,set=oscillator.frequency.setValueAtTime;
+            const start=oscillator.start,stop=oscillator.stop,set=oscillator.frequency.setValueAtTime,connect=oscillator.connect;
+            let envelope=null;oscillator.connect=function(target,...rest){envelope=target;return connect.call(this,target,...rest);};
             let frequency=oscillator.frequency.value,entry=null;
             oscillator.frequency.setValueAtTime=function(value,...times){frequency=value;return set.call(this,value,...times);};
             oscillator.start=function(when,...rest){
               const state=CodaArcadeQA.fishing();
               entry={frequency,when:when??ctx.currentTime,audioNow:ctx.currentTime,
                 gameTime:state.clock+Math.max(0,(when??ctx.currentTime)-ctx.currentTime),
-                phase:state.phase,canceled:false};
+                phase:state.phase,channel:oscillator.codaFishingChannel||'unknown',
+                peak:Math.max(0,...(envelope?.fishingPeaks||[])),masterGain:envelope?.fishingTarget?.gain?.value??null,canceled:false};
               fishingAudioSounds.push(entry);return start.call(this,when,...rest);
             };
             oscillator.stop=function(when,...rest){
@@ -56,7 +73,8 @@ class FishingAudioTests(_upgrade._fish._world.WorldBrowserCase):
 
     def open_audio(self):
         room=self.state()
-        self.page.locator('#fishingAudio' if room['phase'] in ['bite','rhythm'] else '#fishingLakeAudio').click(force=True)
+        if room['phase'] in ['bite','rhythm']:self.page.locator('#fishingAudio').click()
+        else:self.fishing_action('#fishingLakeAudio')
         self.assertTrue(self.page.locator('#fishingAudioPanel').is_visible())
 
     def close_audio(self):
@@ -78,11 +96,11 @@ class FishingAudioTests(_upgrade._fish._world.WorldBrowserCase):
     def clear_sounds(self):
         self.page.evaluate('fishingAudioSounds=[]')
 
-    def battle(self,meter='4/4'):
+    def battle(self,meter='4/4',fish='silver-minnow'):
         if not self.state()['open']:self.start_exploring(meter)
-        else:self.page.locator('#fishingMeter').select_option(meter)
-        self.place_single_fish('silver-minnow')
-        self.page.locator('#fishingCast').click(force=True);self.page.clock.run_for(1400)
+        else:self.fishing_meter(meter)
+        self.place_single_fish(fish)
+        self.fishing_action('#fishingCast');self.page.clock.run_for(1400)
         self.assertEqual(self.state()['phase'],'rhythm')
         return self.state()
 
@@ -105,7 +123,7 @@ class FishingAudioTests(_upgrade._fish._world.WorldBrowserCase):
         self.assertEqual({key:stored[key] for key in ['music','metronome','guide','sound']},
             {'music':True,'metronome':False,'guide':False,'sound':True})
         self.page.locator('#fishingClose').click(force=True);self.load()
-        self.page.clock.run_for(32);self.page.locator('#fishingBtn').click(force=True);self.page.clock.run_for(32)
+        self.page.clock.run_for(32);enter_room(self.page,'fishing');self.page.clock.run_for(32)
         self.open_audio()
         self.assertTrue(self.page.locator('#fishingMusic').is_checked())
         self.assertFalse(self.page.locator('#fishingMetronome').is_checked())
@@ -118,23 +136,71 @@ class FishingAudioTests(_upgrade._fish._world.WorldBrowserCase):
         self.reach_music(2)
         sounds=self.sounds()
         self.assertEqual(self.state()['audioState'],'running','A real user gesture must unlock Web Audio')
-        self.assertTrue(any(s['frequency']<400 for s in sounds))
-        self.assertFalse(any(s['frequency'] in [480,680] for s in sounds),'Metronome Off must silence its clicks')
-        self.assertFalse(any(abs(s['frequency']-523.25)<1 for s in sounds),'Guide Off must silence target tones')
+        self.assertTrue(any(s['channel']=='music' for s in sounds))
+        self.assertFalse(any(s['channel']=='metronome' for s in sounds),'Metronome Off must silence its clicks')
+        self.assertFalse(any(s['channel']=='guide' for s in sounds),'Guide Off must silence target tones')
         self.assertTrue(all(s['gameTime']>=initial['musicStart']-.001
             for s in sounds if s['phase']=='rhythm'),
             'Background music must leave the introductory count-in clear')
         self.settings(music=False,metronome=True,guide=False)
         self.clear_sounds();self.reach_music(2)
         sounds=self.sounds()
-        self.assertTrue(any(s['frequency'] in [480,680] for s in sounds))
-        self.assertFalse(any(s['frequency']<400 for s in sounds),'Music Off must stop the accompaniment')
-        self.assertFalse(any(abs(s['frequency']-523.25)<1 for s in sounds))
+        self.assertTrue(any(s['channel']=='metronome' for s in sounds))
+        self.assertFalse(any(s['channel']=='music' for s in sounds),'Music Off must stop the accompaniment')
+        self.assertFalse(any(s['channel']=='guide' for s in sounds))
         self.settings(music=False,metronome=False,guide=True)
         self.clear_sounds();self.reach_music(2)
         sounds=self.sounds()
-        self.assertTrue(any(abs(s['frequency']-523.25)<1 for s in sounds),'The guide must work without music or clicks')
-        self.assertTrue(all(abs(s['frequency']-523.25)<1 for s in sounds),sounds)
+        self.assertTrue(any(s['channel']=='guide' for s in sounds),'The guide must work without music or clicks')
+        self.assertTrue(all(s['channel']=='guide' for s in sounds),sounds)
+
+    def set_music_volume(self,value):
+        self.open_audio();slider=self.page.locator('#fishingMusicVolume');slider.focus()
+        self.page.keyboard.press('Home')
+        for _ in range(value):self.page.keyboard.press('ArrowRight')
+        self.assertEqual(self.state()['audio']['prefs']['musicVolume'],value)
+        self.close_audio()
+
+    def test_music_volume_changes_real_music_gains_only_and_persists(self):
+        self.start_exploring()
+        peaks=[]
+        for volume in [85,42]:
+            self.set_music_volume(volume);self.clear_sounds();self.battle();self.reach_music(2)
+            sounds=[sound for sound in self.sounds() if sound['phase']=='rhythm']
+            channels={channel:[sound for sound in sounds if sound['channel']==channel] for channel in ['music','metronome','guide']}
+            self.assertTrue(all(channels.values()),'The comparison must include all three real audio channels')
+            peaks.append({channel:max(sound['peak'] for sound in values) for channel,values in channels.items()})
+            self.assertTrue(all(abs(sound['masterGain']-.13)<1e-6 for sound in sounds),
+                'The music slider must not raise the room master gain')
+            by_time={}
+            for sound in sounds:by_time[sound['when']]=by_time.get(sound['when'],0)+sound['peak']*sound['masterGain']
+            self.assertLess(max(by_time.values()),.2,'Simultaneous scheduled peaks should retain ample output headroom')
+            self.page.locator('#fishingCancel').click()
+        self.assertAlmostEqual(peaks[1]['music']/peaks[0]['music'],42/85,delta=.0001)
+        for channel in ['metronome','guide']:self.assertAlmostEqual(peaks[1][channel],peaks[0][channel],delta=.0001)
+        self.page.locator('#fishingClose').click();self.load();self.page.clock.run_for(32)
+        enter_room(self.page,'fishing');self.page.clock.run_for(32);self.open_audio()
+        self.assertEqual(self.state()['audio']['prefs']['musicVolume'],42)
+        self.assertEqual(self.page.locator('#fishingMusicVolumeValue').inner_text(),'42%')
+
+    def test_different_fish_schedule_different_real_accompaniment(self):
+        fish=self.page.evaluate("""()=>{
+          const seen=new Set();return CodaRhythmFishing.availableFish('4/4').filter(fish=>{
+            const theme=CodaFishingMusic.getThemeInfo(fish).id;if(seen.has(theme))return false;seen.add(theme);return true;
+          }).slice(0,3).map(fish=>({id:fish.id,title:CodaFishingMusic.getThemeInfo(fish).title}));
+        }""")
+        self.assertEqual(len(fish),3)
+        self.start_exploring();self.settings(metronome=False,guide=False)
+        signatures=[]
+        for species in fish:
+            self.clear_sounds();state=self.battle(fish=species['id'])
+            self.advance_to(state['challenge']['musicStart']+.1)
+            sound=[item for item in self.sounds() if item['phase']=='rhythm' and item['channel']=='music']
+            self.assertTrue(sound,'Each fish should produce real accompaniment oscillators')
+            signatures.append(tuple(sorted({round(item['frequency'],3) for item in sound})))
+            self.assertEqual(self.state()['audio']['theme'],species['title'])
+            self.page.locator('#fishingCancel').click()
+        self.assertEqual(len(set(signatures)),3,'Fish encounters should have audibly different pitch arrangements')
 
     def test_audio_settings_pause_the_battle_and_respect_a_manual_pause(self):
         self.battle();self.open_audio();frozen=self.state()

@@ -2,6 +2,7 @@
 import importlib.util
 import json
 from pathlib import Path
+from world_navigation_helpers import advance_world, enter_room, open_destination, talk_to_musician, open_settings, close_settings
 import sys
 import unittest
 
@@ -36,13 +37,13 @@ class EditorCameraTests(unittest.TestCase):
         self.page.mouse.up(button=button)
         return box
 
-    def test_layers_button_and_tab_switching_keep_zoom_and_camera_position(self):
+    def test_layers_shortcut_and_tab_switching_keep_zoom_and_camera_position(self):
         self.page.locator('#assetClose').click()
         self.zoom(2.5)
         self.page.wait_for_timeout(400)
         before = self.camera()
         width = self.page.locator('#view').bounding_box()['width']
-        self.page.locator('#editorToggle').click()
+        self.page.locator('#view').focus();self.page.keyboard.press('Shift+L')
         self.assertEqual(self.page.locator('#devTab-layers').get_attribute('aria-selected'), 'true')
         for tab in ['objects','collision','layers','dialogue','pixels','project','layers']:
             self.tab(tab)
@@ -57,7 +58,7 @@ class EditorCameraTests(unittest.TestCase):
         self.assertEqual(self.page.locator('#layerEditor:visible').count(),0,'The legacy layer panel must not open alongside the console')
         self.zoom(6)
         before=self.camera()
-        self.page.locator('#editorToggle').click();self.page.wait_for_timeout(80)
+        self.page.locator('#view').focus();self.page.keyboard.press('Shift+L');self.page.wait_for_timeout(80)
         actual=self.camera()
         self.assertEqual(actual['zoom'],6,'Opening Layers while already editing must retain detailed zoom above the gameplay limit')
         self.assertAlmostEqual(actual['x'],before['x'],delta=.1)

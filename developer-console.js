@@ -14,7 +14,7 @@ window.createCodaDeveloperConsole = function (api) {
   let pickSample = false, baseCache = null, baseKey = '', cleanupCache = null, loadFailed = false, pan = null;
   let publishedProject = null, publishedError = null, loadError = null, projectSource = 'base';
   let dialogue={}, sprites={}, dialogueEditor=null, pixelEditor=null;
-  let panTool=false, spaceHeld=false;
+  let panTool=false, spaceHeld=false,collisionOverlay=false,layerOverlay=false,layerMaskSource=null,layerMaskTint=null,layerMaskKey='';
   const dialogueDefaults=api.dialogueDefaults||window.CodaNPCDialogueDefaults||{};
   const TABS=['objects','collision','layers','dialogue','pixels','project'];
   const pictures = new Map();
@@ -39,6 +39,9 @@ window.createCodaDeveloperConsole = function (api) {
   cameraTools.setAttribute('role','group');cameraTools.setAttribute('aria-label','Editor camera');
   cameraTools.innerHTML='<button id="devZoomOut" type="button" aria-label="Zoom editor out">−</button><button id="devZoomReset" type="button" aria-label="Reset editor zoom to 100%">100%</button><button id="devZoomIn" type="button" aria-label="Zoom editor in">+</button><button id="devPan" type="button" aria-pressed="false" title="Drag the canvas to pan without editing">✥ Pan</button><small>Wheel or + / − zoom · right-drag or Space + drag pans</small>';
   nav.after(cameraTools);
+  const overlays=document.createElement('div');overlays.className='dev-overlays';overlays.setAttribute('role','group');overlays.setAttribute('aria-label','Editor overlays');
+  overlays.innerHTML='<button id="devShowCollision" type="button" aria-pressed="false">Show collision</button><button id="devShowLayers" type="button" aria-pressed="false">Show layers</button><p id="devOverlayLegend" class="dev-overlay-legend" hidden><span class="dev-key-blocked">Red: blocked</span> · <span class="dev-key-walkable">Green: walkable</span><br><span class="dev-key-background">Blue: background</span> · <span class="dev-key-depth">Gold: actor depth</span> · <span class="dev-key-foreground">Mint: foreground</span></p>';
+  cameraTools.after(overlays);
   function refreshCamera(){
     const camera=api.getCamera?.()||{targetZoom:1,min:1,max:8,step:.25};
     $('devZoomReset').textContent=Math.round(camera.targetZoom*100)+'%';
@@ -83,6 +86,7 @@ window.createCodaDeveloperConsole = function (api) {
   pane('collision', '<h3 class="dev-heading">Walking & collision</h3><p class="dev-note">Drag to block or open cells. Restore returns cells to the original map. Changes affect player movement and NPC routes, including original walls.</p><div id="devCollisionTools"></div>');
   pane('layers', `<h3 class="dev-heading">Foreground & background</h3><p class="dev-note">Paint promotes existing room pixels in front of actors. Erase sends them behind actors. For moved objects, choose Background, Actor depth, or Foreground in Objects.</p>
     <label class="studioField">Brush tool<select id="devLayerTool"><option value="paint">Paint foreground</option><option value="erase">Send to background / erase mask</option></select></label>
+    <label class="studioField">Stroke shape<select id="devLayerShape"><option value="pen">Freehand</option><option value="line">Line · drag a straight line</option></select></label>
     <label class="studioField">Brush size<select id="devLayerSize"><option>1</option><option>2</option><option selected>4</option><option>8</option><option>16</option></select></label>
     <label class="studioField">Depth offset (px)<input id="devLayerDepth" type="number" min="-120" max="120" step="5" value="0"></label>
     <label class="studioCheck"><input id="devMasks" type="checkbox">Show foreground masks</label>`);
@@ -158,6 +162,7 @@ window.createCodaDeveloperConsole = function (api) {
   function setTab(name) {
     name=name==='sprites'?'pixels':TABS.includes(name)?name:'objects';
     finishGesture(); tab=name; pickSample=false; studio.capturing=null;
+    if(name==='collision')collisionOverlay=true;if(name==='layers')layerOverlay=true;
     for(const name of TABS) { $('dev-'+name).hidden=name!==tab; $('devTab-'+name).setAttribute('aria-selected',String(name===tab)); }
     layer.active=studio.active&&tab==='layers'&&!playtest; layer.preview=false;
     collision.setActive(studio.active&&tab==='collision'&&!playtest);
@@ -430,6 +435,8 @@ window.createCodaDeveloperConsole = function (api) {
   }
   function refresh() {
     dialogueEditor?.refresh();pixelEditor?.refresh();
+    for(const [id,shown,label]of [['devShowCollision',collisionOverlay,'collision'],['devShowLayers',layerOverlay,'layers']]){$(id).setAttribute('aria-pressed',String(shown));$(id).textContent=(shown?'Hide ':'Show ')+label;$(id).disabled=playtest;}
+    $('devOverlayLegend').hidden=playtest||!collisionOverlay&&!layerOverlay;$('devMasks').checked=layerOverlay;$('devMasks').disabled=playtest;
     const a=api.selected(); $('devUndo').disabled=!studio.undo.length;$('devRedo').disabled=!studio.redo.length;
     const part=catalog.find(p=>p.name===a?.origin?.name);$('devDisco').hidden=part?.ballIndex===undefined;
     if(part?.ballIndex!==undefined){$('devDiscoSpin').value=a.discoSpin??part.spin;$('devDiscoRays').checked=a.discoRays!==false;}
@@ -474,7 +481,19 @@ window.createCodaDeveloperConsole = function (api) {
   function pointerMove(e) {if(!studio.active||playtest)return; if(pan){if(e.pointerId!==pan.id)return;api.panByScreen(pan.x-e.clientX,pan.y-e.clientY);pan.x=e.clientX;pan.y=e.clientY;return;}if(tab==='collision')collision.pointerMove(e);if(tab==='layers')api.layerPointerMove(e);}
   function pointerEnd(e) {if(pan){if(e&&e.pointerId!==pan.id)return;endPan();return;}if(!studio.active||playtest)return; if(tab==='collision')collision.pointerEnd();if(tab==='layers'&&strokeBefore!==null){api.layerPointerEnd();const before=strokeBefore;strokeBefore=null;changed(before);}}
   function drawOverlay(g,cam) {
-    if(!studio.active||playtest)return;collision.draw(g,cam);
+    if(!studio.active||playtest)return;
+    if(layerOverlay){
+      g.save();g.fillStyle='#58a9ff1f';g.fillRect(0,0,W,H);
+      const source=api.getForegroundMask?.(),maskKey=JSON.stringify(studio.assets.filter(a=>a.origin).map(a=>[a.origin.name,a.origin.bounds]));
+      if(source){if(source!==layerMaskSource||maskKey!==layerMaskKey){layerMaskSource=source;layerMaskKey=maskKey;layerMaskTint=makeCanvas(W,H);const tint=layerMaskTint.getContext('2d');drawUnliftedPixels(tint,source,0,0);tint.globalCompositeOperation='source-in';tint.fillStyle='#69ffd0';tint.fillRect(0,0,W,H);}g.globalAlpha=.58;g.drawImage(layerMaskTint,0,0);g.globalAlpha=1;}
+      for(const a of studio.assets){if(a.visible===false)continue;const color=['back','background'].includes(a.layer)?'#70b6ff':['front','foreground'].includes(a.layer)?'#69ffd0':'#ffd46b';g.save();g.translate(a.x,a.y);g.rotate((a.rotation||0)*Math.PI/180);g.strokeStyle=color;g.lineWidth=2/(cam?.zoom||1);g.strokeRect(-a.w/2,-a.h/2,a.w,a.h);g.fillStyle=color;g.font=11/(cam?.zoom||1)+'px monospace';g.fillText((['back','background'].includes(a.layer)?'Background':['front','foreground'].includes(a.layer)?'Foreground':'Actor depth')+' · '+(a.name||a.id),-a.w/2,-a.h/2-4/(cam?.zoom||1));g.restore();}
+      g.restore();
+    }
+    if(collisionOverlay){
+      const cell=api.cell,cols=api.gridWidth,rows=api.gridHeight,zoom=cam?.zoom||1,x0=Math.max(0,Math.floor((cam?.x||0)/cell)),y0=Math.max(0,Math.floor((cam?.y||0)/cell)),x1=Math.min(cols,Math.ceil(((cam?.x||0)+W/zoom)/cell)),y1=Math.min(rows,Math.ceil(((cam?.y||0)+H/zoom)/cell));
+      g.save();for(let y=y0;y<y1;y++){let start=x0;while(start<x1){const value=!!api.navGrid[y*cols+start];let end=start+1;while(end<x1&&!!api.navGrid[y*cols+end]===value)end++;g.fillStyle=value?'#32eba03d':'#fa41643d';g.fillRect(start*cell,y*cell,Math.min(W,end*cell)-start*cell,Math.min(cell,H-y*cell));start=end;}}
+      g.lineWidth=1.5/zoom;for(const [index,value]of collision.get()){const x=index%cols*cell,y=Math.floor(index/cols)*cell;if(x+cell<cam.x||y+cell<cam.y||x>(cam.x+W/zoom)||y>(cam.y+H/zoom))continue;g.strokeStyle=value?'#75ffd0':'#ff8094';g.strokeRect(x+.5/zoom,y+.5/zoom,cell-1/zoom,cell-1/zoom);}g.restore();
+    }
     if(tab==='objects'){const a=api.selected();if(a?.collider){const b=a.collider;g.save();g.translate(a.x,a.y);g.rotate(a.rotation*Math.PI/180);g.fillStyle='#ff56764d';g.strokeStyle='#ff8aab';g.lineWidth=2/cam.zoom;g.fillRect(b.x*a.w/100,b.y*a.h/100,b.w*a.w/100,b.h*a.h/100);g.strokeRect(b.x*a.w/100,b.y*a.h/100,b.w*a.w/100,b.h*a.h/100);g.restore();}}
   }
   function liftedRegion(bounds) { return lift({name:'region-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),bounds}); }
@@ -492,7 +511,9 @@ window.createCodaDeveloperConsole = function (api) {
   $('devRestore').onclick=()=>{const a=api.selected();if(!a?.origin)return;const before=snapshot();studio.assets=studio.assets.filter(q=>q!==a);studio.selected=null;changed(before);api.refresh();message('Restored the original artwork and source collision.');};
   $('devReplace').onclick=()=>$('devReplaceFile').click();
   $('devReplaceFile').onchange=async e=>{const file=e.target.files?.[0],id=studio.selected;e.target.value='';if(!file)return;try{if(!/^image\/(png|jpeg|webp|gif|apng)$/.test(file.type)||file.size>8*1024*1024)throw Error('Choose a supported image up to 8 MB.');const data=await api.fileData(file),[w,h]=await api.imageDimensions(data);if(w>8192||h>8192)throw Error('Image exceeds 8192 pixels.');if(studio.selected!==id)throw Error('Selection changed. Select the object and try again.');editSelected(a=>{a.kind='image';a.data=data;a.ref=null;a.crop=null;a.cols=a.rows=a.frames=1;a.fps=0;});message('Replaced selected artwork; size, placement and source cleanup preserved.');}catch(err){message(err.message);}};
-  $('devLayerTool').onchange=e=>{layer.tool=e.target.value;};$('devLayerSize').onchange=e=>{layer.size=Number(e.target.value);};$('devLayerDepth').onchange=e=>{layer.offset=api.bound(e.target.value,-120,120,0);};$('devMasks').onchange=e=>{layer.maskView=e.target.checked;};
+  function setOverlay(name,value){if(!studio.active||playtest)return;finishGesture();if(name==='collision')collisionOverlay=!!value;else layerOverlay=!!value;refresh();message((name==='collision'?'Collision map':'Foreground / background layers')+(value?' shown.':' hidden.')+' Project edits are unchanged.');}
+  $('devShowCollision').onclick=()=>setOverlay('collision',!collisionOverlay);$('devShowLayers').onclick=()=>setOverlay('layers',!layerOverlay);
+  $('devLayerTool').onchange=e=>{layer.tool=e.target.value;};$('devLayerShape').onchange=e=>{layer.shape=e.target.value;};$('devLayerSize').onchange=e=>{layer.size=Number(e.target.value);};$('devLayerDepth').onchange=e=>{layer.offset=api.bound(e.target.value,-120,120,0);};$('devMasks').onchange=e=>setOverlay('layers',e.target.checked);
   $('devUndo').onclick=()=>undoRedo(true);$('devRedo').onclick=()=>undoRedo(false);$('devPlaytest').onclick=togglePlaytest;
   $('devSave').onclick=save;$('devExport').onclick=exportProject;$('assetExport').onclick=exportProject;
   $('devImport').onclick=$('assetImport').onclick=()=>$('devImportFile').click();
@@ -542,5 +563,5 @@ window.createCodaDeveloperConsole = function (api) {
   return {snapshot,recordChange,recordRoomChange,setSprites,undoRedo,save,refresh,refreshCamera,onToggle,open,renderBase,renderCleanup,suppressOriginal,drawUnliftedPixels,originalPicture:a=>a.origin?picture(a.origin):null,validateAssetExtension,walkableOverride,pointerDown,pointerMove,pointerEnd,drawOverlay,liftedRegion,finishGesture,isPlaytest:()=>playtest,isEditing:()=>studio.active&&!playtest,exportProject,loadReady:()=>!loading,validate,
     // Data-only inspection supports repeatable browser integration checks.
     getProject:()=>clone(documentData()),getPublishedProject:()=>publishedProject?clone(publishedProject):null,getProjectSource:()=>projectSource,
-    getDialogue:id=>id===undefined?clone(dialogue):dialogue[id]?clone(dialogue[id]):null,getSprites:()=>clone(sprites)};
+    getDialogue:id=>id===undefined?clone(dialogue):dialogue[id]?clone(dialogue[id]):null,getSprites:()=>clone(sprites),getState:()=>({open:studio.active,editing:studio.active&&!playtest,playtest,tab,overlays:{collision:collisionOverlay,layers:layerOverlay,visible:studio.active&&!playtest}})};
 };

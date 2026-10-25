@@ -3,6 +3,7 @@
  'use strict';
  const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
  const copy=value=>JSON.parse(JSON.stringify(value));
+ const TARGET_BARS=8,START_PROGRESS=45,CLEAN_BAR_GAIN=(100-START_PROGRESS)/TARGET_BARS;
  const METERS=Object.freeze({
   '4/4':Object.freeze({id:'4/4',timeSignature:'4/4',label:'4/4',numerator:4,denominator:4,barBeats:4,pulseBeats:1,pulsesPerBar:4,pulseUnit:'quarter'}),
   '6/8':Object.freeze({id:'6/8',timeSignature:'6/8',label:'6/8',numerator:6,denominator:8,barBeats:3,pulseBeats:1.5,pulsesPerBar:2,pulseUnit:'dotted-quarter'}),
@@ -10,11 +11,11 @@
  });
  const meterFor=value=>{let id=typeof value==='string'?value:value?.id;if(['cut','cut-time','cuttime'].includes(id))id='2/2';return Object.prototype.hasOwnProperty.call(METERS,id)?METERS[id]:null;};
  const RARITIES=Object.freeze([
-  {id:'common',label:'Common',rank:0,weight:52,bpm:76,window:.19,hitGain:7,missLoss:12,extraLoss:8,description:'Quarter notes, eighth-note pairs, and clear rests.'},
-  {id:'uncommon',label:'Uncommon',rank:1,weight:28,bpm:82,window:.18,hitGain:7,missLoss:12,extraLoss:8,description:'Eighth notes, longer notes, and eighth through whole-bar rests.'},
-  {id:'rare',label:'Rare',rank:2,weight:13,bpm:88,window:.16,hitGain:6,missLoss:13,extraLoss:9,description:'Offbeat entrances, held syncopations, and short sixteenth-note groups.'},
-  {id:'epic',label:'Epic',rank:3,weight:5,bpm:96,window:.145,hitGain:5,missLoss:14,extraLoss:9,description:'Dotted notes, rests, sixteenths, and notes held across the beat.'},
-  {id:'legendary',label:'Legendary',rank:4,weight:2,bpm:104,window:.13,hitGain:4,missLoss:15,extraLoss:10,description:'Quick sixteenths, offbeat rests, and dotted syncopated phrases.'}
+  {id:'common',label:'Common',rank:0,weight:52,bpm:76,window:.19,missLoss:7,extraLoss:4,description:'Quarter notes, eighth-note pairs, and clear rests.'},
+  {id:'uncommon',label:'Uncommon',rank:1,weight:28,bpm:82,window:.185,missLoss:7,extraLoss:4,description:'Eighth notes, longer notes, and eighth through whole-bar rests.'},
+  {id:'rare',label:'Rare',rank:2,weight:13,bpm:104,window:.18,missLoss:6,extraLoss:4,description:'Offbeat entrances, held syncopations, and short sixteenth-note groups.'},
+  {id:'epic',label:'Epic',rank:3,weight:5,bpm:117,window:.175,missLoss:5,extraLoss:3,description:'Dotted notes and short sixteenth groups at a manageable pace.'},
+  {id:'legendary',label:'Legendary',rank:4,weight:2,bpm:132,window:.17,missLoss:5,extraLoss:3,description:'Changing tempos, offbeat rests, and brief sixteenth-note bursts.'}
  ].map(Object.freeze));
  const SPECIES=[
   ['silver-minnow','Silver Minnow','common','#a7c8de','#eef9ff','slender',[5,12],4,8],
@@ -58,7 +59,7 @@
   return {marking:'Andante',meaning:'Walking pace'};
  }
  function speciesTempo(rarity,index){
-  const rank=RARITIES.find(value=>value.id===rarity).rank,range=rank===2?[108,132]:rank===3?[132,160]:rank===4?[168,192]:rank===1?[82,82]:[76,76];
+  const rank=RARITIES.find(value=>value.id===rarity).rank,range=rank===2?[96,112]:rank===3?[108,126]:rank===4?[120,144]:rank===1?[82,82]:[76,76];
   const change=rank<2?'steady':['accelerando','ritardando','steady','ritardando','steady','accelerando'][index%6],start=change==='ritardando'?range[1]:change==='steady'?(range[0]+range[1])/2:range[0],end=change==='accelerando'?range[1]:change==='ritardando'?range[0]:start;
   return Object.freeze({...tempoMarking(start),initialMarking:tempoMarking(start).marking,endMarking:tempoMarking(end).marking,unit:'quarter',change,startQuarterBpm:start,endQuarterBpm:end,rampAfterBars:1,rampBars:3});
  }
@@ -142,16 +143,16 @@
    return endBeat+(seconds-rampEndSeconds)*q1/60;
   }
   const patterns=PATTERNS.filter(pattern=>pattern.rarity===rarity.id&&pattern.meter===meter.id),events=[],pressedSources=new Map();
-  let now=startTime,phase='count-in',progress=45,hits=0,misses=0,extras=0,bar=0,sequence=0,lastJudgement=null,result=null,finished=false;
+  let now=startTime,phase='count-in',progress=START_PROGRESS,hits=0,misses=0,extras=0,bar=0,sequence=0,lastJudgement=null,result=null,finished=false;
   function makeUntil(beat){
    while(bar*meter.barBeats<=beat){const pattern=patterns[(bar+fish.patternIndex)%patterns.length],barNumber=bar++;
     for(const source of pattern.events){const onset=barNumber*meter.barBeats+source.onset,time=timeAtBeat(onset),durationSeconds=timeAtBeat(onset+source.duration)-time,beam=Math.floor(source.onset/meter.pulseBeats),previous=events.at(-1);
      // Dense fast subdivisions need disjoint judgement windows. Written rest
      // boundaries count too, so tapping silence cannot steal a nearby target.
-     const window=source.rest?0:rarity.rank<2?rarity.window:Math.min(rarity.window,durationSeconds*.42,previous?(time-previous.time)*.42:Infinity);
+     const window=source.rest?0:Math.min(rarity.window,durationSeconds*.48,previous?(time-previous.time)*.48:Infinity);
      const requiresHold=!source.rest&&source.duration>=2;
-     const holdTransitionFrom=!source.rest&&previous?.requiresHold&&Math.abs(previous.onset+previous.duration-onset)<1e-8?previous.id:null,transitionLateWindow=holdTransitionFrom?Math.max(window,Math.min(.18,durationSeconds*.55)):window;
-     events.push({...source,id:'note-'+sequence++,bar:barNumber,pattern:pattern.id,meter:meter.id,onset,beat:onset,time,at:time,durationSeconds,window,judgementWindow:window,requiresHold,holdEndTime:requiresHold?timeAtBeat(onset+source.duration):null,holdReleaseWindow:requiresHold?Math.min(.18,durationSeconds*.35):0,holdTransitionFrom,transitionLateWindow,heldBy:null,holdLatched:false,holdReleased:false,pressedAt:null,beamingGroup:!source.rest&&source.duration<1?'beam-'+barNumber+'-'+beam:null,beam:!source.rest&&source.duration<1?beam:null,judgement:source.rest?'rest':'pending',hitAt:null});
+     const holdTransitionFrom=!source.rest&&previous?.requiresHold&&Math.abs(previous.onset+previous.duration-onset)<1e-8?previous.id:null,transitionLateWindow=holdTransitionFrom?Math.max(window,Math.min(.18,durationSeconds*.5)):window;
+     events.push({...source,id:'note-'+sequence++,bar:barNumber,pattern:pattern.id,meter:meter.id,onset,beat:onset,time,at:time,durationSeconds,window,judgementWindow:window,requiresHold,holdEndTime:requiresHold?timeAtBeat(onset+source.duration):null,holdReleaseWindow:requiresHold?Math.min(.18,durationSeconds*.35):0,holdTransitionFrom,transitionLateWindow,heldBy:null,holdLatched:false,holdReleased:false,pressedAt:null,beamingGroup:!source.rest&&source.duration<1?'beam-'+barNumber+'-'+beam:null,beam:!source.rest&&source.duration<1?beam:null,judgement:source.rest?'rest':'pending',restClean:true,restProgressAwarded:false,hitAt:null});
     }
    }
   }
@@ -167,14 +168,14 @@
    try{options.onFinish?.(copy(result));}catch{/* Feedback cannot change a completed result. */}
   }
   function judge(kind,event){
-   if(kind==='hit'){event.judgement='hit';event.hitAt=now;event.heldBy=null;event.holdLatched=false;hits++;progress=Math.min(100,progress+rarity.hitGain);}
+   if(kind==='hit'){event.judgement='hit';event.hitAt=now;event.heldBy=null;event.holdLatched=false;hits++;progress=Math.min(100,progress+CLEAN_BAR_GAIN*event.duration/meter.barBeats);}
    else if(kind==='miss'){event.judgement='miss';event.heldBy=null;event.holdLatched=false;misses++;progress=Math.max(0,progress-rarity.missLoss);}
-   else{extras++;progress=Math.max(0,progress-rarity.extraLoss);}
+   else{extras++;progress=Math.max(0,progress-rarity.extraLoss);for(const rest of events)if(rest.rest&&rest.time<=now&&now<timeAtBeat(rest.onset+rest.duration))rest.restClean=false;}
    lastJudgement={kind,time:now,noteId:event?.id||null,progress};
-   if(!practice){if(progress>=100)finish('caught');else if(progress<=0)finish('escaped','rhythm');}
+   if(!practice){if(progress>=100-1e-8&&now+1e-9>=timeAtBeat(TARGET_BARS*meter.barBeats))finish('caught');else if(progress<=0)finish('escaped','rhythm');}
   }
   // A successful physical hold earns breathing room for its adjacent target.
-  // The 55% duration cap and the next note's 42% head cap keep dense windows
+  // The 50% duration cap and the next note's 48% head cap keep dense windows
   // separate; a rest or an unsuccessful hold never grants this allowance.
   function lateWindow(event){
    if(!event.holdTransitionFrom)return event.window;
@@ -186,7 +187,15 @@
    const beat=beatAtTime(now);
    if(beat<0)return getState();phase='playing';
    for(const event of events){
-    if(event.rest)continue;
+    if(event.rest){
+     // Listening through a rest is part of a clean bar. Tapping during its
+     // silence forfeits this credit as well as applying the extra-tap loss.
+     if(!event.restProgressAwarded&&now+1e-9>=timeAtBeat(event.onset+event.duration)){
+      event.restProgressAwarded=true;
+      if(event.restClean)progress=Math.min(100,progress+CLEAN_BAR_GAIN*event.duration/meter.barBeats);
+     }
+     continue;
+    }
     if(event.judgement==='holding'){
      if(now+1e-9>=event.holdEndTime){judge('hit',event);if(finished)break;}
      continue;
@@ -194,6 +203,9 @@
     if(event.time+lateWindow(event)>=now)break;
     if(event.judgement==='pending'){judge('miss',event);if(finished)break;}
    }
+   // A short last note can be tapped before its written duration ends. Wait
+   // for the eighth full bar, including its final rest or held tail, to pass.
+   if(!practice&&!finished&&hits>0&&progress>=100-1e-8&&now+1e-9>=timeAtBeat(TARGET_BARS*meter.barBeats))finish('caught');
    if(!finished)makeUntil(beat+16);
    // Retain the nearby score for rendering; a long session must not grow forever.
    if(events.length>192){const remove=events.findIndex(event=>event.onset>=beat-8);if(remove>0)events.splice(0,remove);}
@@ -263,10 +275,10 @@
    for(let line=Math.max(0,Math.floor(beat/meter.barBeats)-1);line<=Math.ceil((beat+16)/meter.barBeats);line++){const at=line*meter.barBeats;barLines.push({bar:line,beat:at,time:timeAtBeat(at)});}
    return {id,practice,phase,fish:copy(fish),rarity:copy(rarity),meter:meter.id,timeSignature:meter.id,meterInfo:{...meter},bpm:tempo.currentPulseBpm,displayBpm:tempo.currentPulseBpm,quarterBpm:tempo.currentQuarterBpm,tempo,startTime,musicStart,now,time:now,elapsed,musicTime,beat,secondsPerBeat,secondsPerPulse,pulseBeats:meter.pulseBeats,pulsesPerBar:meter.pulsesPerBar,pulseUnit:meter.pulseUnit,barBeats:meter.barBeats,countInBeats,countInQuarterBeats:meter.barBeats,countInSeconds,
     countInRemaining,countInBeat:phase==='count-in'?Math.max(1,Math.ceil(countInRemaining/initialSecondsPerPulse-1e-9)):0,pulses,barLines,
-    progress,hits,misses,extras,window:rarity.window,lastJudgement:lastJudgement?{...lastJudgement}:null,
+    progress:!finished&&beat<TARGET_BARS*meter.barBeats?Math.min(99,progress):progress,targetBars:TARGET_BARS,completedBars:Math.max(0,Math.floor((beat+1e-9)/meter.barBeats)),cleanBarsEquivalent:Math.max(0,(progress-START_PROGRESS)/CLEAN_BAR_GAIN),hits,misses,extras,window:rarity.window,lastJudgement:lastJudgement?{...lastJudgement}:null,
     pressedSources:Array.from(pressedSources.keys()),activeHolds:events.filter(event=>event.judgement==='holding').map(noteState),
     notes:events.filter(event=>event.onset+event.duration>=beat-8&&event.onset<=beat+16).map(noteState),result:result?copy(result):null};}
   return {update,tap,press,release,releaseAllSources,getState,snapshot:getState,timeAtBeat,beatAtTime,tempoAtBeat,abort(){if(!finished)finish('escaped','aborted');return getState();}};
  }
- return Object.freeze({FISH,RARITIES,METERS,PATTERNS,chooseFish,availableFish,canFishInMeter,fishFor,rarityFor,meterFor,tempoMarking,createSession});
+ return Object.freeze({FISH,RARITIES,METERS,PATTERNS,TARGET_BARS,chooseFish,availableFish,canFishInMeter,fishFor,rarityFor,meterFor,tempoMarking,createSession});
 });

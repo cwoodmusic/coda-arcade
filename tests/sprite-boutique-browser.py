@@ -6,6 +6,7 @@ environment's Python Playwright package and Chromium; no external service access
 import functools
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from world_navigation_helpers import advance_world, enter_room, open_destination, talk_to_musician, open_settings, close_settings
 import threading
 import unittest
 
@@ -42,11 +43,13 @@ class SpriteBoutiqueTests(unittest.TestCase):
         self.page.on('response',lambda response:self.local_failures.append(response.url) if response.status>=400 and '127.0.0.1' in response.url and not response.url.endswith('favicon.ico') else None)
         self.load()
         # The shipped FX switch keeps expensive room lights out of visual checks.
+        open_settings(self.page)
         for _ in range(3):
             if self.page.locator('#fxBtn').inner_text().endswith('Off'):
                 break
             self.page.locator('#fxBtn').click()
         self.assertTrue(self.page.locator('#fxBtn').inner_text().endswith('Off'))
+        close_settings(self.page)
 
     def tearDown(self):
         errors,failures=self.errors[:],self.local_failures[:]
@@ -66,7 +69,7 @@ class SpriteBoutiqueTests(unittest.TestCase):
         self.page.get_by_label(label,exact=True).evaluate('(input,value)=>{input.value=value;input.dispatchEvent(new Event("input",{bubbles:true}));}',value)
 
     def open_boutique(self,target='player'):
-        self.page.locator('#avatarBtn').click()
+        open_destination(self.page,'boutique')
         self.page.get_by_label('Customize',exact=True).select_option(target)
         self.page.locator('#avatarPreviewMode').select_option('idle')
 

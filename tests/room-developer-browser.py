@@ -9,6 +9,7 @@ import math
 from pathlib import Path
 import sys
 import unittest
+from world_navigation_helpers import enter_room
 
 sys.dont_write_bytecode = True
 _spec = importlib.util.spec_from_file_location('room_learning_world', Path(__file__).with_name('learning-world-browser.py'))
@@ -61,9 +62,7 @@ class RoomDeveloperTests(_world.WorldBrowserCase):
         return self.page.locator('#pianoRoomCanvas' if room=='piano' else '#fishingLakeCanvas')
 
     def enter(self,room):
-        target=self.page.locator('#pianoLabBtn' if room=='piano' else '#fishingBtn')
-        if not target.is_visible():self.page.locator('#worldMenuBtn').click()
-        target.click()
+        enter_room(self.page,room)
         self.page.clock.run_for(64)
         self.assertTrue(self.room_state(room)['open'])
         self.page.wait_for_function("id=>CodaArcadeQA[id==='piano'?'piano':'fishing']().background.ready",arg=room)
@@ -393,7 +392,7 @@ class RoomDeveloperTests(_world.WorldBrowserCase):
                 self.page.clock.run_for(100);p=self.room_state('fishing')['player']
                 if math.hypot(p['x']-x,p['y']-y)<7:break
         walk(135,285);walk(218,380)
-        self.page.locator('#fishingBoatBoard').click();self.page.clock.run_for(32)
+        self.canvas('fishing').focus();self.page.keyboard.press('e');self.page.clock.run_for(32)
         self.assertEqual(self.room_state('fishing')['phase'],'explore')
         self.open_editor('fishing')
         field=self.panel('fishing').locator('[data-room-field="entity"]')
@@ -422,7 +421,7 @@ class RoomDeveloperTests(_world.WorldBrowserCase):
         self.action('fishing','undo').click();self.assertEqual(self.project('fishing')['entities']['fish-slot-0'],saved)
         self.close_editor('fishing')
         self.assertEqual(self.room_state('fishing')['shadows'][0]['fishId'],species)
-        self.page.locator('#fishingCast').click();self.page.clock.run_for(2000)
+        self.canvas('fishing').focus();self.page.keyboard.press('e');self.page.clock.run_for(2000)
         state=self.room_state('fishing')
         self.assertEqual(state['phase'],'rhythm')
         self.assertEqual(state['challenge']['fish']['id'],species,'The edited species controls the real rhythm challenge')
@@ -481,6 +480,7 @@ class RoomDeveloperTests(_world.WorldBrowserCase):
     def test_phone_has_visible_room_editor_zoom_and_pan_controls_phone(self):
         self.enter('fishing')
         button=self.page.locator('[data-room-dev-open="fishing"]')
+        if not button.is_visible():self.page.locator('#fishingMenuButton').click()
         self.assertTrue(button.is_visible());button.click();self.page.clock.run_for(64)
         self.assertTrue(self.state('fishing')['editing'])
         for name in ['zoom-in','zoom-out','pan','show-collision','show-layers']:
@@ -506,6 +506,8 @@ class RoomDeveloperTests(_world.WorldBrowserCase):
         self.action('fishing','close').click();self.page.locator('#fishingClose').click()
         self.enter('piano')
         piano_button=self.page.locator('[data-room-dev-open="piano"]')
+        if not piano_button.is_visible():
+            self.page.locator('#pianoMenuButton').click();self.page.locator('[data-piano-view="settings"]').click()
         self.assertTrue(piano_button.is_visible());piano_button.click()
         self.assertTrue(self.state('piano')['editing'])
         self.assertTrue(self.action('piano','zoom-in').is_visible())

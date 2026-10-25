@@ -18,6 +18,20 @@
   {id:'halo',label:'Neon halo',level:12},
   {id:'magicorb',label:'Magic orb',level:12}
  ].map(Object.freeze));
+ const PIANO_MEMORIES=Object.freeze(['twinkle','mary','london-bridge','hot-cross-buns','row-your-boat','frere-jacques','ode-to-joy','jingle-bells','old-macdonald']);
+ const ACHIEVEMENT_REWARDS=Object.freeze([
+  {id:'rhythmfox',label:'Rhythm fox companion',achievement:'rhythm-hundred-streak',requirement:'Match 100 notes in a row in Rhythm Room.'},
+  {id:'lakeotter',label:'Lake otter companion',achievement:'fishing-all-species',requirement:'Catch all 30 fish species.'},
+  {id:'pianophoenix',label:'Piano phoenix companion',achievement:'piano-memory-master',requirement:'Complete all nine Piano Lab melodies from memory.'},
+  {id:'triadchampion',label:'Triad champion crown',achievement:'triad-hard-advanced-win',requirement:'Win an Advanced Music Triad game on Hard.'},
+  ...[10,20,30,40,50].map(level=>({id:level===50?'starlight':level===40?'pitchcrown40':'pitchlaurel'+level,label:level===50?'Starlight transformation':level===40?'Radiant pitch crown':({10:'Bronze',20:'Silver',30:'Gold'}[level]+' pitch laurel'),achievement:'pitch-level-'+level,requirement:'Complete level '+level+' in Pitch Race Level mode.'}))
+ ].map(Object.freeze));
+ const requirement=id=>ACHIEVEMENT_REWARDS.find(item=>item.id===id)?.requirement||'';
+ const reportedPitchLevel=result=>{
+  if(!['levels','level'].includes(result?.mode))return 0;
+  const completed=Number.isSafeInteger(result.completedLevel)?result.completedLevel:Number.isSafeInteger(result.levelsCompleted)?result.levelsCompleted:result.won===true?(Number.isSafeInteger(result.maxLevel)?result.maxLevel:result.level):0;
+  return Number.isSafeInteger(completed)&&completed>=0&&completed<=1000?completed:0;
+ };
  const SOUNDS=Object.freeze([
   {id:10,label:'Crystal Harp',level:2},{id:11,label:'Neon Marimba',level:3},
   {id:12,label:'Cathedral Organ',level:4},{id:13,label:'Glass Choir',level:5},
@@ -31,20 +45,21 @@
   if(!value||value.version!==1||!Array.isArray(value.events)||value.events.length>MAX_EVENTS)return null;
   const events=[],seen=new Set();let xp=0;
   for(const item of value.events){if(!item||typeof item.id!=='string'||!item.id.length||item.id.length>512||!integer(item.xp,1000)||item.xp<1||seen.has(item.id))continue;seen.add(item.id);const event={id:item.id,xp:item.xp,reason:typeof item.reason==='string'?item.reason.slice(0,150):'Arcade activity'};events.push(event);xp+=item.xp;}
-  return {version:1,xp,events};
+  return {version:1,xp,events,bestPitchLevel:integer(value.bestPitchLevel,1000)?value.bestPitchLevel:0};
  }
  function describe(state){
+  const achievementRewards=ACHIEVEMENT_REWARDS.filter(item=>state.events.some(event=>event.id==='achievement:'+item.achievement));
   const xp=state.xp,level=levelForXP(xp),base=THRESHOLDS[level-1],next=THRESHOLDS[level]??null;
-  return {version:1,xp,level,levelXP:xp-base,nextLevelXP:next,progress:next===null?1:(xp-base)/(next-base),
-   unlockedCosmetics:COSMETICS.filter(item=>item.level<=level).map(item=>item.id),
+  return {version:1,xp,level,bestPitchLevel:state.bestPitchLevel||0,achievementRewards:achievementRewards.map(item=>({...item})),levelXP:xp-base,nextLevelXP:next,progress:next===null?1:(xp-base)/(next-base),
+   unlockedCosmetics:[...COSMETICS.filter(item=>item.level<=level).map(item=>item.id),...achievementRewards.map(item=>item.id)],
    unlockedSounds:SOUNDS.filter(item=>item.level<=level).map(item=>item.id),
    eventCount:state.events.length,recent:state.events.slice(-8).reverse().map(item=>({...item}))};
  }
  function readState(storage){try{return describe(clean(JSON.parse(storage?.getItem(KEY)||'null'))||{version:1,xp:0,events:[]});}catch{return describe({version:1,xp:0,events:[]});}}
  function validResult(game,result){
   if(!result||typeof result!=='object')return false;
-  if(game==='pitch')return ['classic','endless','levels','multi'].includes(result.mode)&&integer(result.correct)&&integer(result.misses)&&integer(result.streak)&&result.streak<=result.correct&&typeof result.won==='boolean';
-  if(game==='triad')return ['computer','multiplayer'].includes(result.mode)&&integer(result.captures,1000)&&integer(result.score,16)&&typeof result.won==='boolean';
+  if(game==='pitch')return ['classic','endless','levels','level','multi'].includes(result.mode)&&integer(result.correct)&&integer(result.misses)&&integer(result.streak)&&result.streak<=result.correct&&typeof result.won==='boolean';
+  if(game==='triad')return ['computer','multiplayer','advanced'].includes(result.mode)&&integer(result.captures,1000)&&integer(result.score,16)&&typeof result.won==='boolean';
   return game==='rhythm'&&result.mode==='tap'&&integer(result.total,128)&&result.total>0&&integer(result.hits,128)&&result.hits<=result.total&&integer(result.extra,1000)&&integer(result.early,128)&&integer(result.late,128)&&result.early+result.late<=result.hits;
  }
  function create(api={}){
@@ -55,11 +70,11 @@
   function getState(){return {...describe(state),persistent,error};}
   function changed(){const value=getState();for(const listener of listeners)try{listener(value);}catch{}try{if(typeof window!=='undefined')window.dispatchEvent(new CustomEvent('coda-progression-change',{detail:value}));}catch{}return value;}
   refresh();
-  function awardXP(id,amount,reason='Arcade activity'){
+  function awardXP(id,amount,reason='Arcade activity',metrics={}){
    if(typeof id!=='string'||id.length<1||id.length>512||!integer(amount,1000)||amount<1)return {ok:false,error:'Invalid experience award.'};
    refresh();if(state.events.some(item=>item.id===id))return {ok:true,alreadyAwarded:true,amount:0,...getState()};
    if(state.events.length>=MAX_EVENTS)return {ok:false,error:'The experience journal is full.'};
-   const before=levelForXP(state.xp),next={version:1,xp:state.xp+amount,events:[...state.events,{id,xp:amount,reason:String(reason).slice(0,150)}]};
+   const before=levelForXP(state.xp),next={version:1,xp:state.xp+amount,bestPitchLevel:Math.max(state.bestPitchLevel||0,integer(metrics.pitchLevel,1000)?metrics.pitchLevel:0),events:[...state.events,{id,xp:amount,reason:String(reason).slice(0,150)}]};
    try{if(!storage||typeof storage.setItem!=='function')throw Error('storage');storage.setItem(KEY,JSON.stringify(next));state=next;persistent=true;error='';}
    catch{persistent=false;error='Browser saving is unavailable. This experience has not been saved; try the activity again.';changed();return {ok:false,error};}
    changed();const result={ok:true,alreadyAwarded:false,amount,leveledUp:levelForXP(next.xp)>before,...getState()};try{api.onAward?.({id,amount,reason:String(reason).slice(0,150),levelBefore:before,level:result.level});}catch{}return result;
@@ -70,19 +85,30 @@
    if(game==='pitch'){xp=10+Math.min(60,result.correct*2)+(result.won?30:0);title='Pitch Race run';}
    if(game==='triad'){xp=15+Math.min(30,result.captures*3)+(result.won?35:0);title='Music Triad match';}
    if(game==='rhythm'){xp=10+Math.min(60,result.hits*2)+(result.hits===result.total&&result.extra===0&&result.early===0&&result.late===0?20:0);title='Rhythm Room round';}
-   const before=levelForXP(state.xp),resultAward=awardXP('game:'+game+':'+runId,xp,title);if(!resultAward.ok)return resultAward;
+   const before=levelForXP(state.xp),resultAward=awardXP('game:'+game+':'+runId,xp,title,{pitchLevel:game==='pitch'?reportedPitchLevel(result):0});if(!resultAward.ok)return resultAward;
    const achievements=['first-'+game+'-result'];
    if(game==='triad'&&result.won)achievements.push('triad-first-win');
+   if(game==='triad'&&result.won&&String(result.difficulty).toLowerCase()==='hard'&&(result.mode==='advanced'||result.rules==='advanced'||result.gameMode==='advanced'||result.advanced===true))achievements.push('triad-hard-advanced-win');
    if(game==='pitch'&&result.correct>=10)achievements.push('pitch-ten-correct');
    if(game==='pitch'&&result.streak>=10)achievements.push('pitch-ten-streak');
+   if(game==='pitch')for(const level of [10,20,30,40,50])if(reportedPitchLevel(result)>=level)achievements.push('pitch-level-'+level);
+   if(game==='rhythm'&&integer(result.streak)&&result.streak>=100&&result.streak<=result.hits)achievements.push('rhythm-hundred-streak');
    if(game==='pitch'&&result.correct>0&&result.misses===0)achievements.push('pitch-perfect-run');
    if(game==='rhythm'&&result.hits===result.total&&result.extra===0&&result.early===0&&result.late===0)achievements.push('rhythm-perfect-round');
    const awarded=[resultAward,...achievements.map(recordAchievement)].filter(value=>value.ok&&!value.alreadyAwarded);
    return {...getState(),ok:true,alreadyAwarded:awarded.length===0,amount:awarded.reduce((sum,value)=>sum+value.amount,0),leveledUp:levelForXP(state.xp)>before};
   }
-  function recordAchievement(id){return awardXP('achievement:'+id,50,'Achievement: '+String(id).replace(/[-_]/g,' '));}
+  function recordAchievement(id){return awardXP('achievement:'+id,['rhythm-hundred-streak','piano-memory-master','triad-hard-advanced-win','pitch-level-50'].includes(id)?250:50,'Achievement: '+String(id).replace(/[-_]/g,' '));}
   function recordQuest(id,amount=100){return awardXP('quest:'+id,amount,'Quest: '+String(id).replace(/[-_:]/g,' '));}
-  function unlocked(id){const reward=COSMETICS.find(item=>item.id===id);return !!reward&&levelForXP(state.xp)>=reward.level;}
+  function recordRhythmStreak(value){if(!integer(value)||value<100)return {ok:false,error:'A verified streak of 100 notes is required.'};return recordAchievement('rhythm-hundred-streak');}
+  function recordPianoMemory(id){
+   if(!PIANO_MEMORIES.includes(id))return {ok:false,error:'Choose a known Piano Lab melody.'};
+   const quest=recordQuest('piano-memory:'+id);if(!quest.ok)return quest;
+   const complete=PIANO_MEMORIES.every(melody=>state.events.some(event=>event.id==='quest:piano-memory:'+melody));
+   return complete?recordAchievement('piano-memory-master'):{...quest,complete:false};
+  }
+  function unlocked(id){const reward=COSMETICS.find(item=>item.id===id),achievement=ACHIEVEMENT_REWARDS.find(item=>item.id===id);return !!reward&&levelForXP(state.xp)>=reward.level||!!achievement&&state.events.some(event=>event.id==='achievement:'+achievement.achievement);}
+
   function open(){
    refresh();if(!api.openPanel||!api.panelBody)return getState();api.openPanel('Your musician level');const doc=api.panelBody.ownerDocument,value=getState();
    const section=doc.createElement('section');section.className='player-progression';
@@ -96,12 +122,15 @@
     const details=doc.createElement('p'),names=[...COSMETICS.filter(item=>item.level===level).map(item=>item.label),...SOUNDS.filter(item=>item.level===level).map(item=>item.label+' · Song Machine sound')];details.textContent=names.length?names.join(' · '):'Your next musician milestone';row.append(details);list.append(row);
    }
    section.append(list);
+   const masteryTitle=doc.createElement('h3');masteryTitle.textContent='Long-term mastery rewards';section.append(masteryTitle);
+   for(const item of ACHIEVEMENT_REWARDS){const row=doc.createElement('p');row.textContent=(unlocked(item.id)?'✓ ':'🔒 ')+item.label+' — '+item.requirement;section.append(row);}
+
    if(value.recent.length){const heading=doc.createElement('h3');heading.textContent='Recent experience';section.append(heading);for(const event of value.recent){const line=doc.createElement('p');line.className='progression-event';line.textContent='+'+event.xp+' XP · '+event.reason;section.append(line);}}
    if(error){const status=doc.createElement('p');status.setAttribute('role','status');status.textContent=error;section.append(status);}api.panelBody.append(section);return value;
   }
   const onStorage=event=>{if(event.key===KEY){refresh();changed();}};
   if(typeof window!=='undefined')window.addEventListener('storage',onStorage);
-  return {awardXP,recordGameEvent,recordAchievement,recordQuest,getState,snapshot:getState,refresh,unlocked,open,dispose(){if(typeof window!=='undefined')window.removeEventListener('storage',onStorage);listeners.clear();},subscribe(listener){listeners.add(listener);return ()=>listeners.delete(listener);}};
+  return {awardXP,recordGameEvent,recordAchievement,recordQuest,recordRhythmStreak,recordPianoMemory,requirement,getState,snapshot:getState,refresh,unlocked,open,dispose(){if(typeof window!=='undefined')window.removeEventListener('storage',onStorage);listeners.clear();},subscribe(listener){listeners.add(listener);return ()=>listeners.delete(listener);}};
  }
- return Object.freeze({KEY,THRESHOLDS,COSMETICS,SOUNDS,levelForXP,soundRequiredLevel,readState,validResult,create});
+ return Object.freeze({KEY,THRESHOLDS,COSMETICS,SOUNDS,ACHIEVEMENT_REWARDS,PIANO_MEMORIES,requirement,levelForXP,soundRequiredLevel,readState,validResult,create});
 });

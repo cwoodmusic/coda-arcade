@@ -65,7 +65,7 @@
     const actions=node('div','profile-actions');
     if(api.openMission){const view=button(mission.status==='complete'?'Collect mission reward':'View mission',()=>api.openMission(mission.person));view.setAttribute('aria-label','Open '+mission.title+' mission');actions.append(view);}
     if(api.findQuestGiver&&mission.status==='complete')actions.append(button('Find '+personName(mission.person),()=>api.findQuestGiver(mission.person)));
-    if(api.openGame&&mission.status==='active'){const play=button('Play '+mission.gameName,()=>api.openGame(mission.game));play.setAttribute('aria-label','Play '+mission.gameName+' for '+mission.title);actions.append(play);}
+    if(api.openGame&&mission.status==='active'){const play=button(api.gameActionLabel?.(mission.gameName)||'Play '+mission.gameName,()=>api.openGame(mission.game));play.setAttribute('aria-label','Play '+mission.gameName+' for '+mission.title);actions.append(play);}
     card.append(actions);
    }
    return card;
@@ -78,7 +78,7 @@
    const part=node('section','profile-lessons');part.append(node('h3','','Your classroom practice'));
    if(lessons.length)for(const lesson of lessons){const done=lesson.completed===true||lesson.complete===true||completed.includes(lesson.id),steps=Number.isFinite(lesson.step)&&Number.isFinite(lesson.total)&&lesson.total>0?(lesson.step>=lesson.total?' · Quiz ready':' · '+Math.min(lesson.step,lesson.total)+' / '+lesson.total+' steps'):' · Keep practicing';part.append(node('p',done?'profile-lesson-done':'profile-lesson-pending',(done?'✓ ':'○ ')+(lesson.title||lesson.name||lesson.id)+(done?' · Finished':steps)));}
    else part.append(node('p','',completed.length+' classroom lesson'+(completed.length===1?'':'s')+' finished'));
-   if(api.openClassroom)part.append(button('Practice in the classroom',()=>api.openClassroom()));
+   if(api.openClassroom)part.append(button(api.classroomLabel||'Practice in the classroom',()=>api.openClassroom()));
    return part;
   }
   function render(){
@@ -88,7 +88,7 @@
    for(const [direction,label,symbol]of [['down','Front','Front'],['left','Left','Left'],['up','Back','Back'],['right','Right','Right']]){const view=button(symbol,()=>{facing=direction;for(const item of views.querySelectorAll('button'))item.setAttribute('aria-pressed',String(item===view));drawPortrait();});view.setAttribute('aria-label','View character from '+label.toLowerCase());view.setAttribute('aria-pressed',String(facing===direction));views.append(view);}
    portraitBox.append(views);hero.append(portraitBox);
    const identity=node('div','profile-identity');identity.append(node('p','profile-eyebrow','YOUR MUSICIAN'),node('h2','',model.name),node('p','profile-level','Level '+model.level),node('p','profile-notes',model.notes+' Notes'));
-   if(api.openWardrobe)identity.append(button('Change your look',()=>api.openWardrobe()));hero.append(identity);section.append(hero);
+   if(api.openWardrobe)identity.append(button(api.wardrobeLabel||'Change your look',()=>api.openWardrobe()));hero.append(identity);section.append(hero);
    const experience=node('section','profile-experience');experience.append(node('h3','',model.atMax?'Look how far you’ve come!':'Your next level'),node('p','profile-xp-to-go',model.atMax?'You have earned every current level prize.':model.xpToNext+' XP to go!'));
    experience.append(meter(model.atMax?1:model.levelXP,model.atMax?1:model.levelSize,'Experience toward '+(model.atMax?'all current level prizes':'level '+model.nextLevel)),node('p','profile-xp-detail',model.atMax?model.xp+' total XP':model.levelXP+' / '+model.levelSize+' XP toward level '+model.nextLevel+' · '+model.xp+' total XP'));
    experience.append(node('p','profile-help','XP means experience points. You earn them by playing games, finishing missions, and learning new music skills.'));section.append(experience);

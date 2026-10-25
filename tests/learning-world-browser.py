@@ -7,6 +7,8 @@ and ordered-hit tracking have independent module tests.
 import json
 import mimetypes
 from pathlib import Path
+from world_navigation_helpers import advance_world, enter_room, open_destination, talk_to_musician, open_settings, close_settings, open_cabinet
+from world_navigation_helpers import approach_musician as approach_world_musician
 import unittest
 from urllib.parse import urlparse
 from playwright.sync_api import sync_playwright
@@ -60,7 +62,7 @@ class WorldBrowserCase(unittest.TestCase):
 
     def load(self):
         self.page.goto(WORLD,wait_until='domcontentloaded')
-        self.page.wait_for_function('CodaDeveloperConsole?.ready()&&CodaArcadeQA?.notes()')
+        self.page.wait_for_function('window.CodaDeveloperConsole?.ready()&&window.CodaArcadeQA?.notes()')
 
     def tearDown(self):
         self.context.close();self.assertEqual(self.errors,[]);self.assertEqual(self.failures,[])
@@ -70,17 +72,11 @@ class WorldBrowserCase(unittest.TestCase):
         self.page.wait_for_timeout(100);self.page.locator('#view').focus()
 
     def approach_musician(self,person):
-        self.assertTrue(self.page.evaluate('''id=>{
-          const person=CodaArcadeQA.characters().npcs.find(p=>p.id===id&&!p.hidden);
-          if(!person)return false;
-          for(const [dx,dy]of [[30,0],[-30,0],[0,30],[0,-30]])
-            if(CodaArcadeQA.place(person.x+dx,person.y+dy))return true;
-          return false;
-        }''',person))
+        approach_world_musician(self.page,person)
 
     def open_bach_mission(self):
-        self.page.locator('#musiciansBtn').click()
-        self.page.get_by_role('button',name='Missions from J. S. Bach',exact=True).click()
+        talk_to_musician(self.page,'bach')
+        self.page.locator('.musician-choices').get_by_role('button',name='mission',exact=False).click()
 
     def leave_musician(self,person):
         self.assertTrue(self.page.evaluate('''id=>{
@@ -103,16 +99,20 @@ class LearningWorldTests(WorldBrowserCase):
             title=self.page.locator('#panelTitle').inner_text()
             self.assertIn('Notes Shop' if 'Riff' in person['name'] else 'Boutique',title)
             self.page.locator('#panelClose').click()
-        self.page.locator('#notesBtn').click()
+        open_destination(self.page,'shop')
         self.page.locator('[data-shop-item="witch"] button').click()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),70)
         self.page.locator('[data-shop-item="witch"] button').click()
+        self.assertNotEqual(self.page.evaluate('CodaArcadeQA.characters().player.appearance.headwear'),'witch','Owned shop items guide to the boutique before equipping')
+        open_destination(self.page,'boutique')
+        self.page.get_by_label('Hats',exact=True).select_option('witch')
+        self.page.get_by_role('button',name='Save my look',exact=True).click()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.characters().player.appearance.headwear'),'witch')
         self.load();self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),70)
         self.assertIn('witch',self.page.evaluate('CodaArcadeQA.notes().owned'))
 
     def test_real_room_entrances_pause_world_and_load_the_detailed_art(self):
-        for selector,qa in [('#pianoLabBtn','piano'),('#classroomBtn','classroom')]:
+        for qa in ['piano','classroom']:
             entrance=next(entry for entry in self.page.evaluate('CodaArcadeQA.entrances()') if ('Piano' in entry['name'])==(qa=='piano'))
             self.assertGreater(len(self.page.evaluate('p=>CodaArcadeQA.route(1180,388,p.x,p.y)',entrance['approach'])),0)
             self.place(entrance['approach']['x'],entrance['approach']['y']);before=self.page.evaluate('CodaArcadeQA.position()')
@@ -121,28 +121,32 @@ class LearningWorldTests(WorldBrowserCase):
             self.assertEqual(self.page.evaluate('CodaArcadeQA.position()'),before,'World avatar must pause inside a music room')
             if qa=='piano':self.page.wait_for_function('CodaArcadeQA.piano().background.ready')
             self.page.keyboard.press('Escape');self.page.wait_for_function(f'!CodaArcadeQA.{qa}().open')
-            self.page.locator(selector).click();self.assertTrue(self.page.evaluate(f'CodaArcadeQA.{qa}().open'))
+            enter_room(self.page,qa);self.assertTrue(self.page.evaluate(f'CodaArcadeQA.{qa}().open'))
             self.page.keyboard.press('Escape')
 
     def test_completed_mission_requires_quest_giver_before_reward_and_keeps_hall_record(self):
         self.open_bach_mission();self.leave_musician('bach')
         self.page.get_by_role('button',name='Accept mission',exact=True).click()
         self.page.get_by_role('button',name='Play Music Triad',exact=True).click()
+        self.assertFalse(self.page.evaluate('CodaArcadeQA.menu().gameOpen'),'The mission points to the physical cabinet')
+        open_cabinet(self.page,1)
         cabinet=self.page.frame_locator('#gameiframe')
         cabinet.locator('#finishMatch').click()
         self.page.wait_for_function('CodaArcadeQA.notes().balance===166')
         self.page.locator('#returnworld').click()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),162)
-        self.open_bach_mission();self.assertTrue(self.page.get_by_role('button',name='Collect reward',exact=True).is_disabled())
-        self.approach_musician('bach');self.open_bach_mission()
+        self.page.locator('#levelBtn').click()
+        self.assertIn('Return to',self.page.locator('.profile-missions').inner_text())
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),166,'A completed mission pays only after returning to its giver')
+        self.page.locator('#panelClose').click();self.open_bach_mission()
         self.page.get_by_role('button',name='Collect reward',exact=True).click()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),256)
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),262)
         before=self.page.evaluate('CodaArcadeQA.progression().xp')
-        self.page.locator('#notesBtn').click();self.page.locator('[data-shop-item="witch"] button').click()
+        open_destination(self.page,'shop');self.page.locator('[data-shop-item="witch"] button').click()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),before,'Currency spending gives no experience')
         self.page.locator('#panelClose').click()
-        self.page.locator('#hallFameBtn').click()
+        open_destination(self.page,'fame')
         self.page.wait_for_function("document.querySelector('.fame-public')?.textContent.includes('COD')")
         self.assertIn('9 cards',self.page.locator('.hall-of-fame').inner_text())
         self.assertIn('1234 points',self.page.locator('.fame-public').inner_text())
@@ -150,17 +154,20 @@ class LearningWorldTests(WorldBrowserCase):
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),before)
 
     def test_chopin_reward_persists_without_repeat_farming(self):
-        self.page.locator('#pianoLabBtn').click()
-        self.page.locator('#pianoInterval').select_option('up-7')
-        self.page.locator('#pianoStartInterval').click()
-        for note in [60,67]:self.page.locator(f'.piano-key[data-midi="{note}"]').click()
+        def complete_interval():
+            enter_room(self.page,'piano')
+            self.page.locator('#pianoMenuButton').click()
+            self.page.locator('#pianoInterval').select_option('up-7')
+            self.page.locator('#pianoStartInterval').click()
+            self.page.locator('[data-piano-dialogue-action="play"]').click()
+            self.page.locator('#pianoMenuButton').click()
+            self.page.locator('[data-piano-view="keyboard"]').click()
+            for note in [60,67]:self.page.locator(f'.piano-key[data-midi="{note}"]').click()
+        complete_interval()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),185)
         self.assertGreater(self.page.evaluate('CodaArcadeQA.progression().xp'),0)
         before=self.page.evaluate('CodaArcadeQA.progression().xp')
-        self.page.keyboard.press('Escape');self.load()
-        self.page.locator('#pianoLabBtn').click();self.page.locator('#pianoInterval').select_option('up-7')
-        self.page.locator('#pianoStartInterval').click()
-        for note in [60,67]:self.page.locator(f'.piano-key[data-midi="{note}"]').click()
+        self.load();complete_interval()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),185)
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),before)
 

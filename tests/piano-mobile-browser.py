@@ -2,6 +2,7 @@
 import importlib.util
 import math
 from pathlib import Path
+from world_navigation_helpers import enter_room
 import sys
 import unittest
 
@@ -22,11 +23,19 @@ class PianoMobileTests(_world.WorldBrowserCase):
         self.page.on('response',lambda response:self.failures.append(response.url)
             if response.status>=400 and '/coda-arcade/' in response.url else None)
         self.load();self.page.clock.install();self.page.clock.run_for(64)
-        self.page.locator('#worldMenuBtn').click();self.page.locator('#pianoLabBtn').click()
+        enter_room(self.page,'piano')
         self.page.wait_for_function('CodaArcadeQA.piano().background.ready')
         self.page.clock.run_for(96)
 
     def state(self):return self.page.evaluate('CodaArcadeQA.piano()')
+
+    def menu(self,view):
+        if self.state()['dialogueOpen']:self.page.locator('#pianoDialogueClose').tap()
+        if not self.state()['menuOpen']:self.page.locator('#pianoMenuButton').tap()
+        self.page.locator(f'[data-piano-view="{view}"]').tap();self.page.clock.run_for(64)
+
+    def close_menu(self):
+        self.page.locator('#pianoMenuClose').tap();self.page.clock.run_for(64)
 
     def walk(self,x,y):
         self.page.locator('#pianoRoomCanvas').focus()
@@ -59,16 +68,24 @@ class PianoMobileTests(_world.WorldBrowserCase):
             self.page.set_viewport_size(size);self.page.clock.run_for(96)
             self.assertLessEqual(self.page.locator('#pianoroom').evaluate('h=>h.scrollWidth'),size['width'])
             self.assertEqual(self.state()['camera']['zoom'],2)
-            direction=self.page.locator('.coda-dpad .coda-touch-button').first.bounding_box()
-            self.assertGreaterEqual(direction['width'],72 if size['width']==320 else 80)
+            direction=self.page.locator('.coda-joystick').bounding_box()
+            self.assertGreaterEqual(direction['width'],200 if size['width']>size['height'] else 216)
+            self.assertAlmostEqual(direction['height'],direction['width'],delta=1)
+            self.assertGreaterEqual(self.page.locator('.coda-joystick-thumb').bounding_box()['width'],88)
             self.assertGreaterEqual(self.page.locator('.coda-touch-interact').bounding_box()['height'],104)
             self.assert_player_visible()
             self.walk(65,300);self.assert_player_visible()
             self.walk(65,365);self.walk(930,365);self.walk(930,300);self.assert_player_visible()
             self.walk(930,365);self.walk(500,365);self.walk(500,310)
             self.assertTrue(self.page.locator('#pianoWallNote').is_visible())
+            self.assertFalse(self.page.locator('.piano-workspace').is_visible())
+            self.assertFalse(self.page.locator('.piano-mobile-nav').is_visible())
+            self.menu('settings')
             self.assertGreaterEqual(self.page.locator('[aria-label="Zoom piano room in"]').bounding_box()['height'],44)
-            self.page.screenshot(path='/tmp/coda-piano37-'+str(size['width'])+'.png')
+            panel=self.page.locator('.piano-menu-panel').bounding_box()
+            self.assertGreaterEqual(panel['x'],0);self.assertLessEqual(panel['x']+panel['width'],size['width'])
+            self.close_menu()
+            self.page.screenshot(path='/tmp/coda-piano-menu-'+str(size['width'])+'.png')
 
     def test_zoomed_floor_keys_play_correct_pitch_and_pinch_never_walks_or_emits_notes(self):
         key=next(k for k in self.state()['floorKeys'] if k['midi']==60 and not k['black'])
@@ -77,7 +94,7 @@ class PianoMobileTests(_world.WorldBrowserCase):
         self.walk(x,y)
         self.assertEqual(self.state()['floorNote'],60);self.assertEqual(self.state()['lastWallNote'],60)
         self.assertEqual(self.page.locator('#pianoWallNote').inner_text(),'Back wall: C')
-        self.page.locator('#pianoKeyNames').check();self.assertTrue(self.state()['showNames'])
+        self.menu('settings');self.page.locator('#pianoKeyNames').check();self.assertTrue(self.state()['showNames']);self.close_menu()
         viewport=self.page.locator('.piano-room-canvas-viewport').bounding_box()
         x0=viewport['x'];y0=viewport['y']+viewport['height']*.55;w=viewport['width']
         client=self.context.new_cdp_session(self.page)
@@ -100,13 +117,17 @@ class PianoMobileTests(_world.WorldBrowserCase):
     def test_chopin_interaction_views_and_developer_camera_remain_usable(self):
         self.walk(780,306);self.assert_player_visible()
         self.page.locator('.coda-touch-interact').tap();self.page.clock.run_for(64)
-        self.assertEqual(self.state()['lesson'],'twinkle');self.assertEqual(self.state()['challengeMode'],'melody')
-        self.page.locator('[data-piano-view="games"]').tap();self.page.wait_for_function("CodaArcadeQA.piano().mobileView==='games'");self.page.clock.run_for(160)
-        self.page.wait_for_function('!CodaArcadeQA.touch().visible')
+        self.assertTrue(self.state()['dialogueOpen']);self.assertIsNone(self.state()['lesson'])
+        self.assertTrue(self.page.locator('#pianoDialogueText').is_visible())
         self.assertFalse(self.page.evaluate('CodaArcadeQA.touch().visible'))
-        self.page.locator('[data-piano-view="room"]').tap();self.page.wait_for_function("CodaArcadeQA.piano().mobileView==='room'");self.page.clock.run_for(160)
-        self.page.wait_for_function('CodaArcadeQA.touch().visible')
-        self.assertTrue(self.page.evaluate('CodaArcadeQA.touch().visible'))
+        self.page.locator('[data-piano-dialogue-action="melodies"]').tap()
+        self.page.locator('[data-piano-melody="mary"]').tap()
+        self.page.locator('[data-piano-dialogue-action="play"]').tap();self.page.clock.run_for(64)
+        self.assertEqual(self.state()['lesson'],'mary');self.assertEqual(self.state()['challengeMode'],'melody')
+        self.assertFalse(self.state()['dialogueOpen']);self.assertTrue(self.page.evaluate('CodaArcadeQA.touch().visible'))
+        self.menu('games');self.assertTrue(self.state()['menuOpen'])
+        self.assertFalse(self.page.evaluate('CodaArcadeQA.touch().visible'))
+        self.close_menu();self.assertTrue(self.page.evaluate('CodaArcadeQA.touch().visible'))
         self.page.locator('#pianoRoomCanvas').focus();self.page.keyboard.press('F2');self.page.clock.run_for(64)
         self.assertTrue(self.state()['editor']['editing']);self.assertEqual(self.state()['camera']['zoom'],2)
         self.assertEqual(self.page.locator('.piano-camera-controls:visible').count(),0)

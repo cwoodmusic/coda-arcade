@@ -56,3 +56,8 @@
  * strip stays on the map while the remaining tools live below it. */
 .coda-mobile-world.asset-console-open #assetStudio .dev-camera { position:fixed;top:calc(var(--coda-world-header-height) + 5px);left:50%;transform:translateX(-50%);width:min(338px,calc(100vw - 20px));padding:5px 8px;background:#171529f5;border:1px solid #786b9a;border-radius:8px;box-shadow:0 5px 16px #0008; }
 .coda-mobile-world.asset-console-open #assetStudio { backdrop-filter:none; }
+#assetStudio .dev-overlays{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}
+#assetStudio .dev-overlays button{min-height:44px;font-size:12px;font-weight:650}
+#assetStudio .dev-overlay-legend{grid-column:1/-1;font:11px/1.5 system-ui;margin:0;padding:7px;background:#101b2b;border:1px solid #635a79;border-radius:6px}
+#assetStudio .dev-overlay-legend[hidden]{display:none}
+.dev-key-blocked{color:#ff8aa1}.dev-key-walkable{color:#8bf2bb}.dev-key-background{color:#8fc8ff}.dev-key-depth{color:#ffdc84}.dev-key-foreground{color:#8bffda}

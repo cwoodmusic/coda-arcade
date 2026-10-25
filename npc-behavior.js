@@ -13,6 +13,7 @@
     {id:'nina',name:'Nina Simone',description:'Classically trained pianist, singer, and arranger whose work crossed jazz, blues, folk, and soul.',favorite:3,speed:66,sequence:['wander','lounge','cabinet','dance'],greetings:['What would you like your music to say today?','Give a phrase some attention. Its meaning may surprise you.'],music:'An interpretation can transform a song through pacing, touch, harmony, and the space around a phrase.',advice:'Choose a feeling for your phrase. Change one musical detail and listen to whether that feeling becomes clearer.',games:'Song Machine gives an idea room to develop. I am listening for a melody with something to say.'},
     {id:'miles',name:'Miles Davis',description:'Jazz trumpeter and bandleader whose work explored changing approaches to improvisation, including modal jazz.',favorite:1,speed:62,sequence:['lounge','wander','cabinet','dance'],greetings:['There is plenty of sound in here. I am listening for an opening.','Try a phrase. Then give it a little space.'],music:'Modal jazz can build improvisation around a scale or mode. Kind of Blue, released in 1959, is a landmark example.',advice:'Play a few notes, pause, and listen. Let the next phrase answer what you just heard.',games:'I may stop by Music Triad. A small change in the notes can open a different direction.'}
   ];
+  if(Array.isArray(window.CodaNPCVisitors?.profiles))PROFILES.push(...window.CodaNPCVisitors.profiles);
   const SEEDS=[[1150,365],[350,280],[1050,430],[250,300],[410,740],[550,735],[1340,650],[1340,725],[970,650]];
   const DESTINATIONS={
     lounge:[[225,250],[350,278],[260,316],[360,315]],
@@ -21,7 +22,7 @@
   };
   const ACTIVITY={cabinet:'playing',lounge:'relaxing',dance:'dancing',wander:'waiting'};
   const ARRIVAL=12,PERSON_SPACE=19;
-  window.CodaMusicianCast=Object.freeze(PROFILES.map(profile=>Object.freeze({id:profile.id,name:profile.name})));
+  window.CodaMusicianCast=Object.freeze(PROFILES.map(profile=>Object.freeze({id:profile.id,name:profile.name,...(profile.unlockItem?{unlockItem:profile.unlockItem,appearance:profile.appearance,fictional:true}:{})})));
   window.CodaNPCDialogueDefaults=Object.freeze(Object.fromEntries(PROFILES.map(profile=>[profile.id,Object.freeze({
     description:profile.description,greetings:Object.freeze(profile.greetings.slice()),
     choices:Object.freeze([{id:'music',label:'Tell me about your music',reply:profile.music},{id:'activity',label:'What are you doing?',reply:''},{id:'advice',label:'Give me a musical tip',reply:profile.advice},{id:'games',label:'Which game do you like?',reply:profile.games}].map(Object.freeze))
@@ -29,11 +30,15 @@
 
   window.createCodaNPCBehavior=function (api) {
     const npcs=api.npcs,states=new Map();
-    let conversation=null,routeBudget=0,tick=0;
+    let conversation=null,routeBudget=0,tick=0,elapsed=0,lastEntry=-Infinity,nextRotation=0;
+    const rotation=api.rotation===true,limit=Math.max(1,Math.min(npcs.length||1,Number.isInteger(api.maxVisitors)?api.maxVisitors:6)),visitDuration=Math.max(1,Number.isFinite(api.visitDuration)?api.visitDuration:55),entryInterval=Math.max(.25,Number.isFinite(api.entryInterval)?api.entryInterval:3);
     const find=value=>typeof value==='object'?npcs.find(p=>p===value||p.id&&p.id===value?.id):npcs.find(p=>p.id===value||p.name===value);
     const profileFor=(p,index)=>PROFILES.find(profile=>profile.id===p.id||profile.name===p.name)||PROFILES[index%PROFILES.length];
     const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
     const player=()=>api.getPlayer?.()||{x:-9999,y:-9999};
+    function unlocked(p){const item=states.get(p)?.profile.unlockItem;if(!item)return true;try{return api.isUnlocked?.(item)===true;}catch{return false;}}
+    function missionIds(){let missions=[];try{const value=api.getMissions?.();missions=Array.isArray(value)?value:Array.isArray(value?.missions)?value.missions:[];}catch{}return new Set(missions.filter(mission=>mission&&['active','complete'].includes(mission.status)).map(mission=>mission.person||mission.giver||mission.npcId).filter(Boolean));}
+    function pinned(p,missions=missionIds()){if(states.get(p)?.chat||(states.get(p)?.recallUntil||0)>elapsed||p.conversation||p.pinned||p.userPlaced||p.authoredPosition||missions.has(p.id))return true;try{return api.isPinned?.(p)===true;}catch{return false;}}
     function dialogueFor(p){
       const profile=states.get(p).profile,base=window.CodaNPCDialogueDefaults[profile.id];let edited=null;
       try{edited=api.getDialogue?.(p.id);}catch{}
@@ -55,14 +60,47 @@
     }
     const duplicateStart=npcs.length>1&&npcs.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)&&distance(p,npcs[0])<1);
     npcs.forEach((p,index)=>{
-      const profile=profileFor(p,index),state={profile,index,next:0,target:null,replanIn:index*.09,retries:0,blocked:0,chat:false,lastLine:'',greetings:0,wasActivity:'waiting',targetSerial:0};states.set(p,state);
-      p.id=p.id||profile.id;p.name=profile.name;p.personality=profile.description;p.facing=p.facing||'down';p.walking=false;p.conversation=false;p.phase=Number.isFinite(p.phase)?p.phase:0;
+      const profile=profileFor(p,index),state={profile,index,next:0,target:null,replanIn:index*.09,retries:0,blocked:0,chat:false,lastLine:'',greetings:0,wasActivity:'waiting',targetSerial:0,visitState:'visiting',visitRemaining:visitDuration*(1+(index%5)*.1),outsideSince:0,departureAge:0,unlocked:false,invitation:false,recallUntil:0};states.set(p,state);
+      p.id=p.id||profile.id;p.name=profile.name;if(profile.appearance)p.appearance={...profile.appearance,...(p.appearance||{})};p.visitorOpacity=1;p.personality=profile.description;p.facing=p.facing||'down';p.walking=false;p.conversation=false;p.phase=Number.isFinite(p.phase)?p.phase:0;
       p.route=[];p.routeKey='';p.arrived=false;p.mode='wander';p.activity='waiting';p.wait=0;p.goal=profile.favorite;
       const [sx,sy]=SEEDS[index%SEEDS.length],initial=duplicateStart||!Number.isFinite(p.x)||!Number.isFinite(p.y)?{x:sx,y:sy}:p;
       const point=safePoint(initial.x,initial.y,p,100,true)||safePoint(sx,sy,p,150,true);
       if(point){p.x=point.x;p.y=point.y;p.hidden=false;}else{p.hidden=true;state.replanIn=2;}
     });
 
+    if(rotation){
+      const missions=missionIds(),eligible=npcs.filter(unlocked),raw=typeof api.random==='function'?api.random():Math.random(),roll=Number.isFinite(raw)?Math.max(0,Math.min(.999999,raw)):0,offset=Math.floor(roll*Math.max(1,eligible.length)),ordered=eligible.slice(offset).concat(eligible.slice(0,offset)),protectedVisitors=eligible.filter(p=>pinned(p,missions)),selected=new Set([...protectedVisitors,...ordered].slice(0,Math.max(limit,protectedVisitors.length)));
+      for(const p of npcs){const state=states.get(p);state.unlocked=unlocked(p);if(!selected.has(p)){p.hidden=true;state.visitState='outside';releaseTarget(p,0);}else if(p.hidden)state.visitState='recovering';}
+      nextRotation=visitDuration;
+    }
+    function requestDeparture(p){
+      const state=states.get(p),entry=entryPoint(p,state);if(!entry)return false;
+      releaseTarget(p,0);state.visitState='leaving';state.departureAge=0;state.target={...entry,mode:'leave'};p.mode='leave';return true;
+    }
+    function leaveArcade(p){
+      const state=states.get(p);p.hidden=true;p.visitorOpacity=1;releaseTarget(p,entryInterval);state.visitState='outside';state.outsideSince=elapsed;state.invitation=false;state.visitRemaining=visitDuration*(1+(state.index%5)*.1);state.departureAge=0;
+    }
+    function refreshVisitors(dt){
+      if(!rotation)return;
+      const missions=missionIds();
+      for(const p of npcs){const state=states.get(p),allowed=unlocked(p);if(allowed&&!state.unlocked){state.invitation=true;state.outsideSince=-1000000-elapsed;}state.unlocked=allowed;
+        if(!allowed){if(!p.hidden){if(state.chat)endConversation();p.hidden=true;releaseTarget(p,entryInterval);}state.visitState='outside';continue;}
+        if(!p.hidden){
+          if(state.visitState==='leaving'&&pinned(p,missions)){state.visitState='visiting';state.departureAge=0;p.visitorOpacity=1;releaseTarget(p,0);}
+          if(state.visitState==='leaving'){
+            state.departureAge+=dt;let offscreen=false;try{offscreen=api.isOffscreen?.(p)===true;}catch{}
+            if(state.departureAge>25&&offscreen){p.visitorOpacity=Math.max(0,p.visitorOpacity-dt);if(p.visitorOpacity<=0)leaveArcade(p);}
+          }else if(!pinned(p,missions))state.visitRemaining=Math.max(0,state.visitRemaining-dt);
+        }
+      }
+      const eligible=npcs.filter(unlocked),protectedVisitors=eligible.filter(p=>pinned(p,missions)),desired=Math.max(limit+protectedVisitors.filter(p=>p.hidden).length,protectedVisitors.length),onsite=eligible.filter(p=>!p.hidden),waiting=eligible.filter(p=>p.hidden&&states.get(p).replanIn<=0&&['outside','recovering'].includes(states.get(p).visitState)).sort((a,b)=>Number(pinned(b,missions))-Number(pinned(a,missions))||states.get(a).outsideSince-states.get(b).outsideSince||states.get(a).index-states.get(b).index);
+      if(waiting.length&&onsite.length<desired&&elapsed-lastEntry>=entryInterval){const p=waiting[0],state=states.get(p),point=entryPoint(p,state);if(point){p.x=point.x;p.y=point.y;p.hidden=false;p.visitorOpacity=1;state.visitState='arriving';state.invitation=false;state.visitRemaining=visitDuration*(1+(state.index%5)*.1);releaseTarget(p,0);lastEntry=elapsed;}}
+      const pending=waiting.length&&(waiting.some(p=>pinned(p,missions)||states.get(p).invitation)||elapsed>=nextRotation),leaving=onsite.some(p=>states.get(p).visitState==='leaving');
+      if(!leaving&&(onsite.length>desired||pending&&onsite.length>=desired)){
+        const candidates=onsite.filter(p=>!pinned(p,missions)&&states.get(p).visitState!=='arriving').sort((a,b)=>states.get(a).visitRemaining-states.get(b).visitRemaining||states.get(a).index-states.get(b).index),choice=candidates.find(p=>onsite.length>desired||waiting.some(other=>pinned(other,missions)||states.get(other).invitation)||states.get(p).visitRemaining<=0);
+        if(choice&&requestDeparture(choice))nextRotation=elapsed+Math.max(2,visitDuration*.2);
+      }
+    }
     function games(){return (api.getGames?.()||[]).filter(g=>Number.isFinite(g.npcX??g.x)&&Number.isFinite(g.npcY??g.y));}
     function chooseTarget(p,available){
       const state=states.get(p),profile=state.profile;
@@ -93,21 +131,22 @@
     function despawnBlocked(p){
       const state=states.get(p);
       if(state.chat)endConversation();
-      p.hidden=true;p.conversation=false;releaseTarget(p,.6+state.index*.03);state.retries=0;state.blocked=0;
+      p.hidden=true;p.conversation=false;p.visitorOpacity=1;releaseTarget(p,.6+state.index*.03);if(rotation)state.visitState='recovering';state.retries=0;state.blocked=0;
     }
     function entryPoint(p,state){
+      if(rotation){let entry={x:1450,y:752};try{const value=api.getEntrance?.();if(Number.isFinite(value?.x)&&Number.isFinite(value?.y))entry=value;}catch{}return safePoint(entry.x,entry.y,p,60,true);}
       const seeds=[SEEDS[state.index%SEEDS.length],[1450,752],...SEEDS];
       for(const [x,y]of seeds){const point=safePoint(x,y,p,100,true);if(point)return point;}
       return null;
     }
     function arrive(p){
-      const state=states.get(p);p.route=[];p.arrived=true;p.walking=false;p.activity=ACTIVITY[p.mode]||'waiting';state.blocked=0;
+      const state=states.get(p);if(rotation&&state.visitState==='leaving'){leaveArcade(p);return;}if(rotation&&state.visitState==='arriving')state.visitState='visiting';p.route=[];p.arrived=true;p.walking=false;p.activity=ACTIVITY[p.mode]||'waiting';state.blocked=0;
       p.wait=p.mode==='cabinet'?7+state.index%4:p.mode==='lounge'?8+state.index%5:p.mode==='dance'?9+state.index%5:2+state.index%3;
       if(p.mode==='cabinet')p.facing='up';else if(p.mode==='dance')p.facing='down';
     }
     function failedRoute(p){
       const state=states.get(p);p.route=[];p.routeKey='';p.walking=false;p.activity='waiting';state.retries++;state.replanIn=.7+state.index*.12;
-      if(state.retries>=2)releaseTarget(p,1+state.index*.1);
+      if(state.retries>=2&&!(rotation&&state.visitState==='leaving'))releaseTarget(p,1+state.index*.1);
     }
     function refreshCabinet(p,available){
       const state=states.get(p),target=state.target;if(target?.mode!=='cabinet')return;
@@ -149,7 +188,7 @@
         state.blocked+=dt;
         // A patient sidestep can let another visitor or the player pass.
         if(!wall&&state.blocked>.4){const side=state.index%2?1:-1,amount=Math.min(2,state.profile.speed*dt);if(!tryStep(p,-dy/dist*amount*side,dx/dist*amount*side))tryStep(p,dy/dist*amount*side,-dx/dist*amount*side);moved=distance(before,p);}
-        if(wall||state.blocked>1.6){p.route=[];p.routeKey='';state.replanIn=.45+state.index*.09;state.blocked=0;state.retries++;if(state.retries>=3)releaseTarget(p,1);}
+        if(wall||state.blocked>1.6){p.route=[];p.routeKey='';state.replanIn=.45+state.index*.09;state.blocked=0;state.retries++;if(state.retries>=3&&!(rotation&&state.visitState==='leaving'))releaseTarget(p,1);}
       }else state.blocked=0;
       p.walking=moved>.01;p.activity=p.walking?'walking':'waiting';
       // Brief avoidance steps should not flash a different facing before
@@ -159,13 +198,15 @@
       if(distance(p,target)<=ARRIVAL)arrive(p);
     }
     function update(dt){
-      if(!Number.isFinite(dt)||dt<=0)return;dt=Math.min(dt,.25);routeBudget=2;tick++;
+      if(!Number.isFinite(dt)||dt<=0)return;dt=Math.min(dt,.25);routeBudget=2;tick++;elapsed+=dt;
+      for(const state of states.values())state.replanIn=Math.max(0,state.replanIn-dt);refreshVisitors(dt);
       const available=games(),start=tick%npcs.length;
       for(let i=0;i<npcs.length;i++){
-        const p=npcs[(start+i)%npcs.length],state=states.get(p);p.walking=false;state.replanIn=Math.max(0,state.replanIn-dt);
+        const p=npcs[(start+i)%npcs.length],state=states.get(p);p.walking=false;
         if(!p.hidden&&!api.inside(p.x,p.y)){despawnBlocked(p);continue;}
-        if(p.hidden){if(!state.replanIn){const point=entryPoint(p,state);if(point){p.x=point.x;p.y=point.y;p.hidden=false;}else state.replanIn=2;}continue;}
+        if(p.hidden){if(rotation)continue;if(!state.replanIn){const point=entryPoint(p,state);if(point){p.x=point.x;p.y=point.y;p.hidden=false;}else state.replanIn=2;}continue;}
         if(state.chat){p.activity='chatting';const user=player();facing(p,user.x-p.x,user.y-p.y);continue;}
+        if(p.userPlaced||p.authoredPosition){p.route=[];p.activity='waiting';continue;}
         refreshCabinet(p,available);
         if(state.target&&p.arrived){
           if(!api.inside(p.x,p.y)){releaseTarget(p,.5);continue;}
@@ -178,7 +219,7 @@
 
     function getConversation(value){
       const p=find(value);if(!p)return null;const state=states.get(p),dialogue=dialogueFor(p);
-      return {id:p.id,name:p.name,description:dialogue.description,activity:p.activity,fictional:true,line:state.lastLine||dialogue.greetings[0],choices:dialogue.choices.map(choice=>({id:choice.id,label:choice.label}))};
+      return {id:p.id,name:p.name,description:dialogue.description,activity:p.activity,fictional:true,original:!!state.profile.unlockItem,line:state.lastLine||dialogue.greetings[0],choices:dialogue.choices.map(choice=>({id:choice.id,label:choice.label}))};
     }
     function say(value,topic='greeting'){
       const p=find(value);if(!p)return '';const state=states.get(p),dialogue=dialogueFor(p),profile={...state.profile};
@@ -202,7 +243,13 @@
     function invalidateRoutes(){
       for(const p of npcs){const state=states.get(p);if(!p.hidden&&!api.inside(p.x,p.y)){despawnBlocked(p);continue;}p.route=[];p.routeKey='';p.walking=false;if(!p.hidden)state.replanIn=state.index*.05;state.blocked=0;state.retries=0;if(p.arrived&&state.target){p.arrived=false;p.wait=0;p.activity=state.chat?'chatting':'waiting';}}
     }
-    function snapshot(){return npcs.map(p=>{const state=states.get(p);return {id:p.id,name:p.name,description:dialogueFor(p).description,x:p.x,y:p.y,facing:p.facing,walking:p.walking,phase:p.phase,activity:p.activity,mode:p.mode,arrived:p.arrived,hidden:p.hidden,wait:p.wait,conversation:state.chat,target:state.target?{...state.target}:null,routeLength:p.route.length};});}
-    return {update,beginConversation,endConversation,say,getConversation,invalidateRoutes,snapshot};
+    function requestVisit(value){
+      const p=find(value);if(!p||!unlocked(p))return false;const state=states.get(p);state.recallUntil=elapsed+90;
+      if(p.hidden){state.replanIn=0;state.outsideSince=-1000000-elapsed;state.invitation=true;}
+      else if(state.visitState==='leaving'){state.visitState='visiting';state.departureAge=0;p.visitorOpacity=1;releaseTarget(p,0);}
+      return true;
+    }
+    function snapshot(){return npcs.map(p=>{const state=states.get(p);return {id:p.id,name:p.name,description:dialogueFor(p).description,x:p.x,y:p.y,facing:p.facing,walking:p.walking,phase:p.phase,activity:p.activity,mode:p.mode,arrived:p.arrived,hidden:p.hidden,wait:p.wait,conversation:state.chat,target:state.target?{...state.target}:null,routeLength:p.route.length,visitState:state.visitState,visitRemaining:state.visitRemaining,unlockItem:state.profile.unlockItem||null,unlocked:unlocked(p),visitorOpacity:p.visitorOpacity??1};});}
+    return {update,beginConversation,endConversation,say,getConversation,invalidateRoutes,requestVisit,snapshot,getVisitorState:()=>({enabled:rotation,limit,elapsed,onsite:npcs.filter(p=>!p.hidden).map(p=>p.id),waiting:npcs.filter(p=>p.hidden&&unlocked(p)).map(p=>p.id),locked:npcs.filter(p=>!unlocked(p)).map(p=>p.id)})};
   };
 })();

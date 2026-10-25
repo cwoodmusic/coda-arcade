@@ -76,3 +76,23 @@
 /* The scroll container already reserves the sticky mobile heading. */
 @media(max-width:760px),(pointer:coarse){.music-classroom{scroll-padding-top:128px}.music-classroom .classroom-book,.music-classroom .classroom-learning-path{scroll-margin-top:0}}
 @media(pointer:coarse) and (orientation:landscape) and (max-height:550px){.music-classroom{scroll-padding-top:110px}}
+
+/* Room zoom lives in Settings, leaving the lesson pages at their normal size. */
+.classroom-heading-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.classroom-canvas-viewport{position:relative;overflow:hidden;background:#0b1326}
+.classroom-settings-backdrop{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:16px;background:#060b18c9;backdrop-filter:blur(4px)}
+.classroom-settings-backdrop[hidden]{display:none!important}
+.classroom-settings-panel{width:min(440px,100%);max-height:calc(100dvh - 32px);overflow:auto;padding:20px;background:#202b42;border:2px solid #9edfd0;border-radius:12px;box-shadow:0 18px 55px #0009;line-height:1.5}
+.classroom-settings-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.classroom-settings-heading h2{margin:0;color:#d1fff0;font-size:22px;line-height:1.2}
+.classroom-settings-panel p{color:#d4e4e5}
+.classroom-camera-controls{display:flex;justify-content:center;gap:8px;padding:10px;border:1px solid #79b9b1;border-radius:8px;background:#17353f}
+.classroom-camera-controls[hidden]{display:none!important}
+.music-classroom .classroom-camera-controls button{min-width:62px;min-height:48px;font-size:17px}
+.music-classroom .classroom-settings-panel button{min-height:44px}
+@media(max-width:760px),(pointer:coarse){
+ .classroom-heading-actions{gap:5px}
+ .classroom-heading-actions button{min-width:0;padding:8px!important;font-size:12px}
+ .classroom-settings-panel{padding:16px}
+ .classroom-settings-heading h2{font-size:20px}
+}

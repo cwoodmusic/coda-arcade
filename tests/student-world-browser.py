@@ -3,6 +3,7 @@ import importlib.util
 from pathlib import Path
 import sys
 import unittest
+from world_navigation_helpers import enter_room,open_cabinet
 
 sys.dont_write_bytecode=True
 from classroom_quiz_helpers import answer_quiz
@@ -20,10 +21,21 @@ class StudentWorldTests(_world.WorldBrowserCase):
             self.page.get_by_role('button',name='Dismiss notification',exact=True).click()
         self.fail('Expected '+kind+' notification: '+str(self.notifications()))
 
+    def open_remote_bach_mission(self):
+        # Mission details remain in Profile; viewing them never moves the player.
+        if self.page.locator('#panel').is_visible():self.page.locator('#panelClose').click()
+        if self.page.locator('#dialog').is_visible():self.page.locator('#close').click()
+        before=self.page.evaluate('CodaArcadeQA.position()')
+        self.page.locator('#levelBtn').click()
+        self.page.locator('[data-mission-id="bach-triad-win"]').get_by_role('button',name='Open Counterpoint Champion mission',exact=True).click()
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.position()'),before)
+
     def test_live_mission_popup_profile_return_and_saved_one_time_collection(self):
         self.open_bach_mission();self.leave_musician('bach')
         self.page.get_by_role('button',name='Accept mission',exact=True).click()
         self.page.get_by_role('button',name='Play Music Triad',exact=True).click()
+        self.assertFalse(self.page.evaluate('CodaArcadeQA.menu().gameOpen'),'The mission points to a cabinet instead of starting it remotely')
+        open_cabinet(self.page,1)
         self.page.frame_locator('#gameiframe').locator('#finishMatch').click()
         self.page.wait_for_function("CodaArcadeQA.missions().missions.find(m=>m.person==='bach').status==='complete'")
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),166)
@@ -48,9 +60,9 @@ class StudentWorldTests(_world.WorldBrowserCase):
         self.assertIsNone(self.notifications()['current'],'A saved completed mission does not repeat its completion popup')
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),166)
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),162)
-        self.open_bach_mission();self.leave_musician('bach');self.open_bach_mission()
+        self.open_bach_mission();self.leave_musician('bach');self.open_remote_bach_mission()
         self.assertTrue(self.page.get_by_role('button',name='Collect reward',exact=True).is_disabled())
-        self.approach_musician('mozart');self.open_bach_mission()
+        self.approach_musician('mozart');self.open_remote_bach_mission()
         self.assertTrue(self.page.get_by_role('button',name='Collect reward',exact=True).is_disabled(),'The wrong quest giver cannot pay Bach\'s mission')
         self.approach_musician('bach');self.open_bach_mission()
         self.page.get_by_role('button',name='Collect reward',exact=True).click()
@@ -65,7 +77,7 @@ class StudentWorldTests(_world.WorldBrowserCase):
         self.page.locator('#levelBtn').click();self.assertEqual(self.page.locator('.profile-completed summary').inner_text(),'1 finished mission')
 
     def test_note_lesson_teaches_without_octave_numbers_and_updates_the_saved_profile(self):
-        self.page.locator('#classroomBtn').click();self.page.locator('[data-start-lesson="note-naming"]').click()
+        enter_room(self.page,'classroom');self.page.locator('[data-start-lesson="note-naming"]').click()
         self.assertEqual(self.page.locator('.lesson-key-name:visible').count(),0)
         self.page.get_by_label('Show note letters',exact=True).check()
         self.assertEqual(self.page.locator('.lesson-key-name:visible').count(),8)
@@ -93,7 +105,7 @@ class StudentWorldTests(_world.WorldBrowserCase):
         self.page.screenshot(path='/tmp/coda-student-profile-world-29.png')
         self.page.set_viewport_size({'width':1550,'height':1050});self.load()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),50);self.assertIsNone(self.notifications()['current'])
-        self.page.locator('#classroomBtn').click();self.page.locator('[data-start-lesson="note-naming"]').click()
+        enter_room(self.page,'classroom');self.page.locator('[data-start-lesson="note-naming"]').click()
         self.assertTrue(self.page.evaluate('CodaArcadeQA.tutorials().active.complete'))
         self.page.locator('[data-tutorial-replay]').click()
         for letter in ['C','F','D','A','E','F','G','A','B','C']:
@@ -103,7 +115,7 @@ class StudentWorldTests(_world.WorldBrowserCase):
         self.assertIsNone(self.notifications()['current'])
 
     def test_rhythm_tree_practice_rewards_only_a_correct_finished_lesson(self):
-        self.page.locator('#classroomBtn').click();self.page.locator('[data-start-lesson="rhythm-tree"]').click()
+        enter_room(self.page,'classroom');self.page.locator('[data-start-lesson="rhythm-tree"]').click()
         for _ in range(4):self.page.locator('[data-tree-split]').click()
         self.assertIn('16 sixteenth notes',self.page.locator('.lesson-tree-caption').inner_text())
         self.assertIn('four beats',self.page.locator('.lesson-tree-caption').inner_text())

@@ -17,8 +17,14 @@ class FishingRhythmInputTests(_upgrade._fish._world.WorldBrowserCase):
     enter=_upgrade.FishingUpgradeTests.enter
     walk_to=_upgrade.FishingUpgradeTests.walk_to
     board=_upgrade.FishingUpgradeTests.board
-    start_exploring=_upgrade.FishingUpgradeTests.start_exploring
+    fishing_option = _upgrade._fish.FishingWorldTests.fishing_option
+    fishing_action = _upgrade._fish.FishingWorldTests.fishing_action
+    fishing_meter = _upgrade._fish.FishingWorldTests.fishing_meter
     place_single_fish=_upgrade.FishingUpgradeTests.place_single_fish
+
+    def start_exploring(self,meter='4/4'):
+        self.enter();self.fishing_meter(meter);self.board()
+        self.assertEqual(self.state()['phase'],'explore')
 
     def setUp(self):
         _upgrade._fish.FishingWorldTests.setUp(self)
@@ -33,7 +39,7 @@ class FishingRhythmInputTests(_upgrade._fish._world.WorldBrowserCase):
 
     def begin(self,fish='starlight-sturgeon',meter='6/8'):
         self.start_exploring(meter);self.place_single_fish(fish)
-        self.page.locator('#fishingCast').click(force=True);self.page.clock.run_for(1400)
+        self.fishing_action('#fishingCast');self.page.clock.run_for(1400)
         self.assertEqual(self.state()['phase'],'rhythm')
         self.page.locator('#fishingTap').scroll_into_view_if_needed()
         self.page.evaluate('''()=>{
@@ -76,8 +82,8 @@ class FishingRhythmInputTests(_upgrade._fish._world.WorldBrowserCase):
         self.begin()
         initial=self.state();notes=[note for note in initial['challenge']['notes'] if not note['rest']][:3]
         self.assertTrue(all(note['duration']<1 for note in notes))
-        self.assertLess(notes[1]['time']-notes[0]['time'],.09)
-        self.assertLess(notes[2]['time']-notes[1]['time'],.09)
+        self.assertLess(notes[1]['time']-notes[0]['time'],.15)
+        self.assertLess(notes[2]['time']-notes[1]['time'],.15)
         self.assertEqual(self.page.locator('#fishingTap').evaluate('e=>getComputedStyle(e).touchAction'),'none')
         scale=self.page.evaluate('visualViewport.scale');scroll=self.page.locator('#rhythmFishing').evaluate('e=>e.scrollTop')
         self.source_to(notes[0]['time']);self.down(1,fraction=.35)
@@ -216,7 +222,7 @@ class FishingRhythmInputTests(_upgrade._fish._world.WorldBrowserCase):
 
     def test_after_a_half_note_rare_followup_accepts_a_small_late_touch_phone(self):
         following=self.assert_hold_transition('amethyst-koi','2/2',release_early=.16,press_late=.12)
-        self.assertLess(following['window'],.12,'The test press must fall beyond the ordinary rare-note window')
+        self.assertGreaterEqual(following['lateWindow'],.12,'The easier rare rhythm must retain time to lift and press again')
 
     def test_keyboard_can_release_and_repress_between_adjacent_half_notes_phone(self):
         self.assert_hold_transition('silver-minnow','2/2',release_early=.16,press_late=.12,keyboard=True)

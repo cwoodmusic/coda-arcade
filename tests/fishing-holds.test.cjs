@@ -13,7 +13,7 @@ test('half notes and longer have exact hold tails; quarter and shorter notes rem
  close(game.getState().activeHolds[0].holdProgress,.5);
  assert.equal(game.getState().activeHolds[0].heldBy,'pointer:1');
  game.update(first.holdEndTime);
- assert.equal(game.getState().hits,1);assert.equal(game.getState().progress,52);assert.equal(game.getState().activeHolds.length,0);
+ assert.equal(game.getState().hits,1);close(game.getState().progress,48.4375);assert.equal(game.getState().activeHolds.length,0);
  assert.equal(game.getState().notes.find(note=>note.id===first.id).holdProgress,1);
  game.release(first.holdEndTime,'pointer:1');assert.equal(game.getState().extras,0);
  const shorter=create('cave-guppy'),short=shorter.getState().notes.find(note=>!note.rest&&note.duration===.5);
@@ -29,7 +29,7 @@ test('early release breaks a hold once and never awards it later',()=>{
  const released=game.release(note.time+note.durationSeconds*.3,'key:Space');
  assert.equal(released.kind,'hold-break');assert.equal(released.state.lastJudgement.kind,'hold-break');
  assert.equal(released.state.lastJudgement.resultKind,'miss');assert.equal(released.state.hits,0);
- assert.equal(released.state.misses,1);assert.equal(released.state.progress,33);
+ assert.equal(released.state.misses,1);assert.equal(released.state.progress,38);
  assert.deepEqual(released.state.activeHolds,[]);assert.deepEqual(released.state.pressedSources,[]);
  game.update(note.holdEndTime);assert.equal(game.getState().misses,1);assert.equal(game.getState().hits,0);
  assert.equal(game.release(note.holdEndTime,'key:Space').accepted,false);
@@ -43,7 +43,7 @@ test('a forgiving tail release is accepted but cannot pay before the actual tail
  assert.equal(release.state.hits,0);assert.equal(release.state.misses,0);assert.equal(release.state.progress,45);
  assert.equal(release.state.activeHolds[0].holdReleased,true);
  game.update(note.holdEndTime-.0001);assert.equal(game.getState().hits,0);
- game.update(note.holdEndTime);assert.equal(game.getState().hits,1);assert.equal(game.getState().progress,52);
+ game.update(note.holdEndTime);assert.equal(game.getState().hits,1);close(game.getState().progress,48.4375);
 });
 
 test('one held source cannot repeat into another note while alternating fingers can',()=>{
@@ -122,6 +122,7 @@ test('all authored species and eligible meters can be caught with actual press/h
   const game=create(fish,meter);
   for(let index=0;index<100&&!game.getState().result;index++){
    const note=next(game);assert.ok(note);const source='pointer:'+index%2;
+   game.update(note.time);if(game.getState().result)break;
    const pressed=game.press(note.time,source);assert.equal(pressed.kind,note.requiresHold?'hold-start':'hit',fish.id+' '+meter);
    if(note.requiresHold)game.update(note.holdEndTime);
    game.release(note.requiresHold?note.holdEndTime:note.time,source);
@@ -175,13 +176,13 @@ test('one finger gets a real release gap before the next half or short note',()=
   assert.equal(game.release(held.holdEndTime-.16,'pointer:1').kind,'hold-release');
   assert.equal(game.getState().hits,before.hits,'Early release must not pay before the written tail');
   assert.deepEqual(game.getState().pressedSources,[]);
-  const late=following.time+.12;
+  const extendsHead=following.transitionLateWindow>following.window+1e-8,late=following.time+(extendsHead?(following.window+following.transitionLateWindow)/2:following.window*.75);
   assert.equal(game.press(late,'pointer:1').kind,following.requiresHold?'hold-start':'hit');
   assert.equal(game.getState().misses,before.misses);assert.equal(game.getState().extras,before.extras);
   assert.equal(game.getState().hits,before.hits+(following.requiresHold?1:2));
   const target=game.getState().notes.find(note=>note.id===following.id);
-  assert.equal(target.holdTransitionFrom,held.id);assert.ok(target.lateWindow>=.12);
-  if(fish==='amethyst-koi')assert.ok(.12>following.window,'This must exercise a late press outside the old head window');
+  assert.equal(target.holdTransitionFrom,held.id);assert.ok(target.lateWindow>=following.window);
+  if(extendsHead)assert.ok(late-following.time>following.window,'This must exercise a late press outside the ordinary head window');
   if(following.requiresHold){game.update(following.holdEndTime);assert.equal(game.getState().hits,before.hits+2);}
   game.release(following.requiresHold?following.holdEndTime:late,'pointer:1');
  }
@@ -202,7 +203,7 @@ test('release grace has an exact boundary and missed or assistive holds grant no
   else game.tap(held.time);
   const before=game.getState();
   assert.equal(game.getState().notes.find(note=>note.id===following.id).lateWindow,following.window);
-  const outcome=game.press(following.time+.12,'pointer:1');assert.equal(outcome.kind,'extra');
+  const outcome=game.press(following.time+(following.window+following.transitionLateWindow)/2,'pointer:1');assert.equal(outcome.kind,'extra');
   assert.equal(outcome.state.hits,before.hits);assert.equal(outcome.state.misses,before.misses+1);
   assert.equal(outcome.state.extras,before.extras+1);
  }
