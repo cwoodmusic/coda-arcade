@@ -20,7 +20,7 @@ test('Haydn, every bookshelf and all interactive lessons have useful study conte
   assert.equal(topicFor('bad-id').id,'welcome');
 });
 test('classroom covers all cabinets and both Chopin game types accurately',()=>{
-  const all=TOPICS.map(topic=>topic.html).join(' ');
+  const all=TOPICS.map(topic=>topic.title+' '+topic.html).join(' ');
   for(const game of ['Pitch Race','Music Triad','Rhythm Room','Song Machine','Piano Lab'])assert.ok(all.includes(game));
   assert.match(topicFor('music-triad').html,/Notes battle notes/i);assert.match(topicFor('music-triad').html,/Rests battle rests/i);
   assert.match(topicFor('music-triad').html,/3 × 3/);

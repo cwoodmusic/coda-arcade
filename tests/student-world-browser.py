@@ -105,7 +105,7 @@ class StudentWorldTests(_world.WorldBrowserCase):
         self.page.locator('[data-tutorial-next]').click()
         self.page.locator('[data-rhythm-answer="2"]').click();self.page.locator('[data-tutorial-next]').click()
         self.page.locator('[data-rhythm-answer="2"]').click();self.page.locator('[data-tutorial-next]').click()
-        self.page.locator('[data-add-value="16"]').click();self.page.locator('[data-check-rhythm]').click()
+        self.page.get_by_text('Other note lengths (optional)',exact=True).click();self.page.locator('[data-add-value="16"]').click();self.page.locator('[data-check-rhythm]').click()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),0)
         self.page.get_by_role('button',name='Clear bar',exact=True).click()
         for units in [4,2,2,8]:self.page.locator('[data-add-value="'+str(units)+'"]').click()

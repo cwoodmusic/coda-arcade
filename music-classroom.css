@@ -59,3 +59,20 @@
 
 @media(max-width:760px),(pointer:coarse){.classroom-lesson-shortcuts button:last-child:nth-child(odd){grid-column:1/-1}}
 .classroom-staff-example{margin:18px 0}.classroom-staff-example figcaption{font-size:13px;line-height:1.5;color:#5c4861}
+/* Beginner lessons lead; the searchable shelves remain a reference. */
+.music-classroom .classroom-learning-path{margin:18px 0;padding:18px;border:2px solid #86cdbd;border-radius:12px;background:linear-gradient(125deg,#243f48,#252d46);scroll-margin-top:115px}
+.music-classroom .classroom-learning-path[hidden]{display:none!important}
+.classroom-learning-path h2{margin:0 0 8px;color:#c8ffe9;font-size:24px}
+.classroom-learning-path>p{margin:0;color:#d3e6e5;line-height:1.5;max-width:62ch}
+.music-classroom .classroom-learning-path .classroom-lesson-shortcuts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0 0}
+.music-classroom .classroom-learning-path .classroom-lesson-shortcuts button{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:8px;min-height:108px;padding:15px;text-align:left;background:#254d50;border:2px solid #91d5c3;border-radius:9px}
+.classroom-learning-path button strong{font-size:18px;color:#eefff3}
+.classroom-learning-path button span{font-size:14px;font-weight:400;line-height:1.45;color:#cde4e2}
+.classroom-learning-path button:focus-visible,.music-classroom .classroom-all-lessons:focus-visible{outline:3px solid #ffe4a3;outline-offset:3px}
+.music-classroom .classroom-all-lessons{min-height:48px;margin:0 0 16px;background:#e8e5df;color:#35404e;border-color:#7a879a;font-size:15px}
+.classroom-reference-help{margin:0 0 14px;line-height:1.5;color:#d4c8e0;font-size:14px}
+@media(max-width:760px),(pointer:coarse){.music-classroom .classroom-learning-path{padding:14px}.music-classroom .classroom-learning-path .classroom-lesson-shortcuts{grid-template-columns:minmax(0,1fr);gap:10px}.music-classroom .classroom-learning-path .classroom-lesson-shortcuts button{min-height:94px;grid-column:auto}.classroom-learning-path h2{font-size:22px}}
+
+/* The scroll container already reserves the sticky mobile heading. */
+@media(max-width:760px),(pointer:coarse){.music-classroom{scroll-padding-top:128px}.music-classroom .classroom-book,.music-classroom .classroom-learning-path{scroll-margin-top:0}}
+@media(pointer:coarse) and (orientation:landscape) and (max-height:550px){.music-classroom{scroll-padding-top:110px}}

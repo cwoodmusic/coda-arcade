@@ -50,8 +50,8 @@ class ClassroomTests(unittest.TestCase):
         self.assertGreaterEqual(state['player']['y'],373,'The professor’s desk must block walking onto its surface')
         self.assertEqual(state['near']['type'],'professor')
         self.page.keyboard.press('e')
-        self.assertEqual(self.page.locator('#classroomBookTitle').inner_text(),'Professor Haydn’s game guide')
-        self.assertEqual(self.page.evaluate('document.activeElement.id'),'classroomBook')
+        self.assertEqual(self.page.locator('#classroomBookTitle').inner_text(),'Start here with Professor Haydn')
+        self.assertEqual(self.page.evaluate('document.activeElement.id'),'classroomStart')
 
     def test_tapping_the_room_reaches_a_bookshelf_and_e_reads_it(self):
         box=self.page.locator('#classroomCanvas').bounding_box()
@@ -77,9 +77,38 @@ class ClassroomTests(unittest.TestCase):
         self.assertTrue(self.page.locator('#room').is_hidden())
         self.assertEqual(self.page.evaluate('document.activeElement.id'),'entrance')
 
+    def test_beginner_path_has_a_clear_start_and_returns_from_each_lesson(self):
+        start=self.page.locator('#classroomStart')
+        self.assertTrue(start.is_visible())
+        self.assertEqual(start.locator('button strong').all_inner_texts(),
+            ['1. Note names','2. Note lengths','3. Time signatures'])
+        self.assertEqual(self.page.locator('#classroomBook .classroom-check').count(),0,
+            'The welcome page should offer a starting point, not a game quiz')
+        for lesson in ['note-naming','rhythm-tree','time-signatures']:
+            self.page.locator('[data-start-lesson="'+lesson+'"]').click()
+            self.assertTrue(start.is_hidden())
+            self.assertEqual(self.page.evaluate('roomUI.getState().tutorials.active.id'),lesson)
+            self.page.locator('#classroomAllLessons').click()
+            self.assertTrue(start.is_visible())
+            self.assertIsNone(self.page.evaluate('roomUI.getState().tutorials.active||null'))
+            self.assertEqual(self.page.evaluate('document.activeElement.id'),'classroomStart')
+        self.page.set_viewport_size({'width':390,'height':844})
+        self.page.get_by_role('button',name='Lessons & books',exact=True).click()
+        self.assertEqual(self.page.evaluate('document.activeElement.id'),'classroomStart')
+        self.page.keyboard.press('Tab')
+        self.assertEqual(self.page.evaluate('document.activeElement.dataset.startLesson'),'note-naming')
+        self.page.keyboard.press('Enter')
+        self.assertEqual(self.page.evaluate('roomUI.getState().tutorials.active.id'),'note-naming')
+        book=self.page.locator('#classroomBook').bounding_box()
+        tabs=self.page.locator('.classroom-mobile-nav').bounding_box()
+        self.assertGreaterEqual(book['y'],tabs['y']+tabs['height']-1,
+            'The lesson must start below the sticky heading')
+        self.assertLess(book['y'],160,'Do not leave a second navigation gap above the lesson')
+        self.assertLessEqual(self.page.locator('#room').evaluate('e=>e.scrollWidth'),390)
+
     def test_books_remain_accessible_at_phone_width(self):
         self.page.set_viewport_size({'width':375,'height':812})
-        self.page.get_by_role('button',name='Study books',exact=True).click()
+        self.page.get_by_role('button',name='Lessons & books',exact=True).click()
         self.page.locator('#classroomSearch').fill('Music Triad')
         self.page.locator('[data-topic="music-triad"]').click()
         book=self.page.locator('#classroomBook').inner_text()

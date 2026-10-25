@@ -8,19 +8,19 @@
   const TOPICS=Object.freeze([
   {
     "id": "welcome",
-    "title": "Professor Haydn’s game guide",
-    "shelf": "Games & composing",
-    "keywords": "help start win games tutorial",
-    "html": "<p>“Welcome! I’m Professor Haydn. Let’s try a little music together.”</p><p>You can learn a new skill, have a go, and try again. You do not need to get everything right the first time.</p><h3>Pick your next adventure</h3><ul><li><strong>Note naming:</strong> find C, learn the musical alphabet, and name notes on a staff.</li><li><strong>Rhythm tree:</strong> split long notes into shorter notes and hear how they fit together.</li><li><strong>Time signatures:</strong> hear 4/4, 6/8, and cut time, then build matching bars.</li><li><strong>Pitch Race:</strong> name the notes before they reach the clef.</li><li><strong>Music Triad:</strong> use rhythm values to win card battles.</li><li><strong>Rhythm Room:</strong> listen to a pattern and tap it back.</li><li><strong>Piano Lab:</strong> play a familiar tune or solve Chopin’s interval challenge.</li><li><strong>Song Machine:</strong> build a tune of your own.</li></ul><p class=\"classroom-example\">Try this: look → listen → have a go → check your answer.</p>",
+    "title": "Start here with Professor Haydn",
+    "shelf": "Start here",
+    "keywords": "beginner basics first new start lessons help tutorial",
+    "html": "<p>New to music? Start with <strong>1. Note names</strong>.</p><p>Each lesson shows you an example, then gives you one thing to try. You can listen again, use a hint, and try again.</p><p>After note names, try <strong>2. Note lengths</strong>, then <strong>3. Time signatures</strong>.</p><p>Need help with a game or a music word? Use <strong>Look something up</strong> to find a reference book.</p>",
     "quiz": {
-      "question": "Which skill helps in Music Triad’s card battles?",
+      "question": "Which lesson is a good place to start?",
       "answers": [
-        "Comparing how long notes last",
-        "Naming instrument colors",
-        "Playing every card as fast as possible"
+        "Note names",
+        "All the reference books at once",
+        "The fastest game"
       ],
       "correct": 0,
-      "explanation": "Compare the rhythm values on the sides that touch."
+      "explanation": "Start with Note names. The lesson helps you find notes on a piano."
     }
   },
   {
@@ -29,7 +29,7 @@
     "shelf": "Hands-on lessons",
     "keywords": "note naming pitch letters piano keyboard treble staff tutorial lesson",
     "tutorial": "note-naming",
-    "html": "<p>Let’s learn the note letters together. First find them on a piano. Then try notes on a musical staff. You can listen, retry, and go one step at a time.</p>"
+    "html": "<p>Find C on a piano. Then learn to read a few note letters on the staff.</p>"
   },
   {
     "id": "rhythm-tree",
@@ -37,7 +37,7 @@
     "shelf": "Hands-on lessons",
     "keywords": "rhythm tree split join whole half quarter eighth sixteenth counting tutorial lesson",
     "tutorial": "rhythm-tree",
-    "html": "<p>How can one long note become lots of shorter notes? Split the rhythm tree, hear what changes, then build a four-beat rhythm of your own.</p>"
+    "html": "<p>Learn how long notes last. Listen, split notes into smaller pieces, then build a short rhythm.</p>"
   },
   {
     "id": "time-signatures",
@@ -45,7 +45,7 @@
     "shelf": "Hands-on lessons",
     "keywords": "time signatures meter bars beats pulse 4/4 6/8 2/2 cut time compound fishing",
     "tutorial": "time-signatures",
-    "html": "<p>Learn the plan for a bar. Hear and tap the pulses in 4/4, 6/8, and cut time, then build a matching bar for each one. These are the time signatures you will meet while rhythm fishing.</p>"
+    "html": "<p>Learn to count music in groups. Start with 4/4, then try 6/8 and cut time.</p>"
   },
   {
     "id": "pitch-race",
@@ -328,7 +328,7 @@
     let mobileView='room';const touchHeld=new Set(),mobileLayout=()=>win.matchMedia?.('(max-width:760px), (pointer:coarse)').matches===true;
     const keys=new Set(),player={x:500,y:510,facing:'up',phase:0};
     host.classList.add('music-classroom');host.setAttribute('role','dialog');host.setAttribute('aria-modal','true');host.setAttribute('aria-labelledby','classroomTitle');
-    host.innerHTML=`<div class="classroom-shell"><header class="classroom-heading"><div><span class="classroom-eyebrow">CODA ARCADE · MUSIC ROOMS</span><h1 id="classroomTitle">The Music Classroom</h1><p>Professor Haydn’s shelves are always open.</p></div><button id="classroomClose" type="button" aria-label="Return to arcade"><span class="room-return-full">← Return to arcade</span><span class="room-return-short" aria-hidden="true">← Arcade</span> <small>Esc</small></button></header><nav class="classroom-mobile-nav" aria-label="Music classroom views"><button type="button" data-classroom-view="room">Room</button><button type="button" data-classroom-view="books">Study books</button></nav><section class="classroom-room" aria-label="Walkable music classroom"><canvas id="classroomCanvas" width="1000" height="600" tabindex="0" aria-label="Music classroom. Walk with WASD or arrows. E talks to Professor Haydn or reads a nearby bookshelf. Hold a finger on the floor to steer; lift to stop. The study guide below offers the same books."></canvas><div class="classroom-room-controls"><p><span class="room-keyboard-hint">WASD / arrows · Walk &nbsp; E · Talk or read &nbsp; Click · Walk</span><span class="room-touch-hint">Hold and drag on the floor to walk · Lift to stop · Or use the movement pad</span></p><div><button type="button" id="classroomTalk">Talk to Professor Haydn</button><button type="button" id="classroomRead">Read a nearby shelf</button></div></div></section><p class="classroom-professor-message" id="classroomStatus" role="status" aria-live="polite">Haydn: “Welcome! Come in, choose a book, and ask questions.”</p><div class="classroom-lesson-shortcuts" role="group" aria-label="Hands-on music lessons"><button type="button" data-start-lesson="note-naming">♫ Learn note names</button><button type="button" data-start-lesson="rhythm-tree">♩ Explore the rhythm tree</button><button type="button" data-start-lesson="time-signatures">Learn time signatures</button></div><main class="classroom-library"><nav aria-label="Classroom books"><h2>The study shelves</h2><label class="classroom-search">Find a topic<input id="classroomSearch" type="search" placeholder="Try intervals, triads, or rhythm"></label><div class="classroom-topic-list" id="classroomTopics"></div></nav><article id="classroomBook" class="classroom-book" tabindex="-1" aria-labelledby="classroomBookTitle"></article></main></div>`;
+    host.innerHTML=`<div class="classroom-shell"><header class="classroom-heading"><div><span class="classroom-eyebrow">CODA ARCADE · MUSIC ROOMS</span><h1 id="classroomTitle">The Music Classroom</h1><p>Learn music one small step at a time.</p></div><button id="classroomClose" type="button" aria-label="Return to arcade"><span class="room-return-full">← Return to arcade</span><span class="room-return-short" aria-hidden="true">← Arcade</span> <small>Esc</small></button></header><nav class="classroom-mobile-nav" aria-label="Music classroom views"><button type="button" data-classroom-view="room">Room</button><button type="button" data-classroom-view="books">Lessons &amp; books</button></nav><section class="classroom-room" aria-label="Walkable music classroom"><canvas id="classroomCanvas" width="1000" height="600" tabindex="0" aria-label="Music classroom. Walk with WASD or arrows. E talks to Professor Haydn or reads a nearby bookshelf. Hold a finger on the floor to steer; lift to stop. Choose Start a lesson for guided activities."></canvas><div class="classroom-room-controls"><p><span class="room-keyboard-hint">WASD / arrows · Walk &nbsp; E · Talk or read &nbsp; Click · Walk</span><span class="room-touch-hint">Hold and drag on the floor to walk · Lift to stop · Or use the movement pad</span></p><div><button type="button" id="classroomTalk">Start a lesson</button><button type="button" id="classroomRead">Read a nearby shelf</button></div></div></section><p class="classroom-professor-message" id="classroomStatus" role="status" aria-live="polite">Haydn: “Welcome! Choose lesson 1 below to get started.”</p><section id="classroomStart" class="classroom-learning-path" tabindex="-1" aria-labelledby="classroomStartTitle"><h2 id="classroomStartTitle">Start learning here</h2><p>New to music? Begin with lesson 1. Follow the examples, then have a go.</p><div class="classroom-lesson-shortcuts" role="group" aria-label="Hands-on music lessons"><button type="button" data-start-lesson="note-naming"><strong>1. Note names</strong><span>Find piano keys. Read simple staff notes.</span></button><button type="button" data-start-lesson="rhythm-tree"><strong>2. Note lengths</strong><span>Use the rhythm tree to hear long and short notes.</span></button><button type="button" data-start-lesson="time-signatures"><strong>3. Time signatures</strong><span>Learn how beats form groups.</span></button></div></section><main class="classroom-library"><nav aria-label="Classroom books"><h2>Look something up</h2><p class="classroom-reference-help">Optional help with music words and games.</p><label class="classroom-search">Find a topic<input id="classroomSearch" type="search" placeholder="Try piano, notes, or rhythm"></label><div class="classroom-topic-list" id="classroomTopics"></div></nav><article id="classroomBook" class="classroom-book" tabindex="-1" aria-labelledby="classroomBookTitle"></article></main></div>`;
     const el=id=>host.querySelector('#'+id),canvas=el('classroomCanvas');let g=canvas.getContext('2d');
     const fingerWalk=win.createCodaFingerWalk?.({canvas,enabled:()=>opened&&mobileLayout()&&mobileView==='room',onStart:()=>{keys.clear();destination=null;walking=false;},onStop:()=>{destination=null;walking=false;}})||null;
     const background=doc.createElement('canvas');background.width=1000;background.height=600;let backgroundReady=false,backgroundImage=null;
@@ -337,7 +337,7 @@
     function setMobileView(view,focus=false){
       if(!['room','books'].includes(view))return;if(view==='room')stopAudio();releaseControls();clearKeys();mobileView=view;host.dataset.mobileView=view;
       for(const button of host.querySelectorAll('[data-classroom-view]'))button.setAttribute('aria-pressed',String(button.dataset.classroomView===view));
-      if(focus&&mobileLayout()){host.scrollTop=0;(view==='room'?canvas:el('classroomSearch')).focus({preventScroll:true});}
+      if(focus&&mobileLayout()){host.scrollTop=0;(view==='room'?canvas:el('classroomStart').hidden?el('classroomBook'):el('classroomStart')).focus({preventScroll:true});}
     }
     function listTopics(){
       const query=el('classroomSearch').value.trim().toLocaleLowerCase(),list=el('classroomTopics');list.replaceChildren();
@@ -346,9 +346,11 @@
       if(!matches.length){const p=doc.createElement('p');p.className='classroom-no-results';p.textContent='No matching books. Try another word.';list.append(p);}
     }
     function selectTopic(id,focus=false){
-      const topic=topicFor(id);selected=topic.id;tutorial?.destroy();tutorial=null;stopAudio();
+      const topic=topicFor(id);selected=topic.id;tutorial?.destroy();tutorial=null;stopAudio();el('classroomStart').hidden=topic.id!=='welcome';
       const article=el('classroomBook');article.innerHTML='<p class="classroom-book-kicker"></p><h2 id="classroomBookTitle"></h2>'+topic.html;
       article.querySelector('.classroom-book-kicker').textContent=topic.shelf.toUpperCase();el('classroomBookTitle').textContent=topic.title;
+      if(topic.id!=='welcome'){const back=doc.createElement('button');back.type='button';back.id='classroomAllLessons';back.className='classroom-all-lessons';back.textContent='← All lessons';back.onclick=()=>{el('classroomSearch').value='';selectTopic('welcome',true);};article.prepend(back);}
+      if(topic.id==='welcome'){listTopics();status('Haydn: “Start with Note names. We’ll take one small step at a time.”');if(focus){if(mobileLayout())setMobileView('books');el('classroomStart').focus({preventScroll:true});el('classroomStart').scrollIntoView({behavior:'auto',block:'start'});}return;}
       if(topic.id==='staff'&&win.CodaMusicNotation){const figure=doc.createElement('figure');figure.className='classroom-staff-example';figure.innerHTML=win.CodaMusicNotation.staffSVG(0,{label:'An E on the bottom line of a treble staff'});const caption=doc.createElement('figcaption');caption.textContent='E sits on the bottom treble line. Move up one line or space at a time to F, G, A, B, C, D, E, F.';figure.append(caption);article.append(figure);win.CodaMusicNotation.load(doc);}
       if(topic.tutorial){
         const mount=doc.createElement('div');article.append(mount);

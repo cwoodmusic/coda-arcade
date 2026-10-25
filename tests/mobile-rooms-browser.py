@@ -129,7 +129,7 @@ class MobileRoomTests(unittest.TestCase):
         before=self.page.evaluate('classroomUI.getState().player.x');self.hold_touch('[data-key="d"]')
         self.assertGreater(self.page.evaluate('classroomUI.getState().player.x'),before+20)
         self.page.evaluate("classroomUI.control('d',true)");self.page.wait_for_timeout(60)
-        self.page.get_by_role('button',name='Study books',exact=True).tap()
+        self.page.get_by_role('button',name='Lessons & books',exact=True).tap()
         x=self.page.evaluate('classroomUI.getState().player.x');self.page.wait_for_timeout(120)
         self.assertAlmostEqual(self.page.evaluate('classroomUI.getState().player.x'),x,delta=.01)
         self.page.locator('#classroomSearch').fill('interval')
