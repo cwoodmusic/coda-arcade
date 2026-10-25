@@ -214,12 +214,16 @@ class FishingTempoTests(_upgrade._fish._world.WorldBrowserCase):
         self.assertAlmostEqual(drawn['x'],frame['strike'],delta=frame['spacing']*.09,
                                msg='At its exact timed onset, the real scrolling note must cross the strike line')
         bars=self.page.evaluate('clock=>tempoBars.filter(b=>Math.abs(b.clock-clock)<1e-8)',drawing['clock'])
-        expected_bars=[frame['strike']+(bar['beat']-drawing['beat'])*frame['spacing']
-            for bar in state['challenge']['barLines']
-            if 55<=frame['strike']+(bar['beat']-drawing['beat'])*frame['spacing']<=drawing['width']]
+        expected_bars=[frame['strike']+(bar['layoutBeat']-drawing['beat'])*frame['spacing']
+            for bar in frame['barLines']
+            if 55<=frame['strike']+(bar['layoutBeat']-drawing['beat'])*frame['spacing']<=drawing['width']]
+        for bar in frame['barLines']:
+            self.assertAlmostEqual(bar['beat'],bar['bar']*state['challenge']['barBeats'],places=8)
+            self.assertGreater(bar['paddingBeats'],0)
+            self.assertAlmostEqual(bar['layoutBeat']+bar['paddingBeats'],bar['beat'],places=8)
         self.assertTrue(bars);self.assertTrue(expected_bars)
         for bar in bars:self.assertLess(min(abs(bar['x']-expected) for expected in expected_bars),.15,
-            'Visible bar lines must use the same changing score beat as the notes')
+            'Visible bar lines must keep their engraving space before the timed measure boundary')
         sounds = self.page.evaluate('tempoSounds.filter(s=>[480,680].includes(s.frequency)&&!s.canceled)')
         self.assertGreater(len(sounds),6)
         expected = list(self.expected_pulses.values())

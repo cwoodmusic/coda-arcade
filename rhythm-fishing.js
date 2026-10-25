@@ -274,18 +274,20 @@
    const state=challenge;if(!state)return;
    sg.save();sg.beginPath();sg.rect(55,0,width-55,height-22);sg.clip();
    const beatsPerBar=state.meterInfo?.barBeats||(meter==='6/8'?3:4),quarterSeconds=state.secondsPerBeat||60/((state.bpm||76)*(state.meterInfo?.pulseBeats||1)),origin=state.startTime??clock-state.elapsed,countIn=state.countInSeconds??((state.secondsPerPulse||60/(state.bpm||76))*(state.meterInfo?.pulsesPerBar||4)),musicOrigin=origin+countIn;
-   // Written spacing stays readable at Presto. The exact score beat determines
-   // motion, so slowing/accelerating never moves a target away from its onset.
-   const spacing=Math.max(short?72:80,Math.ceil(fontSize*.35)*4),currentBeat=Number.isFinite(state.beat)?state.beat:(clock-musicOrigin)/quarterSeconds,xForBeat=beat=>strike+(beat-currentBeat)*spacing;
+   // Leave room for notation and a divider even between dense sixteenths.
+   // Noteheads still cross the strike line at their exact musical onset.
+   const spacing=Math.max(short?108:mobile()?128:144,Math.ceil(fontSize*.35+4)*4),currentBeat=Number.isFinite(state.beat)?state.beat:(clock-musicOrigin)/quarterSeconds,xForBeat=beat=>strike+(beat-currentBeat)*spacing;
    let lines=state.barLines;
    if(!Array.isArray(lines)){const start=Math.max(0,Math.floor(currentBeat/beatsPerBar)-1);lines=Array.from({length:8},(_,index)=>({beat:(start+index)*beatsPerBar}));}
-   const barLineStyle={color:'#b8dcf0',width:2,top:lineY-30,bottom:lineY+24},visibleBars=[];
+   const barLineStyle={color:'#b8dcf0',width:2,top:lineY-30,bottom:lineY+24,placement:'between-symbols'},visibleBars=[];
    for(const line of lines){
-    const x=xForBeat(line.beat);if(x<55||x>width)continue;
+    // In sheet music the first symbol follows the measure's bar line. Place
+    // the divider in the preceding visual gap, without shifting any note time.
+    const previous=(state.notes||[]).findLast(note=>note.onset<line.beat-1e-7),paddingBeats=Math.min(.5,previous?(line.beat-previous.onset)/2:.5),layoutBeat=line.beat-paddingBeats,x=xForBeat(layoutBeat);if(x<55||x>width)continue;
     const bar=Number.isInteger(line.bar)?line.bar:Math.round(line.beat/beatsPerBar),label=!short&&x>strike+40&&x<width-24?'Bar '+(bar+1):null;
     sg.save();sg.strokeStyle=barLineStyle.color;sg.globalAlpha=x<strike?.55:.9;sg.lineWidth=barLineStyle.width;sg.beginPath();sg.moveTo(x,barLineStyle.top);sg.lineTo(x,barLineStyle.bottom);sg.stroke();
     if(label){sg.fillStyle=barLineStyle.color;sg.font='600 10px system-ui';sg.textAlign='center';sg.fillText(label,x,lineY+42);}
-    sg.restore();visibleBars.push({bar,beat:line.beat,x,label});
+    sg.restore();visibleBars.push({bar,beat:line.beat,layoutBeat,paddingBeats,x,label});
    }
    // The long gold strike line stays distinct when a blue bar line crosses it.
    sg.fillStyle='#e7bd52';sg.fillRect(strike-2,15,4,height-40);
