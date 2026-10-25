@@ -114,7 +114,7 @@ class FishingRhythmInputTests(_upgrade._fish._world.WorldBrowserCase):
         self.assertLess(after['progress'],state['progress']);self.assertEqual(self.state()['collection']['total'],0)
 
     def test_long_touch_holds_award_at_the_tail_and_early_lift_misses_once_phone(self):
-        self.begin('silver-minnow','4/4');note=self.state()['challenge']['notes'][0]
+        self.begin('silver-minnow','2/2');note=self.state()['challenge']['notes'][0]
         self.assertTrue(note['requiresHold'])
         self.source_to(note['time']);self.down(1)
         head=self.state()['challenge'];self.assertEqual(head['hits'],0);self.assertEqual(head['progress'],45)
@@ -129,7 +129,7 @@ class FishingRhythmInputTests(_upgrade._fish._world.WorldBrowserCase):
         self.assertEqual(self.state()['challenge']['misses'],1);self.assertEqual(self.state()['challenge']['pressedSources'],[])
 
     def test_hold_pause_and_touch_cancel_release_sources_without_sticking_phone(self):
-        self.begin('silver-minnow','4/4');note=self.state()['challenge']['notes'][0]
+        self.begin('silver-minnow','2/2');note=self.state()['challenge']['notes'][0]
         self.source_to(note['time']);self.down(1)
         self.page.locator('#fishingPause').click(force=True)
         paused=self.state();self.assertTrue(paused['paused']);self.assertEqual(paused['challenge']['pressedSources'],[])
@@ -147,6 +147,7 @@ class FishingRhythmInputTests(_upgrade._fish._world.WorldBrowserCase):
         self.assertEqual(self.state()['challenge']['misses'],1)
         self.assertEqual(self.state()['challenge']['pressedSources'],[])
         third=next(n for n in self.state()['challenge']['notes'] if n['judgement']=='pending')
+        self.page.clock.run_for(max(1,math.ceil((third['time']-self.state()['clock'])*1000)))
         for _ in range(100):
             if self.state()['clock']>=third['time']:break
             self.page.clock.run_for(5)
@@ -155,6 +156,113 @@ class FishingRhythmInputTests(_upgrade._fish._world.WorldBrowserCase):
         self.points.clear();self.client.send('Input.dispatchTouchEvent',{'type':'touchCancel','touchPoints':[]})
         self.assertEqual(self.state()['challenge']['misses'],2)
         self.assertEqual(self.state()['challenge']['pressedSources'],[])
+
+    def assert_hold_transition(self,fish,meter,release_early,press_late,keyboard=False):
+        self.begin(fish,meter)
+        notes=self.state()['challenge']['notes']
+        index=next(i for i,note in enumerate(notes[:-1])
+            if note['requiresHold'] and not notes[i+1]['rest']
+            and abs(note['holdEndTime']-notes[i+1]['time'])<.000001)
+        held,following=notes[index:index+2]
+        for prior in notes[:index]:
+            if prior['rest']:continue
+            self.source_to(prior['time']);self.down(1)
+            if prior['requiresHold']:self.source_to(prior['holdEndTime'])
+            self.up(1)
+        before=self.state()['challenge']
+        self.source_to(held['time'])
+        if keyboard:
+            self.page.locator('#fishingRhythmCanvas').focus();self.page.keyboard.down('Space')
+        else:self.down(1)
+        self.page.evaluate('resumeFishingFrame()')
+        self.source_to(held['holdEndTime']-release_early)
+        self.assertIn('Release when ready',self.page.locator('#fishingTap').inner_text())
+        if keyboard:self.page.keyboard.up('Space')
+        else:self.up(1)
+        released=self.state()['challenge']
+        self.assertEqual(released['hits'],before['hits'],'Safe early release must not award before the written tail')
+        self.assertEqual(released['misses'],before['misses'])
+        self.assertEqual(released['extras'],before['extras'])
+        self.assertTrue(released['activeHolds'][0]['holdReleased'])
+        self.assertEqual(released['pressedSources'],[])
+        self.assertIn('Ready for next note',self.page.locator('#fishingTap').inner_text())
+        # Let real room frames cross the tail and the following note head.
+        # The following note still needs a fresh press, even during grace.
+        self.source_to(following['time']+press_late)
+        waiting=self.state()['challenge']
+        self.assertEqual(waiting['hits'],before['hits']+1)
+        self.assertEqual(waiting['misses'],before['misses'])
+        target=next(note for note in waiting['notes'] if note['id']==following['id'])
+        self.assertEqual(target['judgement'],'pending','Holding one note must never collect the next automatically')
+        self.assertEqual(target['holdTransitionFrom'],held['id'])
+        self.assertGreaterEqual(target['lateWindow'],press_late)
+        if keyboard:self.page.keyboard.down('Space')
+        else:self.down(1)
+        pressed=self.state()['challenge']
+        self.assertEqual(pressed['misses'],before['misses']);self.assertEqual(pressed['extras'],before['extras'])
+        if following['requiresHold']:
+            self.assertEqual(pressed['hits'],before['hits']+1)
+            self.source_to(following['holdEndTime'])
+        if keyboard:self.page.keyboard.up('Space')
+        else:self.up(1)
+        final=self.state()['challenge']
+        self.assertEqual(final['hits'],before['hits']+2)
+        self.assertEqual(final['misses'],before['misses']);self.assertEqual(final['extras'],before['extras'])
+        self.assertEqual(final['pressedSources'],[])
+        return following
+
+    def test_same_thumb_can_release_half_early_then_tap_the_next_note_phone(self):
+        self.assert_hold_transition('copper-catfish','4/4',release_early=.16,press_late=.12)
+
+    def test_after_a_half_note_rare_followup_accepts_a_small_late_touch_phone(self):
+        following=self.assert_hold_transition('amethyst-koi','2/2',release_early=.16,press_late=.12)
+        self.assertLess(following['window'],.12,'The test press must fall beyond the ordinary rare-note window')
+
+    def test_keyboard_can_release_and_repress_between_adjacent_half_notes_phone(self):
+        self.assert_hold_transition('silver-minnow','2/2',release_early=.16,press_late=.12,keyboard=True)
+
+    def test_quarters_and_dotted_quarters_are_taps_in_compound_meter_phone(self):
+        self.begin('cave-guppy','6/8')
+        notes=[note for note in self.state()['challenge']['notes'] if not note['rest']][:5]
+        self.assertEqual([note['duration'] for note in notes],[1,.5,1,.5,1.5])
+        for index,note in enumerate(notes):
+            self.assertFalse(note['requiresHold'])
+            self.source_to(note['time']);self.down(1);self.up(1)
+            state=self.state()['challenge']
+            self.assertEqual(state['hits'],index+1);self.assertEqual(state['misses'],0)
+            self.assertEqual(state['activeHolds'],[])
+        dotted=next(note for note in self.state()['challenge']['notes'] if note['duration']==1.5)
+        self.assertFalse(dotted['requiresHold'],'A dotted quarter remains shorter than a half note')
+
+    def test_long_touch_blocks_native_menu_selection_and_drag_gestures_phone(self):
+        self.begin('silver-minnow','2/2');note=self.state()['challenge']['notes'][0]
+        self.source_to(note['time']);self.down(1)
+        # CDP sends a genuine held contact; allow browser gesture timers as
+        # well as the game's controlled clock to pass the long-press threshold.
+        self.page.wait_for_timeout(800)
+        self.page.clock.run_for(800)
+        self.assertEqual(len(self.state()['challenge']['activeHolds']),1)
+        prevented=self.page.evaluate('''()=>{
+          const result={};
+          for(const id of ['fishingTap','fishingRhythmCanvas']){
+            const node=document.getElementById(id);result[id]={};
+            for(const type of ['contextmenu','selectstart','dragstart']){
+              const event=new Event(type,{bubbles:true,cancelable:true});
+              node.dispatchEvent(event);result[id][type]=event.defaultPrevented;
+            }
+            result[id].callout=getComputedStyle(node).webkitTouchCallout;
+            result[id].selection=getComputedStyle(node).userSelect;
+          }
+          result.selected=String(getSelection());return result;
+        }''')
+        for target in ['fishingTap','fishingRhythmCanvas']:
+            for event in ['contextmenu','selectstart','dragstart']:
+                self.assertTrue(prevented[target][event],target+' must suppress '+event)
+            self.assertEqual(prevented[target]['selection'],'none')
+        self.assertEqual(prevented['selected'],'')
+        self.source_to(note['holdEndTime']);self.up(1)
+        self.assertEqual(self.state()['challenge']['hits'],1)
+        self.assertEqual(self.state()['challenge']['misses'],0)
 
 
 if __name__=='__main__':unittest.main(verbosity=2)

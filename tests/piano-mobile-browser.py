@@ -55,17 +55,20 @@ class PianoMobileTests(_world.WorldBrowserCase):
         self.assertEqual(actual['hit'],'pianoRoomCanvas','Movement controls must not cover the character at room edges')
 
     def test_portrait_and_landscape_keep_large_following_room_and_edge_players_visible(self):
-        for size in [{'width':390,'height':844},{'width':844,'height':390}]:
+        for size in [{'width':390,'height':844},{'width':320,'height':780},{'width':844,'height':390}]:
             self.page.set_viewport_size(size);self.page.clock.run_for(96)
             self.assertLessEqual(self.page.locator('#pianoroom').evaluate('h=>h.scrollWidth'),size['width'])
             self.assertEqual(self.state()['camera']['zoom'],2)
+            direction=self.page.locator('.coda-dpad .coda-touch-button').first.bounding_box()
+            self.assertGreaterEqual(direction['width'],72 if size['width']==320 else 80)
+            self.assertGreaterEqual(self.page.locator('.coda-touch-interact').bounding_box()['height'],104)
             self.assert_player_visible()
             self.walk(65,300);self.assert_player_visible()
             self.walk(65,365);self.walk(930,365);self.walk(930,300);self.assert_player_visible()
             self.walk(930,365);self.walk(500,365);self.walk(500,310)
             self.assertTrue(self.page.locator('#pianoWallNote').is_visible())
             self.assertGreaterEqual(self.page.locator('[aria-label="Zoom piano room in"]').bounding_box()['height'],44)
-            self.page.screenshot(path='/tmp/coda-piano36-'+str(size['width'])+'.png')
+            self.page.screenshot(path='/tmp/coda-piano37-'+str(size['width'])+'.png')
 
     def test_zoomed_floor_keys_play_correct_pitch_and_pinch_never_walks_or_emits_notes(self):
         key=next(k for k in self.state()['floorKeys'] if k['midi']==60 and not k['black'])

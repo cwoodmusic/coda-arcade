@@ -47,7 +47,13 @@
   for(const target of targets){
    listen(target,'pointerdown',down,{passive:false});
    for(const type of ['pointerup','pointercancel','lostpointercapture'])listen(target,type,up,{passive:false});
-   listen(target,'contextmenu',event=>{event.preventDefault();});
+   // Safari's long-press callout can start from Touch Events even when a
+   // Pointer Event was canceled. These dedicated rhythm surfaces never need
+   // native scrolling, selection, dragging, or compatibility mouse clicks.
+   const preventNative=event=>{if(event.cancelable)event.preventDefault();};
+   for(const type of ['touchstart','touchmove','touchend','touchcancel'])listen(target,type,preventNative,{passive:false});
+   for(const type of ['contextmenu','selectstart','dragstart'])listen(target,type,preventNative,{capture:true});
+   target.setAttribute?.('draggable','false');
    // Native mouse/touch compatibility clicks have a positive detail. Only an
    // explicit keyboard/screen-reader activation uses the assistive fallback.
    if(target.tagName==='BUTTON')listen(target,'click',event=>{if(event.detail===0&&!event.sourceCapabilities?.firesTouchEvents&&enabled(target)){event.preventDefault();api.onActivate?.(event);}});

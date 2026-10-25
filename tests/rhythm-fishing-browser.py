@@ -209,7 +209,7 @@ class RhythmFishingTests(unittest.TestCase):
     def play_note(self, note):
         self.advance_to(note['time'])
         self.page.keyboard.down('Space')
-        if note.get('requiresHold', note.get('duration', 0)>=1):
+        if note.get('requiresHold', note.get('duration', 0)>=2):
             self.advance_to(note.get('holdEndTime',note['time']+note['durationSeconds']))
         self.page.keyboard.up('Space')
         self.page.clock.run_for(1)
@@ -253,7 +253,7 @@ class RhythmFishingTests(unittest.TestCase):
         after_hit = self.state()['challenge']['progress']
         self.page.keyboard.press('Space')
         self.assertLess(self.state()['challenge']['progress'], after_hit,
-                        'Releasing a long note early must lower the reel progress')
+                        'An extra press between notes must lower the reel progress')
         self.page.clock.run_for(16000)
         self.assertEqual(self.state()['challenge']['phase'], 'escaped')
         self.assertEqual(self.page.evaluate('rewards'), [])

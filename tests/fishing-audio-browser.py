@@ -205,7 +205,7 @@ class FishingAudioTests(_upgrade._fish._world.WorldBrowserCase):
             'Unlocking audio must play the current beat without replaying missed music')
 
     def test_opening_audio_during_a_hold_does_not_break_the_note(self):
-        self.battle();note=next(n for n in self.state()['challenge']['notes']
+        self.battle('2/2');note=next(n for n in self.state()['challenge']['notes']
             if n['judgement']=='pending' and n.get('requiresHold'))
         self.advance_to(note['time']);self.page.locator('#fishingRhythmCanvas').focus()
         self.page.keyboard.down('Space')

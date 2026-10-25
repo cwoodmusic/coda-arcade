@@ -8,11 +8,17 @@ Captain Cadence waits on the lantern dock. His original shanty verses explain ca
 
 On phones, the cave fills the available room viewport and starts at a closer 200% view. Pinch two fingers to zoom from 100% to 300%; the camera follows your avatar or boat. The corner’s **− / percentage / +** controls offer the same zoom. Pinching stops steering and casting until both fingers lift. Rotation, cancellation, and leaving the room release captured touches. The developer camera remains independent and can zoom further.
 
-After a bite, listen to one bar of count-in. Notes scroll left across a one-line staff, with blue lines dividing bars. Press **Space**, **Enter**, the staff, or **Tap / Hold rhythm** when a notehead crosses the gold line. Short notes need a tap. Hold quarter notes and longer until their colored tail reaches the gold line; releasing early counts as a miss. Rests need no input. Correct notes raise the catch bar. Misses and extra taps lower it. Reaching 100% catches the fish; reaching zero lets it escape. An escaped shadow disappears; a new fish can appear elsewhere after 24 seconds. Pause is available, and switching away from the page pauses the hooked fish and its audio.
+After a bite, listen to one bar of count-in. Notes scroll left across a one-line staff, with blue lines dividing bars. Press **Space**, **Enter**, the staff, or **Tap / Hold rhythm** when a notehead crosses the gold line. Short notes need a tap. Only half and whole notes need holding; quarter notes (including dotted quarters), eighths, and sixteenths are taps. The button changes to **Release when ready** near a held note’s tail. You may lift up to 180 milliseconds early (at most 35% of its length) to prepare for the next note; letting go earlier counts as a miss. The immediately following note also has a small late grace window, bounded so it cannot steal the next note or rest. Its musical timing and the held note’s reward time stay unchanged. Rests need no input. Correct notes raise the catch bar. Misses and extra taps lower it. Reaching 100% catches the fish; reaching zero lets it escape. An escaped shadow disappears; a new fish can appear elsewhere after 24 seconds. Pause is available, and switching away from the page pauses the hooked fish and its audio.
 
 The original synthesized **Lantern Lake** theme plays while exploring and during the battle. **Audio** offers separate saved switches for music, metronome, guide notes, and all sound. The metronome follows the selected meter and changing tempo. Opening Audio pauses an active battle; closing it resumes only if it was running before. Leaving the room stops its audio.
 
 A small boat, rod, line, and fish illustrate the battle above the staff. Good taps reel the fish closer; mistakes make it pull away and tighten the line. Its species, edited colors, and size follow the hooked fish. Rare, Epic, and Legendary encounters show a brief announcement at the start of the count-in. The illustration and announcement use the paused game clock and respect reduced motion; neither changes scoring.
+
+## Endless practice
+
+Choose **Practice fishing** beside Audio at the lake. Pick **4/4**, **6/8**, or **cut time**, then **Common**, **Uncommon**, **Rare**, **Epic**, or **Legendary**. Practice starts directly with a count-in; no boat or wild fish is needed. The rhythms, tempo changes, notation, holds, music, and metronome use the normal game rules.
+
+Practice continues at both zero and full progress, generating new bars for as long as you want. **Pause** and **Audio** remain available. **End practice** (or Escape) returns to your previous place at the lake. It keeps the practice choices for your next visit to the settings during this page session. Practice does not catch fish, remove shadows, or award Notes, XP, or achievements.
 
 ## Meters and rarity
 
@@ -59,8 +65,10 @@ python3 tests/fishing-tempo-browser.py
 python3 tests/cave-camera-browser.py
 python3 tests/fishing-battle-browser.py
 node --test tests/cave-camera.test.cjs tests/fishing-battle.test.cjs tests/fishing-tempo.test.cjs
-node --test tests/fishing-music.test.cjs tests/fishing-boat.test.cjs tests/fishing-holds.test.cjs tests/fishing-rhythm-input.test.cjs
+node --test tests/fishing-music.test.cjs tests/fishing-boat.test.cjs tests/fishing-holds.test.cjs tests/fishing-rhythm-input.test.cjs tests/fishing-practice.test.cjs
 python3 tests/fishing-audio-browser.py
+python3 tests/fishing-practice-widget-browser.py
+python3 tests/fishing-practice-world-browser.py
 python3 tests/fishing-rhythm-input-browser.py
 python3 tests/fishing-barlines-browser.py
 python3 tests/cave-mobile-browser.py

@@ -10,7 +10,7 @@
 
 #fishingCaptainWords{white-space:pre-line}
 
-.fishing-tap-button,#fishingRhythmCanvas{touch-action:none!important;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+.fishing-challenge-panel,.fishing-challenge-panel *{touch-action:none!important;user-select:none!important;-webkit-user-select:none!important;-webkit-touch-callout:none!important;-webkit-user-drag:none;-webkit-tap-highlight-color:transparent}
 .fishing-tap-button.is-holding{background:linear-gradient(#297263,#1e5159)!important;border-color:#c3ffdf!important}
 .fishing-audio-backdrop{position:fixed;inset:0;z-index:150;display:grid;place-items:center;padding:12px;background:#07101dcc;backdrop-filter:blur(5px)}
 .fishing-audio-panel{width:min(470px,100%);max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain;padding:18px;background:#1b2b40;border:2px solid #86c8be;border-radius:13px;box-shadow:0 16px 50px #0009}
@@ -20,8 +20,8 @@
 .fishing-audio-panel>label{display:flex;align-items:center;gap:12px;min-height:56px;padding:10px;border:1px solid #5a7785;border-radius:8px;margin-top:8px;font-size:16px;font-weight:650;cursor:pointer;background:#203b4a}
 .fishing-audio-panel input[type=checkbox]{width:26px;height:26px;accent-color:#a0edce;flex:none;margin:0}
 .fishing-audio-panel .fishing-audio-help{font-size:12px;line-height:1.4;margin:5px 10px 10px}
-@media(max-width:760px),(pointer:coarse){.fishing-tap-button{min-height:104px!important;font-size:25px!important}.fishing-audio-panel button{min-height:52px;min-width:64px}}
-@media(orientation:landscape) and (max-height:550px){.fishing-tap-button{min-height:80px!important}.fishing-audio-panel{width:min(560px,100%);padding:12px}.fishing-audio-heading{top:-12px;padding:3px 0}.fishing-audio-heading h2{font-size:20px}.fishing-audio-panel>p{margin:4px 0;font-size:12px}.fishing-audio-panel>label{min-height:48px;padding:6px 10px;margin-top:5px}.fishing-audio-panel .fishing-audio-help{margin:3px 10px;font-size:11px}}
+@media(max-width:760px),(pointer:coarse){.fishing-tap-button{min-height:144px!important;font-size:29px!important}.fishing-audio-panel button{min-height:52px;min-width:64px}}
+@media(orientation:landscape) and (max-height:550px){.fishing-tap-button{min-height:112px!important}.fishing-audio-panel{width:min(560px,100%);padding:12px}.fishing-audio-heading{top:-12px;padding:3px 0}.fishing-audio-heading h2{font-size:20px}.fishing-audio-panel>p{margin:4px 0;font-size:12px}.fishing-audio-panel>label{min-height:48px;padding:6px 10px;margin-top:5px}.fishing-audio-panel .fishing-audio-help{margin:3px 10px;font-size:11px}}
 
 /* Exploration gets a close, screen-filling mobile viewport. The canvas keeps
  * its native aspect ratio while the camera follows inside the visible clip. */
@@ -39,7 +39,8 @@
  .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-lake-toolbar select{min-height:52px;width:100%;padding:6px;font-size:16px}
  .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-instructions{display:none}
  .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) #fishingMessage{position:absolute;z-index:3;top:150px;bottom:auto;left:8px;right:8px;max-height:58px;overflow:hidden;pointer-events:none;margin:0;padding:7px 10px;min-height:0;border-color:#6ba5a280;background:#102d3bdc;font-size:11px}
- .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) #fishingLakeAudio{order:-2}
+ .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) #fishingLakeAudio{order:-3}
+ .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) #fishingPractice{order:-2}
  .rhythm-fishing.room-developer-open .fishing-cave-scene{--coda-room-cover:0}
  .rhythm-fishing.room-developer-open #fishingLakeCanvas{position:static;left:auto;top:auto;transform:none;width:100%!important;height:auto!important;max-width:100%;margin:0}
 }
@@ -70,4 +71,21 @@
  .fishing-tap-button{grid-column:1 / -1;grid-row:6}
  .fishing-rhythm-feedback{grid-column:1 / -1;grid-row:7}
  .fishing-challenge-panel>.fishing-small{grid-column:1 / -1}
+}
+
+/* Keep the larger rhythm pad in view on short phones. */
+@media(orientation:landscape) and (max-height:550px){
+ .fishing-challenge-panel{padding:8px}
+ .fishing-challenge-heading{margin-bottom:3px}
+ .fishing-staff-wrap{margin-top:4px}
+ .fishing-staff-wrap canvas{height:85px!important;min-height:85px}
+ .fishing-rhythm-meta{margin:2px 0 4px}
+ .fishing-rhythm-feedback{margin-top:3px}
+}
+
+@media(max-width:350px){
+ .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-heading{grid-template-columns:1fr;gap:3px}
+ .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-heading h1{font-size:22px}
+ .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-heading-actions{flex-wrap:nowrap}
+ .rhythm-fishing[data-mobile-view=room]:not(.room-developer-open) .fishing-heading-actions button{flex:1;min-width:0}
 }

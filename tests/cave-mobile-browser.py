@@ -36,7 +36,7 @@ class CaveMobileTests(_fish._world.WorldBrowserCase):
 
     def test_mobile_view_is_close_full_height_and_keeps_actor_visible_after_rotation_phone(self):
         self.enter()
-        for size in [{'width':390,'height':844},{'width':844,'height':390}]:
+        for size in [{'width':390,'height':844},{'width':320,'height':780},{'width':844,'height':390}]:
             self.page.set_viewport_size(size);self.page.clock.run_for(120)
             scene=self.page.locator('.fishing-cave-scene').bounding_box();canvas=self.page.locator('#fishingLakeCanvas').bounding_box()
             self.assertGreater(scene['height'],size['height']*.58)
@@ -45,8 +45,11 @@ class CaveMobileTests(_fish._world.WorldBrowserCase):
             self.assertAlmostEqual(canvas['width']/canvas['height'],1000/620,delta=.002)
             self.assertLessEqual(self.page.locator('#rhythmFishing').evaluate('node=>node.scrollWidth'),size['width'])
             self.assertTrue(self.page.locator('#fishingMeter').is_visible())
+            direction=self.page.locator('.coda-dpad .coda-touch-button').first.bounding_box()
+            self.assertGreaterEqual(direction['width'],72 if size['width']==320 else 80)
+            self.assertGreaterEqual(self.page.locator('.coda-touch-interact').bounding_box()['height'],104)
             self.assert_visible_actor('player')
-            self.page.screenshot(path='/tmp/coda-cave36-'+str(size['width'])+'.png')
+            self.page.screenshot(path='/tmp/coda-cave37-'+str(size['width'])+'.png')
         self.page.screenshot(path='/tmp/coda-cave36-mobile.png')
 
     def test_close_view_boat_steering_and_pinch_are_correct_and_editor_stays_independent_phone(self):

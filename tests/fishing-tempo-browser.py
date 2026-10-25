@@ -144,7 +144,7 @@ class FishingTempoTests(_upgrade._fish._world.WorldBrowserCase):
         self.page.keyboard.down('Space')
         self.last_onset_drawing=self.page.evaluate('tempoInk.at(-1)')
         self.last_onset_state=self.state()
-        holding=note.get('requiresHold',note.get('duration',0)>=1)
+        holding=note.get('requiresHold',note.get('duration',0)>=2)
         gain=before['challenge']['rarity']['hitGain'] if holding else 0
         if maintain and self.state()['challenge']['progress']+gain>65:
             extras=self.state()['challenge']['extras']

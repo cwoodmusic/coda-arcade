@@ -127,15 +127,18 @@ class FishingBarLineTests(_tempo._upgrade._fish._world.WorldBrowserCase):
             self.page.set_viewport_size(size);self.page.clock.run_for(32)
             self.assert_bars('4/4')
             tap=self.page.locator('#fishingTap').bounding_box()
-            self.assertGreaterEqual(tap['height'],64)
+            self.assertGreaterEqual(tap['height'],144 if size['height']>size['width'] else 112)
             self.assertLessEqual(tap['y']+tap['height'],size['height']+1)
         self.page.screenshot(path='/tmp/coda-fishing36-bars-landscape.png')
 
     def test_active_hold_trails_clear_measure_labels_and_gold_strike_phone(self):
-        state=self.begin_fish(self.choose('steady','common','6/8'),'6/8')
+        state=self.begin_fish(self.choose('steady','common','2/2'),'2/2')
         note=next(note for note in state['challenge']['notes'] if note['requiresHold'])
         self.advance_to(note['time']);self.page.keyboard.down('Space')
-        self.advance_to(note['time']+note['durationSeconds']*.5)
+        # A half-note is long enough that its midpoint puts the next cut-time
+        # measure outside a narrow phone staff. Keep an active tail while the
+        # next measure is actually visible for the label-clearance assertion.
+        self.advance_to(note['time']+note['durationSeconds']*.7)
         for size in [{'width':390,'height':844},{'width':844,'height':390}]:
             self.page.set_viewport_size(size);self.page.clock.run_for(32)
             state=self.state();drawing=state['beaming']

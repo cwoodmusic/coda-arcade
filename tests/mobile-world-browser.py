@@ -133,7 +133,7 @@ class MobileWorldTests(unittest.TestCase):
                     self.place(point['x'],point['y']);self.assert_avatar_visible()
 
     def test_large_controls_overlay_the_full_height_world_in_portrait_and_landscape(self):
-        for viewport in [{'width':390,'height':844},{'width':360,'height':780},{'width':844,'height':390},{'width':667,'height':375}]:
+        for viewport in [{'width':390,'height':844},{'width':360,'height':780},{'width':320,'height':740},{'width':844,'height':390},{'width':667,'height':375}]:
             self.page.set_viewport_size(viewport);self.page.wait_for_timeout(100)
             metric=self.page.evaluate('''()=>{
               const host=document.querySelector('#codaTouchControls'),dpad=host.querySelector('.coda-dpad').getBoundingClientRect(),actions=host.querySelector('.coda-touch-actions').getBoundingClientRect(),stage=worldStage.getBoundingClientRect();
@@ -141,13 +141,52 @@ class MobileWorldTests(unittest.TestCase):
                 reserve:getComputedStyle(document.body).getPropertyValue('--coda-world-pad-height').trim(),
                 dpad:dpad.toJSON(),actions:actions.toJSON(),
                 center:document.elementFromPoint((dpad.right+actions.left)/2,innerHeight-45)?.id,
-                buttons:[...host.querySelectorAll('button')].filter(button=>!button.hidden).map(button=>{const b=button.getBoundingClientRect();return {width:b.width,height:b.height};})};
+                buttons:[...host.querySelectorAll('button')].filter(button=>!button.hidden).map(button=>{const b=button.getBoundingClientRect();return {width:b.width,height:b.height,direction:!!button.closest('.coda-dpad'),emote:button.classList.contains('coda-touch-emote')};})};
             }''')
             self.assertEqual(metric['reserve'],'0px');self.assertAlmostEqual(metric['stageBottom'],viewport['height'],delta=1)
             self.assertLessEqual(metric['scrollWidth'],viewport['width']+1)
             self.assertGreaterEqual(metric['dpad']['left'],0);self.assertLess(metric['dpad']['right'],metric['actions']['left']);self.assertLessEqual(metric['actions']['right'],viewport['width'])
-            self.assertTrue(all(button['width']>=58 and button['height']>=58 for button in metric['buttons']),metric)
+            landscape=viewport['width']>viewport['height']
+            direction_min=83 if landscape or viewport['width']>=390 else 77 if viewport['width']>=360 else 72
+            for button in metric['buttons']:
+                if button['direction']:
+                    self.assertGreaterEqual(button['width'],direction_min,metric)
+                    self.assertGreaterEqual(button['height'],direction_min,metric)
+                else:
+                    self.assertGreaterEqual(button['width'],112 if landscape else 80,metric)
+                    self.assertGreaterEqual(button['height'],96 if button['emote'] and landscape else
+                                            88 if button['emote'] else 112 if landscape else 104,metric)
             self.assertEqual(metric['center'],'view','The space between the thumb controls must remain a playable map')
+
+    def test_landscape_npc_dialogue_stays_between_the_large_thumb_controls(self):
+        self.page.set_viewport_size({'width':844,'height':390})
+        self.page.clock.install();self.page.clock.pause_at(self.page.evaluate('Date.now()/1000')+5)
+        people=self.page.evaluate('CodaArcadeQA.characters().npcs')
+        opened=False
+        for person in people:
+            for dx,dy in [(0,35),(35,0),(-35,0),(0,-35)]:
+                if self.page.evaluate('([x,y])=>CodaArcadeQA.place(x,y)',[person['x']+dx,person['y']+dy]):
+                    self.page.clock.run_for(32);self.page.keyboard.press('e');self.page.clock.run_for(32)
+                    opened=self.page.evaluate('CodaArcadeQA.conversation().open')
+                    if opened:break
+            if opened:break
+        self.assertTrue(opened,'A real nearby musician should open their conversation')
+        for size in [{'width':844,'height':390},{'width':667,'height':375}]:
+            self.page.set_viewport_size(size);self.page.clock.run_for(64)
+            metrics=self.page.evaluate('''()=>{
+              const d=dialog.getBoundingClientRect(),pad=document.querySelector('.coda-dpad').getBoundingClientRect(),
+                actions=document.querySelector('.coda-touch-actions').getBoundingClientRect();
+              return {dialog:d.toJSON(),pad:pad.toJSON(),actions:actions.toJSON(),
+                leftHit:document.elementFromPoint(d.left+20,Math.min(d.bottom-20,innerHeight-35))?.closest('#dialog')?.id};
+            }''')
+            self.assertGreater(metrics['dialog']['left'],metrics['pad']['right']+8)
+            self.assertLess(metrics['dialog']['right'],metrics['actions']['left']-8)
+            self.assertGreaterEqual(metrics['dialog']['top'],0)
+            self.assertLessEqual(metrics['dialog']['bottom'],size['height'])
+            self.assertEqual(metrics['leftHit'],'dialog','Conversation text must not sit beneath the direction buttons')
+            self.page.screenshot(path='/tmp/coda-controls37-dialog-'+str(size['width'])+'.png')
+        self.page.locator('#codaTouchControls .coda-touch-interact').tap();self.page.clock.run_for(64)
+        self.assertFalse(self.page.evaluate('CodaArcadeQA.conversation().open'))
 
     def test_held_floor_finger_redirects_with_drag_and_stops_on_lift_without_a_path(self):
         self.place(1225,675);self.assert_avatar_visible();self.settle_camera();start=self.position();right=self.floor_point()

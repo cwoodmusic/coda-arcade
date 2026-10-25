@@ -79,8 +79,14 @@ class FishingWorldTests(_world.WorldBrowserCase):
             ay=box['y']+(actor['y']-camera['y'])*camera['zoom']/620*box['height']
             bottom=scene['y']+scene['height']-12
             if touch and self.page.viewport_size['height']>self.page.viewport_size['width']:
-                controls_height=self.page.evaluate("parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--coda-touch-controls-height'))||220")
-                bottom=min(bottom,self.page.viewport_size['height']-controls_height-10)
+                # The overlay host reserves space for three actions even when
+                # this room only shows one. Use visible controls rather than
+                # treating that transparent host space as an obstruction.
+                controls_top=self.page.evaluate("""()=>Math.min(innerHeight,...[
+                  ...document.querySelectorAll('.coda-dpad,.coda-touch-actions')]
+                  .filter(node=>node.getClientRects().length)
+                  .map(node=>node.getBoundingClientRect().top))""")
+                bottom=min(bottom,controls_top-10)
             scale=1;dx,dy=px-ax,py-ay
             if dx>0:scale=min(scale,(scene['x']+scene['width']-12-ax)/dx)
             elif dx<0:scale=min(scale,(scene['x']+12-ax)/dx)
@@ -146,7 +152,7 @@ class FishingWorldTests(_world.WorldBrowserCase):
             note=upcoming[0]
             advance_to(note['time'])
             self.page.keyboard.down('Space')
-            if note.get('requiresHold',note.get('duration',0)>=1):
+            if note.get('requiresHold',note.get('duration',0)>=2):
                 end=note.get('holdEndTime',note['time']+note['durationSeconds'])
                 advance_to(end)
             self.page.keyboard.up('Space');self.page.clock.run_for(1)
@@ -210,7 +216,7 @@ class FishingWorldTests(_world.WorldBrowserCase):
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),154)
 
     def test_leaving_a_held_fish_and_reopening_does_not_strand_its_hidden_slot(self):
-        self.cast();cast=self.state()
+        self.cast('2/2');cast=self.state()
         slot,original=next((index,shadow) for index,shadow in enumerate(cast['shadows']) if not shadow['visible'])
         note=next(note for note in cast['challenge']['notes'] if note['judgement']=='pending')
         self.assertTrue(note['requiresHold'])

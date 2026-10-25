@@ -79,7 +79,7 @@ class FishingUpgradeTests(_fish._world.WorldBrowserCase):
         self.advance_to(note['time']);self.page.locator('#fishingRhythmCanvas').focus()
         self.page.keyboard.down('Space')
         head=self.state()
-        holding=note.get('requiresHold',note.get('duration',0)>=1)
+        holding=note.get('requiresHold',note.get('duration',0)>=2)
         gain=head['challenge']['rarity']['hitGain'] if holding else 0
         if maintain and head['phase']=='rhythm' and head['challenge']['progress']+gain>65:
             self.page.keyboard.press('Enter')
@@ -116,7 +116,7 @@ class FishingUpgradeTests(_fish._world.WorldBrowserCase):
         self.assertLess(hit['tension'],before['tension']);self.assertLess(hit['fishX'],before['fishX'])
         hit_hash=self.battle_hash();self.page.keyboard.press('Space');self.page.clock.run_for(16)
         bad=self.state()['battle']
-        self.assertEqual(bad['reaction'],'miss','Releasing the next quarter-note hold early must pull the fish away')
+        self.assertEqual(bad['reaction'],'extra','An extra tap between quarter notes must pull the fish away')
         self.assertGreater(bad['tension'],hit['tension'])
         self.assertGreater(bad['fishX'],hit['fishX']);self.assertNotEqual(hit_hash,self.battle_hash())
         self.assertGreater(bad['line']['mouth']['x'],bad['line']['rod']['x'])
@@ -228,7 +228,7 @@ class FishingUpgradeTests(_fish._world.WorldBrowserCase):
             self.assertLessEqual(self.page.locator('#rhythmFishing').evaluate('e=>e.scrollWidth'),size['width']+1)
             battle=self.page.locator('#fishingBattle').bounding_box();tap=self.page.locator('#fishingTap').bounding_box()
             self.assertGreaterEqual(battle['height'],60);self.assertLessEqual(battle['height'],112)
-            self.assertGreaterEqual(tap['height'],64)
+            self.assertGreaterEqual(tap['height'],144 if size['height']>size['width'] else 112)
             self.assertGreaterEqual(tap['y'],0)
             self.assertLessEqual(tap['y']+tap['height'],size['height']+1,
                 'The full rhythm button must fit beside the battle graphic without scrolling')
