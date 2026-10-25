@@ -15,7 +15,7 @@ import unittest
 from playwright.sync_api import sync_playwright
 
 ROOT=Path(__file__).resolve().parents[1]
-EXPORT_FINGERPRINT='e2094156fc5d145efe0f73a34627d90610dcd771f227877b2d5054a72c39f7ce'
+EXPORT_FINGERPRINT='0d018ee7417c537ade11c8517e3ea0dd0de3d1e45ceaed1f2e6f4b04d68e8dbf'
 BLANK={'format':'CodaArcadeWorldProject','version':1,
        'world':{'width':1672,'height':941},'assets':[],'collision':[],'strokes':[]}
 
@@ -110,10 +110,10 @@ class PublishedWorldTests(unittest.TestCase):
     def test_fresh_browser_gets_the_reviewed_layout_and_current_play_controls(self):
         canonical=json.dumps(self.published,sort_keys=True,separators=(',',':')).encode()
         self.assertEqual(hashlib.sha256(canonical).hexdigest(),EXPORT_FINGERPRINT,
-                         'Publish the reviewed layout, including the authorized corridor-plant removal')
+                         'Publish the reviewed coda-world-project (4) export without dropping edits')
         self.load();self.assertEqual(self.project(),self.published)
         self.assertEqual((len(self.published['assets']),len(self.published['collision']),
-                          len(self.published['strokes'])),(8,1085,99))
+                          len(self.published['strokes'])),(11,1336,345))
         games=self.page.evaluate('''()=>CodaArcadeQA.worldObjects().filter(x=>x.game).map(x=>({
           name:x.game.name,walkable:CodaArcadeQA.walkable(x.game.npcX??x.game.x,x.game.npcY??x.game.y),
           route:CodaArcadeQA.route(1180,388,x.game.x,x.game.y).length
@@ -289,49 +289,107 @@ class PublishedWorldTests(unittest.TestCase):
 
     def test_live_cabinet_effects_stay_behind_actors_in_erased_screen_pixels(self):
         local=copy.deepcopy(self.published)
-        # Cover the complete Pitch Race screen so live notes and bloom must
-        # follow the same background partition as its static source pixels.
+        cabinet=next(asset for asset in local['assets']
+                     if asset.get('origin',{}).get('name')=='cabinet_pitch_race')
+        # Exercise a moved, resized cabinet. Erasure belongs to source artwork;
+        # live notes and the character witness must follow its scene transform.
+        bx,by,bw,bh=cabinet['origin']['bounds']
+        cabinet.update(x=cabinet['x']+37,y=cabinet['y']+18,
+                       w=round(cabinet['w']*1.2),h=round(cabinet['h']*1.1))
         local['strokes'].append({'tool':'erase','size':1,'depth':300,
-            'points':[[x,y] for y in range(207,252) for x in range(696,748)]})
+            'points':[[x,y] for y in range(by,by+bh) for x in range(bx,bx+bw)]})
         self.page.emulate_media(reduced_motion='reduce')
         self.load(local=local)
-        self.page.locator('#fxBtn').click()
-        self.assertEqual(self.page.evaluate('CodaArcadeQA.atmosphere().quality'),'full')
+        geometry=self.page.evaluate('''()=>{
+          const assets=CodaDeveloperConsole.getProject().assets,
+            runtime=createCodaWorldObjects({catalog:CodaWorldObjectCatalog,getAssets:()=>assets,
+              getAnimation:()=>({dx:0,dy:0,rot:0,scale:1,alpha:1})}),
+            object=runtime.state('cabinet_pitch_race'),[x,y,w,h]=object.definition.screen,
+            first=runtime.point(object,x,y),last=runtime.point(object,x+w,y+h);
+          return {left:first.x,top:first.y,right:last.x,bottom:last.y,
+            source:[x,y,w,h],foot:{x:Math.round((first.x+last.x)/2),y:Math.round(last.y+14)}};
+        }''')
         self.open_tab('collision')
         self.page.get_by_label('Collision tool',exact=True).select_option('open')
         self.page.get_by_label('Collision brush',exact=True).select_option('5')
-        self.map_click(722,265)
-        self.assertTrue(self.page.evaluate('CodaArcadeQA.place(722,265)'))
-        # The layer pane suppresses the nearby cabinet prompt and freezes
-        # movement while leaving live cabinet effects running at full quality.
+        self.map_click(**geometry['foot'])
+        self.assertTrue(self.page.evaluate('point=>CodaArcadeQA.place(point.x,point.y)',geometry['foot']))
+        # The layer pane freezes movement and suppresses cabinet prompts. Its
+        # diagnostic tint is separate from normal scene rendering, so hide both
+        # overlays before comparing actual character colors.
         self.open_tab('layers')
-        self.assertEqual(self.pixel('cabinet_pitch_race',722,224,'above')[3],0)
-        result=self.page.evaluate('''async()=>{
-          const qa=CodaArcadeQA,player=qa.characters().player,reference=document.createElement('canvas');
-          reference.width=100;reference.height=100;
-          const ctx=reference.getContext('2d'),renderer=createCodaCharacterRenderer({reducedMotion:()=>true});
-          renderer.drawPlayer(ctx,player.appearance,{x:50,y:80,facing:player.facing},0);
-          const expected=ctx.getImageData(38,36,25,23).data,liveFrames=new Set();
-          const canvas=document.querySelector('#view'),world=canvas.getContext('2d');
-          const failures=[];let compared=0;
-          for(let frame=0;frame<8;frame++){
-            await publishFrames(6);
-            const cam=qa.camera();
-            const actual=world.getImageData(Math.round((710-cam.x)*cam.zoom),Math.round((221-cam.y)*cam.zoom),25,23).data;
-            for(let at=0;at<expected.length;at+=4)if(expected[at+3]===255){
-              compared++;
-              if(expected.subarray(at,at+4).some((value,i)=>value!==actual[at+i])&&failures.length<8)
-                failures.push({frame,x:710+(at/4)%25,y:221+Math.floor(at/4/25),
-                  expected:Array.from(expected.subarray(at,at+4)),actual:Array.from(actual.subarray(at,at+4))});
+        def hide_overlays():
+            for selector in ['#devShowCollision','#devShowLayers']:
+                if self.page.locator(selector).get_attribute('aria-pressed')=='true':
+                    self.page.locator(selector).click()
+            self.page.mouse.move(1500,900)
+        def set_fx(label):
+            self.page.locator('#worldMenuBtn').click()
+            for _ in range(3):
+                if self.page.locator('#fxBtn').inner_text().endswith(label):break
+                self.page.locator('#fxBtn').click()
+            self.page.locator('#worldMenuBtn').click()
+            self.assertEqual(self.page.evaluate('CodaArcadeQA.atmosphere().quality'),label.lower())
+        hide_overlays()
+        sx,sy,sw,sh=geometry['source']
+        self.assertEqual(self.pixel('cabinet_pitch_race',sx+sw//2,sy+sh//2,'above')[3],0)
+        self.page.evaluate('''box=>{
+          const reference=document.createElement('canvas');reference.width=1672;reference.height=941;
+          const renderer=createCodaCharacterRenderer({reducedMotion:()=>true});
+          renderer.setPixelEdits(CodaDeveloperConsole.getSprites());
+          window.sampleCabinetScreen=()=>{
+            const qa=CodaArcadeQA,player=qa.characters().player,cam=qa.camera(),
+              context=reference.getContext('2d');
+            context.clearRect(0,0,reference.width,reference.height);
+            renderer.drawPlayer(context,player.appearance,{...player},qa.time());
+            const left=Math.ceil(box.left+4),top=Math.ceil(box.top+4),
+              width=Math.floor(box.right-4)-left,height=Math.floor(box.bottom-5)-top,
+              expected=context.getImageData(left,top,width,height).data,
+              actual=document.querySelector('#view').getContext('2d').getImageData(
+                Math.round((left-cam.x)*cam.zoom),Math.round((top-cam.y)*cam.zoom),width,height).data;
+            if(cam.zoom!==1)throw Error('Pixel witness requires the default 100% camera');
+            const failures=[],screen=[];let compared=0;
+            for(let at=0;at<expected.length;at+=4){
+              const y=top+Math.floor(at/4/width);
+              if(expected[at+3]===255&&y>=player.y-56&&y<player.y-18){
+                compared++;
+                if(expected.subarray(at,at+4).some((value,i)=>value!==actual[at+i])&&failures.length<8)
+                  failures.push({x:left+(at/4)%width,y,
+                    expected:Array.from(expected.subarray(at,at+4)),actual:Array.from(actual.subarray(at,at+4))});
+              }
+              // Exclude the complete actor (including translucent edge pixels)
+              // when measuring animation on the exposed cabinet screen.
+              if(expected[at+3]===0)screen.push(...actual.subarray(at,at+4));
             }
-            liveFrames.add(Array.from(world.getImageData(698,210,10,40).data).join(','));
-          }
-          return {failures,compared,liveVariations:liveFrames.size};
-        }''')
-        self.assertGreater(result['compared'],1000,'Exercise opaque head pixels across multiple live frames')
-        self.assertGreater(result['liveVariations'],1,'Full-quality cabinet effects must actually animate')
-        self.assertEqual(result['failures'],[],
-                         'Animated cabinet screen effects must not repaint erased pixels over the player')
+            return {failures,compared,screen:screen.join(',')};
+          };
+        }''',geometry)
+        def samples(count):
+            return self.page.evaluate('''async count=>{
+              const frames=[];for(let i=0;i<count;i++){await publishFrames(6);frames.push(sampleCabinetScreen());}
+              return frames;
+            }''',count)
+        set_fx('Full');live=samples(8)
+        self.assertGreater(sum(frame['compared'] for frame in live),1000,
+                           'Exercise opaque character pixels inside the transformed screen')
+        self.assertEqual([failure for frame in live for failure in frame['failures']],[],
+                         'Animated cabinet effects must stay behind opaque character pixels')
+        self.assertGreater(len({frame['screen'] for frame in live}),1,
+                           'The transformed exposed screen must actually animate with FX on')
+        set_fx('Off');stopped=samples(3)
+        self.assertEqual(len({frame['screen'] for frame in stopped}),1,
+                         'Turning FX off must stop the live screen animation')
+        self.assertTrue(any(frame['screen']!=stopped[0]['screen'] for frame in live),
+                        'FX must change actual screen pixels at the moved cabinet')
+        self.open_tab('objects');self.page.locator('#assetList').select_option(cabinet['id'])
+        self.page.locator('#assetVisible').uncheck()
+        self.open_tab('layers');hide_overlays();hidden=samples(2)
+        self.assertFalse(next(item for item in self.page.evaluate('CodaArcadeQA.worldObjects()')
+                              if item['name']=='cabinet_pitch_race')['visible'])
+        self.assertNotEqual(hidden[-1]['screen'],stopped[-1]['screen'],
+                            'Hiding the transformed cabinet must remove its screen artwork')
+        self.assertEqual([failure for frame in hidden for failure in frame['failures']],[],
+                         'The same character witness remains visible after the cabinet is hidden')
 
 
 if __name__=='__main__':

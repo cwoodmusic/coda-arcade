@@ -31,7 +31,11 @@
   const safely=(getter,fallback)=>{try{return typeof getter==='function'?getter():fallback;}catch{return fallback;}};
   const node=(tag,className,value)=>{const element=doc.createElement(tag);if(className)element.className=className;if(value!==undefined)element.textContent=value;return element;};
   const button=(label,callback)=>{const element=node('button','profile-action',label);element.type='button';element.onclick=callback;return element;};
-  function capture(){return profileModel({avatar:safely(api.getAvatar,{}),progression:safely(api.getProgression,{}),missions:safely(api.getMissions,{}),notes:safely(api.getNotes,{}),tutorials:safely(api.getTutorials,null)},catalog);}
+  function capture(){
+   const value=safely(api.getClassroomAlias,null),alias=typeof value==='string'?value.trim().slice(0,80):'',avatar=safely(api.getAvatar,{});
+   const model=profileModel({avatar:alias?{...avatar,name:alias}:avatar,progression:safely(api.getProgression,{}),missions:safely(api.getMissions,{}),notes:safely(api.getNotes,{}),tutorials:safely(api.getTutorials,null)},catalog);
+   if(alias){model.name=alias;model.avatar.name=alias;model.classroomAlias=alias;}return model;
+  }
   function visible(){return !!section?.isConnected&&!body.parentElement?.hidden;}
   function avatarCanvas(profile,width=200,height=220){
    const canvas=node('canvas','profile-avatar');canvas.width=width;canvas.height=height;canvas.setAttribute('aria-label',model.name+'’s character');
@@ -88,7 +92,8 @@
    for(const [direction,label,symbol]of [['down','Front','Front'],['left','Left','Left'],['up','Back','Back'],['right','Right','Right']]){const view=button(symbol,()=>{facing=direction;for(const item of views.querySelectorAll('button'))item.setAttribute('aria-pressed',String(item===view));drawPortrait();});view.setAttribute('aria-label','View character from '+label.toLowerCase());view.setAttribute('aria-pressed',String(facing===direction));views.append(view);}
    portraitBox.append(views);hero.append(portraitBox);
    const identity=node('div','profile-identity');identity.append(node('p','profile-eyebrow','YOUR MUSICIAN'),node('h2','',model.name),node('p','profile-level','Level '+model.level),node('p','profile-notes',model.notes+' Notes'));
-   if(api.openWardrobe)identity.append(button(api.wardrobeLabel||'Change your look',()=>api.openWardrobe()));hero.append(identity);section.append(hero);
+   if(api.openWardrobe)identity.append(button(api.wardrobeLabel||'Change your look',()=>api.openWardrobe()));
+   if(typeof api.openClassroomProfile==='function')identity.append(button('Classroom profile',()=>api.openClassroomProfile()));hero.append(identity);section.append(hero);
    const experience=node('section','profile-experience');experience.append(node('h3','',model.atMax?'Look how far you’ve come!':'Your next level'),node('p','profile-xp-to-go',model.atMax?'You have earned every current level prize.':model.xpToNext+' XP to go!'));
    experience.append(meter(model.atMax?1:model.levelXP,model.atMax?1:model.levelSize,'Experience toward '+(model.atMax?'all current level prizes':'level '+model.nextLevel)),node('p','profile-xp-detail',model.atMax?model.xp+' total XP':model.levelXP+' / '+model.levelSize+' XP toward level '+model.nextLevel+' · '+model.xp+' total XP'));
    experience.append(node('p','profile-help','XP means experience points. You earn them by playing games, finishing missions, and learning new music skills.'));section.append(experience);

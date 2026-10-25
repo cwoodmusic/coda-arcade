@@ -49,6 +49,7 @@ window.createCodaBoutiqueUI=function(api){
     return allowed.length?allowed:[{id:'player',label:'Your avatar'}];
   }
   const getProfile=id=>api.getProfile?api.getProfile(id):api.getAvatar();
+  const classroomAlias=()=>{try{const value=api.getClassroomAlias?.();return typeof value==='string'&&value.trim()?value.trim().slice(0,80):null;}catch{return null;}};
   function migrateProfile(raw){
     const profile={...(raw||{})},old=profile.accessory;
     // Explicit modern slots always win. Older saves used a single accessory slot.
@@ -167,7 +168,9 @@ window.createCodaBoutiqueUI=function(api){
     }
     const targetControl=field('Customize','target','select',targetId,available.map(item=>({id:item.id,label:item.label})),false);targetControl.disabled=available.length===1;
     targetControl.onchange=()=>open(targetControl.value);
-    const name=field('Arcade nickname','name','text',isPlayer?profile.name:(source.name||target.label),null,isPlayer);name.maxLength=18;name.readOnly=!isPlayer;
+    const alias=isPlayer?classroomAlias():null;
+    const name=field(alias?'Classroom alias':'Arcade nickname','name','text',isPlayer?(alias||profile.name):(source.name||target.label),null,isPlayer);name.maxLength=alias?80:18;name.readOnly=!isPlayer||!!alias;
+    if(alias){const note=document.createElement('p');note.className='muted boutique-alias-note';note.textContent='Your class alias stays the same when you change your look.';name.parentElement.append(note);}
     const form=field('Transformation','form','select',profile.form||'human',catalog('forms'),isPlayer);
     const pet=field('Companion','pet','select',profile.pet||'none',catalog('pets'),isPlayer);
     const hairstyle=field('Hairstyle','hairstyle','select',profile.hairstyle,catalog('hairstyles'),isPlayer);
@@ -185,7 +188,7 @@ window.createCodaBoutiqueUI=function(api){
     const emote=field('Emote','emote','select',profile.emote,catalog('emotes'),isPlayer);
     const rawDraft=()=>{
       const normalized=api.renderer.normalizeProfile({form:form.value,pet:pet.value,name:name.value,hairstyle:hairstyle.value,outfit:outfit.value,skin:skin.value,hair:hair.value,shirt:shirt.value,lowerColor:lowerColor.value,headwear:headwear.value,headwearColor:headwearColor.value,eyewear:eyewear.value,eyewearColor:eyewearColor.value,accessory:accessory.value,shoes:shoes.value,emote:emote.value,hat:false});
-      return {...normalized,name:isPlayer?normalized.name:(source.name||target.label),hat:false,
+      return {...normalized,name:isPlayer?(classroomAlias()||normalized.name):(source.name||target.label),hat:false,
         ...(!isPlayer?{characterId:targetId}:{})};
     };
     const controls={form,pet,hairstyle,hair,skin,outfit,shirt,lowerColor,headwear,headwearColor,eyewear,eyewearColor,accessory,shoes,emote};

@@ -1,6 +1,8 @@
 // Coda Arcade Song Machine ↔ Jukebox bridge. Uses existing Firebase project.
 const inEditor=!!window.songMachineBridge;
 const config=window.ARCADE_ACCOUNTS_CONFIG;
+let classroomMode=config?.mode==='classroom'||config?.classroom?.privacy===true||config?.classroom?.enabled===true;
+try{classroomMode=classroomMode||new URLSearchParams(location.search).get('classroom')==='1';const parent=window.parent;if(parent!==window&&parent.location.origin===location.origin){const parentConfig=parent.ARCADE_ACCOUNTS_CONFIG;classroomMode=classroomMode||parentConfig?.mode==='classroom'||parentConfig?.classroom?.privacy===true||parentConfig?.classroom?.enabled===true;}}catch{}
 const supported=location.hostname==='cwoodmusic.github.io';
 const $=id=>document.getElementById(id);
 let auth,db,api,currentUser=null,ready=false,selectedSongId=null,player=null;
@@ -16,8 +18,9 @@ function editorUI(){
  save.onclick=saveSong;
 }
 function message(s){const el=$('cloud-status');if(el)el.textContent=s;else if($('cloud-songs-status'))$('cloud-songs-status').textContent=s;}
-async function signIn(){try{const p=new api.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});await api.signInWithPopup(auth,p)}catch(e){message(errorMessage(e))}}
+async function signIn(){if(classroomMode)return message('Use your classroom sign-in card in the arcade.');try{const p=new api.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});await api.signInWithPopup(auth,p)}catch(e){message(errorMessage(e))}}
 async function saveSong(){
+ if(classroomMode)return message('Use Export song file to keep a copy.');
  if(!ready){message('Cloud saving works on the published arcade site.');return}
  if(!currentUser){message('Sign in with your arcade account to save.');return}
  const song=window.songMachineBridge.get();if(!validSong(song))return message('This composition cannot be saved.');
@@ -35,6 +38,7 @@ function addJukeboxUI(){
  const launch=$('songmachine-launch');if(launch)launch.onclick=()=>window.codaOpenSongMachine?window.codaOpenSongMachine():window.open('song-machine/index.html','_self');
 }
 async function renderLibrary(){
+ if(classroomMode)return;
  const modal=$('modalbody');if(!modal)return;
  const section=document.createElement('section');section.id='cloud-song-library';
  section.innerHTML='<h3>♫ My Songs</h3><p id="cloud-songs-status" class="cloud-song-message"></p><div id="cloud-song-list"></div><button id="cloud-compose" type="button">♫ Create a Song</button>';
@@ -74,11 +78,12 @@ function playComposition(song,title){
  message('Playing “'+title+'”');setTimeout(()=>{if(!stopped&&player){stopComposition();message('Finished “'+title+'”')}},(duration+.2)*1000);
 }
 function stepsPerBar(meter){const [n,d]=meter.split('/').map(Number);return n*16/d}
-async function openRequestedSong(){const id=new URLSearchParams(location.search).get('song');if(!id||!currentUser)return;try{const snap=await api.get(api.ref(db,'songLibrary/'+currentUser.uid+'/'+id));const record=snap.val();if(!validSong(record?.composition))return message('That song was not found.');window.songMachineBridge.load(record.composition);selectedSongId=id;userSongs[id]=record;message('Editing “'+record.title+'”. Save to update it.')}catch(e){message(errorMessage(e))}}
-if(inEditor)editorUI();else addJukeboxUI();
-if(supported&&config?.enabled){
+async function openRequestedSong(){if(classroomMode)return;const id=new URLSearchParams(location.search).get('song');if(!id||!currentUser)return;try{const snap=await api.get(api.ref(db,'songLibrary/'+currentUser.uid+'/'+id));const record=snap.val();if(!validSong(record?.composition))return message('That song was not found.');window.songMachineBridge.load(record.composition);selectedSongId=id;userSongs[id]=record;message('Editing “'+record.title+'”. Save to update it.')}catch(e){message(errorMessage(e))}}
+if(classroomMode&&inEditor){const save=$('save');if(save){save.textContent='Export song file';save.title='Keep a copy of your song';save.disabled=false;}const load=$('load');if(load)load.textContent='Import song file';}
+else if(!classroomMode){if(inEditor)editorUI();else addJukeboxUI();}
+if(!classroomMode&&supported&&config?.enabled){
  try{const [app,authApi,databaseApi]=await Promise.all([import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'),import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js'),import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js')]);
  api={...authApi,...databaseApi};const firebaseApp=app.initializeApp(config.firebase,'arcade-profiles');auth=api.getAuth(firebaseApp);db=api.getDatabase(firebaseApp);await api.setPersistence(auth,api.browserLocalPersistence);ready=true;
  api.onAuthStateChanged(auth,u=>{currentUser=u;if(inEditor){$('cloud-account').textContent=u?'Account: Signed in':'Account: Guest';$('save').disabled=!u;if(u)openRequestedSong();else message('Sign in to save to your jukebox.')}else if($('cloud-song-library'))renderLibrary()});
  }catch(e){message('Firebase connection failed: '+errorMessage(e))}
-}else if(inEditor){$('save').disabled=true;message('Publish on GitHub Pages to enable cloud saving.');}
+}else if(inEditor&&!classroomMode){$('save').disabled=true;message('Publish on GitHub Pages to enable cloud saving.');}

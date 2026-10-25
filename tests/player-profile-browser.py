@@ -19,7 +19,7 @@ window.fixtureMissions=CodaMusicianMissions.DEFINITIONS.map(m=>({...m,status:m.p
 window.fixtureTutorials={version:1,lessons:[{id:'note-naming',title:'Note naming',step:4,total:4,completed:true},{id:'rhythm-tree',title:'The rhythm tree',step:1,total:5,completed:false}],completed:['note-naming']};
 window.calls=[];window.progression=CodaPlayerProgression.create();window.wallet=CodaNotesShop.createWallet();
 if(!localStorage.musicArcadeV1)localStorage.musicArcadeV1=JSON.stringify({name:'Melody',hairstyle:'bald',shirt:'#999ca6',lowerColor:'#626875',headwear:'none'});
-window.profile=createCodaPlayerProfile({panelBody,renderer:createCodaCharacterRenderer(),openPanel:title=>{panel.hidden=false;panelTitle.textContent=title;panelBody.replaceChildren();},getAvatar:()=>JSON.parse(localStorage.musicArcadeV1),getProgression:()=>progression.refresh(),getNotes:()=>wallet.snapshot(),getMissions:()=>({missions:fixtureMissions}),getTutorials:()=>fixtureTutorials,openWardrobe:()=>calls.push('wardrobe'),openMission:id=>calls.push('mission:'+id),openGame:id=>calls.push('game:'+id),openLevels:()=>calls.push('levels'),openMusicians:()=>calls.push('musicians'),openClassroom:()=>calls.push('classroom')});
+window.profile=createCodaPlayerProfile({panelBody,renderer:createCodaCharacterRenderer(),openPanel:title=>{panel.hidden=false;panelTitle.textContent=title;panelBody.replaceChildren();},getAvatar:()=>JSON.parse(localStorage.musicArcadeV1),getClassroomAlias:()=>window.fixtureClassroomAlias||null,getProgression:()=>progression.refresh(),getNotes:()=>wallet.snapshot(),getMissions:()=>({missions:fixtureMissions}),getTutorials:()=>fixtureTutorials,openWardrobe:()=>calls.push('wardrobe'),openMission:id=>calls.push('mission:'+id),openGame:id=>calls.push('game:'+id),openLevels:()=>calls.push('levels'),openMusicians:()=>calls.push('musicians'),openClassroom:()=>calls.push('classroom'),openClassroomProfile:()=>calls.push('classroom-profile')});
 openProfile.onclick=()=>profile.open();closeProfile.onclick=()=>panel.hidden=true;
 </script>'''
         self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.end_headers();self.wfile.write(html.encode())
@@ -53,6 +53,15 @@ class PlayerProfileTests(unittest.TestCase):
         self.page.get_by_role('button',name='Practice in the classroom',exact=True).click();self.assertEqual(self.page.evaluate('calls.at(-1)'),'classroom')
         self.page.locator('#closeProfile').click();self.page.reload();self.page.locator('#openProfile').click()
         self.assertEqual(self.page.locator('.profile-level').inner_text(),'Level 2')
+    def test_classroom_entry_uses_the_generated_alias_without_changing_saved_progress(self):
+        before=self.page.evaluate('({avatar:localStorage.musicArcadeV1,progress:localStorage.codaPlayerProgressV1})')
+        self.page.evaluate('fixtureClassroomAlias="Amber Conductor 1234";profile.refresh()')
+        self.assertEqual(self.page.locator('.profile-identity h2').inner_text(),'Amber Conductor 1234')
+        self.assertEqual(self.page.evaluate('profile.getState().avatar.name'),'Amber Conductor 1234')
+        self.assertNotIn('Melody',self.page.locator('.player-profile').inner_text())
+        self.page.get_by_role('button',name='Classroom profile',exact=True).click();self.assertEqual(self.page.evaluate('calls.at(-1)'),'classroom-profile')
+        self.assertEqual(self.page.evaluate('({avatar:localStorage.musicArcadeV1,progress:localStorage.codaPlayerProgressV1})'),before)
+        self.page.evaluate('fixtureClassroomAlias=null;profile.refresh()');self.assertEqual(self.page.locator('.profile-identity h2').inner_text(),'Melody')
     def test_real_mission_fields_actions_and_pending_reward_states(self):
         card=self.page.locator('[data-mission-id="ellington-rhythm-streak"]')
         self.assertIn('50 notes in a row',card.inner_text());self.assertIn('12 / 50',card.inner_text());self.assertIn('160 Notes',card.inner_text())

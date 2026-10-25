@@ -217,3 +217,50 @@ test('malformed result data never becomes mission evidence',()=>{
   assert.equal(validResult('pitch',pitch({streak:26})),false);assert.equal(validResult('rhythm',rhythm({hits:9})),false);
   assert.equal(validResult('rhythm',rhythm({early:6,late:5})),false);
 });
+
+test('a paused classroom cannot accept, consume iframe results, or collect mission rewards',()=>{
+  let allowed=true;const verified=[],completed=[],rewarded=[],changes=[];
+  const f=fixture({api:{canRecord:()=>allowed,onVerifiedResult:(...args)=>verified.push(args),
+    onMissionCompleted:value=>completed.push(value),onMissionRewarded:value=>rewarded.push(value),
+    onChange:value=>changes.push(value)}});
+  f.manager.accept('bach');f.attach();allowed=false;
+  const before=f.manager.snapshot(),saved=f.store.getItem('codaMusicianMissionsV1'),changed=changes.length;
+  assert.equal(f.manager.accept('mozart').ok,false);
+  f.result(triad(),'paused-win');
+  assert.equal(f.child.CodaBridge.report('paused-local-win',triad()),'original-result');
+  assert.deepEqual(f.manager.snapshot(),before);
+  assert.equal(f.store.getItem('codaMusicianMissionsV1'),saved);
+  assert.deepEqual(verified,[]);assert.deepEqual(completed,[]);assert.deepEqual(rewarded,[]);
+  assert.equal(changes.length,changed,'Blocked results must not emit progress callbacks');
+  allowed=true;f.result(triad(),'paused-win');
+  assert.equal(f.manager.get('bach').status,'complete','A blocked result does not consume its run ID');
+  assert.equal(verified.length,1);assert.equal(completed.length,1);f.approach('bach');allowed=false;
+  const complete=f.manager.snapshot(),completedSaved=f.store.getItem('codaMusicianMissionsV1'),completionChanges=changes.length;
+  assert.equal(f.manager.turnIn('bach').ok,false);assert.equal(f.manager.retryRewards('bach').ok,false);
+  assert.deepEqual(f.manager.snapshot(),complete);assert.equal(f.store.getItem('codaMusicianMissionsV1'),completedSaved);
+  assert.equal(f.wallet.snapshot().balance,150);assert.equal(rewarded.length,0);assert.equal(changes.length,completionChanges);
+  allowed=true;assert.equal(f.manager.turnIn('bach').ok,true);assert.equal(f.wallet.snapshot().balance,240);
+});
+
+test('paused live Rhythm grading cannot change verified streaks or emit achievement callbacks',()=>{
+  let allowed=true;const streaks=[];
+  const child={createTapRound:()=>round(8),gradeTap(value,target){value.taps.push({target,hit:true,error:0});value.matched.add(target);return {hit:true,error:0};},finishTapRound(){return true;}};
+  const f=fixture({game:'rhythm',child,api:{canRecord:()=>allowed,onVerifiedRhythmStreak:best=>streaks.push(best)}});
+  f.manager.accept('joplin');f.attach();
+  const play=()=>{const current=f.child.createTapRound();for(let i=0;i<8;i++)assert.equal(f.child.gradeTap(current,i).hit,true);f.child.finishTapRound();};
+  play();assert.equal(f.manager.get('joplin').progress,8);allowed=false;
+  const before=f.manager.snapshot(),saved=f.store.getItem('codaMusicianMissionsV1'),callbacks=streaks.length;
+  play();f.result(rhythm(),'paused-rhythm');
+  f.document.dispatch('click',{target:{closest:()=>({id:'stop'})}});
+  assert.deepEqual(f.manager.snapshot(),before);assert.equal(f.store.getItem('codaMusicianMissionsV1'),saved);
+  assert.equal(streaks.length,callbacks,'Stale grading cannot trigger rhythm achievements');
+  allowed=true;play();assert.equal(f.manager.get('joplin').progress,16,'Only writable play contributes to the streak');
+});
+
+test('an unavailable classroom permission check fails closed',()=>{
+  for(const canRecord of [()=>false,()=>{throw Error('session lost');},()=> 'true']){
+    const f=fixture({api:{canRecord}});
+    assert.equal(f.manager.accept('bach').ok,false);assert.equal(f.manager.get('bach').status,'available');
+    assert.equal(f.store.getItem('codaMusicianMissionsV1'),null);
+  }
+});

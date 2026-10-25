@@ -24,6 +24,9 @@
  }
  function create(api={}){
   let storage=api.storage;try{if(storage===undefined)storage=window.localStorage;}catch{}
+  const win=api.window||(typeof window==='undefined'?null:window),config=api.config||win?.ARCADE_ACCOUNTS_CONFIG;
+  let classroomMode=config?.mode==='classroom'||config?.classroom?.privacy===true||config?.classroom?.enabled===true||storage?.__codaClassroomScoped===true;
+  try{classroomMode=classroomMode||new URLSearchParams(win?.location?.search||'').get('classroom')==='1';}catch{}
   let records={},error='',section=null,publicState='idle',champion=null,request=null;
   try{const saved=JSON.parse(storage?.getItem(KEY)||'null');if(saved?.version===1&&saved.records&&typeof saved.records==='object')for(const [key,row]of Object.entries(saved.records))
    if(row&&TITLES[row.game]&&key===row.game+':'+row.mode&&Number.isFinite(row.score)&&row.score>=0&&row.score<=1000000&&Number.isFinite(row.tiebreak)&&typeof row.name==='string')records[key]={...row,name:row.name.slice(0,18)};
@@ -39,9 +42,12 @@
   function render(){
    if(!section?.isConnected)return;section.replaceChildren();
    section.append(node('p','The number one recorded score for each competitive game. Cabinet results update this board automatically.','muted'));
-   const online=node('article',undefined,'fame-public'),heading=node('h3','Pitch Race · Public #1 · Classic');online.append(heading);
-   online.append(node('p',publicState==='loading'?'Loading the shared Pitch Race leaderboard…':publicState==='error'?'Shared leaderboard is unavailable. Browser records below still work.':champion?champion.name+' · '+champion.score+' points · '+champion.streak+' best streak':'No public score recorded yet.'));
-   section.append(online,node('h3','Best in this browser'));
+   if(!classroomMode){
+    const online=node('article',undefined,'fame-public'),heading=node('h3','Pitch Race · Public #1 · Classic');online.append(heading);
+    online.append(node('p',publicState==='loading'?'Loading the shared Pitch Race leaderboard…':publicState==='error'?'Shared leaderboard is unavailable. Browser records below still work.':champion?champion.name+' · '+champion.score+' points · '+champion.streak+' best streak':'No public score recorded yet.'));
+    section.append(online);
+   }
+   section.append(node('h3',classroomMode?'Your best scores':'Best in this browser'));
    for(const game of Object.keys(TITLES)){
     const card=node('article',undefined,'fame-record');card.append(node('h3',TITLES[game]));
     const modes=game==='pitch'?['classic','endless','levels','multi']:game==='triad'?['computer','multiplayer']:['tap'];
@@ -56,6 +62,7 @@
    if(error)section.append(node('p',error,'panelMsg'));
   }
   async function refreshPublic(){
+   if(classroomMode)return;
    if(request)return request;publicState='loading';render();
    request=(async()=>{const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);try{
     const fetcher=api.fetch||globalThis.fetch;if(!fetcher)throw Error('offline');

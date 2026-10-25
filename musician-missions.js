@@ -92,6 +92,7 @@
     }
     try{const raw=storage?.getItem(KEY);if(raw)state=clean(JSON.parse(raw));}catch{persistent=false;lastError='Browser saving is unavailable. Mission progress cannot be saved yet.';}
     const clone=value=>JSON.parse(JSON.stringify(value));
+    function canRecord(){try{return typeof api.canRecord==='function'?api.canRecord()===true:true;}catch{return false;}}
     function persist(){
       try{if(!storage?.setItem)throw Error('storage');storage.setItem(KEY,JSON.stringify(state));persistent=true;lastError='';return true;}
       catch{persistent=false;lastError='Browser saving is unavailable. Keep this page open and retry saving your mission reward.';return false;}
@@ -105,9 +106,11 @@
     function snapshot(){return {persistent,error:lastError,missions:DEFINITIONS.map(entry),connection:session?{game:session.game,connected:session.connected,streak:session.tracker?.snapshot().streak??session.fallbackStreak}:null};}
     function changed(){render();try{api.onChange?.(snapshot());}catch{/* Feedback cannot interrupt gameplay. */}}
     function canTurnIn(mission){
+      if(!canRecord())return false;
       try{return api.canTurnIn?.(mission.person,entry(mission))===true;}catch{return false;}
     }
     function turnIn(person){
+      if(!canRecord())return {ok:false,error:'Open your classroom profile before collecting rewards.'};
       const mission=missionFor(person),value=mission&&state.missions[mission.id];
       if(!mission||!value)return {ok:false,error:'Accept this musician\'s mission first.'};
       if(value.rewardedAt)return {ok:true,alreadyRewarded:true};
@@ -128,12 +131,14 @@
       changed();return {ok:true,alreadyRewarded:false,rewardId};
     }
     function accept(person){
+      if(!canRecord())return {ok:false,error:'Open your classroom profile before accepting missions.'};
       const mission=missionFor(person);if(!mission)return {ok:false,error:'This musician has no mission yet.'};
       if(state.missions[mission.id])return {ok:true,alreadyAccepted:true};
       state.missions[mission.id]={acceptedAt:now(),progress:0,completedAt:0,rewardedAt:0};
       const saved=persist();changed();return {ok:saved,error:saved?'':lastError};
     }
     function advance(mission,amount){
+      if(!canRecord())return;
       const value=state.missions[mission.id];
       if(!value||value.completedAt||!session?.eligible.has(mission.id))return;
       const progress=Math.min(mission.target,Math.max(value.progress,amount));
@@ -143,8 +148,9 @@
       if(completed)try{api.onMissionCompleted?.(entry(mission));}catch{/* Completion feedback cannot interrupt gameplay. */}
       changed();
     }
-    function rhythmProgress(best){try{api.onVerifiedRhythmStreak?.(best);}catch{}for(const mission of DEFINITIONS)if(mission.kind==='rhythm-streak')advance(mission,best);}
+    function rhythmProgress(best){if(!canRecord())return;try{api.onVerifiedRhythmStreak?.(best);}catch{}for(const mission of DEFINITIONS)if(mission.kind==='rhythm-streak')advance(mission,best);}
     function recordResult(game,runId,result){
+      if(!canRecord())return false;
       if(!session||session.game!==game||typeof runId!=='string'||!runId.length||runId.length>128||!validResult(game,result))return false;
       const key=game+':'+runId;if(state.seen.includes(key))return false;
       state.seen.push(key);state.seen=state.seen.slice(-512);persist();
@@ -163,12 +169,12 @@
       const value=event.data;
       if(!session||event.source!==session.frame.contentWindow||event.origin!==session.origin||!value||value.coda!==1||value.game!==session.game)return;
       if(value.type==='ready'){initBridge();return;}
-      if(value.type==='result'&&value.token===session.token){session.connected=true;recordResult(session.game,value.runId,value.result);}
+      if(value.type==='result'&&value.token===session.token&&canRecord()){session.connected=true;recordResult(session.game,value.runId,value.result);}
     }
     function wrap(object,key,after){
       const original=object?.[key];if(typeof original!=='function')return false;
       const owner=session;
-      const wrapped=function(...args){const result=original.apply(this,args);if(session===owner)after(args,result);return result;};
+      const wrapped=function(...args){const result=original.apply(this,args);if(session===owner&&canRecord())after(args,result);return result;};
       try{object[key]=wrapped;if(object[key]!==wrapped)return false;}catch{return false;}
       owner.cleanup.push(()=>{try{if(object[key]===wrapped)object[key]=original;}catch{}});return true;
     }
@@ -188,6 +194,7 @@
           if(session.rhythmHook){
             session.connected=true;
             const reset=event=>{
+              if(!canRecord())return;
               const target=event.target?.closest?.('button,input,select');if(!target)return;
               if(event.type==='change'||['stop','home-button','generate','none','all'].includes(target.id)||target.id==='play'&&target.textContent.includes('Stop'))tracker.stop();
             };
