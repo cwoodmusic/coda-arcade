@@ -22,22 +22,22 @@ test('major and natural minor scales use their real interval patterns and fit ev
 
 test('wall notation uses real diatonic placement and proper accidental spelling',()=>{
  const c=notation.createScore({notes:[60,62,64,65,67,69,71,72],step:0,mode:'scale',label:'C major'});
- assert.equal(c.clef,'treble');assert.deepEqual(c.notes.map(note=>note.position),[-2,-1,0,1,2,3]);
+ assert.equal(c.clef,'treble');assert.deepEqual(c.notes.map(note=>note.position),[-2,-1,0,1]);
  assert.deepEqual(c.notes[0].ledgerLines,[-2]);assert.equal(c.notes[0].status,'current');
  const minor=SCALES.find(scale=>scale.id==='c-minor');
  const score=notation.createScore({notes:minor.notes.map(offset=>60+offset),spellings:minor.spellings,step:0,mode:'scale'});
  assert.equal(score.notes[2].label,'E♭');assert.equal(score.notes[2].position,0);assert.equal(score.notes[2].accidental,'flat');
  const second=notation.createScore({notes:minor.notes.map(offset=>60+offset),spellings:minor.spellings,step:6,mode:'scale'});
- assert.equal(second.notes[0].label,'B♭');assert.equal(second.notes[0].accidental,'flat');
+ assert.equal(second.notes.find(note=>note.label==='B♭').label,'B♭');assert.equal(second.notes.find(note=>note.label==='B♭').accidental,'flat');
  const low=notation.createScore({notes:[48,50,52,53,55,57,59,60],step:0,mode:'scale'});
  assert.equal(low.clef,'bass');assert.equal(low.notes[0].position,3,'C below middle C belongs in a bass space');
  assert.equal(notation.pitch(66,'F♯').letter,'F');assert.equal(notation.pitch(70,'B♭').letter,'B');
 });
 
-test('the score advances through a six-note window and memory never reveals future targets',()=>{
+test('the score advances through a written measure and memory never reveals future targets',()=>{
  const notes=[60,62,64,65,67,69,71,72];
  const guided=notation.createScore({notes,step:6,mode:'melody'});
- assert.deepEqual(guided.notes.map(note=>note.midi),[71,72]);assert.equal(guided.notes[0].status,'current');
+ assert.deepEqual(guided.notes.map(note=>note.midi),[67,69,71,72]);assert.equal(guided.notes[2].status,'current');
  const blank=notation.createScore({notes,step:0,mode:'memory'});assert.equal(blank.answerHidden,true);assert.deepEqual(blank.notes,[]);
  const played=notation.createScore({notes,step:2,mode:'memory'});
  assert.deepEqual(played.notes.map(note=>note.midi),[60,62]);assert.ok(played.notes.every(note=>note.status==='done'));

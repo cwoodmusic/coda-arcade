@@ -96,3 +96,61 @@
  .classroom-settings-panel{padding:16px}
  .classroom-settings-heading h2{font-size:20px}
 }
+
+/* Room and learning are separate screens. No catalogue or toolbar sits below
+   the classroom floor; Haydn and the shelves open the learning screen. */
+.music-classroom .classroom-books[hidden],.music-classroom .classroom-room[hidden],.music-classroom .classroom-book[hidden],.music-classroom [hidden]{display:none!important}
+.music-classroom{padding:10px 16px;overflow:hidden}
+.music-classroom .classroom-shell{max-width:1560px;height:100%;display:grid;grid-template-rows:52px minmax(0,1fr);gap:0;min-height:0}
+.music-classroom .classroom-heading{position:relative!important;top:auto;display:flex!important;align-items:center;justify-content:space-between;flex-wrap:nowrap;height:52px;min-height:52px;gap:10px;padding:0 0 8px!important;margin:0!important;background:none!important;box-shadow:none!important;backdrop-filter:none}
+.music-classroom .classroom-heading h1{font-size:24px;line-height:1.1;margin:0;white-space:nowrap;letter-spacing:0}
+.music-classroom .classroom-heading-actions{display:flex;gap:6px;align-items:center;flex:none}
+.music-classroom .classroom-heading-actions button{min-height:44px;padding:7px 10px!important;font-size:14px;white-space:nowrap}
+.music-classroom .classroom-professor-message,.music-classroom .classroom-lesson-context{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important;padding:0!important;margin:0!important;border:0!important}
+.music-classroom .classroom-room{display:flex;align-self:start;width:100%;min-height:0;max-height:100%;justify-content:center;align-items:center}
+.music-classroom .classroom-canvas-viewport{width:min(100%,calc((100dvh - 76px) * 1000 / 600));height:auto;aspect-ratio:1000/600;--coda-room-cover:0}
+.music-classroom #classroomCanvas{display:block;width:100%;height:auto;max-width:none;max-height:none;margin:0;touch-action:none}
+.music-classroom .classroom-books{overflow:auto;min-width:0;min-height:0;padding:10px 2px 24px;overscroll-behavior:contain;scrollbar-color:#8b7da4 #181c30}
+.music-classroom .classroom-learning-path{width:min(900px,100%);margin:0 auto;padding:22px;border:1px solid #7a9c9b;border-radius:12px;background:#1e3940}
+.music-classroom .classroom-learning-path h2{font-size:30px;margin:0 0 10px}.music-classroom .classroom-learning-path>p{font-size:20px;margin:0 0 16px}
+.music-classroom .classroom-lesson-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 18px}
+.music-classroom .classroom-lesson-shortcuts button{min-height:72px;font-size:22px;padding:16px;text-align:left}
+.music-classroom #classroomBrowseBooks{font-size:18px;min-height:48px}
+.music-classroom .classroom-library{display:block;margin:0 auto;width:min(1120px,100%)}
+.music-classroom .classroom-library>nav{display:none}
+.music-classroom[data-reference-open="true"] .classroom-library>nav{display:block;margin:auto;width:min(840px,100%)}
+.music-classroom .classroom-book{margin:0;min-height:0}
+.music-classroom[data-lesson-active="true"] .classroom-book{padding:0;border:0;background:none;box-shadow:none;color:#f4eaff;overflow:visible}
+.music-classroom[data-lesson-active="true"] .classroom-library{width:min(1120px,100%)}
+.music-classroom #classroomAllLessons{display:block;font-size:16px;min-height:44px;padding:8px 12px;margin:0 0 12px}
+.music-classroom[data-lesson-active="false"][data-reference-open="false"] .classroom-library>nav{display:none}
+.music-classroom.coda-room-viewport-fullscreen,.music-classroom.coda-room-native-fullscreen{position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;box-sizing:border-box}
+.music-classroom.coda-room-viewport-fullscreen{z-index:180}
+.music-classroom:fullscreen{background:radial-gradient(ellipse at 50% 0,#304457,#151626 75%)}
+@media(max-width:760px),(pointer:coarse){
+ .music-classroom{padding:max(8px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 0 max(12px,env(safe-area-inset-left));scroll-padding-top:0}
+ .music-classroom[data-mobile-view="room"]{padding-bottom:0}
+ .music-classroom .classroom-heading h1{font-size:19px;white-space:normal;max-width:112px}
+ .music-classroom .classroom-heading-actions{gap:4px}.music-classroom .classroom-heading-actions button{font-size:12px;padding:7px!important}
+ .music-classroom .classroom-canvas-viewport{width:100%;height:max(160px,calc(100dvh - 76px - var(--coda-touch-room-controls-height,var(--coda-touch-controls-height,220px)) - env(safe-area-inset-bottom,0px)));aspect-ratio:auto;--coda-room-cover:1}
+ .music-classroom #classroomCanvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:auto;max-width:none;max-height:none;outline-offset:-4px}
+ .music-classroom .classroom-learning-path{padding:18px 14px}.music-classroom .classroom-learning-path h2{font-size:26px}.music-classroom .classroom-lesson-shortcuts{grid-template-columns:1fr}.music-classroom .classroom-lesson-shortcuts button{font-size:21px;min-height:62px}
+ .music-classroom .classroom-book{padding:18px 14px}.music-classroom[data-lesson-active="true"] .classroom-book{padding:0}
+}
+@media(orientation:landscape) and (max-height:600px){
+ .music-classroom .classroom-room{width:calc(100% - var(--coda-joystick-size,216px) - var(--coda-touch-actions-width,128px) - 44px);margin-left:calc(var(--coda-joystick-size,216px) + 16px)}
+ .music-classroom .classroom-canvas-viewport{width:100%;height:calc(100dvh - 72px);min-height:140px;--coda-room-cover:1}
+ .music-classroom .classroom-heading h1{white-space:nowrap;max-width:none}.music-classroom .classroom-heading-actions button{font-size:12px}
+}
+@media(max-width:360px){.music-classroom .classroom-heading>div:first-child{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}.music-classroom .classroom-heading-actions{margin-left:auto}}
+.music-classroom,.music-classroom *{box-sizing:border-box}
+
+/* The focused activity has one top navigation row, never an overlapping
+   second back-button row. Explicit direction beats the arcade's phone header. */
+.music-classroom .classroom-heading{flex-direction:row!important}
+.music-classroom .classroom-heading-actions #classroomAllLessons{display:inline-flex;align-items:center;justify-content:center;margin:0;font-size:14px;padding:7px 10px!important}
+@media(max-width:760px),(pointer:coarse){
+ .music-classroom[data-mobile-view="books"]:not([data-topic="welcome"]) .classroom-heading>div:first-child{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+ .music-classroom[data-mobile-view="books"]:not([data-topic="welcome"]) .classroom-heading-actions{width:100%;justify-content:space-between;margin-left:0;gap:5px}
+ .music-classroom .classroom-heading-actions #classroomAllLessons{font-size:12px;padding:7px!important}
+}

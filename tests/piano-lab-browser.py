@@ -27,6 +27,8 @@ class PianoLabTests(unittest.TestCase):
         self.page.set_content('<button id="returnFocus">Enter lab</button><section id="pianoroom" hidden></section>')
         self.page.add_style_tag(path=str(ROOT/'piano-lab.css'))
         self.page.add_script_tag(path=str(ROOT/'character-renderer.js'))
+        self.page.add_script_tag(path=str(ROOT/'piano-melodies.js'))
+        self.page.add_script_tag(path=str(ROOT/'piano-wall-notation.js'))
         self.page.add_script_tag(path=str(ROOT/'piano-lab.js'))
         self.page.evaluate('''()=>{
           window.entries=new Map();window.rewards=[];window.rewardCalls=[];window.rewardLedger=new Set();window.rewardMode='success';window.exits=0;

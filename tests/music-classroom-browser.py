@@ -13,7 +13,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path!='/classroom-harness':
             return super().do_GET()
-        html='''<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="/music-classroom.css"><link rel="stylesheet" href="/classroom-tutorials.css"><button id="entrance">Enter classroom</button><section id="room" hidden></section><script src="/character-renderer.js"></script><link rel="stylesheet" href="/music-notation.css"><script src="/music-notation.js"></script><link rel="stylesheet" href="/time-signature-lesson.css"><script src="/time-signature-lesson.js"></script><script src="/classroom-tutorials.js"></script><script src="/music-classroom.js"></script><script>window.roomUI=createCodaMusicClassroom({host:document.querySelector('#room'),backgroundSrc:'/assets/world/music-classroom-room.png',renderer:createCodaCharacterRenderer(),getAvatar:()=>({})});entrance.onclick=()=>roomUI.open();</script>'''
+        html='''<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="/music-classroom.css"><link rel="stylesheet" href="/classroom-tutorials.css"><button id="entrance">Enter classroom</button><section id="room" hidden></section><script src="/character-renderer.js"></script><link rel="stylesheet" href="/music-notation.css"><script src="/music-notation.js"></script><link rel="stylesheet" href="/time-signature-lesson.css"><script src="/time-signature-lesson.js"></script><script src="/classroom-tutorials.js"></script><script src="/room-fullscreen.js"></script><script src="/music-classroom.js"></script><script>window.roomUI=createCodaMusicClassroom({host:document.querySelector('#room'),backgroundSrc:'/assets/world/music-classroom-room.png',renderer:createCodaCharacterRenderer(),getAvatar:()=>({})});entrance.onclick=()=>roomUI.open();</script>'''
         self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.end_headers();self.wfile.write(html.encode())
 
 class ClassroomTests(unittest.TestCase):
@@ -37,6 +37,15 @@ class ClassroomTests(unittest.TestCase):
         self.page.wait_for_function('window.roomUI')
         self.page.locator('#entrance').click()
 
+    def open_lessons(self):
+        if self.page.evaluate("roomUI.getState().mobileView==='room'"):
+            self.page.locator('#classroomCanvas').focus()
+            self.page.keyboard.down('w');self.page.wait_for_timeout(900);self.page.keyboard.up('w')
+            self.page.keyboard.press('e')
+        elif self.page.locator('#classroomAllLessons').is_visible():
+            self.page.locator('#classroomAllLessons').click()
+        self.assertTrue(self.page.locator('#classroomStart').is_visible())
+
     def tearDown(self):
         self.assertEqual(self.errors,[])
         self.context.close()
@@ -50,7 +59,8 @@ class ClassroomTests(unittest.TestCase):
         self.assertGreaterEqual(state['player']['y'],373,'The professor’s desk must block walking onto its surface')
         self.assertEqual(state['near']['type'],'professor')
         self.page.keyboard.press('e')
-        self.assertEqual(self.page.locator('#classroomBookTitle').inner_text(),'Start here with Professor Haydn')
+        self.assertTrue(self.page.locator('#classroomStart').is_visible())
+        self.assertFalse(self.page.locator('.classroom-room').is_visible())
         self.assertEqual(self.page.evaluate('document.activeElement.id'),'classroomStart')
 
     def test_tapping_the_room_reaches_a_bookshelf_and_e_reads_it(self):
@@ -62,6 +72,7 @@ class ClassroomTests(unittest.TestCase):
         self.assertIn(self.page.evaluate('roomUI.getState().topic'),['pitch','note-naming'])
 
     def test_books_search_quiz_audio_and_close_work(self):
+        self.open_lessons();self.page.locator('#classroomBrowseBooks').click()
         self.page.locator('#classroomSearch').fill('interval')
         self.page.locator('[data-topic="intervals"]').click()
         self.assertIn('Intervals higher',self.page.locator('#classroomBookTitle').inner_text())
@@ -72,12 +83,17 @@ class ClassroomTests(unittest.TestCase):
         self.page.get_by_role('button',name='♫ Hear a major third up',exact=True).click()
         self.assertTrue(self.page.evaluate('roomUI.getState().audioPlaying'))
         self.page.keyboard.press('Escape')
+        self.assertEqual(self.page.evaluate('roomUI.getState().mobileView'),'room')
+        self.page.keyboard.press('Escape')
         self.assertFalse(self.page.evaluate('roomUI.getState().open'))
         self.assertFalse(self.page.evaluate('roomUI.getState().audioPlaying'))
         self.assertTrue(self.page.locator('#room').is_hidden())
         self.assertEqual(self.page.evaluate('document.activeElement.id'),'entrance')
 
     def test_beginner_path_has_a_clear_start_and_returns_from_each_lesson(self):
+        self.assertTrue(self.page.locator('#classroomStart').is_hidden())
+        self.assertEqual(self.page.locator('.classroom-mobile-nav').count(),0)
+        self.open_lessons()
         start=self.page.locator('#classroomStart')
         self.assertTrue(start.is_visible())
         self.assertEqual(start.locator('button strong').all_inner_texts(),
@@ -93,22 +109,22 @@ class ClassroomTests(unittest.TestCase):
             self.assertIsNone(self.page.evaluate('roomUI.getState().tutorials.active||null'))
             self.assertEqual(self.page.evaluate('document.activeElement.id'),'classroomStart')
         self.page.set_viewport_size({'width':390,'height':844})
-        self.page.get_by_role('button',name='Lessons & books',exact=True).click()
+        self.page.locator('#classroomStart').focus()
         self.assertEqual(self.page.evaluate('document.activeElement.id'),'classroomStart')
         self.page.keyboard.press('Tab')
         self.assertEqual(self.page.evaluate('document.activeElement.dataset.startLesson'),'note-naming')
         self.page.keyboard.press('Enter')
         self.assertEqual(self.page.evaluate('roomUI.getState().tutorials.active.id'),'note-naming')
         book=self.page.locator('#classroomBook').bounding_box()
-        tabs=self.page.locator('.classroom-mobile-nav').bounding_box()
-        self.assertGreaterEqual(book['y'],tabs['y']+tabs['height']-1,
+        heading=self.page.locator('.classroom-heading').bounding_box()
+        self.assertGreaterEqual(book['y'],heading['y']+heading['height']-1,
             'The lesson must start below the sticky heading')
         self.assertLess(book['y'],160,'Do not leave a second navigation gap above the lesson')
         self.assertLessEqual(self.page.locator('#room').evaluate('e=>e.scrollWidth'),390)
 
     def test_books_remain_accessible_at_phone_width(self):
         self.page.set_viewport_size({'width':375,'height':812})
-        self.page.get_by_role('button',name='Lessons & books',exact=True).click()
+        self.open_lessons();self.page.locator('#classroomBrowseBooks').click()
         self.page.locator('#classroomSearch').fill('Music Triad')
         self.page.locator('[data-topic="music-triad"]').click()
         book=self.page.locator('#classroomBook').inner_text()

@@ -16,7 +16,7 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path!='/classroom-zoom':return super().do_GET()
         body='''<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="/music-classroom.css"><button id="enter">Enter classroom</button><section id="room" hidden></section>
-<script src="/character-renderer.js"></script><script src="/finger-follow.js"></script><script src="/cave-camera.js"></script><script src="/music-classroom.js"></script>
+<script src="/character-renderer.js"></script><script src="/finger-follow.js"></script><script src="/cave-camera.js"></script><script src="/room-fullscreen.js"></script><script src="/music-classroom.js"></script>
 <script>window.viewChanges=[];window.classroom=createCodaMusicClassroom({host:room,renderer:createCodaCharacterRenderer(),onViewChange:view=>viewChanges.push(view)});enter.onclick=()=>classroom.open();</script>'''
         self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.end_headers();self.wfile.write(body.encode())
 
@@ -84,10 +84,10 @@ class ClassroomZoomTests(unittest.TestCase):
         cdp.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]});self.page.clock.run_for(32)
         stopped=self.state()['player'];self.page.clock.run_for(160);self.assertEqual(self.state()['player'],stopped)
         self.zoom(3)
-        self.page.locator('[data-classroom-view="books"]').click();self.page.clock.run_for(32)
+        self.page.evaluate("classroom.selectTopic('note-naming',true)");self.page.clock.run_for(32)
         self.assertEqual(self.state()['camera']['zoom'],3);self.assertFalse(self.page.evaluate('classroom.controlMove(1,0)'))
         self.assertFalse(self.page.locator('#classroomSettingsButton').is_visible())
-        self.page.locator('[data-classroom-view="room"]').click();self.page.clock.run_for(32)
+        self.page.locator('#classroomBackRoom').click();self.page.clock.run_for(32)
         self.assertEqual(self.state()['camera']['zoom'],3)
         for width,height in [(320,780),(390,844),(844,390)]:
             self.page.set_viewport_size({'width':width,'height':height});self.page.clock.run_for(64)

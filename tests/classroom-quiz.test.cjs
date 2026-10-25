@@ -113,3 +113,16 @@ test('saved flags, scores, malformed answers, and outdated question versions can
  assert.equal(session('note-naming',storage).getState().passed,false);
  assert.throws(()=>session('unknown-subject'));
 });
+
+test('quiz prompts and reminders stay brief and musical choices have correct note values',()=>{
+ for(const bank of Object.values(quiz.QUIZZES))for(const question of bank.questions){
+  assert.ok(question.prompt.split(/\s+/).length<=12,question.id+' is one short question');
+  assert.ok(question.explanation.split(/\s+/).length<=16,question.id+' has one small reminder');
+ }
+ const four=quiz.QUIZZES['rhythm-tree'].questions.find(q=>q.id==='four-beat-bar');
+ assert.equal(four.answerNotes[four.correct].reduce((sum,n)=>sum+n,0),4);
+ for(const [index,group]of four.answerNotes.entries())if(index!==four.correct)assert.notEqual(group.reduce((sum,n)=>sum+n,0),4);
+ const cut=quiz.QUIZZES['time-signatures'].questions.find(q=>q.id==='cut-time-bar');
+ assert.deepEqual(cut.answerNotes[cut.correct],[2,2]);
+ assert.equal(quiz.QUIZZES['grand-staff'].questions.at(-1).visual.kind,'middle-c-pair');
+});

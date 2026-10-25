@@ -5,42 +5,42 @@
 })(typeof window==='undefined'?null:window,function(notation){
  'use strict';
  const KEY='codaClassroomQuizzesV1',VERSION=1,PASS_SCORE=4;
- const quiz=(title,questions)=>Object.freeze({version:VERSION,title,passScore:PASS_SCORE,questions:Object.freeze(questions.map(item=>Object.freeze({...item,answers:Object.freeze(item.answers),visual:item.visual?Object.freeze(item.visual):null})))});
+ const quiz=(title,questions)=>Object.freeze({version:VERSION,title,passScore:PASS_SCORE,questions:Object.freeze(questions.map(item=>Object.freeze({...item,answers:Object.freeze(item.answers),visual:item.visual?Object.freeze(item.visual):null,answerNotes:item.answerNotes?Object.freeze(item.answerNotes.map(notes=>Object.freeze(notes))):null})))});
  const QUIZZES=Object.freeze({
   'note-naming':quiz('Note names',[
-   {id:'find-c',prompt:'Which white key is just left of TWO black keys?',answers:['C','F','A'],correct:0,explanation:'C is the white key just to the left of two black keys.',visual:{kind:'piano',target:0}},
-   {id:'find-f',prompt:'Which white key is just left of THREE black keys?',answers:['G','F','C'],correct:1,explanation:'F is the white key just to the left of three black keys.',visual:{kind:'piano',target:3}},
-   {id:'after-g',prompt:'Which letter comes after G in the musical alphabet?',answers:['F','H','A'],correct:2,explanation:'The note letters are A B C D E F G. After G, start again at A.'},
-   {id:'bottom-line',prompt:'What is the purple note on the BOTTOM treble line?',answers:['E','G','F'],correct:0,explanation:'Start at the bottom of the treble staff. Its bottom line is E.',visual:{kind:'staff',position:0}},
-   {id:'second-space',prompt:'What is the purple note in the SECOND treble space?',answers:['B','A','C'],correct:1,explanation:'The treble spaces spell F A C E from bottom to top. The second space is A.',visual:{kind:'staff',position:3}}
+   {id:'find-c',prompt:'What is the gold key called?',answers:['C','F','A'],correct:0,explanation:'C is left of two black keys.',visual:{kind:'piano',target:0}},
+   {id:'find-f',prompt:'What is the gold key called?',answers:['G','F','C'],correct:1,explanation:'F is left of three black keys.',visual:{kind:'piano',target:3}},
+   {id:'after-g',prompt:'Which letter comes after G?',answers:['F','H','A'],correct:2,explanation:'After G, start again at A.'},
+   {id:'bottom-line',prompt:'Name this note.',answers:['E','G','F'],correct:0,explanation:'The bottom treble line is E.',visual:{kind:'staff',position:0}},
+   {id:'second-space',prompt:'Name this space note.',answers:['B','A','C'],correct:1,explanation:'Treble spaces spell FACE. The second space is A.',visual:{kind:'staff',position:3}}
   ]),
   'rhythm-tree':quiz('Note lengths',[
-   {id:'half-length',prompt:'In 4/4, how many beats does a HALF note last?',answers:['1 beat','2 beats','4 beats'],correct:1,explanation:'A half note lasts two quarter-note beats. Count “1, 2”.',visual:{kind:'note',beats:2}},
-   {id:'split-quarter',prompt:'How many EIGHTH notes last as long as one quarter note?',answers:['2 eighth notes','4 eighth notes','1 eighth note'],correct:0,explanation:'Split one quarter note into two equal pieces. Each piece is an eighth note.',visual:{kind:'note',beats:1}},
-   {id:'whole-length',prompt:'In 4/4, how many beats does a WHOLE note last?',answers:['2 beats','1 beat','4 beats'],correct:2,explanation:'A whole note fills four quarter-note beats: “1, 2, 3, 4”.',visual:{kind:'note',beats:4}},
-   {id:'split-sixteenths',prompt:'How many SIXTEENTH notes fit inside one quarter-note beat?',answers:['2 sixteenth notes','4 sixteenth notes','8 sixteenth notes'],correct:1,explanation:'Four sixteenth notes share one quarter-note beat. Say “1-e-and-a”.',visual:{kind:'note',beats:1}},
-   {id:'four-beat-bar',prompt:'Which group fills exactly FOUR beats in 4/4?',answers:['1 quarter + 2 eighths + 1 half','1 half + 1 quarter','1 quarter + 1 eighth'],correct:0,explanation:'The quarter fills beat 1. Two eighths share beat 2. The half note fills beats 3 and 4.'}
+   {id:'half-length',prompt:'How many beats for this half note?',answers:['1 beat','2 beats','4 beats'],correct:1,explanation:'A half note lasts two beats: ONE, TWO.',visual:{kind:'note',beats:2}},
+   {id:'split-quarter',prompt:'How many eighth notes share one beat?',answers:['2 eighth notes','4 eighth notes','1 eighth note'],correct:0,explanation:'Two eighth notes share one beat.',visual:{kind:'note',beats:1}},
+   {id:'whole-length',prompt:'How many beats for this whole note?',answers:['2 beats','1 beat','4 beats'],correct:2,explanation:'A whole note lasts four beats.',visual:{kind:'note',beats:4}},
+   {id:'split-sixteenths',prompt:'How many sixteenths share one beat?',answers:['2 sixteenth notes','4 sixteenth notes','8 sixteenth notes'],correct:1,explanation:'Four sixteenth notes share one beat.',visual:{kind:'note',beats:1}},
+   {id:'four-beat-bar',prompt:'Which group fills four beats?',answers:['1 quarter + 2 eighths + 1 half','1 half + 1 quarter','1 quarter + 1 eighth'],answerNotes:[[1,.5,.5,2],[2,1],[1,.5]],correct:0,explanation:'One beat, one beat, two beats: four altogether.'}
   ]),
   'time-signatures':quiz('Time signatures',[
-   {id:'four-four',prompt:'How many quarter-note beats are in one 4/4 bar?',answers:['2 beats','6 beats','4 beats'],correct:2,explanation:'In 4/4, count four quarter-note beats, then begin a new bar at ONE.',visual:{kind:'meter',meter:'4/4'}},
-   {id:'six-eight-pulse',prompt:'How many BIG beats do we usually feel in 6/8?',answers:['6 big beats','2 big beats','3 big beats'],correct:1,explanation:'Feel TWO big beats: ONE-la-li, TWO-la-li. Each big beat has three small parts.',visual:{kind:'meter',meter:'6/8'}},
-   {id:'cut-time-unit',prompt:'Which note gets one BIG beat in cut time?',answers:['Half note','Quarter note','Eighth note'],correct:0,explanation:'Cut time is 2/2. Each half note gets one big beat.',visual:{kind:'meter',meter:'2/2'}},
-   {id:'six-eight-count',prompt:'Which count matches the two groups in 6/8?',answers:['ONE, two, three, four','ONE-and, TWO-and','ONE-la-li, TWO-la-li'],correct:2,explanation:'Six eighth-note lengths form two groups of three: ONE-la-li, TWO-la-li.',visual:{kind:'meter',meter:'6/8'}},
-   {id:'cut-time-bar',prompt:'Which notes fill one cut-time bar with TWO big beats?',answers:['2 quarter notes','2 half notes','6 eighth notes'],correct:1,explanation:'Two half notes fill a 2/2 bar. Count ONE-and, TWO-and.',visual:{kind:'meter',meter:'2/2'}}
+   {id:'four-four',prompt:'How many beats fit in 4/4?',answers:['2 beats','6 beats','4 beats'],correct:2,explanation:'Count four beats. Then start again at ONE.',visual:{kind:'meter',meter:'4/4'}},
+   {id:'six-eight-pulse',prompt:'How many BIG beats in 6/8?',answers:['6 big beats','2 big beats','3 big beats'],correct:1,explanation:'Feel TWO big beats: ONE-la-li, TWO-la-li.',visual:{kind:'meter',meter:'6/8'}},
+   {id:'cut-time-unit',prompt:'Which note gets one BIG beat here?',answers:['Half note','Quarter note','Eighth note'],correct:0,explanation:'In cut time, a half note gets one big beat.',visual:{kind:'meter',meter:'2/2'}},
+   {id:'six-eight-count',prompt:'Which count sounds like 6/8?',answers:['ONE, two, three, four','ONE-and, TWO-and','ONE-la-li, TWO-la-li'],correct:2,explanation:'Say ONE-la-li, TWO-la-li.',visual:{kind:'meter',meter:'6/8'}},
+   {id:'cut-time-bar',prompt:'Which notes fill this cut-time bar?',answers:['2 quarter notes','2 half notes','6 eighth notes'],answerNotes:[[1,1],[2,2],[.5,.5,.5,.5,.5,.5]],correct:1,explanation:'Two half notes fill this bar.',visual:{kind:'meter',meter:'2/2'}}
   ]),
   'bass-clef':quiz('Bass clef',[
-   {id:'bass-bottom',prompt:'What is the purple note on the BOTTOM bass line?',answers:['G','E','A'],correct:0,explanation:'Count bass lines from the bottom: G B D F A. Great Big Dreams For America.',visual:{kind:'staff',clef:'bass',position:0}},
-   {id:'bass-middle',prompt:'What is the purple note on the MIDDLE bass line?',answers:['B','D','F'],correct:1,explanation:'Great Big Dreams For America gives G B D F A. The third line is D.',visual:{kind:'staff',clef:'bass',position:4}},
-   {id:'bass-dots',prompt:'Which note sits on the line between the bass clef’s two dots?',answers:['A','C','F'],correct:2,explanation:'The dots sit around the F line. It is the fourth line from the bottom.',visual:{kind:'staff',clef:'bass',position:6}},
-   {id:'bass-space',prompt:'What is the purple note in the SECOND bass space?',answers:['C','A','E'],correct:0,explanation:'All Cows Eat Grass gives A C E G, bottom to top. The second space is C.',visual:{kind:'staff',clef:'bass',position:3}},
-   {id:'bass-top-space',prompt:'What is the purple note in the TOP bass space?',answers:['E','G','F'],correct:1,explanation:'The bass spaces are A C E G. Grass reminds us that the top space is G.',visual:{kind:'staff',clef:'bass',position:7}}
+   {id:'bass-bottom',prompt:'Name this bass note.',answers:['G','E','A'],correct:0,explanation:'The bottom bass line is G.',visual:{kind:'staff',clef:'bass',position:0}},
+   {id:'bass-middle',prompt:'Name this middle-line note.',answers:['B','D','F'],correct:1,explanation:'Bass lines go G B D F A. The middle is D.',visual:{kind:'staff',clef:'bass',position:4}},
+   {id:'bass-dots',prompt:'Which note is between the two dots?',answers:['A','C','F'],correct:2,explanation:'The two dots point to the F line.',visual:{kind:'staff',clef:'bass',position:6}},
+   {id:'bass-space',prompt:'Name this bass space note.',answers:['C','A','E'],correct:0,explanation:'Bass spaces go A C E G. The second is C.',visual:{kind:'staff',clef:'bass',position:3}},
+   {id:'bass-top-space',prompt:'Name this top-space note.',answers:['E','G','F'],correct:1,explanation:'Bass spaces go A C E G. The top is G.',visual:{kind:'staff',clef:'bass',position:7}}
   ]),
   'grand-staff':quiz('Grand staff & Middle C',[
-   {id:'grand-treble',prompt:'Read the purple note on the UPPER staff. What is its letter?',answers:['E','G','C'],correct:0,explanation:'Check the clef first. The upper staff has treble clef, so its bottom line is E.',visual:{kind:'staff',clef:'treble',grand:true,position:0}},
-   {id:'grand-bass',prompt:'Read the purple note on the LOWER staff. What is its letter?',answers:['B','D','F'],correct:1,explanation:'The lower staff has bass clef. Its middle line is D: Great Big Dreams For America.',visual:{kind:'staff',clef:'bass',grand:true,position:4}},
-   {id:'middle-c-treble',prompt:'What is the note on the little line BELOW the treble staff?',answers:['A','E','C'],correct:2,explanation:'Middle C sits on one short ledger line below the treble staff.',visual:{kind:'staff',clef:'treble',grand:true,position:-2}},
-   {id:'middle-c-bass',prompt:'What is the note on the little line ABOVE the bass staff?',answers:['C','G','B'],correct:0,explanation:'Middle C also sits on one short ledger line above the bass staff.',visual:{kind:'staff',clef:'bass',grand:true,position:10}},
-   {id:'middle-c-same',prompt:'Middle C is written below treble or above bass. What stays the same?',answers:['It becomes a rest','It must sound different','It is the same piano key and sound'],correct:2,explanation:'These are two ways to write the same Middle C. The clef changes how we find its place.'}
+   {id:'grand-treble',prompt:'Name this note on the upper staff.',answers:['E','G','C'],correct:0,explanation:'The upper staff is treble. Its bottom line is E.',visual:{kind:'staff',clef:'treble',grand:true,position:0}},
+   {id:'grand-bass',prompt:'Name this note on the lower staff.',answers:['B','D','F'],correct:1,explanation:'The lower staff is bass. Its middle line is D.',visual:{kind:'staff',clef:'bass',grand:true,position:4}},
+   {id:'middle-c-treble',prompt:'Name this note on the little line.',answers:['A','E','C'],correct:2,explanation:'Middle C sits on this little line.',visual:{kind:'staff',clef:'treble',grand:true,position:-2}},
+   {id:'middle-c-bass',prompt:'Name this note on the little line.',answers:['C','G','B'],correct:0,explanation:'This little line shows Middle C too.',visual:{kind:'staff',clef:'bass',grand:true,position:10}},
+   {id:'middle-c-same',prompt:'Do these notes play the same key?',answers:['A quiet rest','Two different keys','The same key'],correct:2,explanation:'Both pictures play the same piano key.',visual:{kind:'middle-c-pair'}}
   ])
  });
  const xml=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[char]));
@@ -113,7 +113,8 @@
   function visual(parent,value){
    if(!value||!notation)return;
    const figure=element('div','classroom-quiz-visual');
-   if(value.kind==='staff')figure.innerHTML=staffSVG(value.position,value);
+   if(value.kind==='middle-c-pair'){figure.classList.add('classroom-quiz-middle-pair');figure.innerHTML=staffSVG(-2,{clef:'treble',label:'Middle C below treble'})+staffSVG(10,{clef:'bass',label:'Middle C above bass'});}
+   else if(value.kind==='staff')figure.innerHTML=staffSVG(value.position,value);
    else if(value.kind==='note'){figure.setAttribute('role','img');figure.setAttribute('aria-label','The note shown in the question');figure.innerHTML=notation.glyphSVG(value.beats,{colour:'#fff0cf'});}
    else if(value.kind==='piano'){
     let keys='';for(let index=0;index<8;index++)keys+='<rect x="'+(index*50+1)+'" y="15" width="48" height="88" rx="3" fill="'+(index===value.target?'#f5d98d':'#faf6e8')+'" stroke="#59445d"/>';
@@ -131,30 +132,29 @@
    reported=true;api.onPassed?.({...session.getState(),passed:true});
   }
   function renderResult(parent,state){
-   const title=element('h3','classroom-quiz-result-title',state.passed?'Quiz passed!':'Keep practising—you can try again');title.tabIndex=-1;
-   parent.append(title,element('p','classroom-quiz-score',state.score+' of '+state.total+' correct'));
-   parent.append(element('p','classroom-quiz-result-copy',state.passed?'You checked what you learned. Choose Finish lesson to complete it.':'You need '+state.passScore+' of '+state.total+' to pass. Read the helpful reminders below, then try the quiz again.'));
-   const review=element('div','classroom-quiz-review');
-   model.questions.forEach((item,index)=>{if(state.answers[index]===item.correct)return;const row=element('section');row.append(element('h4','',item.prompt),element('p','','Answer: '+item.answers[item.correct]),element('p','',item.explanation));review.append(row);});if(review.childNodes.length){review.setAttribute('aria-label','Review the questions to practise');parent.append(review);}
+   const title=element('h3','classroom-quiz-result-title',state.passed?'You did it!':'Let’s try again.');title.tabIndex=-1;
+   const stars=element('p','classroom-quiz-score','★'.repeat(state.score)+'☆'.repeat(state.total-state.score));stars.setAttribute('aria-label',state.score+' of '+state.total+' correct');parent.append(title,stars);
+   parent.append(element('p','classroom-quiz-result-copy',state.passed?'Your lesson is ready to finish.':'Four right answers finish the lesson.'));
    saveHelp(parent,state);
    if(state.passed)parent.append(button('Finish lesson',finish,'data-quiz-finish'));
-   parent.append(button(state.passed?'Try the quiz again':'Try quiz again',()=>{session.restart();reported=false;render();focusQuestion();},'data-quiz-retry'));
+   parent.append(button('Try again',()=>{session.restart();reported=false;render();focusQuestion();},'data-quiz-retry'));
   }
   function render(nextTarget){
    if(destroyed)return;if(nextTarget)target=nextTarget;const state=session.getState();target.replaceChildren();
    const panel=element('section','classroom-quiz');panel.dataset.quizLesson=lessonId;panel.setAttribute('aria-label',model.title+' end-of-lesson quiz');target.append(panel);
-   const topline=element('div','classroom-quiz-topline');topline.append(element('span','',model.title+' · Quiz'),element('span','',state.phase==='result'?'Quiz finished':'Question '+(state.index+1)+' of '+state.total));panel.append(topline);
+   const topline=element('div','classroom-quiz-topline');topline.append(element('span','','Little quiz'),element('span','',state.phase==='result'?'Finished':(state.index+1)+' / '+state.total));panel.append(topline);
    const progress=element('progress');progress.max=state.total;progress.value=state.answers.length;progress.setAttribute('aria-label','Quiz questions answered');panel.append(progress);
    if(state.phase==='result'){renderResult(panel,state);return;}
    const question=model.questions[state.index],answered=state.answers.length>state.index;
-   if(state.index===0)panel.append(element('p','classroom-quiz-intro','Choose one answer at a time. Get '+state.passScore+' of '+state.total+' correct to pass. No timer—you can try again.'));
-   const heading=element('h3','classroom-quiz-question',question.prompt);heading.tabIndex=-1;panel.append(heading);visual(panel,question.visual);
-   const answers=element('div','classroom-quiz-answers');answers.setAttribute('role','group');answers.setAttribute('aria-label','Choose one answer');
-   question.answers.forEach((text,index)=>{const choose=button(text,()=>{if(!session.answer(index))return;render();target.querySelector('[data-quiz-next]')?.focus({preventScroll:true});});choose.dataset.quizAnswer=index;choose.disabled=answered;choose.setAttribute('aria-pressed',String(answered&&state.answers[state.index]===index));if(answered&&index===question.correct)choose.classList.add('is-correct');if(answered&&state.answers[state.index]===index&&index!==question.correct)choose.classList.add('is-incorrect');answers.append(choose);});panel.append(answers);
-   const feedback=element('p','classroom-quiz-feedback');feedback.setAttribute('role','status');feedback.setAttribute('aria-live','polite');
-   if(answered){const correct=state.answers[state.index]===question.correct;feedback.dataset.correct=String(correct);feedback.textContent=(correct?'That’s right! ':'Not quite. The answer is '+question.answers[question.correct]+'. ')+question.explanation;}
-   panel.append(feedback);saveHelp(panel,state);
-   const next=button(state.index===state.total-1?'See my results':'Next question',()=>{if(!session.next())return;render();focusQuestion();},'data-quiz-next');next.disabled=!answered;panel.append(next);
+   const correct=answered&&state.answers[state.index]===question.correct;
+   const heading=element('h3','classroom-quiz-question',answered?(correct?'Yes!':'Let’s learn this one.'):question.prompt);heading.tabIndex=-1;panel.append(heading);visual(panel,question.visual);
+   if(!answered){
+    const answers=element('div','classroom-quiz-answers');answers.setAttribute('role','group');answers.setAttribute('aria-label','Choose one answer');
+    question.answers.forEach((text,index)=>{const choose=button(text,()=>{if(!session.answer(index))return;render();target.querySelector('[data-quiz-next]')?.focus({preventScroll:true});});choose.dataset.quizAnswer=index;if(question.answerNotes?.[index]){choose.setAttribute('aria-label',text);choose.textContent='';const group=element('span','classroom-quiz-choice-notes');group.setAttribute('aria-hidden','true');group.innerHTML=question.answerNotes[index].map(beats=>notation.glyphSVG(beats)).join('');choose.append(group);}answers.append(choose);});panel.append(answers);saveHelp(panel,state);return;
+   }
+   const feedback=element('p','classroom-quiz-feedback',correct?question.explanation:question.answers[question.correct]+'. '+question.explanation);feedback.setAttribute('role','status');feedback.setAttribute('aria-live','polite');feedback.dataset.correct=String(correct);panel.append(feedback);saveHelp(panel,state);
+   panel.append(button(state.index===state.total-1?'See my stars':'Next',()=>{if(!session.next())return;render();focusQuestion();},'data-quiz-next'));
+
   }
   return{render,restart(){reported=false;return session.restart();},getState:session.getState,destroy(){destroyed=true;}};
  }

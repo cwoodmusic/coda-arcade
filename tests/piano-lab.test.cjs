@@ -22,7 +22,7 @@ test('interval games cover higher and lower targets within the floor keyboard',(
 test('guided melodies fit the visible piano and have distinct stable reward ids',()=>{
  assert.equal(new Set(LESSONS.map(lesson=>lesson.id)).size,LESSONS.length);
  assert.ok(LESSONS.length>=3);
- for(const lesson of LESSONS){assert.ok(lesson.notes.length>=8);assert.ok(lesson.notes.every(note=>Number.isInteger(note)&&note>=0&&note<=24));assert.ok(lesson.description);}
+ for(const lesson of LESSONS){assert.ok(lesson.notes.length>=8);assert.ok(lesson.floorOffsets.every(note=>Number.isInteger(note)&&note>=0&&note<=21));assert.ok(lesson.description);}
 });
 test('painted perspective piano uses all 22 measured keys and no floor outside them',()=>{
  const keys=paintedFloorKeys();assert.equal(keys.length,22);assert.equal(keys.filter(key=>key.black).length,9);

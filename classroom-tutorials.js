@@ -131,6 +131,45 @@
  ]);
  const NOTE_LESSONS=Object.freeze({'note-naming':NOTE_STEPS,'bass-clef':BASS_STEPS,'grand-staff':GRAND_STEPS});
  const LESSONS=Object.freeze([{id:'note-naming',title:'Note naming',total:NOTE_STEPS.length},{id:'rhythm-tree',title:'The rhythm tree',total:4},timeLesson?.LESSON||{id:'time-signatures',title:'Time signatures',total:8},{id:'bass-clef',title:'Bass clef',total:BASS_STEPS.length},{id:'grand-staff',title:'Grand staff & Middle C',total:GRAND_STEPS.length}].map(Object.freeze));
+ const SIMPLE_NOTE_COPY=Object.freeze({
+  'note-naming':Object.freeze([
+   ['Two black keys help us find C.','C','Tap C.','C is beside two black keys.'],
+   ['Three black keys help us find F.','F','Tap F.','F is beside three black keys.'],
+   ['D is one white key after C.','C → D','Tap D.','Find C. Move one white key right.'],
+   ['After G, the letters start again at A.','G → A','Tap A.','Find F. Move two white keys right.'],
+   ['These five lines are a staff.','Bottom line: E','Name the purple note.','The bottom line is E.'],
+   ['Notes also fit in the spaces.','First space: F','Name the purple note.','The first space is F.'],
+   ['Move up one line or space at a time.','E → F → G','Name the purple note.','Count upward: E, F, G.'],
+   ['Treble spaces spell FACE.','F · A · C · E','Name the purple note.','Count spaces: F, A.'],
+   ['Treble lines: Every Good Boy Does Fine.','E · G · B · D · F','Name the purple note.','Every, Good, Boy. The middle line is B.'],
+   ['Use FACE for the spaces.','F · A · C · E','Name the purple note.','Count spaces: F, A, C.']
+  ].map(Object.freeze)),
+  'bass-clef':Object.freeze([
+   ['Bass clef helps us read low notes.','Bottom line: G','Name the purple note.','The bottom bass line is G.'],
+   ['Bass lines: Great Big Dreams For America.','G · B · D · F · A','Name the purple note.','Great, Big. The second line is B.'],
+   ['Count the lines from the bottom.','Middle line: D','Name the purple note.','Great, Big, Dreams. This line is D.'],
+   ['The two dots point to F.','Between the dots: F','Name the purple note.','The line between the dots is F.'],
+   ['Read the five lines from bottom to top.','Top line: A','Name the purple note.','America reminds us of A.'],
+   ['Bass spaces: All Cows Eat Grass.','A · C · E · G','Name the purple note.','All reminds us of A.'],
+   ['Count only the spaces this time.','Second space: C','Name the purple note.','All, Cows. The second space is C.'],
+   ['Move up one more space.','Third space: E','Name the purple note.','All, Cows, Eat. This space is E.'],
+   ['All Cows Eat Grass names the spaces.','Top space: G','Name the purple note.','Grass reminds us of G.']
+  ].map(Object.freeze)),
+  'grand-staff':Object.freeze([
+   ['Two staffs work together.','Top staff: treble','Name the purple note.','Treble lines: Every Good Boy Does Fine. Bottom line: E.'],
+   ['The bottom staff uses bass clef.','Bottom line: G','Name the purple note.','Bass lines: Great Big Dreams For America. Bottom line: G.'],
+   ['Use FACE on the top staff.','Second space: A','Name the purple note.','Count treble spaces: F, A.'],
+   ['Use All Cows Eat Grass below.','Second space: C','Name the purple note.','Count bass spaces: A, C.'],
+   ['Middle C has its own tiny line.','Below treble: Middle C','Name the purple note.','The tiny line belongs to Middle C.'],
+   ['This is the same Middle C.','Above bass: Middle C','Name the purple note.','It is the same piano key: C.'],
+   ['D is one step above Middle C.','C → D','Name the purple note.','Start at Middle C. Move up to D.'],
+   ['B is one step below Middle C.','C → B','Name the purple note.','Start at Middle C. Move down to B.']
+  ].map(Object.freeze))
+ });
+ function splitExample(level){
+  level=Number.isInteger(level)?Math.max(0,Math.min(4,level)):0;const units=VALUES[level].units,notes=Array(level===0?1:2).fill(units);
+  return {level,parentUnits:level?VALUES[level-1].units:null,notes,counts:notes.reduce((sum,n)=>sum+n,0)/4};
+ }
  const recipe=[4,2,2,8];
  const valueFor=units=>VALUES.find(value=>value.units===units);
  function validBar(notes){return Array.isArray(notes)&&notes.length===recipe.length&&notes.every(note=>Number.isInteger(note))&&[...notes].sort((a,b)=>a-b).join(',')===[...recipe].sort((a,b)=>a-b).join(',');}
@@ -143,7 +182,7 @@
  function treeSVG(level){let lines='',nodes='';for(let row=0;row<=level;row++){const count=2**row,y=28+row*58;for(let at=0;at<count;at++){const x=(at+.5)*800/count;if(row){const px=(Math.floor(at/2)+.5)*800/(count/2);lines+='<path d="M'+px+' '+(y-45)+'L'+x+' '+(y-13)+'" stroke="#8c76b6" stroke-width="2"/>';}nodes+='<g data-tree-level="'+row+'" data-tree-index="'+at+'" transform="translate('+(x-14)+' '+(y-18)+')" color="'+(row===level?'#b8ffdd':'#d4bdeb')+'">'+glyph(VALUES[row].units).replace('<svg ','<svg x="0" y="0" ').replace('width="30" height="36"','width="28" height="34"')+'</g>';}}return '<svg viewBox="0 0 800 '+(55+level*58)+'" class="lesson-tree-picture" style="--lesson-tree-min-width:'+(2**level*40)+'px" aria-hidden="true" focusable="false">'+lines+nodes+'</svg>';}
  function create(api={}){
   const host=api.host;if(!host)throw Error('A tutorial needs a host element.');const doc=host.ownerDocument,win=doc.defaultView,storage=storageFor(api.storage);
-  let id=null,step=0,answered=false,complete=false,message='',correct=null,level=0,explored=new Set([0]),bar=[],names=false,hintShown=false,quizzing=false,quiz=null,freshQuiz=false,award=null,error='',destroyed=false,audio=null,voices=[],timers=[];
+  let id=null,step=0,learningStage='look',answered=false,complete=false,message='',correct=null,level=0,explored=new Set([0]),bar=[],names=false,hintShown=false,quizzing=false,quiz=null,freshQuiz=false,award=null,error='',destroyed=false,audio=null,voices=[],timers=[];
   const signatureLesson=timeLesson?.create({host,notation,onCorrect:()=>{if(complete||answered)return;answered=true;persist(step+1);const progress=host.querySelector('progress');if(progress)progress.value=step+1;},onNext:next});
   const element=(tag,className,text)=>{const node=doc.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
   function button(text,action,attributes={}){const node=element('button','',text);node.type='button';for(const [key,value]of Object.entries(attributes))node.setAttribute(key,value);node.onclick=action;return node;}
@@ -152,7 +191,7 @@
    stopAudio();const Constructor=api.AudioContext||win.AudioContext||win.webkitAudioContext;if(!Constructor){feedback('You can still try every question without sound.',null);return;}
    try{audio=new Constructor();audio.resume().catch(()=>{});const context=audio,beat=.55;let at=context.currentTime+.05;
     notes.forEach((note,index)=>{const length=rhythm?note/4*beat:.38,pitch=rhythm?67:note,osc=context.createOscillator(),gain=context.createGain();osc.type='triangle';osc.frequency.value=440*2**((pitch-69)/12);gain.gain.setValueAtTime(.0001,at);gain.gain.exponentialRampToValueAtTime(.11,at+.012);gain.gain.exponentialRampToValueAtTime(.0001,at+Math.max(.04,length*.92));osc.connect(gain).connect(context.destination);osc.start(at);osc.stop(at+length);voices.push(osc);
-     if(rhythm){const start=(at-context.currentTime)*1000;timers.push(win.setTimeout(()=>host.querySelector(treeLevel===null?'[data-pattern-index="'+index+'"]':'[data-tree-level="'+treeLevel+'"][data-tree-index="'+index+'"]')?.classList.add('is-playing'),start));timers.push(win.setTimeout(()=>host.querySelector(treeLevel===null?'[data-pattern-index="'+index+'"]':'[data-tree-level="'+treeLevel+'"][data-tree-index="'+index+'"]')?.classList.remove('is-playing'),start+length*1000));}at+=rhythm?length:.44;
+     if(rhythm){const start=(at-context.currentTime)*1000;timers.push(win.setTimeout(()=>host.querySelector(treeLevel===null?'[data-pattern-index="'+index+'"]':'[data-tree-level="'+treeLevel+'"][data-tree-index="'+(index%2)+'"]')?.classList.add('is-playing'),start));timers.push(win.setTimeout(()=>host.querySelector(treeLevel===null?'[data-pattern-index="'+index+'"]':'[data-tree-level="'+treeLevel+'"][data-tree-index="'+(index%2)+'"]')?.classList.remove('is-playing'),start+length*1000));}at+=rhythm?length:.44;
     });timers.push(win.setTimeout(stopAudio,(at-context.currentTime+.2)*1000));
    }catch{stopAudio();feedback('Sound could not start. You can still try the lesson.',null);}
   }
@@ -173,119 +212,123 @@
   }
   function notifyCompletion(){const lesson=LESSONS.find(lesson=>lesson.id===id);try{const result=api.onComplete?.(id,{title:lesson.title,correct:lesson.total,total:lesson.total});if(result&&typeof result.then==='function')result.then(value=>{award=value;render();}).catch(()=>{award={ok:false};render();});else award=result||null;}catch{award={ok:false};}}
   const namingSteps=()=>NOTE_LESSONS[id]||NOTE_STEPS;
+  const noteCopy=()=>SIMPLE_NOTE_COPY[id]?.[step]||['Look at this note.','','Name the purple note.','Look at the line or space.'];
+  function startTry(){learningStage='try';hintShown=false;message='';correct=null;render();host.querySelector('h3')?.focus({preventScroll:true});}
+  function tryButton(section){section.append(button('Try it',startTry,{'data-lesson-try':''}));}
   function answerNote(letter,pitch){
-   if(complete||answered)return;play([pitch||60]);const expected=namingSteps()[step];
-   if(letter!==expected.answer){feedback('That was '+letter+'. '+expected.hint+' You can try again.',false);return;}
-   answered=true;persist(step+1);feedback('Yes! '+letter+' is correct. Tap '+(step===namingSteps().length-1?'Start quiz':'Next step')+' when you are ready.',true);
-   for(const choice of host.querySelectorAll('[data-note-answer],[data-note-hint]'))choice.disabled=true;
-   const advance=host.querySelector('[data-tutorial-next]');advance.disabled=false;host.querySelector('progress').value=step+1;advance.focus({preventScroll:true});
+   if(complete||answered||learningStage!=='try')return;play([pitch||60]);const expected=namingSteps()[step];
+   if(letter!==expected.answer){feedback('Not yet. Try again.',false);return;}
+   answered=true;persist(step+1);message='Yes!';correct=true;render();host.querySelector('[data-tutorial-next]')?.focus({preventScroll:true});
   }
   function revealNoteHint(){
-   if(answered)return;hintShown=true;const question=namingSteps()[step];feedback(question.hint,null);
+   if(answered||learningStage!=='try')return;hintShown=true;const question=namingSteps()[step];feedback(noteCopy()[3],null);
    for(const key of host.querySelectorAll('.lesson-white-key'))key.classList.toggle('is-hint',key.dataset.noteAnswer===question.answer);
    const staff=host.querySelector('.lesson-staff-wrap');if(staff)staff.classList.add('is-hint');
    const hint=host.querySelector('[data-note-hint]');if(hint)hint.setAttribute('aria-expanded','true');
   }
-  function next(){if(!answered||complete)return;stopAudio();step++;answered=false;hintShown=false;message='';correct=null;if(step>=LESSONS.find(lesson=>lesson.id===id).total)beginQuiz();else{persist(step);render();}}
+  function next(){if(!answered||complete)return;stopAudio();step++;learningStage='look';answered=false;hintShown=false;message='';correct=null;if(step>=LESSONS.find(lesson=>lesson.id===id).total)beginQuiz();else{persist(step);render();}}
   function answerRhythm(value){
-   if(complete||answered)return;
-   if(value!==2){feedback(step===1?value+' quarter notes would last '+value+' beats. A half note lasts 2 beats. Try 2.':'A quarter note splits into TWO equal eighth notes. Try 2.',false);return;}
-   answered=true;persist(step+1);feedback(step===1?'Yes! 1 beat + 1 beat = 2 beats. Two quarter notes match one half note.':'Yes! Say “1-and”: two eighth notes fit inside one beat.',true);
-   for(const choice of host.querySelectorAll('[data-rhythm-answer]'))choice.disabled=true;
-   const advance=host.querySelector('[data-tutorial-next]');advance.disabled=false;host.querySelector('progress').value=step+1;advance.focus({preventScroll:true});
+   if(complete||answered||learningStage!=='try')return;
+   if(value!==2){feedback('Not yet. Try again.',false);return;}
+   answered=true;persist(step+1);message='Yes! Two notes.';correct=true;render();host.querySelector('[data-tutorial-next]')?.focus({preventScroll:true});
   }
-  function addValue(units){if(complete||answered)return;const total=bar.reduce((sum,value)=>sum+value,0);if(total+units>16){feedback('There is no room for that note. Tap Undo last note to remove a note, then follow the recipe.',false);return;}bar.push(units);message='';correct=null;render();}
-  function checkBar(){if(!validBar(bar)){feedback('Match the four recipe cards: 1 quarter note, 2 eighth notes, and 1 half note. Tap Undo last note or Clear bar, then follow the highlighted next card.',false);return;}feedback('You did it! 1 + half + half + 2 makes 4 beats.',true);beginQuiz();}
+  function addValue(units){if(complete||answered||learningStage!=='try')return;const total=bar.reduce((sum,value)=>sum+value,0);if(total+units>16){feedback('Too much. Tap Undo.',false);return;}bar.push(units);message='';correct=null;render();}
+  function checkBar(){if(!validBar(bar)){feedback('Not yet. Tap Undo and try again.',false);return;}answered=true;persist(step+1);message='You made four counts!';correct=true;render();host.querySelector('[data-tutorial-next]')?.focus({preventScroll:true});}
   function learningCard(section,teach,example){
    const card=element('div','lesson-learning-card');card.append(element('span','lesson-card-label','Learn'),element('p','',teach));
    if(example){const worked=element('p','lesson-worked-example');worked.append(element('strong','','Example: '),doc.createTextNode(example));card.append(worked);}section.append(card);return card;
   }
-  function actionCue(section,text){const cue=element('div','lesson-action-cue');cue.append(element('span','lesson-card-label','Your turn'),element('h3','',text));section.append(cue);}
+  function actionCue(section,text){const cue=element('div','lesson-action-cue'),heading=element('h3','lesson-instruction',text);heading.tabIndex=-1;cue.append(heading);section.append(cue);return heading;}
   function buildKeyboard(section){
    const wrapper=element('div','lesson-keyboard-scroll'),keyboard=element('div','lesson-keyboard');keyboard.setAttribute('role','group');keyboard.setAttribute('aria-label','Piano white keys');
-   const whites=[['C',60],['D',62],['E',64],['F',65],['G',67],['A',69],['B',71],['C',72]];
-   whites.forEach(([letter,pitch],index)=>{const key=button('',()=>answerNote(letter,pitch),{'aria-label':letter+' key','data-note-answer':letter,'data-pitch':pitch});key.className='lesson-white-key';if(hintShown&&letter===namingSteps()[step].answer)key.classList.add('is-hint');key.style.left=index*12.5+'%';const label=element('span','lesson-key-name',letter);label.hidden=!names;key.append(label);keyboard.append(key);});
-   for(const boundary of [1,2,4,5,6]){const black=element('span','lesson-black-key');black.style.left=(boundary*12.5-3.8)+'%';black.setAttribute('aria-hidden','true');keyboard.append(black);}wrapper.append(keyboard);section.append(wrapper);
-   const label=element('label','lesson-name-toggle'),toggle=element('input');toggle.type='checkbox';toggle.checked=names;toggle.onchange=()=>{names=toggle.checked;for(const name of host.querySelectorAll('.lesson-key-name'))name.hidden=!names;};label.append(toggle,doc.createTextNode('Show note letters'));section.append(label,element('p','lesson-small','If the keyboard is wider than your screen, swipe sideways to see the other keys.'));
+   const high=['F','A'].includes(namingSteps()[step].answer),whites=(high?[['F',65],['G',67],['A',69],['B',71],['C',72]]:[['C',60],['D',62],['E',64],['F',65]]),keyWidth=100/whites.length;
+   whites.forEach(([letter,pitch],index)=>{const key=button('',()=>answerNote(letter,pitch),{'aria-label':letter+' key','data-note-answer':letter,'data-pitch':pitch});key.className='lesson-white-key';if((hintShown||answered)&&letter===namingSteps()[step].answer)key.classList.add('is-hint');key.style.left=index*keyWidth+'%';key.style.width=keyWidth+'%';const label=element('span','lesson-key-name',letter);label.hidden=!names&&!(answered&&letter===namingSteps()[step].answer);key.append(label);key.disabled=answered;keyboard.append(key);});
+   for(const boundary of high?[1,2,3]:[1,2]){const black=element('span','lesson-black-key');black.style.left=(boundary*keyWidth-keyWidth*.31)+'%';black.style.width=keyWidth*.62+'%';black.setAttribute('aria-hidden','true');keyboard.append(black);}wrapper.append(keyboard);section.append(wrapper);
+   const label=element('label','lesson-name-toggle'),toggle=element('input');toggle.type='checkbox';toggle.checked=names;toggle.onchange=()=>{names=toggle.checked;for(const name of host.querySelectorAll('.lesson-key-name'))name.hidden=!names;};label.append(toggle,doc.createTextNode('Show letters'));if(!answered)section.append(label);
   }
   function namingExample(question){
-   const example=element('div','lesson-naming-example');example.dataset.noteExample=question.kind;
-   if(question.kind==='staff'){
-    example.classList.add('lesson-reference-staff');const clef=question.clef||'treble',middle=question.position===-2||question.position===10;example.innerHTML=staffSVG(middle?question.position:0,question);example.append(element('p','',middle?'Middle C: one little line below treble or above bass. The same key and sound.':'Start here: '+clef+' bottom line = '+(clef==='bass'?'G.':'E.')));
-   }else{
-    const letters=['C','D','E','F','G','A','B','C'],target=letters.indexOf(question.answer),anchor=question.answer==='A'?3:0;
-    let keys='';for(let index=0;index<8;index++){const fill=index===target?'#a9f2da':index===anchor?'#f5dda7':'#f9f4e6';keys+='<rect x="'+(index*50+1)+'" y="22" width="48" height="79" rx="3" fill="'+fill+'" stroke="#514861"/>';}
-    for(const boundary of [1,2,4,5,6])keys+='<rect x="'+(boundary*50-14)+'" y="22" width="28" height="46" rx="2" fill="#25213b"/>';
-    for(const index of new Set([target,anchor]))keys+='<text x="'+(index*50+25)+'" y="91" text-anchor="middle" fill="#263849" font-size="20" font-family="system-ui" font-weight="700">'+letters[index]+'</text>';
-    example.innerHTML='<svg class="lesson-example-keyboard" viewBox="0 0 400 106" role="img" aria-label="Example piano: '+question.example+'"><text x="75" y="14" text-anchor="middle" fill="#d6eee8" font-size="13" font-family="system-ui">2 black keys</text><text x="250" y="14" text-anchor="middle" fill="#d6eee8" font-size="13" font-family="system-ui">3 black keys</text>'+keys+'</svg>';
+   const example=element('figure','lesson-naming-example');example.dataset.noteExample=question.kind;
+   if(question.kind==='staff')example.innerHTML=staffSVG(question.position,question);
+   else{
+    const letters=['C','D','E','F','G','A','B','C'],target=letters.indexOf(question.answer),anchor=question.answer==='A'?3:0,group=question.answer==='F'||question.answer==='A'?[4,5,6]:[1,2];
+    let keys='';for(let index=0;index<8;index++){const fill=index===target?'#a9f2da':index===anchor?'#f5dda7':'#f9f4e6';keys+='<rect x="'+(index*50+1)+'" y="12" width="48" height="89" rx="3" fill="'+fill+'" stroke="#514861"/>';}
+    for(const boundary of [1,2,4,5,6])keys+='<rect x="'+(boundary*50-14)+'" y="12" width="28" height="48" rx="2" fill="'+(group.includes(boundary)?'#8056ad':'#25213b')+'"/>';
+    for(const index of new Set([target,anchor]))keys+='<text x="'+(index*50+25)+'" y="91" text-anchor="middle" fill="#263849" font-size="24" font-family="system-ui" font-weight="700">'+letters[index]+'</text>';
+    example.innerHTML='<svg class="lesson-example-keyboard" viewBox="0 0 400 106" role="img" aria-label="Example: '+noteCopy()[0]+'">'+keys+'</svg>';
    }
-   return example;
+   example.append(element('figcaption','lesson-model-label',noteCopy()[1]));return example;
   }
+  function nextButton(section,label='Next'){const advance=button(label,next,{'data-tutorial-next':''});advance.disabled=!answered;section.append(advance);}
   function renderNaming(section){
-   const question=namingSteps()[step],card=learningCard(section,question.teach,question.example);card.append(namingExample(question));actionCue(section,question.prompt);
+   section.dataset.kind='note';const question=namingSteps()[step],copy=noteCopy();
+   if(learningStage==='look'){actionCue(section,copy[0]);section.append(namingExample(question));tryButton(section);return;}
+   actionCue(section,answered?'That’s '+question.answer+'.':copy[2]);
    if(question.kind==='keys')buildKeyboard(section);else{
-    const drawing=element('div','lesson-staff-wrap'+(hintShown?' is-hint':''));drawing.innerHTML=staffSVG(question.position,question);section.append(drawing,element('p','lesson-small','Look at the purple round notehead. Then choose its letter below.'));
-    const choices=element('div','lesson-letter-answers');choices.setAttribute('role','group');choices.setAttribute('aria-label','Choose the note letter');for(const letter of ['A','B','C','D','E','F','G'])choices.append(button(letter,()=>answerNote(letter,question.pitch),{'data-note-answer':letter}));section.append(choices);
+    const drawing=element('div','lesson-staff-wrap'+(hintShown?' is-hint':''));drawing.innerHTML=staffSVG(question.position,question);section.append(drawing);
+    if(answered)section.append(element('div','lesson-answer-letter',question.answer));
+    else{const choices=element('div','lesson-letter-answers');choices.setAttribute('role','group');choices.setAttribute('aria-label','Choose the note letter');for(const letter of ['A','B','C','D','E','F','G'])choices.append(button(letter,()=>answerNote(letter,question.pitch),{'data-note-answer':letter}));section.append(choices);}
    }
-   const actions=element('div','lesson-actions lesson-help-actions');actions.append(button('Show me a hint',revealNoteHint,{'data-note-hint':'','aria-expanded':String(hintShown)}),button('Hear the note',()=>play([question.pitch])));section.append(actions);appendFeedback(section);
-   const advance=button(step===namingSteps().length-1?'Start quiz':'Next step',next,{'data-tutorial-next':''});advance.disabled=!answered;section.append(advance,element('p','lesson-small','No timer. You can use hints and try again.'));
+   if(!answered){const actions=element('div','lesson-actions lesson-help-actions');actions.append(button('Hint',revealNoteHint,{'data-note-hint':'','aria-expanded':String(hintShown)}),button('Hear it',()=>play([question.pitch])));section.append(actions);}
+   appendFeedback(section);nextButton(section,step===namingSteps().length-1?'Start quiz':'Next');
+  }
+  function splitPicture(){
+   const picture=element('div','lesson-split-picture');picture.setAttribute('role','img');picture.setAttribute('aria-label',level===0?'One whole note':VALUES[level-1].label+' splits into two '+VALUES[level].name+' notes');
+   if(level>0){const parent=element('div','lesson-split-parent');parent.innerHTML=glyph(VALUES[level-1].units);picture.append(parent,element('span','lesson-split-arrow','→'));}
+   const children=element('div','lesson-split-children');for(let at=0;at<splitExample(level).notes.length;at++){const note=element('span','');note.dataset.treeLevel=level;note.dataset.treeIndex=at;note.innerHTML=glyph(VALUES[level].units);children.append(note);}picture.append(children);return picture;
   }
   function renderTree(section){
-   const teaching=[
-    ['In this lesson we count in 4/4. A beat is one steady count: “1, 2, 3, 4”. A whole note lasts for all four counts.','One whole note = 4 beats.'],
-    ['Splitting one whole note gives two equal half notes. Each half note lasts 2 beats.','2 beats + 2 beats = 4 beats.'],
-    ['Split again: each half note becomes two quarter notes. Each quarter note lasts 1 beat.','1 + 1 + 1 + 1 = 4 beats.'],
-    ['Each quarter note can split into two eighth notes. Two even sounds share one beat.','Say “1-and, 2-and, 3-and, 4-and”.'],
-    ['Each eighth note can split into two sixteenth notes. Four quick sounds share one beat.','For one beat, say “1-e-and-a”.']
-   ];learningCard(section,teaching[level][0],teaching[level][1]);
-   actionCue(section,level<4?'Tap Split into smaller notes to see what happens.':'You found all five note lengths. Try the puzzle next.');
-   const diagram=element('div','lesson-tree-wrap');diagram.innerHTML=treeSVG(level);section.append(diagram,element('p','lesson-tree-swipe','Swipe sideways to see a wide row. The newest row is green.'));diagram.scrollLeft=Math.max(0,(diagram.scrollWidth-diagram.clientWidth)/2);
-   const value=VALUES[level],caption=element('p','lesson-tree-caption',value.count+' '+value.name+(value.count===1?' note':' notes')+' = four beats altogether. '+(level===3?'Two eighth notes fit inside each beat.':level===4?'Four sixteenth notes fit inside each beat.':'Each '+value.name+' note lasts '+value.beats+'.'));caption.setAttribute('aria-live','polite');section.append(caption);
-   const actions=element('div','lesson-actions'),split=button('Split into smaller notes',()=>{level=Math.min(4,level+1);explored.add(level);stopAudio();message='';render();},{'data-tree-split':''}),join=button('Join notes together',()=>{level=Math.max(0,level-1);stopAudio();render();},{'data-tree-join':''});split.className='lesson-primary';split.disabled=level===4;join.disabled=level===0;actions.append(split,join,button('Hear this row',()=>play(Array(value.count).fill(value.units),{rhythm:true,treeLevel:level})));section.append(actions);
-   if(level<4)section.append(element('p','lesson-next-action','Next split: '+value.label+' → '+VALUES[level+1].label.toLowerCase()+'. '+(4-level)+' split'+(4-level===1?'':'s')+' left to explore.'));
-   const details=element('details','lesson-extra-notes'),summary=element('summary','','See the note lengths you have found'),ledger=element('ul','lesson-tree-summary');for(let index=0;index<=level;index++){const row=VALUES[index];ledger.append(element('li','',row.count+' '+row.name+(row.count===1?' note':' notes')+' fills four beats.'));}details.append(summary,ledger);section.append(details);
-   const advance=button(explored.size===5?'Try a rhythm puzzle':'Keep splitting to unlock the puzzle',()=>{answered=true;next();},{'data-tutorial-next':''});advance.disabled=explored.size<5;section.append(advance);appendFeedback(section);
+   learningStage='explore';host.dataset.learningStage=learningStage;section.dataset.kind='tree';
+   const guides=['One whole note lasts four counts.','Split the whole note into two halves.','Split each half into two quarters.','Split each quarter into two eighths.','Split each eighth into two sixteenths.'];
+   actionCue(section,guides[level]);section.append(splitPicture());
+   const value=VALUES[level],example=splitExample(level),shownCount=example.notes.length,totalCounts=example.counts,countWords=totalCounts===.5?'half a count':totalCounts+' '+(totalCounts===1?'count':'counts'),caption=element('p','lesson-tree-caption',shownCount+' '+value.name+(shownCount===1?' note':' notes')+' = '+countWords);caption.setAttribute('aria-live','polite');section.append(caption);
+   const actions=element('div','lesson-actions');actions.append(button('Listen',()=>play(example.notes,{rhythm:true,treeLevel:level})));
+   if(level<4){const split=button('Split it',()=>{level++;explored.add(level);stopAudio();message='';render();},{'data-tree-split':''});split.className='lesson-primary';actions.append(split);}else actions.append(button('Try a puzzle',()=>{answered=true;next();},{'data-tutorial-next':''}));section.append(actions);
+   if(level>0){const more=element('details','lesson-extra-notes');more.append(element('summary','','Go back'));more.append(button('Join two notes',()=>{level--;stopAudio();render();},{'data-tree-join':''}));section.append(more);}appendFeedback(section);
   }
+  function rhythmHint(text){hintShown=true;feedback(text,null);}
   function renderRhythm(section){
-   if(step===0){renderTree(section);return;}
+   section.dataset.kind='rhythm';if(step===0){renderTree(section);return;}
    if(step===1||step===2){
-    const half=step===1;learningCard(section,half?'A half note lasts 2 beats. Each quarter note lasts 1 beat.':'A quarter note lasts 1 beat. Two eighth notes share that same beat.',half?'Count “1, 2” for a half note. Two quarter notes also fill counts 1 and 2.':'Say “1-and” evenly: “1” is one eighth note, and “and” is another.');
-    const example=element('div','lesson-rhythm-example');example.setAttribute('aria-label',half?'One half note equals two quarter notes':'One quarter note equals two eighth notes');example.innerHTML=glyph(half?8:4)+'<span>=</span>'+glyph(half?4:2)+glyph(half?4:2);section.append(example);
-    actionCue(section,half?'How many quarter notes match one half note? Tap a number.':'How many eighth notes match one quarter note? Tap a number.');
-    const answers=element('div','lesson-number-answers');for(const value of [2,3,4])answers.append(button(String(value),()=>answerRhythm(value),{'data-rhythm-answer':value}));section.append(answers);appendFeedback(section);const advance=button('Next step',next,{'data-tutorial-next':''});advance.disabled=!answered;section.append(advance);return;
+    const half=step===1,example=element('div','lesson-rhythm-example');
+    if(learningStage==='look'){actionCue(section,half?'One half note lasts two counts.':'Two eighth notes share one count.');example.innerHTML=glyph(half?8:4)+'<span>=</span>'+glyph(half?4:2)+glyph(half?4:2);section.append(example);tryButton(section);return;}
+    actionCue(section,answered?'Yes. Two notes!':half?'How many quarter notes match this?':'How many eighth notes match this?');example.innerHTML=glyph(half?8:4);section.append(example);
+    if(!answered){const answers=element('div','lesson-number-answers');for(const value of [2,3,4])answers.append(button(String(value),()=>answerRhythm(value),{'data-rhythm-answer':value}));section.append(answers,button('Hint',()=>rhythmHint(half?'Each quarter lasts one count.':'Split the quarter in two.')));}
+    appendFeedback(section);nextButton(section);return;
    }
-   learningCard(section,'A bar is a group of beats. This bar has 4 beats. Follow the four recipe cards to build it.','Count “1 | 2-and | 3, 4”. The two eighth notes share beat 2.');
-   const used=new Map();for(const units of bar)used.set(units,(used.get(units)||0)+1);const targets=recipe.map(units=>{const count=used.get(units)||0;used.set(units,Math.max(0,count-1));return{units,filled:count>0};}),nextTarget=targets.find(target=>!target.filled);
-   const targetList=element('ol','lesson-recipe-targets');targets.forEach((target,index)=>{const card=element('li',target.filled?'is-filled':target===nextTarget?'is-next':'');card.dataset.recipeStep=index;card.innerHTML=glyph(target.units);card.append(element('span','',valueFor(target.units).label),element('small','',target.filled?'Added':target===nextTarget?'Add this next':'Then add this'));targetList.append(card);});section.append(targetList);
-   actionCue(section,nextTarget?'Tap '+valueFor(nextTarget.units).label+' below.':'Your recipe is ready. Tap Check my rhythm.');
-   const pattern=element('div','lesson-pattern');pattern.setAttribute('aria-label','Your four-beat rhythm');
-   bar.forEach((units,index)=>{const cell=element('div','lesson-pattern-note');cell.style.flex=String(units);cell.dataset.patternIndex=index;cell.innerHTML=glyph(units);cell.append(element('small','',valueFor(units).name));pattern.append(cell);});if(!bar.length)pattern.append(element('p','lesson-small','Your bar is empty. Start with a quarter note.'));section.append(pattern);
-   const total=bar.reduce((sum,value)=>sum+value,0),meter=element('progress');meter.max=16;meter.value=total;meter.setAttribute('aria-label','Four-beat bar filled');section.append(meter,element('p','lesson-small',(total/4)+' of 4 beats filled.'));
-   const makeValue=value=>{const choose=button('',()=>addValue(value.units),{'aria-label':'Add '+value.name+' note','data-add-value':value.units});choose.innerHTML=glyph(value.units);choose.append(element('span','',value.label),element('small','',value.beats));if(value.units===nextTarget?.units)choose.classList.add('is-next-value');return choose;};
-   const values=element('div','lesson-value-buttons');for(const value of [4,2,8].map(valueFor))values.append(makeValue(value));section.append(values);
-   const extras=element('details','lesson-extra-notes');extras.append(element('summary','','Other note lengths (optional)'));const extraValues=element('div','lesson-value-buttons');for(const value of VALUES.filter(value=>![4,2,8].includes(value.units)))extraValues.append(makeValue(value));extras.append(extraValues);section.append(extras);
-   const actions=element('div','lesson-actions');actions.append(button('Undo last note',()=>{bar.pop();message='';render();}),button('Clear bar',()=>{bar=[];message='';render();}),button('Listen and clap along',()=>{if(bar.length)play(bar,{rhythm:true});else feedback('Add a note first, then listen.',null);}));section.append(actions,element('p','lesson-small','Listening is optional. Clap once at the start of each sound. Count “1, 2” during the half note.'));appendFeedback(section);const check=button('Check my rhythm',checkBar,{'data-check-rhythm':''});check.disabled=!bar.length;section.append(check);
+   if(learningStage==='look'){actionCue(section,'Let’s make a bar with four counts.');const example=element('div','lesson-rhythm-example lesson-recipe-example');example.setAttribute('aria-label','One quarter, two eighths, and one half note');example.innerHTML=recipe.map(units=>glyph(units)).join('');section.append(example,element('p','lesson-model-label','One · two-and · three, four'));tryButton(section);return;}
+   const used=new Map();for(const units of bar)used.set(units,(used.get(units)||0)+1);const targets=recipe.map(units=>{const count=used.get(units)||0;used.set(units,Math.max(0,count-1));return{units,filled:count>0};}),nextTarget=targets.find(target=>!target.filled),total=bar.reduce((sum,value)=>sum+value,0);
+   actionCue(section,answered?'Four counts. You did it!':nextTarget?'Add a '+valueFor(nextTarget.units).name+' note.':'Tap Check.');
+   const pattern=element('div','lesson-pattern');pattern.setAttribute('aria-label','Your four-count bar');
+   bar.forEach((units,index)=>{const cell=element('div','lesson-pattern-note');cell.style.flex=String(units);cell.dataset.patternIndex=index;cell.innerHTML=glyph(units);pattern.append(cell);});
+   if(total<16){const space=element('div','lesson-pattern-space');space.style.flex=String(16-total);if(!bar.length)space.textContent='Your bar';pattern.append(space);}section.append(pattern);
+   if(!answered){
+    const makeValue=value=>{const choose=button('',()=>addValue(value.units),{'aria-label':'Add '+value.name+' note','data-add-value':value.units});choose.innerHTML=glyph(value.units);choose.append(element('span','','Add '+value.name));if(value.units===nextTarget?.units)choose.classList.add('is-next-value');return choose;};
+    if(nextTarget&&total<16){const values=element('div','lesson-value-buttons lesson-primary-value');values.append(makeValue(valueFor(nextTarget.units)));section.append(values);}
+    const actions=element('div','lesson-actions');if(bar.length){actions.append(button('Undo',()=>{bar.pop();message='';correct=null;render();},{'data-rhythm-undo':''}),button('Listen',()=>play(bar,{rhythm:true})));}if(actions.children.length)section.append(actions);
+    if(total===16||bar.length>=4)section.append(button('Check',checkBar,{'data-check-rhythm':''}));
+    const extras=element('details','lesson-extra-notes');extras.append(element('summary','','More choices'));const others=element('div','lesson-value-buttons');for(const value of VALUES.filter(value=>value.units!==nextTarget?.units))others.append(makeValue(value));extras.append(others,button('Start again',()=>{bar=[];message='';correct=null;render();},{'data-rhythm-clear':''}));section.append(extras);
+   }
+   appendFeedback(section);if(answered)nextButton(section,'Start quiz');
   }
   function appendFeedback(section){const feedbackNode=element('p','tutorial-feedback',message);feedbackNode.setAttribute('role','status');feedbackNode.setAttribute('aria-live','polite');feedbackNode.dataset.correct=String(correct);section.append(feedbackNode);}
   function renderComplete(section){
-   section.append(element('h3','','Lesson complete!'),element('p','lesson-teach',id==='note-naming'?'You found notes on the piano and on the staff. You can use those clues in Pitch Race and Piano Lab.':id==='bass-clef'?'You used the bass clef’s lines, spaces, and F landmark. Try Bass Clef in Pitch Race when you are ready.':id==='grand-staff'?'You read both clefs and found the same Middle C from either staff. Try Grand Staff in Pitch Race.':id==='time-signatures'?'You read 4/4, 6/8, and cut time, heard their different pulses, and built a bar for each one. Try feeling those pulses while rhythm fishing!':'You split and joined note values, compared their lengths, and built a four-beat rhythm. Try these skills in Rhythm Room and Music Triad.'));
-   let reward='You can replay this lesson whenever you want.';if(award?.ok===false)reward=award.error||'Your lesson is finished. Try saving your reward again.';else if(award?.alreadyAwarded)reward='You already earned this lesson’s achievement. Keep practicing for fun!';else if(award?.amount>0)reward='Achievement earned! +'+award.amount+' XP.';
-   const checked=ensureQuiz()?.getState();if(checked?.passed)section.append(element('p','lesson-teach','Quiz passed · '+checked.score+' of '+checked.total+' correct.'));
-   const status=element('p','tutorial-feedback',reward);status.setAttribute('role','status');section.append(status);if(award?.ok===false)section.append(button('Try saving progress again',()=>{if(readProgress(storage).completed.includes(id)){notifyCompletion();render();}else finish();}));
-   section.append(button(checked?.finished?'Try quiz again':'Take the quiz',()=>beginQuiz(true),{'data-tutorial-quiz':''}),button('Practice again',()=>reset(false),{'data-tutorial-replay':''}));
+   actionCue(section,'You did it!');
+   let reward='Keep practising whenever you like.';if(award?.ok===false)reward=award.error||'Let’s save your reward again.';else if(award?.alreadyAwarded)reward='You already earned this reward.';else if(award?.amount>0)reward='+'+award.amount+' XP';
+   const status=element('p','tutorial-feedback',reward);status.setAttribute('role','status');section.append(status);if(award?.ok===false)section.append(button('Save again',()=>{if(readProgress(storage).completed.includes(id)){notifyCompletion();render();}else finish();}));
+   section.append(button('Quiz again',()=>beginQuiz(true),{'data-tutorial-quiz':''}),button('Practice again',()=>reset(false),{'data-tutorial-replay':''}));
   }
   function render(){
-   if(destroyed||!id)return;const oldFocus=host.contains(doc.activeElement)?doc.activeElement:null;let restore=null;if(oldFocus){for(const attr of ['data-pitch','data-note-answer','data-tree-split','data-tree-join','data-tutorial-next','data-add-value','data-check-rhythm','data-tutorial-replay'])if(oldFocus.hasAttribute(attr)){restore='['+attr+'=\"'+oldFocus.getAttribute(attr)+'\"]';break;}}host.replaceChildren();host.classList.add('classroom-tutorial');host.dataset.tutorial=id;host.dataset.phase=complete?'complete':quizzing?'quiz':'lesson';const lesson=LESSONS.find(item=>item.id===id),heading=element('div','lesson-topline');heading.append(element('span','lesson-step-label',complete?'Lesson finished':quizzing?'End-of-lesson quiz':'Step '+(step+1)+' of '+lesson.total));if(!quizzing&&!complete)heading.append(button('Stop sound',stopAudio));host.append(heading);
+   if(destroyed||!id)return;const oldFocus=host.contains(doc.activeElement)?doc.activeElement:null;let restore=null;if(oldFocus){for(const attr of ['data-pitch','data-note-answer','data-tree-split','data-tree-join','data-tutorial-next','data-add-value','data-check-rhythm','data-tutorial-replay'])if(oldFocus.hasAttribute(attr)){restore='['+attr+'=\"'+oldFocus.getAttribute(attr)+'\"]';break;}}host.replaceChildren();host.classList.add('classroom-tutorial');host.dataset.tutorial=id;host.dataset.phase=complete?'complete':quizzing?'quiz':'lesson';host.dataset.learningStage=learningStage;const lesson=LESSONS.find(item=>item.id===id),heading=element('div','lesson-topline');heading.append(element('span','lesson-step-label',complete?'Finished':quizzing?'Quiz':'Step '+(step+1)+' of '+lesson.total));host.append(heading);
    if(!quizzing){const progress=element('progress');progress.max=lesson.total;progress.value=complete?lesson.total:step+(answered?1:0);progress.setAttribute('aria-label',lesson.title+' progress');host.append(progress);}
    const section=element('section','lesson-content');section.setAttribute('aria-label',lesson.title+(quizzing?' quiz':' activity'));host.append(section);
-   if(complete)renderComplete(section);else if(quizzing){if(ensureQuiz())quiz.render(section);else section.append(element('p','lesson-teach','The quiz could not load. Reload the page to try again.'));}else if(NOTE_LESSONS[id])renderNaming(section);else if(id==='time-signatures'){if(signatureLesson)signatureLesson.render(section,{step,answered});else section.append(element('p','','The time-signature lesson could not load. Reload the page to try again.'));}else renderRhythm(section);if(oldFocus&&!quizzing){let target=restore?host.querySelector(restore):null;if(!target||target.disabled)target=host.querySelector('h3');if(target){if(target.tagName==='H3')target.tabIndex=-1;target.focus({preventScroll:true});}}
+   if(complete)renderComplete(section);else if(quizzing){if(ensureQuiz())quiz.render(section);else section.append(element('p','lesson-teach','The quiz could not load. Reload the page to try again.'));}else if(NOTE_LESSONS[id])renderNaming(section);else if(id==='time-signatures'){if(signatureLesson)signatureLesson.render(section,{step,answered});else section.append(element('p','','The time-signature lesson could not load. Reload the page to try again.'));}else renderRhythm(section);const bookViewport=host.closest('.classroom-books');if(bookViewport)bookViewport.scrollTop=0;if(oldFocus&&!quizzing){let target=restore?host.querySelector(restore):null;if(!target||target.disabled)target=host.querySelector('h3');if(target){if(target.tagName==='H3')target.tabIndex=-1;target.focus({preventScroll:true});}}
   }
   function reset(resume=true){
-   stopAudio();quiz?.destroy();quiz=null;signatureLesson?.reset();const saved=readProgress(storage).lessons.find(lesson=>lesson.id===id),total=LESSONS.find(lesson=>lesson.id===id).total;step=resume?saved.step:0;complete=resume&&saved.completed;quizzing=resume&&!complete&&step>=total;freshQuiz=!resume;answered=false;message='';correct=null;hintShown=false;level=0;explored=new Set([0]);bar=[];award=null;
+   stopAudio();quiz?.destroy();quiz=null;signatureLesson?.reset();const saved=readProgress(storage).lessons.find(lesson=>lesson.id===id),total=LESSONS.find(lesson=>lesson.id===id).total;step=resume?saved.step:0;complete=resume&&saved.completed;quizzing=resume&&!complete&&step>=total;freshQuiz=!resume;learningStage='look';answered=false;message='';correct=null;hintShown=false;level=0;explored=new Set([0]);bar=[];award=null;
    if(complete){ensureQuiz();notifyCompletion();}else if(quizzing)ensureQuiz();render();
   }
   function open(lessonId){if(!LESSONS.some(lesson=>lesson.id===lessonId))return false;id=lessonId;reset();return true;}
-  return {open,stopAudio,destroy(){stopAudio();quiz?.destroy();signatureLesson?.destroy();destroyed=true;host.replaceChildren();},getState:()=>({...readProgress(storage),active:id?{id,step,answered,complete,phase:complete?'complete':quizzing?'quiz':'lesson',quiz:quiz?.getState()||null,treeLevel:level,explored:[...explored],bar:[...bar],timeSignatures:id==='time-signatures'?signatureLesson?.getState():null,audioPlaying:!!audio||signatureLesson?.getState().audioPlaying===true,error}:null})};
+  return {open,stopAudio,destroy(){stopAudio();quiz?.destroy();signatureLesson?.destroy();destroyed=true;host.replaceChildren();},getState:()=>({...readProgress(storage),active:id?{id,step,learningStage:id==='time-signatures'?signatureLesson?.getState().stage||'look':learningStage,answered,complete,phase:complete?'complete':quizzing?'quiz':'lesson',quiz:quiz?.getState()||null,treeLevel:level,explored:[...explored],bar:[...bar],timeSignatures:id==='time-signatures'?signatureLesson?.getState():null,audioPlaying:!!audio||signatureLesson?.getState().audioPlaying===true,error}:null})};
  }
- return {KEY,LESSONS,VALUES,NOTE_STEPS,BASS_STEPS,GRAND_STEPS,NOTE_LESSONS,validBar,normalize,readProgress,glyph,staffSVG,treeSVG,create};
+ return {KEY,LESSONS,VALUES,NOTE_STEPS,BASS_STEPS,GRAND_STEPS,NOTE_LESSONS,SIMPLE_NOTE_COPY,splitExample,validBar,normalize,readProgress,glyph,staffSVG,treeSVG,create};
 });

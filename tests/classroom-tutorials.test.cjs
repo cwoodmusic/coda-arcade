@@ -45,3 +45,31 @@ test('lesson pictures reuse engraved clefs and join two staffs with one question
  assert.equal((grand.match(/class="coda-music-glyph staff-note"/g)||[]).length,1);
  assert.match(grand,/data-staff-position="10"/);assert.match(grand,/class="staff-ledger"/);assert.match(grand,/translate\(0 120\)/);
 });
+
+test('little learner pages keep one short instruction and preserve every saved exercise',()=>{
+ const {SIMPLE_NOTE_COPY,NOTE_LESSONS}=require('../classroom-tutorials.js');
+ for(const [id,steps]of Object.entries(NOTE_LESSONS)){
+  assert.equal(SIMPLE_NOTE_COPY[id].length,steps.length,id+' keeps its saved step count');
+  for(const [index,copy]of SIMPLE_NOTE_COPY[id].entries()){
+   const [guide,caption,prompt,hint]=copy;
+   assert.ok(guide.trim().split(/\s+/).length<=12,id+' guide '+index+' is one small idea');
+   assert.ok(hint.trim().split(/\s+/).length<=16,id+' hint '+index+' stays short');
+   assert.ok(prompt.trim().split(/\s+/).length<=6,id+' action '+index+' is simple');
+   assert.doesNotMatch([guide,caption,prompt,hint].join(' '),/\b[A-G][0-8]\b/,'No octave labels in child-facing text');
+   if(steps[index].kind==='keys')assert.equal(prompt,'Tap '+steps[index].answer+'.');
+  }
+ }
+ const all=Object.values(SIMPLE_NOTE_COPY).flat().flat().join(' ');
+ for(const saying of ['Every Good Boy Does Fine','FACE','Great Big Dreams For America','All Cows Eat Grass','Middle C'])assert.ok(all.includes(saying),saying+' remains available in the teaching');
+});
+
+
+test('a tiny split picture and its sound always describe the same local amount of music',()=>{
+ const {splitExample}=require('../classroom-tutorials.js');
+ assert.deepEqual([0,1,2,3,4].map(level=>splitExample(level).counts),[4,4,2,1,.5]);
+ for(let level=0;level<5;level++){
+  const example=splitExample(level);assert.equal(example.notes.length,level?2:1);
+  assert.ok(example.notes.every(units=>units===VALUES[level].units));
+  if(level)assert.equal(example.notes.reduce((sum,n)=>sum+n,0),example.parentUnits,'The two children last exactly as long as their pictured parent');
+ }
+});

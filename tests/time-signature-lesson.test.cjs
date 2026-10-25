@@ -28,3 +28,11 @@ test('all eight activities have correct answers and the shared saved journal inc
  const completed=tutorial.normalize({version:1,lessons:{'time-signatures':{step:8,completed:true,completedAt:12}}});assert.equal(completed.lessons['time-signatures'].completed,true);
  assert.equal(tutorial.normalize({version:1,lessons:{'time-signatures':{step:7,completed:true}}}).lessons['time-signatures'].completed,false);
 });
+
+test('meter teaching uses short child-friendly instructions before one clear task',()=>{
+ for(const step of lesson.STEPS){
+  assert.ok(step.teach.split(/\s+/).length<=14,step.id+' teaches one short idea');
+  assert.ok(step.prompt.split(/\s+/).length<=10,step.id+' names one small action');
+  assert.ok(step.hint.split(/\s+/).length<=10,step.id+' reveals one short hint');
+ }
+});

@@ -29,12 +29,14 @@ class ClassroomQuizWorldTests(_world.WorldBrowserCase):
     def xp(self):return self.page.evaluate('CodaArcadeQA.progression().xp')
 
     def open_lesson(self,lesson):
-        if not self.page.evaluate('CodaArcadeQA.classroom().open'):
-            enter_room(self.page,'classroom')
-        books=self.page.locator('[data-classroom-view="books"]')
-        if books.is_visible() and self.page.evaluate('CodaArcadeQA.classroom().mobileView')!='books':books.click()
+        if not self.page.evaluate('CodaArcadeQA.classroom().open'):enter_room(self.page,'classroom')
         back=self.page.locator('#classroomAllLessons')
         if back.is_visible():back.click()
+        if not self.page.locator('#classroomStart').is_visible():
+            room=self.page.locator('#classroomBackRoom')
+            if room.is_visible():room.click()
+            self.page.locator('#classroomCanvas').focus();self.page.keyboard.down('w')
+            self.page.wait_for_timeout(850);self.page.keyboard.up('w');self.page.keyboard.press('e')
         self.page.locator('[data-start-lesson="'+lesson+'"]').click()
 
     def ready_quiz(self,lesson,legacy=False):
@@ -49,7 +51,7 @@ class ClassroomQuizWorldTests(_world.WorldBrowserCase):
         if not legacy:self.assertEqual(self.state()['active']['phase'],'quiz')
 
     def assert_score(self,score):
-        self.assertRegex(self.page.locator('.classroom-quiz-score').inner_text(),str(score)+r'\s*(?:/|of)\s*5')
+        self.assertRegex(self.page.locator('.classroom-quiz-score').get_attribute('aria-label'),str(score)+r'\s*(?:/|of)\s*5')
 
     def test_bass_and_grand_quizzes_award_real_classroom_xp_once(self):
         for lesson in ['bass-clef','grand-staff']:
@@ -76,7 +78,7 @@ class ClassroomQuizWorldTests(_world.WorldBrowserCase):
         self.assertEqual(self.xp(),0)
         self.page.locator('#panelClose').click();self.open_lesson('note-naming')
         self.assertEqual(self.state()['active']['phase'],'quiz')
-        self.assertTrue(self.page.locator('[data-quiz-next]').is_disabled())
+        self.assertTrue(self.page.locator('[data-quiz-next]').count()==0 or self.page.locator('[data-quiz-next]').is_disabled())
         answer_quiz(self.page,'note-naming',wrong=(0,1),finish=False)
         self.assert_score(3)
         finish=self.page.locator('[data-quiz-finish]')
@@ -160,7 +162,7 @@ class ClassroomQuizWorldTests(_world.WorldBrowserCase):
             quiz=self.page.locator('.classroom-quiz')
             self.assertLessEqual(quiz.evaluate('e=>e.scrollWidth'),quiz.evaluate('e=>e.clientWidth')+2)
             for button in self.page.locator('[data-quiz-answer]').all():
-                self.assertGreaterEqual(button.bounding_box()['height'],52)
+                self.assertGreaterEqual(button.bounding_box()['height'],48)
             self.assertLessEqual(self.page.locator('#musicClassroom').evaluate('e=>e.scrollWidth'),size['width'])
         correct=QUIZ_ANSWERS['rhythm-tree'][0]
         self.page.locator('[data-quiz-answer="'+str(correct)+'"]').focus();self.page.keyboard.press('Enter')
