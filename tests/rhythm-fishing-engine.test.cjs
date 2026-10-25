@@ -145,7 +145,7 @@ test('timing outside the window does not count as a hit, and old/nonfinite taps 
 
 test('perfect playing catches all thirty species with a single stable final result',()=>{
  for(const fish of fishing.FISH){const results=[],game=session({fish,id:'catch-'+fish.id,onFinish:result=>results.push(result)}),final=perfectCatch(game);
-  assert.equal(final.phase,'caught');assert.equal(final.progress,100);assert.equal(final.result.fishId,fish.id);assert.equal(final.result.id,'catch-'+fish.id);assert.equal(final.result.meter,fish.meter);assert.equal(final.result.perfect,true);assert.ok(final.hits>=8);close(final.result.duration,game.timeAtBeat(8*final.barBeats)-final.musicStart);assert.equal(final.result.notes,fish.notes);assert.equal(final.result.xp,fish.xp);
+  assert.equal(final.phase,'caught');assert.equal(final.progress,100);assert.equal(final.result.fishId,fish.id);assert.equal(final.result.id,'catch-'+fish.id);assert.equal(final.result.meter,fish.meter);assert.equal(final.result.perfect,true);assert.ok(final.hits>0);close(final.result.duration,game.timeAtBeat(4*final.barBeats)-final.musicStart);assert.equal(final.result.notes,fish.notes);assert.equal(final.result.xp,fish.xp);
   game.tap(final.now+1);game.update(final.now+1000);game.abort();assert.equal(results.length,1);assert.equal(game.getState().result.id,final.result.id);
  }
 });
@@ -180,15 +180,15 @@ function playToBeat(game,targetBeat,{missFirst=false,extraFirst=false}={}){
  return game.getState();
 }
 
-test('eight full clean bars catch every eligible species regardless of note density or starting phrase',()=>{
- assert.equal(fishing.TARGET_BARS,8);
+test('four full clean bars catch every eligible species regardless of note density or starting phrase',()=>{
+ assert.equal(fishing.TARGET_BARS,8);assert.equal(fishing.PERFECT_TARGET_BARS,4);
  for(const fish of fishing.FISH)for(const meter of fish.meters){
-  const game=session({fish,meter}),initial=game.getState(),endBeat=8*initial.barBeats,endTime=game.timeAtBeat(endBeat);
+  const game=session({fish,meter}),initial=game.getState(),endBeat=4*initial.barBeats,endTime=game.timeAtBeat(endBeat);
   const almost=playToBeat(game,endBeat-.000001);
   assert.equal(almost.result,null,fish.id+' '+meter+' must finish the last written duration');
-  assert.equal(almost.targetBars,8);assert.equal(almost.completedBars,7);assert.ok(almost.progress<=99);
+  assert.equal(almost.targetBars,4);assert.equal(almost.perfectEligible,true);assert.equal(almost.completedBars,3);assert.ok(almost.progress<=99);
   const final=game.update(endTime);
-  assert.equal(final.result?.caught,true,fish.id+' '+meter);assert.equal(final.completedBars,8);
+  assert.equal(final.result?.caught,true,fish.id+' '+meter);assert.equal(final.completedBars,4);assert.equal(final.targetBars,4);assert.equal(final.cleanBarsEquivalent,4);
   assert.equal(final.result.misses,0);assert.equal(final.result.extras,0);assert.equal(final.result.perfect,true);
   close(final.result.duration,endTime-initial.musicStart);
  }
@@ -198,7 +198,7 @@ test('a missed note or extra tap extends the battle but does not prevent recover
  for(const rarity of fishing.RARITIES)for(const mistake of ['missFirst','extraFirst']){
   const fish=fishing.FISH.find(item=>item.rarity===rarity.id),game=session({fish}),initial=game.getState();
   const eighth=playToBeat(game,8*initial.barBeats,{[mistake]:true});
-  assert.equal(eighth.result,null,rarity.id+' '+mistake+' needs more than eight bars');
+  assert.equal(eighth.result,null,rarity.id+' '+mistake+' needs more than eight bars');assert.equal(eighth.perfectEligible,false);assert.equal(eighth.targetBars,8);
   assert.ok(eighth.progress>45&&eighth.progress<100);
   const final=perfectCatch(game);
   assert.equal(final.result?.caught,true);assert.equal(final.result.perfect,false);
@@ -228,4 +228,60 @@ test('upper-tier timings leave mobile-sized hit windows while consecutive target
   for(const note of state.notes.filter(item=>!item.rest&&item.duration===.25))assert.ok(note.window>=.0499,fish.id+' sixteenths need at least a 50ms head window');
   assert.ok(Math.max(state.tempo.startQuarterBpm,state.tempo.endQuarterBpm)<=100);
  }
+});
+
+test('the fourth whole-bar rest and a final held note must finish before a perfect catch',()=>{
+ const resting=session({fish:'bluegill',meter:'4/4'}),restState=resting.update(resting.timeAtBeat(0));
+ const restEndBeat=4*restState.barBeats,restPlan=restState.notes.filter(note=>note.onset<restEndBeat),lastRest=restPlan.at(-1);
+ assert.equal(lastRest.wholeBarRest,true);assert.equal(lastRest.bar,3);
+ for(const note of restPlan)if(!note.rest)assert.equal(resting.tap(note.time).kind,'hit');
+ resting.update(resting.timeAtBeat(restEndBeat)-.001);
+ assert.equal(resting.getState().result,null);assert.equal(resting.getState().perfectEligible,true);
+ assert.equal(resting.getState().notes.find(note=>note.id===lastRest.id).restProgressAwarded,false);
+ assert.equal(resting.update(resting.timeAtBeat(restEndBeat)).result?.perfect,true);
+
+ const held=session({fish:'yellow-perch',meter:'2/2'}),holdState=held.update(held.timeAtBeat(0));
+ const holdEndBeat=4*holdState.barBeats,holdPlan=holdState.notes.filter(note=>note.onset<holdEndBeat&&!note.rest),lastHold=holdPlan.at(-1);
+ assert.equal(lastHold.requiresHold,true);close(lastHold.onset+lastHold.duration,holdEndBeat);
+ for(const note of holdPlan.slice(0,-1)){
+  assert.equal(held.press(note.time,'hold-test').kind,note.requiresHold?'hold-start':'hit');
+  if(note.requiresHold)held.update(note.holdEndTime);
+  held.release(note.requiresHold?note.holdEndTime:note.time,'hold-test');
+ }
+ assert.equal(held.press(lastHold.time,'hold-test').kind,'hold-start');
+ const end=held.timeAtBeat(holdEndBeat);
+ assert.equal(held.release(end-.1,'hold-test').kind,'hold-release');
+ assert.equal(held.getState().result,null,'An allowed early release still waits for the written tail');
+ assert.equal(held.update(end-.001).result,null);
+ const caught=held.update(end);assert.equal(caught.result?.perfect,true);assert.equal(caught.completedBars,4);
+});
+
+test('a broken hold or a tap in the fourth rest permanently removes the four-bar shortcut',()=>{
+ for(const mistake of ['broken-hold','rest-tap']){
+  const game=session({fish:mistake==='broken-hold'?'yellow-perch':'bluegill',meter:mistake==='broken-hold'?'2/2':'4/4'});
+  const state=game.update(game.timeAtBeat(0)),endBeat=4*state.barBeats,plan=state.notes.filter(note=>note.onset<endBeat),last=plan.at(-1);
+  for(const note of plan.slice(0,-1))if(!note.rest)assert.equal(game.tap(note.time).kind,'hit');
+  if(mistake==='broken-hold'){
+   assert.equal(last.requiresHold,true);assert.equal(game.press(last.time,'broken').kind,'hold-start');
+   assert.equal(game.release(last.time+last.durationSeconds*.25,'broken').kind,'hold-break');
+  }else{
+   assert.equal(last.wholeBarRest,true);assert.equal(game.tap(last.time+last.durationSeconds*.5).kind,'extra');
+  }
+  const fourth=game.update(game.timeAtBeat(endBeat));
+  assert.equal(fourth.result,null,mistake+' must not earn the shortcut');assert.equal(fourth.targetBars,8);assert.equal(fourth.perfectEligible,false);
+  const eighth=playToBeat(game,8*state.barBeats);
+  assert.equal(eighth.result,null,mistake+' retains the original progress recovery');assert.equal(eighth.perfectEligible,false);
+  const final=perfectCatch(game);assert.equal(final.result?.caught,true);assert.equal(final.result.perfect,false);
+  assert.ok(final.result.duration>game.timeAtBeat(8*state.barBeats)-state.musicStart);
+ }
+});
+
+test('a delayed frame catches four already-clean bars before judging the fifth bar',()=>{
+ const awards=[],game=session({onFinish:result=>awards.push(result)}),state=game.update(game.timeAtBeat(0)),endBeat=4*state.barBeats;
+ for(const note of state.notes.filter(note=>!note.rest&&note.onset<endBeat))assert.equal(game.tap(note.time).kind,'hit');
+ const end=game.timeAtBeat(endBeat);assert.equal(game.update(end-.001).result,null);
+ const caught=game.update(end+1);
+ assert.equal(caught.result?.caught,true);assert.equal(caught.result.misses,0);assert.equal(caught.result.extras,0);
+ assert.equal(caught.completedBars,4);close(caught.result.duration,end-state.musicStart);
+ game.update(end+100);game.tap(end+101);game.abort();assert.equal(awards.length,1);
 });

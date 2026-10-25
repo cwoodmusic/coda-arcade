@@ -3,7 +3,7 @@
  'use strict';
  const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
  const copy=value=>JSON.parse(JSON.stringify(value));
- const TARGET_BARS=8,START_PROGRESS=45,CLEAN_BAR_GAIN=(100-START_PROGRESS)/TARGET_BARS,MAX_SIXTEENTH_BPM=100;
+ const TARGET_BARS=8,PERFECT_TARGET_BARS=4,START_PROGRESS=45,CLEAN_BAR_GAIN=(100-START_PROGRESS)/TARGET_BARS,MAX_SIXTEENTH_BPM=100;
  const METERS=Object.freeze({
   '4/4':Object.freeze({id:'4/4',timeSignature:'4/4',label:'4/4',numerator:4,denominator:4,barBeats:4,pulseBeats:1,pulsesPerBar:4,pulseUnit:'quarter'}),
   '6/8':Object.freeze({id:'6/8',timeSignature:'6/8',label:'6/8',numerator:6,denominator:8,barBeats:3,pulseBeats:1.5,pulsesPerBar:2,pulseUnit:'dotted-quarter'}),
@@ -162,21 +162,36 @@
   }
   makeUntil(16);
   function tempoState(beat){const currentQuarterBpm=tempoAtBeat(beat),rampProgress=changing?clamp((beat-startBeat)/(endBeat-startBeat),0,1):0;return {...profile,...tempoMarking(currentQuarterBpm),currentQuarterBpm,currentPulseBpm:currentQuarterBpm/meter.pulseBeats,startBeat,endBeat,active:changing&&beat>=startBeat&&beat<endBeat,settled:changing&&beat>=endBeat,progress:rampProgress};}
-  function finish(outcome,reason){
+  function finish(outcome,reason,finishedAt=now){
    if(finished)return;finished=true;phase=outcome;progress=outcome==='caught'?100:0;
    for(const event of events)if(event.judgement==='holding'){event.judgement='canceled';event.heldBy=null;event.holdLatched=false;}
    pressedSources.clear();
-   const tempo=tempoState(beatAtTime(now));
+   const tempo=tempoState(beatAtTime(finishedAt));
    result={id,practice,fishId:fish.id,fish:copy(fish),rarity:fish.rarity,outcome,caught:outcome==='caught',reason:reason||null,hits,misses,extras,perfect:!practice&&hits>0&&misses===0&&extras===0,
-    notes:!practice&&outcome==='caught'?fish.notes:0,xp:!practice&&outcome==='caught'?fish.xp:0,elapsed:Math.max(0,now-startTime),duration:Math.max(0,now-startTime-countInSeconds),bpm:tempo.currentPulseBpm,quarterBpm:tempo.currentQuarterBpm,tempo,meter:meter.id,timeSignature:meter.id,pulseUnit:meter.pulseUnit};
+    notes:!practice&&outcome==='caught'?fish.notes:0,xp:!practice&&outcome==='caught'?fish.xp:0,elapsed:Math.max(0,finishedAt-startTime),duration:Math.max(0,finishedAt-startTime-countInSeconds),bpm:tempo.currentPulseBpm,quarterBpm:tempo.currentQuarterBpm,tempo,meter:meter.id,timeSignature:meter.id,pulseUnit:meter.pulseUnit};
    try{options.onFinish?.(copy(result));}catch{/* Feedback cannot change a completed result. */}
+  }
+  function perfectEligible(){return !practice&&misses===0&&extras===0;}
+  function completeCatch(){
+   if(practice||finished||hits===0)return false;
+   const perfectEndBeat=PERFECT_TARGET_BARS*meter.barBeats;
+   // Finish the fourth written bar, including silence and the tails of holds.
+   // A pending target cannot borrow its late window to qualify as perfect.
+   const perfectReady=perfectEligible()&&now+1e-9>=timeAtBeat(perfectEndBeat)&&events.every(event=>{
+    if(event.onset>=perfectEndBeat)return true;
+    if(event.rest)return event.restClean&&event.restProgressAwarded;
+    return event.judgement==='hit'&&now+1e-9>=timeAtBeat(event.onset+event.duration);
+   });
+   if(perfectReady){finish('caught',null,timeAtBeat(perfectEndBeat));return true;}
+   if(progress>=100-1e-8&&now+1e-9>=timeAtBeat(TARGET_BARS*meter.barBeats)){finish('caught');return true;}
+   return false;
   }
   function judge(kind,event){
    if(kind==='hit'){event.judgement='hit';event.hitAt=now;event.heldBy=null;event.holdLatched=false;hits++;progress=Math.min(100,progress+CLEAN_BAR_GAIN*event.duration/meter.barBeats);}
    else if(kind==='miss'){event.judgement='miss';event.heldBy=null;event.holdLatched=false;misses++;progress=Math.max(0,progress-rarity.missLoss);}
    else{extras++;progress=Math.max(0,progress-rarity.extraLoss);for(const rest of events)if(rest.rest&&rest.time<=now&&now<timeAtBeat(rest.onset+rest.duration))rest.restClean=false;}
    lastJudgement={kind,time:now,noteId:event?.id||null,progress};
-   if(!practice){if(progress>=100-1e-8&&now+1e-9>=timeAtBeat(TARGET_BARS*meter.barBeats))finish('caught');else if(progress<=0)finish('escaped','rhythm');}
+   if(!practice&&!completeCatch()&&progress<=0)finish('escaped','rhythm');
   }
   // A successful physical hold earns breathing room for its adjacent target.
   // The 50% duration cap and the next note's 48% head cap keep dense windows
@@ -191,6 +206,9 @@
    const beat=beatAtTime(now);
    if(beat<0)return getState();phase='playing';
    for(const event of events){
+    // A delayed frame must catch an already-clean fourth bar before it starts
+    // judging unanswered notes from the fifth bar.
+    if(perfectEligible()&&event.onset>=PERFECT_TARGET_BARS*meter.barBeats&&completeCatch())break;
     if(event.rest){
      // Listening through a rest is part of a clean bar. Tapping during its
      // silence forfeits this credit as well as applying the extra-tap loss.
@@ -207,9 +225,7 @@
     if(event.time+lateWindow(event)>=now)break;
     if(event.judgement==='pending'){judge('miss',event);if(finished)break;}
    }
-   // A short last note can be tapped before its written duration ends. Wait
-   // for the eighth full bar, including its final rest or held tail, to pass.
-   if(!practice&&!finished&&hits>0&&progress>=100-1e-8&&now+1e-9>=timeAtBeat(TARGET_BARS*meter.barBeats))finish('caught');
+   completeCatch();
    if(!finished)makeUntil(beat+16);
    // Retain the nearby score for rendering; a long session must not grow forever.
    if(events.length>192){const remove=events.findIndex(event=>event.onset>=beat-8);if(remove>0)events.splice(0,remove);}
@@ -279,10 +295,10 @@
    for(let line=Math.max(0,Math.floor(beat/meter.barBeats)-1);line<=Math.ceil((beat+16)/meter.barBeats);line++){const at=line*meter.barBeats;barLines.push({bar:line,beat:at,time:timeAtBeat(at)});}
    return {id,practice,phase,fish:copy(fish),rarity:copy(rarity),meter:meter.id,timeSignature:meter.id,meterInfo:{...meter},bpm:tempo.currentPulseBpm,displayBpm:tempo.currentPulseBpm,quarterBpm:tempo.currentQuarterBpm,tempo,startTime,musicStart,now,time:now,elapsed,musicTime,beat,secondsPerBeat,secondsPerPulse,pulseBeats:meter.pulseBeats,pulsesPerBar:meter.pulsesPerBar,pulseUnit:meter.pulseUnit,barBeats:meter.barBeats,countInBeats,countInQuarterBeats:meter.barBeats,countInSeconds,
     countInRemaining,countInBeat:phase==='count-in'?Math.max(1,Math.ceil(countInRemaining/initialSecondsPerPulse-1e-9)):0,pulses,barLines,
-    progress:!finished&&beat<TARGET_BARS*meter.barBeats?Math.min(99,progress):progress,targetBars:TARGET_BARS,completedBars:Math.max(0,Math.floor((beat+1e-9)/meter.barBeats)),cleanBarsEquivalent:Math.max(0,(progress-START_PROGRESS)/CLEAN_BAR_GAIN),hits,misses,extras,window:rarity.window,lastJudgement:lastJudgement?{...lastJudgement}:null,
+    progress:!finished&&beat<TARGET_BARS*meter.barBeats?Math.min(99,progress):progress,targetBars:perfectEligible()?PERFECT_TARGET_BARS:TARGET_BARS,perfectEligible:perfectEligible(),completedBars:result?.caught&&result.perfect?PERFECT_TARGET_BARS:Math.max(0,Math.floor((beat+1e-9)/meter.barBeats)),cleanBarsEquivalent:result?.caught&&result.perfect?PERFECT_TARGET_BARS:Math.max(0,(progress-START_PROGRESS)/CLEAN_BAR_GAIN),hits,misses,extras,window:rarity.window,lastJudgement:lastJudgement?{...lastJudgement}:null,
     pressedSources:Array.from(pressedSources.keys()),activeHolds:events.filter(event=>event.judgement==='holding').map(noteState),
     notes:events.filter(event=>event.onset+event.duration>=beat-8&&event.onset<=beat+16).map(noteState),result:result?copy(result):null};}
   return {update,tap,press,release,releaseAllSources,getState,snapshot:getState,timeAtBeat,beatAtTime,tempoAtBeat,abort(){if(!finished)finish('escaped','aborted');return getState();}};
  }
- return Object.freeze({FISH,RARITIES,METERS,PATTERNS,TARGET_BARS,chooseFish,availableFish,canFishInMeter,fishFor,rarityFor,meterFor,tempoMarking,createSession});
+ return Object.freeze({FISH,RARITIES,METERS,PATTERNS,TARGET_BARS,PERFECT_TARGET_BARS,chooseFish,availableFish,canFishInMeter,fishFor,rarityFor,meterFor,tempoMarking,createSession});
 });

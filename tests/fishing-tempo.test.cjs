@@ -136,9 +136,9 @@ test('pausing the supplied game clock freezes tempo, scoring and scheduled targe
 
 test('a preannounced advanced score remains playable at its original times for every eligible fish and meter',()=>{
  for(const fish of fishing.FISH.filter(fish=>fish.rarityRank>=2))for(const meter of fish.meters){
-  const game=create(fish,meter),planned=game.getState().notes.filter(note=>!note.rest);
-  for(const note of planned){if(game.getState().result)break;assert.equal(game.tap(note.time).kind,'hit',fish.id+' '+meter+' '+note.id);}
-  for(let index=0;index<100&&!game.getState().result;index++){const note=game.getState().notes.find(note=>note.judgement==='pending');assert.ok(note);game.update(note.time);if(!game.getState().result)assert.equal(game.tap(note.time).kind,'hit');}
+  const game=create(fish,meter),state=game.update(game.timeAtBeat(0)),endBeat=4*state.barBeats,planned=state.notes.filter(note=>!note.rest&&note.onset<endBeat);
+  for(const note of planned)assert.equal(game.tap(note.time).kind,'hit',fish.id+' '+meter+' '+note.id);
+  game.update(game.timeAtBeat(endBeat));
   const result=game.getState().result;assert.equal(result?.caught,true,fish.id+' '+meter);assert.equal(result.perfect,true);assert.equal(result.notes,fish.notes);assert.equal(result.xp,fish.xp);assert.equal(result.tempo.change,fish.tempo.change);
  }
 });

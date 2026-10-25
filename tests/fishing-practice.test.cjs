@@ -26,7 +26,7 @@ test('every meter and difficulty tier supports endless practice without catch re
  for(const meter of Object.keys(fishing.METERS))for(const rarity of fishing.RARITIES){
   const game=fishing.createSession({practice:true,meter,rarity:rarity.id,random:()=>0,startTime:0});
   let state=game.getState();assert.equal(state.meter,meter);assert.equal(state.fish.rarity,rarity.id);
-  assert.equal(state.practice,true);
+  assert.equal(state.practice,true);assert.equal(state.perfectEligible,false);assert.equal(state.targetBars,8);
   for(let count=0;count<100;count++){
    const note=game.getState().notes.find(note=>note.judgement==='pending');assert.ok(note,meter+' '+rarity.id);
    game.press(note.time,'pointer:1');
