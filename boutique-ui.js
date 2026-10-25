@@ -39,7 +39,8 @@ window.createCodaBoutiqueUI=function(api){
   const catalog=name=>{
     const custom=api.renderer.catalog?.[name];
     const values=Array.isArray(custom)&&custom.length?custom:DEFAULT_CATALOG[name].map(([id,label])=>({id,label}));
-    return values.filter(item=>item&&typeof item.id==='string'&&typeof item.label==='string');
+    const seen=new Set();
+    return values.filter(item=>item&&typeof item.id==='string'&&typeof item.label==='string'&&!seen.has(item.id)&&!!seen.add(item.id));
   };
   const developerMode=()=>api.isDeveloperMode?.()===true;
   function targets(){
@@ -117,9 +118,9 @@ window.createCodaBoutiqueUI=function(api){
         button.setAttribute('data-item-id',item.id);
         button.setAttribute('aria-label',locked?'Locked: '+item.label+'. '+lockedReason(item.id):'Try '+item.label);button.title=locked?item.label+' — '+lockedReason(item.id):'Try '+item.label;button.setAttribute('aria-pressed',String(controls[group.key].value===item.id));
         if(!locked&&typeof api.renderer.drawPlayer==='function'){
-          const canvas=document.createElement('canvas');canvas.width=72;canvas.height=80;canvas.setAttribute('aria-hidden','true');
-          const appearance={...draft(),[group.key]:item.id},ctx=canvas.getContext('2d');
-          api.renderer.drawPlayer(ctx,appearance,{x:36,y:74,scale:1,facing:'down',walking:false,
+          const canvas=document.createElement('canvas');canvas.width=96;canvas.height=112;canvas.setAttribute('aria-hidden','true');
+          const look=draft(),appearance=api.renderer.itemPreviewProfile?.(look,group.key,item.id)||{...look,[group.key]:item.id},ctx=canvas.getContext('2d');
+          api.renderer.drawPlayer(ctx,appearance,{x:40,y:98,scale:1.15,facing:'down',walking:false,
             emote:group.key==='emote'?item.id:null,emoteTime:.45,previewPet:true},.45);
           button.append(canvas);
         }

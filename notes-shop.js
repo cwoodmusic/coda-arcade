@@ -153,10 +153,10 @@
       if(!matches.length)results.append(node('p','muted','No matches. Try another search.'));
       for(const item of matches){
         const purchased=wallet.owns(item.id),levelUnlocked=!!api.unlocked?.(item.id),owned=purchased||levelUnlocked,card=node('article','notes-shop-card');card.setAttribute('data-shop-item',item.id);
-        const canvas=node('canvas');canvas.width=100;canvas.height=128;canvas.setAttribute('aria-hidden','true');
+        const canvas=node('canvas');canvas.width=128;canvas.height=144;canvas.setAttribute('aria-hidden','true');
         if(renderer?.drawPlayer){
-          const look=item.slot==='visitor'?{...api.getAvatar(),form:{'visitor-vee-jay':'tv','visitor-zizi':'alien','visitor-metronome':'robot'}[item.id],hairstyle:'bald',headwear:'none',accessory:'none',...globalThis.CodaNPCVisitors?.get?.(item.id)?.appearance,pet:'none'}:{...api.getAvatar(),[item.slot]:item.id};
-          renderer.drawPlayer(canvas.getContext('2d'),look,{x:50,y:118,scale:1.35,facing:'down',walking:false,emote:item.slot==='emote'?item.id:null,emoteTime:.5,previewPet:true},.5);
+          const avatar=api.getAvatar(),look=item.slot==='visitor'?{...avatar,form:{'visitor-vee-jay':'tv','visitor-zizi':'alien','visitor-metronome':'robot'}[item.id],hairstyle:'bald',headwear:'none',eyewear:'none',accessory:'none',...globalThis.CodaNPCVisitors?.get?.(item.id)?.appearance,pet:'none'}:renderer.itemPreviewProfile?.(avatar,item.slot,item.id)||{...avatar,[item.slot]:item.id};
+          renderer.drawPlayer(canvas.getContext('2d'),look,{x:54,y:126,scale:1.45,facing:'down',walking:false,emote:item.slot==='emote'?item.id:null,emoteTime:.5,previewPet:true},.5);
         }
         const heading=node('h3','',item.label),price=node('p','notes-shop-price',owned?'Owned':item.price+' Notes');
         const action=button(item.slot==='visitor'&&owned?'Visitor invited':owned?(api.equipInBoutique?'Choose at boutique':'Wear this'):`Buy · ${item.price} Notes`,()=>{

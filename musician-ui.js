@@ -42,7 +42,7 @@ window.createCodaMusicianUI=function(api){
     const section=document.createElement('section');section.className='avatar-live-preview';section.setAttribute('aria-label','Live avatar preview');
     const row=document.createElement('div');row.className='avatar-preview-views';const views=[];
     for(const [facing,label]of [['down','Front'],['left','Left'],['up','Back'],['right','Right']]){
-      const figure=document.createElement('figure'),canvas=document.createElement('canvas'),caption=document.createElement('figcaption');canvas.width=100;canvas.height=128;canvas.setAttribute('aria-label',label+' avatar preview');caption.textContent=label;figure.append(canvas,caption);row.append(figure);views.push({facing,canvas});
+      const figure=document.createElement('figure'),canvas=document.createElement('canvas'),caption=document.createElement('figcaption');canvas.width=176;canvas.height=160;canvas.setAttribute('aria-label',label+' avatar preview');caption.textContent=label;figure.append(canvas,caption);row.append(figure);views.push({facing,canvas});
     }
     const label=document.createElement('label');label.className='formRow';label.textContent='Preview animation';const mode=document.createElement('select');mode.id='avatarPreviewMode';mode.setAttribute('aria-label','Preview animation');for(const [value,text]of [['walk','Walk'],['idle','Idle'],['emote','Selected emote']])mode.append(new Option(text,value));label.append(mode);section.append(row,label);api.panelBody.insertBefore(section,api.panelBody.children[1]||null);preview={section,views,getProfile,mode,startedAt:null};mode.onchange=()=>{preview.startedAt=null;drawPreview(0);};drawPreview(0);
   }
@@ -50,7 +50,7 @@ window.createCodaMusicianUI=function(api){
     if(!preview?.section.isConnected||api.panelBody.parentElement.hidden)return;
     if(time>0&&preview.startedAt===null)preview.startedAt=time;
     const elapsed=preview.startedAt===null?0:Math.max(0,time-preview.startedAt),profile=preview.getProfile();
-    for(const {facing,canvas}of preview.views){const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);ctx.save();api.renderer.drawPlayer(ctx,profile,{x:50,y:114,scale:1.5,facing,walking:preview.mode.value==='walk',phase:elapsed*8,emote:preview.mode.value==='emote'?profile.emote:null,emoteTime:elapsed},elapsed);ctx.restore();}
+    for(const {facing,canvas}of preview.views){const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);ctx.save();api.renderer.drawPlayer(ctx,profile,{x:88,y:140,scale:1.6,facing,walking:preview.mode.value==='walk',phase:elapsed*8,emote:preview.mode.value==='emote'?profile.emote:null,emoteTime:elapsed,previewPet:true},elapsed);ctx.restore();}
   }
   function update(time){
     if(selected&&!api.npcs.some(person=>person.id===selected&&!person.hidden&&person.conversation))closeConversation();

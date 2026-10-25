@@ -35,13 +35,13 @@
   function visible(){return !!section?.isConnected&&!body.parentElement?.hidden;}
   function avatarCanvas(profile,width=200,height=220){
    const canvas=node('canvas','profile-avatar');canvas.width=width;canvas.height=height;canvas.setAttribute('aria-label',model.name+'’s character');
-   const context=canvas.getContext('2d');if(context&&renderer?.drawPlayer){const scale=Math.min(2.4,(height-24)/(renderer.labelOffset?.(profile)||76));renderer.drawPlayer(context,profile,{x:width/2,y:height-14,scale,facing,walking:false},0);}return canvas;
+   const context=canvas.getContext('2d');if(context&&renderer?.drawPlayer){const scale=Math.min(2.4,(height-24)/(renderer.labelOffset?.(profile)||76));renderer.drawPlayer(context,profile,{x:width/2,y:height-14,scale,facing,walking:false,previewPet:true},0);}return canvas;
   }
   function drawPortrait(time=0){
    if(!portrait||!visible()||!renderer?.drawPlayer)return;
    const context=portrait.getContext('2d');if(!context)return;
    const elapsed=startedAt===null?0:Math.max(0,time-startedAt),scale=Math.min(2.4,(portrait.height-24)/(renderer.labelOffset?.(model.avatar)||76));
-   context.clearRect(0,0,portrait.width,portrait.height);context.imageSmoothingEnabled=false;renderer.drawPlayer(context,model.avatar,{x:portrait.width/2,y:portrait.height-14,scale,facing,walking:false},elapsed);
+   context.clearRect(0,0,portrait.width,portrait.height);context.imageSmoothingEnabled=false;renderer.drawPlayer(context,model.avatar,{x:portrait.width/2,y:portrait.height-14,scale,facing,walking:false,previewPet:true},elapsed);
   }
   function animate(time){animation=0;if(!visible()||disposed)return;if(startedAt===null)startedAt=time/1000;drawPortrait(time/1000);if(!win.matchMedia?.('(prefers-reduced-motion: reduce)').matches)animation=win.requestAnimationFrame(animate);}
   function startAnimation(){if(animation)win.cancelAnimationFrame(animation);animation=0;startedAt=null;drawPortrait();if(visible()&&!win.matchMedia?.('(prefers-reduced-motion: reduce)').matches)animation=win.requestAnimationFrame(animate);}
@@ -51,7 +51,7 @@
    if(prize.kind==='cosmetic'&&renderer?.catalog){
     const groups={headwear:'headwear',eyewear:'eyewear',accessory:'accessories',shoes:'shoes',emote:'emotes',outfit:'outfits',hairstyle:'hairstyles'};
     const slot=Object.keys(groups).find(key=>array(renderer.catalog[groups[key]]).some(item=>item.id===prize.id));
-    if(slot){const preview=avatarCanvas({...model.avatar,[slot]:prize.id},100,110);preview.classList.add('profile-prize-avatar');preview.setAttribute('aria-hidden','true');card.append(preview);}
+    if(slot){const look=renderer.itemPreviewProfile?.(model.avatar,slot,prize.id)||{...model.avatar,[slot]:prize.id},preview=avatarCanvas(look,100,110);preview.classList.add('profile-prize-avatar');preview.setAttribute('aria-hidden','true');card.append(preview);}
    }else{const symbol=node('span','profile-sound-icon','♫');symbol.setAttribute('aria-hidden','true');card.append(symbol);}
    const details=node('div','profile-prize-details');details.append(node('strong','',prize.label),node('small','',prize.kind==='sound'?'New Song Machine sound':'New look for your character'));card.append(details);return card;
   }
