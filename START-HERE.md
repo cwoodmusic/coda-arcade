@@ -1,15 +1,29 @@
-# The Coda Arcade — Google account setup
+# Start at the Coda Arcade
 
-Google sign-in is enabled for cwoodmusic.github.io. The owner has reported publishing the merged profile rules; live sign-in and access isolation still need testing.
+`index.html` is the title screen. **Play as guest** opens the connected world;
+**Open my profile** opens the student's picture-card screen, and **For teachers**
+opens the teacher tools. The classroom buttons never start Google sign-in
+automatically. Student profiles use private cards; Google sign-in is for staff.
 
-1. Create a GitHub repository called `arcade-de-musique`. Upload the website files from this package to its root. In Settings → Pages, publish from the main branch / root. The expected address is https://cwoodmusic.github.io/arcade-de-musique/ . Keep `.nojekyll` with the files.
-2. In Firebase project `pitch-race`, enable Authentication → Sign-in method → Google. In Authentication → Settings → Authorized domains, add `cwoodmusic.github.io` (hostname only).
-3. Open Realtime Database → Rules. Export or copy the CURRENT full rules before changing them. Send those rules for review. `arcadeProfiles.rules-fragment.json` is a branch to MERGE under the existing `rules` object, not a full replacement. Preserve existing game rules. If an ancestor has a broad `.read` or `.write` grant, this fragment CANNOT revoke that access; narrow those existing grants first while preserving game functionality.
-4. Account code is already enabled in this package. Confirm the merged arcadeProfiles rules are published before testing.
-5. Open the GitHub Pages arcade, click Guest player → Continue with Google. Create an avatar; wait for Player saved. Sign in on another browser/device and confirm it loads. Test that a different account cannot read or write the first account's `arcadeProfiles/UID` in Firebase Rules Playground.
+When this tab already has a classroom profile, the title screen offers
+**Continue profile** and **Change player**. Changing players opens the existing
+profile options, where the player can save and leave the device before using a
+different card or playing as a guest. The title screen does not reset progress.
 
-Guest play remains browser-local. Existing games continue using their live URLs and current databases. Google identity is not displayed in the arcade. Cloud records contain avatar choices and exploration counters, not Google names or email addresses. An existing cloud profile takes precedence over the current guest avatar at sign-in. New profiles import the current guest avatar. Signing out restores the pre-login guest profile.
+The **Motion** setting uses the same saved animation preference as the original
+arcade and respects the device's reduced-motion setting. The title screen loads
+existing arcade artwork without starting gameplay, music, or Firebase SDKs.
 
-This does not implement game-result reporting, verified competitive achievements, or a shared Hall of Fame. Exploration counters are client-written cosmetic progress; they must not be treated as trusted scores. Profile saves use last successful write across devices. No claim of tested live sign-in is made until the Console and real-account tests above pass.
+The original arcade remains available at `classic-arcade.html`, linked from the
+title screen. In the connected world's **Settings**, **Title screen** returns
+to the front door. Direct world links and existing picture-card links still work.
 
-The private Sites preview keeps browser-local guest play; Google sign-in is enabled only on the GitHub Pages hostname.
+Classroom enrollment is currently disabled pending verification of the live
+Firebase rules and trusted school administrator. Guest play is available.
+See [Private classroom profiles](README-CLASSROOM-PROFILES.md) for activation,
+the allowed progress data, printable cards, and lost-card recovery. The rules
+fragment must be merged into a backup of the full live rules before deployment.
+
+For local development, run `python3 -m http.server 8000 --bind 127.0.0.1` from
+the repository. This is a static site; no application installation or build
+step is required. Browser tests start their own temporary servers.

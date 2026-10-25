@@ -39,7 +39,7 @@ class ArcadeFingerTests(unittest.TestCase):
         self.page.on('pageerror', lambda error: self.errors.append(str(error)))
         self.page.on('response', lambda response: self.failures.append(response.url)
                      if response.status >= 400 and '127.0.0.1' in response.url and not response.url.endswith('favicon.ico') else None)
-        self.page.goto(f'http://127.0.0.1:{self.server.server_port}/', wait_until='domcontentloaded')
+        self.page.goto(f'http://127.0.0.1:{self.server.server_port}/classic-arcade.html', wait_until='domcontentloaded')
         self.page.wait_for_function('CodaLandingQA?.state().finger && CodaLandingQA.state().touch.mobile')
         self.cdp = self.context.new_cdp_session(self.page)
 
@@ -168,7 +168,7 @@ class ArcadeFingerTests(unittest.TestCase):
         try:
             desktop.route('https://**/*', lambda route: route.abort())
             page = desktop.new_page()
-            page.goto(f'http://127.0.0.1:{self.server.server_port}/', wait_until='domcontentloaded')
+            page.goto(f'http://127.0.0.1:{self.server.server_port}/classic-arcade.html', wait_until='domcontentloaded')
             page.wait_for_function('CodaLandingQA?.state().touch')
             page.locator('#room').scroll_into_view_if_needed()
             box = page.locator('#room').bounding_box()

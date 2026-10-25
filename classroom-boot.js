@@ -2,6 +2,16 @@
 (function(win){
  'use strict';
  const config=win.ARCADE_ACCOUNTS_CONFIG||{},privacy=config.mode==='classroom'||config.classroom?.privacy===true||config.classroom?.enabled===true;
+ const ENTRY_KEY='codaClassroomEntryV1';
+ let requestedView=null;
+ try{
+   const entry=new URL(win.location.href),view=entry.searchParams.get('profile');
+   if(view==='student'||view==='admin'){
+     entry.searchParams.delete('profile');
+     win.history.replaceState(win.history.state,'',entry.pathname+entry.search+entry.hash);
+     requestedView=view;
+   }
+ }catch{/* Opening the profile from its button remains available. */}
  const incoming=win.CodaClassroom?.consumeFragment(win.location,win.history);
  let card=incoming,scope=null,error=false,gate=null,service=null,ui=null,notice='';
  try{
@@ -10,6 +20,13 @@
    notice=win.sessionStorage.getItem('codaClassroomNoticeV1')||'';win.sessionStorage.removeItem('codaClassroomNoticeV1');
  }catch{error=true;}
  const initial=scope?.getState();
+ // Only a reload requested by this boot may carry an unopened title action.
+ // Session storage can be copied into a new tab, so bind it to this tab ID.
+ try{
+   const pending=JSON.parse(win.sessionStorage.getItem(ENTRY_KEY)||'null');
+   win.sessionStorage.removeItem(ENTRY_KEY);
+   if(!requestedView&&scope?.tabId&&pending?.version===1&&pending.tabId===scope.tabId&&['student','admin'].includes(pending.view))requestedView=pending.view;
+ }catch{}
  let preparing=incoming!==null||initial?.mode==='owner'||initial?.blocked===true;
  if(preparing)win.document.documentElement.classList.add('classroom-preparing');
  const style=win.document.createElement('style');style.textContent=
@@ -29,35 +46,42 @@
  }
  function start(options={}){
    if(!privacy&&!preparing)return null;
+   const current=card;let entryView=requestedView,identityReloading=false;card=null;requestedView=null;
+   const reloadIdentity=()=>{
+     identityReloading=true;
+     if(entryView&&scope?.tabId)try{win.sessionStorage.setItem(ENTRY_KEY,JSON.stringify({version:1,tabId:scope.tabId,view:entryView}));}catch{}
+     win.location.reload();
+   };
    const settings=error?{...config,classroom:{...config.classroom,enabled:false}}:config;
    service=win.CodaClassroom.create({window:win,config:settings,storageScope:scope,
      onIdentityChange:event=>{
        options.beforeIdentityChange?.(event);
-       if(event.reloadNeeded){win.location.reload();return;}
+       if(event.reloadNeeded){reloadIdentity();return;}
        hideGate();options.onState?.(service.getState());
      },
      onLock:event=>{
        options.onLock?.(event);
-       if(event.reloadNeeded){try{win.sessionStorage.setItem('codaClassroomNoticeV1',event.reason);}catch{}win.location.reload();return;}
+       if(event.reloadNeeded){try{win.sessionStorage.setItem('codaClassroomNoticeV1',event.reason);}catch{}reloadIdentity();return;}
        showGate(event.reason==='workspace-lost'?'Your profile is open in another tab.':'Ask your teacher to help open your card again.');
      }
    });
    win.CodaClassroomSession=service;
    ui=win.createCodaClassroomUI({...options,service});win.CodaClassroomUIInstance=ui;
    service.subscribe(value=>options.onState?.(value));
-   const current=card;card=null;
+   const openEntry=()=>{ui.open(entryView||'student');entryView=null;};
    if(preparing)showGate(current!==null?'Opening your card…':initial?.blocked?'Another arcade tab is using this browser.':'Opening your profile…');
    Promise.resolve(current!==null?service.join(current):service.resume()).then(result=>{
+     if(identityReloading)return;
      const value=service.getState();
-     if(value.profile&&!value.locked&&!value.waitingTakeover){hideGate();return;}
-     if(!result.ok||notice){if(gate)gate.hidden=true;ui.open();}
+     if(value.profile&&!value.locked&&!value.waitingTakeover){hideGate();if(entryView)openEntry();return;}
+     if(entryView||!result.ok||notice){if(gate)gate.hidden=true;openEntry();}
      else if(!initial?.blocked)hideGate();
-   }).catch(()=>{showGate('Ask your teacher to help open your card.');});
-   return {service,ui,open:()=>ui.open(),canPlay:()=>{const value=service.getState();return !preparing&&!value.loading&&!value.locked&&(!value.profile||service.isWritable());},getState:()=>({preparing,privacy,...service.getState()})};
+   }).catch(()=>{if(identityReloading)return;if(entryView){if(gate)gate.hidden=true;openEntry();}else showGate('Ask your teacher to help open your card.');});
+   return {service,ui,open:view=>ui.open(view),canPlay:()=>{const value=service.getState();return !preparing&&!value.loading&&!value.locked&&(!value.profile||service.isWritable());},getState:()=>({preparing,privacy,...service.getState()})};
  }
  // A signed-in student uses the connected world, including when a cabinet
  // opens the site's older landing page in the same tab.
- if(/\/(?:index\.html)?$/.test(win.location.pathname)&&!win.location.pathname.includes('/song-machine/')&&initial?.mode==='owner'){
+ if(/\/classic-arcade\.html$/.test(win.location.pathname)&&!win.location.pathname.includes('/song-machine/')&&initial?.mode==='owner'){
    win.location.replace(new URL('world-preview.html',win.location.href).href);
  }
  win.CodaClassroomBoot=Object.freeze({start,getState:()=>({preparing,privacy,storageAvailable:!error}),hideGate});

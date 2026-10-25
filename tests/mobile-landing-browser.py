@@ -33,7 +33,7 @@ class MobileLandingTests(unittest.TestCase):
         self.page.on('pageerror',lambda error:self.errors.append(str(error)))
         self.page.on('response',lambda response:self.failures.append(response.url)
           if response.status>=400 and '127.0.0.1' in response.url and not response.url.endswith('favicon.ico') else None)
-        self.page.goto(f'http://127.0.0.1:{self.server.server_port}/',wait_until='domcontentloaded')
+        self.page.goto(f'http://127.0.0.1:{self.server.server_port}/classic-arcade.html',wait_until='domcontentloaded')
         self.page.wait_for_function('CodaLandingQA?.state().touch')
         self.cdp=self.context.new_cdp_session(self.page)
 
