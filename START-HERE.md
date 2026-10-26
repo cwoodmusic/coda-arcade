@@ -36,15 +36,22 @@ so later published updates can still arrive. Existing complete-world projects
 and standalone room edits keep priority. Explicit project import or reset still
 replaces the selected editor data and supports undo.
 
-The main hall and connecting walkways now use a smooth blue floor while the
-lounge and dance room keep their original artwork. Neon reflections, sparkles,
-disco beams and floor pins remain active. The original tiled world and atlas
-are retained. `assets/world/arcade-flat-floor-plate.png` is an image-generated
-clean floor without cabinets; moved cabinets reuse its native coordinates.
+The main hall, connecting walkways and nightclub approaches now use a smooth
+blue floor up to the colored dance tiles. The lounge, colored tiles and room
+fixtures keep their original artwork. Neon reflections, sparkles, disco beams
+and floor pins remain active; disco projections draw after floor cleanup so
+opaque repairs cannot cover their rays. The original tiled world and atlas are
+retained. `assets/world/arcade-flat-floor-plate.png` is an image-generated clean
+floor without cabinets; moved cabinets reuse its native coordinates.
 `scripts/build-flat-floor.cjs` composites that plate only inside the floor masks
 in `scripts/flat-floor-regions.json`, preserving fixtures and protected rooms.
 Run that optional artwork script only when rebuilding the committed floor PNG;
 the static site still needs no build step.
+The derived `arcade-flat-floor-foreground.png` removes only the declared floor
+fringes from fixture masks. To replace a scoped part of the floor plate, use
+`node scripts/build-flat-floor.cjs --update-plate /path/to/generated-floor.png`.
+The metadata pins the earlier plate and edit regions so the rest of the approved
+floor remains unchanged; patch boundaries blend inside those regions.
 
 Classroom profiles are enabled. An approved administrator signs into **For
 teachers**, creates a class, and chooses **Make a new profile card** for each
