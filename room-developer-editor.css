@@ -18,3 +18,8 @@
 .room-dev-console .room-dev-overlay-legend{font:11px/1.5 system-ui;margin:0 0 8px;padding:7px;background:#101b2b;border:1px solid #635a79;border-radius:6px}
 .room-dev-console .dev-key-blocked{color:#ff8aa1}.room-dev-console .dev-key-walkable{color:#8bf2bb}.room-dev-console .dev-key-background{color:#8fc8ff}.room-dev-console .dev-key-depth{color:#ffdc84}.room-dev-console .dev-key-foreground{color:#8bffda}
 .room-developer-open canvas.room-dev-layer-brush{cursor:none}
+
+/* Full-resolution artwork uses its own bounded viewport at up to 64× zoom. */
+.room-dev-console [data-room-action=edit-artwork],.room-dev-console [data-room-action=edit-character-artwork]{min-height:44px;width:100%;border-color:#7df0cc}
+.room-dev-console [data-room-pane=artwork]{min-width:0;max-width:100%}
+.room-dev-console .artwork-editor canvas{width:100%;max-width:100%!important;max-height:none!important;object-fit:fill}

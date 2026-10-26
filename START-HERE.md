@@ -35,3 +35,21 @@ fragment must be merged into a backup of the full live rules before deployment.
 For local development, run `python3 -m http.server 8000 --bind 127.0.0.1` from
 the repository. This is a static site; no application installation or build
 step is required. Browser tests start their own temporary servers.
+
+For pixel artwork, open **Developer → Pixel editor** in the arcade, or
+**Developer → Artwork** in Piano Lab or Fishing Cave. Choose a background,
+existing object, placed image, or a character and facing. The same character
+edits also appear in the existing **Sprites** tools and keep their animation.
+The classroom background is available in the arcade editor's source list.
+
+Use **Full screen** for detail work, then **Zoom** up to 64×. Right-drag or
+hold Space and drag to pan. **Pick colour** copies an existing pixel's exact
+colour, including transparency; the hex box also accepts `#RRGGBB` or
+`#RRGGBBAA`. **Straight line** previews the line while you drag and saves it
+when you release. Pencil, fill, eraser, restore, undo, redo, and PNG export
+are available in the same editor. Escape returns from fullscreen to the console.
+
+Pixel edits save locally and are included in the complete world-project JSON
+export. Existing object placement, collision, layers, and old project exports
+remain supported. Export your project to share or publish your edits; editing
+in the console does not change the live site's files by itself.

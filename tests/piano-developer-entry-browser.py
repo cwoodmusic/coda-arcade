@@ -85,7 +85,7 @@ class PianoDeveloperEntryTests(unittest.TestCase):
         self.frames()
         self.assert_editor()
         tabs = self.panel('piano').locator('[data-room-tab]').all_text_contents()
-        self.assertEqual(tabs, ['Objects', 'Collision', 'Layers', 'Sprites', 'Project'])
+        self.assertEqual(tabs, ['Objects', 'Collision', 'Layers', 'Sprites', 'Artwork', 'Project'])
         self.assertEqual(self.developer().get_attribute('aria-expanded'), 'true')
         controlled = self.developer().get_attribute('aria-controls')
         self.assertTrue(self.page.locator('#' + controlled).is_visible())

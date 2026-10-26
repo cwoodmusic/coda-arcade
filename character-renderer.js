@@ -503,17 +503,17 @@ window.createCodaCharacterRenderer=function(api){
     q(0,-2,w,4,'#655044');sole('#302938');q(1,-2,w-2,1,'#aa7b5a');
     if(back){q(1,-1,4,1,'#4b3a38');q(2,-2,2,3,'#8d6651');}else q(side?4:2,-1,side?4:3,1,'#e2ba76');
   }
-  const pixelTargets=['player','bach','mozart','beethoven','clara','joplin','ellington','ella','nina','miles','dj','chopin','captain-cadence'];
+  const pixelTargets=['player','bach','mozart','beethoven','clara','joplin','ellington','ella','nina','miles','dj','chopin','captain-cadence','haydn','riff','pip','vee-jay','zizi','metronome'];
   let pixelEdits={},pixelTops={},pixelSurface=null;
   const pixelCopy=value=>JSON.parse(JSON.stringify(value));
   function validPixelEdits(data){
     if(!data||typeof data!=='object'||Array.isArray(data)||Object.keys(data).some(id=>!pixelTargets.includes(id)))return false;
     return Object.values(data).every(views=>views&&typeof views==='object'&&!Array.isArray(views)&&Object.keys(views).every(direction=>DIRECTIONS.includes(direction))&&Object.values(views).every(points=>{
       if(!Array.isArray(points)||points.length>7680)return false;const seen=new Set();
-      return points.every(point=>Array.isArray(point)&&point.length===3&&Number.isInteger(point[0])&&point[0]>=0&&point[0]<80&&Number.isInteger(point[1])&&point[1]>=0&&point[1]<96&&(point[2]===null||typeof point[2]==='string'&&/^#[0-9a-f]{6}$/i.test(point[2]))&&!seen.has(point[1]*80+point[0])&&!!seen.add(point[1]*80+point[0]));
+      return points.every(point=>Array.isArray(point)&&point.length===3&&Number.isInteger(point[0])&&point[0]>=0&&point[0]<80&&Number.isInteger(point[1])&&point[1]>=0&&point[1]<96&&(point[2]===null||typeof point[2]==='string'&&/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i.test(point[2]))&&!seen.has(point[1]*80+point[0])&&!!seen.add(point[1]*80+point[0]));
     }));
   }
-  function setPixelEdits(data){if(!validPixelEdits(data))return false;pixelEdits=pixelCopy(data);pixelTops={};for(const [target,views]of Object.entries(pixelEdits))for(const points of Object.values(views))for(const [,y,color]of points)if(color!==null)pixelTops[target]=Math.min(pixelTops[target]??96,y);return true;}
+  function setPixelEdits(data){if(!validPixelEdits(data))return false;pixelEdits=pixelCopy(data);pixelTops={};for(const [target,views]of Object.entries(pixelEdits))for(const points of Object.values(views))for(const [,y,color]of points)if(color!==null&&!(color.length===9&&color.slice(-2).toLowerCase()==='00'))pixelTops[target]=Math.min(pixelTops[target]??96,y);return true;}
   function getPixelEdits(){return pixelCopy(pixelEdits);}
   function canvasFor(ctx,width,height){const doc=ctx?.canvas?.ownerDocument||(typeof document==='object'?document:window.document);const surface=typeof api.createCanvas==='function'?api.createCanvas(width,height):doc?.createElement?.('canvas');if(!surface)return null;surface.width=width;surface.height=height;return surface;}
   function pixelPoints(target,motion,data=pixelEdits){return data[target]?.[DIRECTIONS.includes(motion.facing)?motion.facing:'down']||[];}
@@ -697,7 +697,7 @@ window.createCodaCharacterRenderer=function(api){
     if(pose.gesture==='think'){head(3,-29,6,5,c.skinLight);r(11,-57,6,2,'#edce7d');r(15,-55,2,5,'#edce7d');r(12,-50,4,2,'#edce7d');r(12,-46,2,2,'#edce7d');}
     // Details live on the animated body plane. Transparent pixels clear only
     // this isolated character surface, never the world behind its feet.
-    if(motion._pixelSurface&&points?.length)for(const [px,py,color]of points){const localX=pose.facing==='left'?39-px:px-40,localY=py-80;if(color===null)ctx.clearRect(localX,localY,1,1);else{ctx.fillStyle=color;ctx.fillRect(localX,localY,1,1);}}
+    if(motion._pixelSurface&&points?.length)for(const [px,py,color]of points){const localX=pose.facing==='left'?39-px:px-40,localY=py-80;if(color===null)ctx.clearRect(localX,localY,1,1);else{if(color.length===9)ctx.clearRect(localX,localY,1,1);ctx.fillStyle=color;ctx.fillRect(localX,localY,1,1);}}
     ctx.restore();ctx.restore();
   }
   function playerLook(profile){

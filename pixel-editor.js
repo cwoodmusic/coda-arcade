@@ -2,21 +2,22 @@
 (function(root,factory){const value=factory();if(typeof module==='object'&&module.exports)module.exports=value;if(root)root.CodaPixelEditor=value;})(typeof window==='undefined'?null:window,function(){
  'use strict';
  const WIDTH=80,HEIGHT=96,ORIGIN={x:40,y:80},DIRECTIONS=['down','left','up','right'];
- const TARGETS=['player','bach','mozart','beethoven','clara','joplin','ellington','ella','nina','miles','dj','chopin','captain-cadence'];
+ const TARGETS=['player','bach','mozart','beethoven','clara','joplin','ellington','ella','nina','miles','dj','chopin','captain-cadence','haydn','riff','pip','vee-jay','zizi','metronome'];
  const copy=value=>JSON.parse(JSON.stringify(value));
  const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
+ const normalizedColor=value=>value===null||value?.length===9&&value.slice(-2).toLowerCase()==='00'?null:value?.length===9&&value.slice(-2).toLowerCase()==='ff'?value.slice(0,7).toLowerCase():value?.toLowerCase();
  function validate(data){
   if(!object(data)||Object.keys(data).some(id=>!TARGETS.includes(id)))return false;
   return Object.entries(data).every(([,views])=>object(views)&&Object.keys(views).every(direction=>DIRECTIONS.includes(direction))&&Object.values(views).every(points=>{
    if(!Array.isArray(points)||points.length>WIDTH*HEIGHT)return false;const seen=new Set();
-   return points.every(point=>Array.isArray(point)&&point.length===3&&Number.isInteger(point[0])&&point[0]>=0&&point[0]<WIDTH&&Number.isInteger(point[1])&&point[1]>=0&&point[1]<HEIGHT&&(point[2]===null||typeof point[2]==='string'&&/^#[0-9a-f]{6}$/i.test(point[2]))&&!seen.has(point[1]*WIDTH+point[0])&&!!seen.add(point[1]*WIDTH+point[0]));
+   return points.every(point=>Array.isArray(point)&&point.length===3&&Number.isInteger(point[0])&&point[0]>=0&&point[0]<WIDTH&&Number.isInteger(point[1])&&point[1]>=0&&point[1]<HEIGHT&&(point[2]===null||typeof point[2]==='string'&&/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i.test(point[2]))&&!seen.has(point[1]*WIDTH+point[0])&&!!seen.add(point[1]*WIDTH+point[0]));
   }));
  }
- function normalize(data){if(!validate(data))return null;const result={};for(const id of TARGETS){if(!data[id])continue;const views={};for(const direction of DIRECTIONS){const points=data[id][direction];if(points?.length)views[direction]=points.map(([x,y,color])=>[x,y,color?.toLowerCase()??null]).sort((a,b)=>a[1]-b[1]||a[0]-b[0]);}if(Object.keys(views).length)result[id]=views;}return result;}
+ function normalize(data){if(!validate(data))return null;const result={};for(const id of TARGETS){if(!data[id])continue;const views={};for(const direction of DIRECTIONS){const points=data[id][direction];if(points?.length)views[direction]=points.map(([x,y,color])=>[x,y,normalizedColor(color)]).sort((a,b)=>a[1]-b[1]||a[0]-b[0]);}if(Object.keys(views).length)result[id]=views;}return result;}
  function changePixels(data,id,direction,points,color){
-  if(!validate(data)||!TARGETS.includes(id)||!DIRECTIONS.includes(direction)||!(color===undefined||color===null||typeof color==='string'&&/^#[0-9a-f]{6}$/i.test(color)))return null;
+  if(!validate(data)||!TARGETS.includes(id)||!DIRECTIONS.includes(direction)||!(color===undefined||color===null||typeof color==='string'&&/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i.test(color)))return null;
   const next=copy(data),values=new Map((next[id]?.[direction]||[]).map(point=>[point[1]*WIDTH+point[0],point]));
-  for(const point of points){const [x,y]=point;if(!Number.isInteger(x)||!Number.isInteger(y)||x<0||x>=WIDTH||y<0||y>=HEIGHT)continue;const key=y*WIDTH+x;if(color===undefined)values.delete(key);else values.set(key,[x,y,color?.toLowerCase()??null]);}
+  for(const point of points){const [x,y]=point;if(!Number.isInteger(x)||!Number.isInteger(y)||x<0||x>=WIDTH||y<0||y>=HEIGHT)continue;const key=y*WIDTH+x;if(color===undefined)values.delete(key);else values.set(key,[x,y,normalizedColor(color)]);}
   next[id]??={};next[id][direction]=Array.from(values.values());return normalize(next);
  }
  function linePoints(a,b){let [x,y]=a;const [tx,ty]=b,dx=Math.abs(tx-x),dy=-Math.abs(ty-y),sx=x<tx?1:-1,sy=y<ty?1:-1,result=[];let error=dx+dy;while(true){result.push([x,y]);if(x===tx&&y===ty)break;const twice=2*error;if(twice>=dy){error+=dy;x+=sx;}if(twice<=dx){error+=dx;y+=sy;}}return result;}

@@ -18,3 +18,16 @@ test('room imports accept only bounded data fields for fish and character change
  for(const id of ['__proto__','constructor','prototype']){const project=emptyProject();project.entities=JSON.parse('{"'+id+'":{"x":500}}');assert.equal(valid(project),false);}
  assert.equal(validateProject(emptyProject(),{}),false);
 });
+
+
+test('room background and per-asset pixel artwork remain optional and validate before import',()=>{
+ const untouched=emptyProject();assert.deepEqual(Object.keys(untouched),['version','assets','collision','strokes','entities']);
+ const texture={width:1593,height:987,tiles:{'0,0':[[0,3,'#123456ff']]}};
+ const project=emptyProject();project.artwork=texture;
+ project.assets=[{id:'pixel-art',name:'Edited lamp',x:100,y:200,w:40,h:60,layer:'foreground',visible:true,origin:{bounds:[80,170,40,60],sample:[20,30]},artwork:{width:64,height:96,tiles:{'0,0':[[0,1,'#00000000']]}}}];
+ assert.equal(valid(project),true);
+ for(const bad of ['remote.png',{...texture,width:9000},{...texture,tiles:{'0,0':[[0,3,'red']]}},{...texture,tiles:{'0,0':[[0,3,'#123456ff'],[1,1,'#abcdefff']]}}]){
+  const background={...project,artwork:bad};assert.equal(valid(background),false);
+  const asset={...project,assets:[{...project.assets[0],artwork:bad}]};assert.equal(valid(asset),false);
+ }
+});

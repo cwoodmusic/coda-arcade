@@ -256,7 +256,7 @@
    if(roomChopin.visible)text('FRÉDÉRIC CHOPIN',roomChopin.x,roomChopin.y-129,12,'#dec4ef');
    }
    if(backdropReady){
-    g.drawImage(roomBackdrop,0,0,1000,620);
+    g.drawImage(roomEditor?.getBackground()||roomBackdrop,0,0,1000,620);
     // Preserve the painting's neon frame, scanlines, and polished piano keys.
     // Only the current note, key lighting, and optional letter names are live.
     text('PIANO LAB',500,102,15,'#e4c9f4');text(lastWallNote===null?'♪':noteLetter(lastWallNote),500,153,46,lastWallNote===null?'#637fa8':'#b7ffe6');text(help,500,178,10,'#b1b6d9');
@@ -354,7 +354,7 @@
   }
   roomEditor=win.createCodaRoomDeveloperEditor?.({id:'piano',name:'Piano Lab',host,canvas:el('pianoRoomCanvas'),width:ROOM.width,height:ROOM.height,renderer,getAvatar:api.getAvatar,storage,canEdit:()=>opened&&!destroyed&&api.canDevelop?.()!==false&&!blocked(),baseWalkable:(x,y)=>x>=50&&x<=950&&y>=250&&y<=590&&(!roomChopin.visible||Math.hypot(x-roomChopin.x,y-roomChopin.y)>30),
    getSharedSprites:api.getSharedSprites,setSharedSprites:api.setSharedSprites,getPixelProfile:id=>id==='chopin'?{name:'Chopin',skin:'#e6b99d',hair:'#493239',shirt:'#282b42',lowerColor:'#3d3a4a',hairstyle:'long',outfit:'coat',shoes:'oxfords',accessory:'bowtie'}:api.getAvatar?.()||{},getPixelTargets:()=>[{id:'player',name:'Your avatar'},{id:'chopin',name:'Frédéric Chopin'}],
-   getBackground:()=>backdropReady?roomBackdrop:null,getEntities:()=>[{id:'chopin',name:'Frédéric Chopin',kind:'npc',...roomChopin,w:40,h:64}],
+   getBackground:()=>roomBackdrop,getEntities:()=>[{id:'chopin',name:'Frédéric Chopin',kind:'npc',...roomChopin,w:40,h:64}],
    onEntityChange:(id,patch)=>{if(id==='chopin')Object.assign(roomChopin,{x:860,y:306,visible:true},patch);},
    onActiveChange:active=>{roomFinger?.stop('editor');releaseControls();roomKeys.clear();roomDest=null;stopRecording();stopPlayback();releaseAll();setSustain(false);roomPlayer.jump=roomPlayer.velocity=0;frameTime=0;if(active){closeDialogue(false);setMobileView('room');}},
    onProjectChange:(before,after)=>api.onEditorProjectChange?.(before,after)
