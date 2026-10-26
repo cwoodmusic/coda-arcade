@@ -1,4 +1,4 @@
-/* Repair only exposed cabinet ground; the surrounding pixel art is untouched. */
+/* Reuse the approved floor beneath moved cabinets without changing other art. */
 (function(root){
  'use strict';
  // Measured from the adjoining, unoccupied floor in the approved artwork.
@@ -6,9 +6,33 @@
  const ROWS=[166,178,189,203,215,227,238,249,262,273,284,296,310,323,336,349,362,375];
  // These intervals end above the cyan floor star at y410.
  const DONOR_ROWS=[375,387,399];
- root.createCodaArcadeFloorGrid=function({worldArt}){
+ root.createCodaArcadeFloorGrid=function({worldArt,floorArt}){
   let source=null,sourceKey='',plate=null,repairMask=null,pixels=null,sourcePixels=null;
+  let floorReady=!floorArt,readiness=null,floorError=null,slowLoading=false;
+  const cabinetPlates=new Map();
   const make=(w,h)=>Object.assign(document.createElement('canvas'),{width:w,height:h});
+  async function decoded(image,label){
+   if(!image.complete||!image.naturalWidth)await new Promise((resolve,reject)=>{
+    const clear=()=>{clearTimeout(timer);image.removeEventListener('load',loaded);image.removeEventListener('error',failed);};
+    const failed=()=>{clear();reject(Error(label+' could not load. Reload the arcade to try again.'));};
+    const loaded=()=>{if(!image.naturalWidth){failed();return;}clear();resolve();};
+    // Slow mobile connections can finish after this notice. Keep their load
+    // listeners alive; only a real image error should reject readiness.
+    const timer=setTimeout(()=>{slowLoading=true;},30000);
+    image.addEventListener('load',loaded,{once:true});image.addEventListener('error',failed,{once:true});
+    // An already-failed image has no further load event to wait for.
+    if(image.complete)image.naturalWidth?loaded():failed();
+   });
+   if(typeof image.decode==='function')try{await image.decode();}catch{throw Error(label+' could not decode. Reload the arcade to try again.');}
+  }
+  function ready(){
+   if(!floorArt)return Promise.resolve();
+   if(!readiness)readiness=Promise.all([decoded(worldArt,'Arcade artwork'),decoded(floorArt,'Arcade floor artwork')]).then(()=>{
+    if(floorArt.naturalWidth!==worldArt.naturalWidth||floorArt.naturalHeight!==worldArt.naturalHeight)throw Error('Arcade floor artwork dimensions do not match the world.');
+    floorReady=true;slowLoading=false;
+   }).catch(error=>{floorError=error.message;throw error;});
+   return readiness;
+  }
   function original(){
    if(sourcePixels)return sourcePixels;
    if(!worldArt.complete||!worldArt.naturalWidth)return null;
@@ -16,6 +40,17 @@
    g.drawImage(worldArt,0,0);sourcePixels=g.getImageData(0,0,c.width,c.height).data;return sourcePixels;
   }
   function cabinet(bounds,bottom){
+   if(floorArt){
+    if(!floorReady)return null;
+    const [x,y,w]=bounds,height=bottom-y,key=JSON.stringify([bounds,bottom]);
+    if(!cabinetPlates.has(key)){
+     const canvas=make(w,height),ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
+     // The plate is already a complete clean floor in world coordinates.
+     // Copy it once, including reflected-floor extensions, without tile repeats.
+     ctx.drawImage(floorArt,x,y,w,height,0,0,w,height);cabinetPlates.set(key,canvas);
+    }
+    return cabinetPlates.get(key);
+   }
    const raw=original();if(!raw)return null;
    const [x,y,w,h]=bounds,height=bottom-y,canvas=make(w,height),ctx=canvas.getContext('2d',{willReadFrequently:true});
    ctx.imageSmoothingEnabled=false;
@@ -92,9 +127,9 @@
    sourceKey=key;return base;
   }
   function point(x,y){return Number.isFinite(x)&&Number.isFinite(y)&&plate&&x>=0&&y>=0&&x<plate.width&&y<plate.height?[Math.floor(x),Math.floor(y)]:null;}
-  function snapshot(){return {ready:!!plate,mode:'source-aligned-repairs',
+  function snapshot(){return {ready:floorReady&&!!plate,mode:floorArt?'flat-floor-plate':'source-aligned-repairs',artReady:floorReady,error:floorError,slowLoading,cabinetSurfaces:cabinetPlates.size,
    maskAt(x,y){const p=point(x,y);return p?repairMask.getContext('2d').getImageData(...p,1,1).data[3]:0;},
    pixelAt(x,y){const p=point(x,y);if(!p)return null;const at=(p[1]*plate.width+p[0])*4;return Array.from(pixels.slice(at,at+4));}};}
-  return {render,cabinet,snapshot};
+  return {render,cabinet,snapshot,ready,isReady:()=>floorReady};
  };
 })(window);

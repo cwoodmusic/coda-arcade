@@ -6,7 +6,7 @@ window.createCodaDeveloperConsole = function (api) {
   // retaining its stable name, so its original atlas pixels stay suppressed.
   const explicitCatalog=api.catalog||[];
   const catalog = [...explicitCatalog,...parts.filter(part=>!explicitCatalog.some(original=>original.name===part.name))];
-  const arcadeFloor=window.createCodaArcadeFloorGrid?.({worldArt,parts,catalog});
+  const arcadeFloor=window.createCodaArcadeFloorGrid?.({worldArt,floorArt:api.floorArt,parts,catalog});
   const FORMAT = 'CodaArcadeWorldProject', VERSION = 1, STORE = 'codaWorldProjectV1';
   const $ = id => document.getElementById(id);
   const clone = value => JSON.parse(JSON.stringify(value));
@@ -296,6 +296,7 @@ window.createCodaDeveloperConsole = function (api) {
   }
   function renderBase(g) {
     if(!worldArt.complete||!worldArt.naturalWidth)return;
+    if(arcadeFloor?.isReady&&!arcadeFloor.isReady()){g.drawImage(worldArt,0,0,W,H);return;}
     const originals=studio.assets.filter(a=>a.origin&&!catalog.find(part=>part.name===a.origin.name)?.procedural);
     if(!originals.length) {baseCache=null;baseKey='';cleanupCache=null;const raw=arcadeFloor?.render(worldArt)||worldArt;g.drawImage(artworkTools?.compose('background.world',raw)||raw,0,0,W,H);return;}
     // Images load independently. Do not memoize an incomplete cleanup surface.
@@ -463,7 +464,7 @@ window.createCodaDeveloperConsole = function (api) {
   }
   async function load() {
     try {
-      const [publication,data]=await Promise.all([published(),stored(STORE)]);
+      const [publication,data]=await Promise.all([published(),stored(STORE),arcadeFloor?.ready?.()]);
       publishedProject=publication.project;publishedError=publication.error;
       if(data) {
         if(!validate(data))throw Error('Saved project is invalid; it has been preserved. Import a valid backup.');
@@ -631,7 +632,7 @@ window.createCodaDeveloperConsole = function (api) {
   c.addEventListener('contextmenu',e=>{if(studio.active&&!playtest)e.preventDefault();});
   panel.addEventListener('click',e=>{if(loading){e.preventDefault();e.stopImmediatePropagation();message('Wait for project restoration to finish.');}},true);
   setTab('objects');load();
-  return {snapshot,recordChange,recordRoomChange,setSprites,undoRedo,save,refresh,refreshCamera,onToggle,open,renderBase,renderCleanup,suppressOriginal,drawUnliftedPixels,originalPicture:a=>a.origin?picture(a.origin):null,assetArtwork:(a,raw)=>artworkTools?.assetImage(a,raw)||raw,backgroundArtwork:(id,source)=>artworkTools?.compose(id,source)||source,objectArtwork:(name,source)=>artworkTools?.objectImage(name,source)||source,getArtworkEditor:()=>artworkEditor,objectEffectClip:name=>artworkTools?.effectClip(name)||null,validateAssetExtension,walkableOverride,pointerDown,pointerMove,pointerEnd,drawOverlay,liftedRegion,finishGesture,isPlaytest:()=>playtest,isEditing:()=>studio.active&&!playtest,exportProject,loadReady:()=>!loading,validate,
+  return {snapshot,recordChange,recordRoomChange,setSprites,undoRedo,save,refresh,refreshCamera,onToggle,open,renderBase,renderCleanup,suppressOriginal,drawUnliftedPixels,originalPicture:a=>a.origin?picture(a.origin):null,assetArtwork:(a,raw)=>artworkTools?.assetImage(a,raw)||raw,backgroundArtwork:(id,source)=>artworkTools?.compose(id,source)||source,objectArtwork:(name,source)=>artworkTools?.objectImage(name,source)||source,getArtworkEditor:()=>artworkEditor,objectEffectClip:name=>artworkTools?.effectClip(name)||null,validateAssetExtension,walkableOverride,pointerDown,pointerMove,pointerEnd,drawOverlay,liftedRegion,finishGesture,isPlaytest:()=>playtest,isEditing:()=>studio.active&&!playtest,exportProject,loadReady:()=>!loading&&(!arcadeFloor?.isReady||arcadeFloor.isReady()),validate,
     // Data-only inspection supports repeatable browser integration checks.
     floorGrid:()=>arcadeFloor?.snapshot()||null,
     getProject:()=>clone(documentData()),getPublishedProject:()=>publishedProject?clone(publishedProject):null,getProjectSource:()=>projectSource,

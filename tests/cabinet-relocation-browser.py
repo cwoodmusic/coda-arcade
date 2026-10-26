@@ -81,10 +81,10 @@ class CabinetRelocationTests(unittest.TestCase):
     def walkable(self, x, y):
         return self.page.evaluate('([x,y])=>CodaArcadeQA.walkable(x,y)', [x, y])
 
-    def test_only_the_authorized_cabinets_collision_and_layer_strokes_change(self):
+    def test_published_cabinet_layout_keeps_the_uploaded_world_edits_intact(self):
         project = copy.deepcopy(self.published)
         self.assertEqual((len(project['assets']), len(project['collision']),
-                          len(project['strokes'])), (13, 1336, 345))
+                          len(project['strokes'])), (13, 1394, 763))
         unrelated = [asset for asset in project['assets']
                      if asset.get('origin', {}).get('name') not in BOUNDS]
         self.assertEqual(digest(unrelated),
@@ -92,11 +92,11 @@ class CabinetRelocationTests(unittest.TestCase):
                          'Keep the nine unrelated assets exactly as exported')
         self.assertEqual(digest([stroke for i, stroke in enumerate(project['strokes'])
                                  if i not in MOVED_STROKES]),
-                         'c5430cd373ad0d59d3b31e444000ae805473576443dc66972dd002755acf09aa',
-                         'Keep all 341 unrelated layer strokes')
+                         '84e0856978c74b68ce7e935a56e99563ec83550b3151c231d36eee8f00479cdd',
+                         'Keep all 759 uploaded layer strokes outside the cabinet-row depth edits')
         self.assertEqual(digest([entry for entry in project['collision']
                                  if outside_old_cabinets(entry)]),
-                         'e77c989fa5f106e4eba772ab4f5331c52bbff2e0e01dc3bae7ef6734410f0101',
+                         '56f2cbbb9370c76d7ac4cd78ebc60d228ed937907db5c220793b009635ac1894',
                          'Keep collision edits outside the former cabinet row')
         self.assertEqual(len({asset['id'] for asset in project['assets']}), 13)
         for name, bounds in BOUNDS.items():

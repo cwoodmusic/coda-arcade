@@ -317,7 +317,7 @@ class WorldEditorTests(unittest.TestCase):
                  [128,747],[211,735],[296,764],[403,795],[493,760],[626,774],[230,808]]
         self.page.wait_for_function('CodaArcadeQA.floorGrid()?.ready')
         mismatches=self.page.evaluate('''async(samples)=>{
-          const image=new Image();image.src='coda_arcade_world_clean.png';await image.decode();
+          const image=new Image();image.src='assets/world/arcade-flat-floor-world.png';await image.decode();
           const canvas=document.createElement('canvas');canvas.width=1672;canvas.height=941;
           const reference=canvas.getContext('2d');reference.drawImage(image,0,0);
           const game=document.querySelector('#view').getContext('2d'),floor=CodaArcadeQA.floorGrid();

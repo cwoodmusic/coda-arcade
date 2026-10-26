@@ -36,6 +36,16 @@ so later published updates can still arrive. Existing complete-world projects
 and standalone room edits keep priority. Explicit project import or reset still
 replaces the selected editor data and supports undo.
 
+The main hall and connecting walkways now use a smooth blue floor while the
+lounge and dance room keep their original artwork. Neon reflections, sparkles,
+disco beams and floor pins remain active. The original tiled world and atlas
+are retained. `assets/world/arcade-flat-floor-plate.png` is an image-generated
+clean floor without cabinets; moved cabinets reuse its native coordinates.
+`scripts/build-flat-floor.cjs` composites that plate only inside the floor masks
+in `scripts/flat-floor-regions.json`, preserving fixtures and protected rooms.
+Run that optional artwork script only when rebuilding the committed floor PNG;
+the static site still needs no build step.
+
 Classroom profiles are enabled. An approved administrator signs into **For
 teachers**, creates a class, and chooses **Make a new profile card** for each
 student, then **Print card**. Use group labels, not student names. If the teacher
