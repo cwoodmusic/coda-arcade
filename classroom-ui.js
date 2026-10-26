@@ -23,12 +23,15 @@
   'unsaved-conflict':'Your profile has a newer save. Unsaved changes on this device are being kept safe.',
   'lease-lost':'This profile has moved to another device. Use your card to play here again.',
   'session-revoked':'This card has been replaced. Ask your teacher for the new card.',
-  'qr-unavailable':'The card picture could not load. You can still copy the pass link.'
+  'qr-unavailable':'The card picture could not load. You can still copy the pass link.',
+  'class-full':'This class has 200 profiles. Create another class to add more.'
  });
  const errorCode=value=>typeof value?.code==='string'?value.code.replace(/^(?:auth|functions)\//,''):typeof value==='string'?value:'';
  const friendlyError=value=>ERRORS[errorCode(value)]||'We could not finish that. Please try again.';
  const text=(value,fallback='')=>typeof value==='string'?value:fallback;
  const list=(result,key)=>Array.isArray(result)?result:Array.isArray(result?.[key])?result[key]:[];
+ const PAGE_SIZE=20,aliasOrder=new Intl.Collator('en',{numeric:true,sensitivity:'base'});
+ const searchText=value=>text(value).trim().replace(/\s+/g,' ').toLowerCase();
  const PICTURES=['fox','owl','fish','cat','robot','star','planet','leaf'];
  const ART={
   fox:'<path d="M11 13L23 22H41L53 13V39L42 52H22L11 39Z" fill="#ed9c54"/><path d="M12 29L31 39L52 29L42 50H22Z" fill="#fff0ce"/><path d="M14 16L22 24H14ZM50 16L42 24H50Z" fill="#773c53"/><path d="M21 29H25V34H21ZM39 29H43V34H39ZM29 39H35V44H29Z" fill="#28233c"/>',
@@ -50,18 +53,20 @@
   const body=api.panelBody||api.host,service=api.service;if(!body||!service)throw Error('Class passes need a panel and service.');
   const doc=body.ownerDocument,win=doc.defaultView||root;
   let opened=false,disposed=false,view='student',section=null,busy='',message='',messageKind='status',confirmation=null,card=null,printSheet=null,printTimer=null;
-  let classes=[],profiles=[],selectedClass='',classDraft='',joinDraft='',generation=0,lastAuthorized=false;
+  let classes=[],profiles=[],selectedClass='',classDraft='',joinDraft='',profileSearch='',profilePage=0,generation=0,lastAuthorized=false;
   const snapshot=()=>{try{return service.getState?.()||{};}catch{return {};}};
   const authorized=()=>snapshot().admin?.authorized===true;
   const canManage=()=>authorized()&&snapshot().enabled!==false;
   const element=(tag,className,value)=>{const node=doc.createElement(tag);if(className)node.className=className;if(value!==undefined)node.textContent=value;return node;};
   const button=(label,action,id,kind='')=>{const node=element('button','classpass-button '+kind,label);node.type='button';if(id)node.id=id;node.disabled=!!busy||snapshot().loading===true;node.onclick=action;return node;};
   function setMessage(value,kind='status'){message=value;messageKind=kind;}
+  function resetBrowser(){profileSearch='';profilePage=0;}
+  function selectClass(value){if(selectedClass!==value){resetBrowser();profiles=[];}selectedClass=value;}
   function showError(result){const code=errorCode(result);setMessage(view==='student'&&['permission-denied','unauthenticated','admin-required'].includes(code)?ERRORS['invalid-pass']:friendlyError(result),'error');}
   function current(token){return opened&&!disposed&&token===generation;}
   function cleanupPrint(){if(printTimer)win.clearTimeout(printTimer);printTimer=null;printSheet?.remove();printSheet=null;doc.documentElement.classList.remove('coda-classroom-printing');win.removeEventListener('afterprint',cleanupPrint);}
   function clearCard(){if(card){card.pass='';card.link='';}card=null;section?.querySelectorAll('.classpass-card').forEach(node=>node.remove());cleanupPrint();}
-  function close(){opened=false;generation++;busy='';confirmation=null;joinDraft='';classDraft='';clearCard();section?.remove();section=null;api.closePanel?.();}
+  function close(){opened=false;generation++;busy='';confirmation=null;joinDraft='';classDraft='';resetBrowser();clearCard();section?.remove();section=null;api.closePanel?.();}
   function receipt(result){
    if(!canManage()||!result||typeof result.pass!=='string'||typeof result.link!=='string'||!result.pass.length||result.pass.length>512)return false;
    let parsed;try{parsed=new URL(result.link,win.location.href);}catch{return false;}
@@ -81,16 +86,16 @@
    finally{if(current(token)){busy='';render();if(confirmation?.kind==='unsaved-leave')section?.querySelector('#classpassCancel')?.focus({preventScroll:true});}}
   }
   async function readProfiles(token){
-   profiles=[];if(!selectedClass||!canManage())return;
-   const result=await service.listProfiles(selectedClass);if(!current(token)||!canManage())return;
+   if(!selectedClass||!canManage())return;
+   const classId=selectedClass,result=await service.listProfiles(classId);if(!current(token)||!canManage()||classId!==selectedClass)return;
    if(result?.ok===false){showError(result);return;}
-   profiles=list(result,'profiles').filter(item=>item&&typeof item.profileId==='string').map(item=>({profileId:item.profileId,alias:text(item.alias,'Music friend'),picture:item.picture}));
+   profiles=list(result,'profiles').filter(item=>item&&typeof item.profileId==='string').map(item=>({profileId:item.profileId,alias:text(item.alias,'Music friend'),picture:item.picture})).sort((a,b)=>aliasOrder.compare(a.alias,b.alias)||aliasOrder.compare(a.profileId,b.profileId));
   }
   async function readClasses(token,select=''){
    if(!canManage())return;const result=await service.listClasses();if(!current(token)||!canManage())return;
    if(result?.ok===false){showError(result);return;}
-   classes=list(result,'classes').filter(item=>item&&typeof item.classId==='string').map(item=>({classId:item.classId,label:text(item.label,'Class')}));
-   selectedClass=classes.some(item=>item.classId===(select||selectedClass))?(select||selectedClass):(classes[0]?.classId||'');
+   classes=list(result,'classes').filter(item=>item&&typeof item.classId==='string').map(item=>({classId:item.classId,label:text(item.label,'Class')})).sort((a,b)=>aliasOrder.compare(a.label,b.label)||aliasOrder.compare(a.classId,b.classId));
+   selectClass(classes.some(item=>item.classId===(select||selectedClass))?(select||selectedClass):(classes[0]?.classId||''));
    await readProfiles(token);
   }
   function refreshClasses(select=''){if(!canManage())return;return act('Loading classes',async()=>({ok:true}),(_,token)=>readClasses(token,select));}
@@ -106,9 +111,9 @@
     if(errorCode(snapshot())!=='unsaved-conflict'){setMessage('Check your connection, then try again.');render();return;}
     return act('Loading saved progress',()=>service.useSavedProgress(),()=>{setMessage('Your saved progress is ready.');const next=snapshot();if(next.profile&&!next.locked)api.onProfile?.(next.profile);});
    }
-   if(pending.kind==='reissue')return act('Making a new card',()=>service.reissuePass(selectedClass,pending.profileId),(result)=>{confirmation=null;if(!receipt(result))showError({code:'qr-unavailable'});});
-   if(pending.kind==='delete-profile')return act('Deleting profile',()=>service.deleteProfile(selectedClass,pending.profileId),async(_,token)=>{confirmation=null;await readProfiles(token);setMessage('Profile deleted.');});
-   if(pending.kind==='delete-class')return act('Deleting class',()=>service.deleteClass(selectedClass),async(_,token)=>{confirmation=null;selectedClass='';await readClasses(token);setMessage('Class deleted.');});
+   if(pending.kind==='reissue')return act('Making a new card',()=>service.reissuePass(pending.classId,pending.profileId),(result)=>{confirmation=null;if(!receipt(result))showError({code:'qr-unavailable'});});
+   if(pending.kind==='delete-profile')return act('Deleting profile',()=>service.deleteProfile(pending.classId,pending.profileId),async(_,token)=>{confirmation=null;await readProfiles(token);setMessage('Profile deleted.');});
+   if(pending.kind==='delete-class')return act('Deleting class',()=>service.deleteClass(pending.classId),async(_,token)=>{confirmation=null;selectClass('');await readClasses(token);setMessage('Class deleted.');});
   }
   async function copyLink(){
    if(!card||busy)return;const value=card.link;
@@ -184,6 +189,40 @@
    form.onsubmit=event=>{event.preventDefault();const pass=joinDraft.trim();if(!pass){setMessage('Paste the link or code from your card.','error');render();return;}joinDraft='';act('Opening your profile',()=>service.join(pass),()=>{const next=snapshot();setMessage(next.waitingTakeover?'':'Your profile is ready.');if(next.profile&&!next.waitingTakeover&&!next.locked)api.onProfile?.(next.profile);});};
    form.append(label,input,submit);section.append(form,element('p','classpass-help','No name, password, or security answers are needed. If your card is lost, ask your teacher.'));
   }
+  function renderProfileBrowser(state){
+   const browser=element('section','classpass-browser');browser.setAttribute('aria-label','Browse classroom profiles');
+   browser.append(element('h3','','Class profiles'));
+   const label=element('label','','Find a profile');label.htmlFor='classpassProfileSearch';
+   const search=element('input');search.type='search';search.id='classpassProfileSearch';search.value=profileSearch;search.maxLength=80;search.placeholder='Search alias, e.g. Amber Fox 14';search.autocomplete='off';search.spellcheck=false;search.disabled=!!busy||state.loading===true;
+   search.oninput=()=>{profileSearch=search.value;profilePage=0;render();};
+   const clear=button('Clear search',()=>{resetBrowser();render();section?.querySelector('#classpassProfileSearch')?.focus({preventScroll:true});},'classpassClearSearch');clear.disabled=clear.disabled||!profileSearch;
+   const field=element('div','classpass-search-field');field.append(search,clear);browser.append(label,field,element('p','classpass-help','Search the generated alias on a student’s card. Keep student names in your school roster.'));
+   const query=searchText(profileSearch),matches=query?profiles.filter(profile=>searchText(profile.alias).includes(query)):profiles;
+   const pages=Math.max(1,Math.ceil(matches.length/PAGE_SIZE));profilePage=Math.max(0,Math.min(profilePage,pages-1));
+   const start=profilePage*PAGE_SIZE,end=Math.min(start+PAGE_SIZE,matches.length);
+   const count=element('p','classpass-profile-count',matches.length?'Showing '+(start+1)+'–'+end+' of '+matches.length+(query?' matches · '+profiles.length+' profiles in this class':' profiles'):(profiles.length?'0 matches · '+profiles.length+' profiles in this class':'0 profiles'));
+   count.id='classpassProfileCount';count.setAttribute('role','status');count.setAttribute('aria-live','polite');browser.append(count);
+   function pager(bottom=false){
+    const suffix=bottom?'Bottom':'',nav=element('nav','classpass-pagination');nav.setAttribute('aria-label',bottom?'Profile pages below results':'Profile pages');
+    function turn(step){
+     profilePage+=step;render();section?.querySelector('#classpassProfileSearch')?.scrollIntoView({block:'nearest'});
+     const target=section?.querySelector('#classpassRoster'+(step<0?'Prev':'Next'));(target&&!target.disabled?target:section?.querySelector('#classpassRosterPage'))?.focus({preventScroll:true});
+    }
+    const previous=button('Previous',()=>turn(-1),'classpassRosterPrev'+suffix),next=button('Next',()=>turn(1),'classpassRosterNext'+suffix);
+    previous.disabled=previous.disabled||profilePage===0;next.disabled=next.disabled||profilePage>=pages-1;
+    const page=element('span','classpass-page-number','Page '+(profilePage+1)+' of '+pages);page.id='classpassRosterPage'+suffix;page.tabIndex=-1;nav.append(previous,page,next);return nav;
+   }
+   if(matches.length)browser.append(pager());
+   const roster=element('div','classpass-roster');roster.setAttribute('aria-label','Generated classroom profiles');
+   const classId=selectedClass;
+   for(const profile of matches.slice(start,end)){
+    const row=element('article','classpass-profile-row');row.dataset.profileId=profile.profileId;
+    const identity=element('div','classpass-profile-identity');identity.append(pictureNode(doc,profile.picture,profile.profileId),element('strong','',profile.alias));row.append(identity);
+    const tools=element('div','classpass-actions');tools.append(button('Replace pass',()=>requestConfirmation({kind:'reissue',classId,profileId:profile.profileId,alias:profile.alias}),'',''),button('Delete profile',()=>requestConfirmation({kind:'delete-profile',classId,profileId:profile.profileId,alias:profile.alias}),'','is-danger'));row.append(tools);roster.append(row);
+   }
+   if(!matches.length)roster.append(element('p','classpass-empty',profiles.length?'No profiles match this search. Try another alias or clear the search.':'No profiles yet. Make a new profile card to begin.'));
+   browser.append(roster);if(matches.length>PAGE_SIZE)browser.append(pager(true));section.append(browser);
+  }
   function renderAdmin(state){
    section.append(element('h2','','Teacher class passes'));
    const uid=text(state.admin?.uid),showSetup=()=>{
@@ -204,12 +243,10 @@
    createForm.onsubmit=event=>{event.preventDefault();const value=classDraft.trim();if(!value){setMessage('Add a short class label, such as Blue class.','error');render();return;}act('Creating class',()=>service.createClass(value),async(result,token)=>{classDraft='';await readClasses(token,result.classId);setMessage('Class created.');});};section.append(createForm);
    if(!classes.length){section.append(element('p','classpass-empty','Create a class to make your first picture card.'));return;}
    const classLabel=element('label','classpass-select-label','Choose a class');classLabel.htmlFor='classpassClass';const choose=element('select');choose.id='classpassClass';choose.disabled=!!busy;
-   for(const item of classes){const option=element('option','',item.label);option.value=item.classId;choose.append(option);}choose.value=selectedClass;choose.onchange=()=>{selectedClass=choose.value;act('Loading profiles',async()=>({ok:true}),(_,token)=>readProfiles(token));};section.append(classLabel,choose);
+   for(const item of classes){const option=element('option','',item.label);option.value=item.classId;choose.append(option);}choose.value=selectedClass;choose.onchange=()=>{selectClass(choose.value);act('Loading profiles',async()=>({ok:true}),(_,token)=>readProfiles(token));};section.append(classLabel,choose);
    const tools=element('div','classpass-actions');tools.append(button('Make a new profile card',()=>act('Making a profile',()=>service.createProfile(selectedClass),async(result,token)=>{if(!receipt(result))showError({code:'qr-unavailable'});await readProfiles(token);}), 'classpassCreateProfile','is-primary'));
-   tools.append(button('Delete class',()=>requestConfirmation({kind:'delete-class'}),'classpassDeleteClass','is-danger'));section.append(tools,element('p','classpass-help','Every profile gets a generated alias and picture. Replacing a lost card keeps its progress.'));
-   const roster=element('div','classpass-roster');roster.setAttribute('aria-label','Generated classroom profiles');
-   for(const profile of profiles){const row=element('article','classpass-profile-row');row.dataset.profileId=profile.profileId;const identity=element('div','classpass-profile-identity');identity.append(pictureNode(doc,profile.picture,profile.profileId),element('strong','',profile.alias));row.append(identity);const tools=element('div','classpass-actions');tools.append(button('Replace pass',()=>requestConfirmation({kind:'reissue',profileId:profile.profileId,alias:profile.alias}),'',''));tools.append(button('Delete profile',()=>requestConfirmation({kind:'delete-profile',profileId:profile.profileId,alias:profile.alias}),'','is-danger'));row.append(tools);roster.append(row);}
-   if(!profiles.length)roster.append(element('p','classpass-empty','No profiles yet. Make a new profile card to begin.'));section.append(roster);
+   tools.append(button('Delete class',()=>requestConfirmation({kind:'delete-class',classId:selectedClass}),'classpassDeleteClass','is-danger'));section.append(tools,element('p','classpass-help','Every profile gets a generated alias and picture. Replacing a lost card keeps its progress.'));
+   renderProfileBrowser(state);
   }
   function render(){
    if(!opened||disposed||!section?.isConnected)return;
@@ -228,13 +265,13 @@
    if(view==='admin'&&canManage())refreshClasses();else section.querySelector('#classpassJoinInput')?.focus({preventScroll:true});
   }
   const unsubscribe=service.subscribe?.(()=>{
-   const allowed=canManage();if(!allowed){clearCard();classes=[];profiles=[];}
+   const allowed=canManage();if(!allowed){clearCard();classes=[];profiles=[];selectClass('');resetBrowser();classDraft='';if(confirmation&&['reissue','delete-profile','delete-class'].includes(confirmation.kind))confirmation=null;if(lastAuthorized){generation++;busy='';}}
    if(opened){render();if(view==='admin'&&allowed&&!lastAuthorized&&!busy)refreshClasses();}
    lastAuthorized=allowed;
   });
   const observer=typeof win.MutationObserver==='function'?new win.MutationObserver(()=>{
    const wrapper=body.parentElement,hidden=wrapper&&(wrapper.hidden||win.getComputedStyle(wrapper).display==='none');
-   if(opened&&(!section?.isConnected||hidden)){opened=false;generation++;busy='';joinDraft='';confirmation=null;clearCard();}
+   if(opened&&(!section?.isConnected||hidden)){opened=false;generation++;busy='';joinDraft='';confirmation=null;resetBrowser();clearCard();}
   }):null;
   observer?.observe(body.parentElement||body,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden','style','class']});
   return {open,close,handleEscape(){if(!opened)return false;if(confirmation){confirmation=null;render();}else close();return true;},getState:()=>({open:opened,view,busy:!!busy,cardVisible:!!card,classId:selectedClass,confirmation:confirmation?.kind||null}),destroy(){disposed=true;opened=false;generation++;clearCard();joinDraft='';confirmation=null;section?.remove();observer?.disconnect();if(typeof unsubscribe==='function')unsubscribe();}};

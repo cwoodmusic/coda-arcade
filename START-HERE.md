@@ -23,6 +23,11 @@ teachers**, creates a class, and chooses **Make a new profile card** for each
 student, then **Print card**. Use group labels, not student names. If the teacher
 panel was open before account approval, sign out of that panel and sign in again.
 Guest play is also available.
+In **For teachers**, choose a class to browse its profiles. **Find a profile**
+searches the generated aliases on the cards; **Previous** and **Next** show
+20 profiles at a time in alphabetical order. Keep larger school rosters grouped
+by class (up to 200 profiles per class), and keep student names in your existing
+school roster rather than entering them in the arcade.
 See [Private classroom profiles](README-CLASSROOM-PROFILES.md) for activation,
 the allowed progress data, printable cards, and lost-card recovery. The rules
 fragment must be merged into a backup of the full live rules before deployment.

@@ -61,6 +61,13 @@ limit.
 
 School-admin class and roster screens use the metadata-only directory. They do
 not download every profile's progress journal or pass hash just to show aliases.
+The teacher profile browser groups cards by class, sorts aliases alphabetically
+with numbers in natural order, and displays at most 20 profiles per page.
+**Find a profile** filters aliases within the selected class. Search text stays
+in memory and is cleared when the panel closes or administrator access ends.
+Changing classes starts a fresh search; pass-replacement and cancellation keep
+the current search and page. Each class supports up to 200 profiles; use separate
+classes for larger school rosters.
 The service creates and removes directory entries atomically with the matching
 class/profile records; the index cannot contain a pass, hash, journal, or extra
 identity field.

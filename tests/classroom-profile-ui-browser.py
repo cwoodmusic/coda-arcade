@@ -134,7 +134,8 @@ class ClassroomProfileUITests(unittest.TestCase):
  def test_create_and_delete_flows_use_generated_profiles_and_explicit_confirmation(self):
   self.admin();self.page.get_by_label('Class label',exact=True).fill('Green class');self.page.locator('#classpassCreateClass').click();self.idle()
   self.assertEqual(self.calls('createClass')[0]['args'],['Green class']);self.assertEqual(self.page.locator('#classpassClass').input_value(),'class-new')
-  self.assertEqual(self.page.locator('input').count(),1,'Only a class label is collected from administrators')
+  self.assertEqual(self.page.locator('input').count(),2,'Only the class label and in-memory alias search are available')
+  self.assertEqual(self.page.locator('input:not([type=search])').count(),1,'No student name field is collected')
   self.page.locator('#classpassCreateProfile').click();self.idle();self.page.locator('#classpassHide').click()
   row=self.page.locator('.classpass-profile-row');row.get_by_role('button',name='Delete profile',exact=True).click();self.page.locator('#classpassCancel').click();self.assertEqual(self.calls('deleteProfile'),[])
   row.get_by_role('button',name='Delete profile',exact=True).click();self.assertIn('permanently removes',self.page.get_by_role('alertdialog').inner_text());self.page.locator('#classpassConfirm').click();self.idle();self.assertEqual(len(self.calls('deleteProfile')),1)
