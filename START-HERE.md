@@ -30,6 +30,12 @@ to the front door. Direct world links and existing picture-card links still work
 The main game's internal filename is still `world-preview.html`; it serves the
 main Coda Arcade, not a separate preview build.
 
+The shared project includes the main arcade and Piano Lab collision and layer
+edits. A fresh browser loads those defaults without creating local editor saves,
+so later published updates can still arrive. Existing complete-world projects
+and standalone room edits keep priority. Explicit project import or reset still
+replaces the selected editor data and supports undo.
+
 Classroom profiles are enabled. An approved administrator signs into **For
 teachers**, creates a class, and chooses **Make a new profile card** for each
 student, then **Print card**. Use group labels, not student names. If the teacher

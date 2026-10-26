@@ -280,10 +280,13 @@ class RoomDeveloperTests(_world.WorldBrowserCase):
 
     def test_painted_red_cells_block_real_piano_walking_and_open_cells_restore_it(self):
         self.enter('piano');self.open_editor('piano','collision')
-        self.drag(self.point('piano',550,255),self.point('piano',550,585))
+        original=dict(self.project('piano')['collision'])
+        wall={row*100+55 for row in range(25,59)}
+        self.drag(self.point('piano',555,255),self.point('piano',555,585))
         cells=self.project('piano')['collision']
-        self.assertGreater(len(cells),25)
-        self.assertTrue(all(value==0 for _,value in cells))
+        self.assertTrue(all(dict(cells).get(index)==0 for index in wall))
+        self.assertEqual({index:value for index,value in cells if index not in wall},
+                         {index:value for index,value in original.items() if index not in wall})
         self.close_editor('piano');self.canvas('piano').focus()
         self.page.keyboard.down('d');self.page.clock.run_for(1000);self.page.keyboard.up('d')
         blocked=self.room_state('piano')['player']
@@ -291,14 +294,18 @@ class RoomDeveloperTests(_world.WorldBrowserCase):
         self.assertLess(blocked['x'],550,'A red room cell must stop actual walking')
         self.open_editor('piano','collision')
         self.panel('piano').locator('[data-room-field="collision-tool"]').select_option('open')
-        self.drag(self.point('piano',550,255),self.point('piano',550,585))
-        self.assertTrue(all(value==1 for _,value in self.project('piano')['collision']))
+        self.drag(self.point('piano',555,255),self.point('piano',555,585))
+        opened=dict(self.project('piano')['collision'])
+        self.assertTrue(all(opened.get(index)==1 for index in wall))
+        self.assertEqual({index:value for index,value in opened.items() if index not in wall},
+                         {index:value for index,value in original.items() if index not in wall})
         self.close_editor('piano');self.canvas('piano').focus()
         self.page.keyboard.down('d');self.page.clock.run_for(500);self.page.keyboard.up('d')
         self.assertGreater(self.room_state('piano')['player']['x'],600)
 
     def test_lifted_room_artwork_moves_resizes_changes_layers_and_restores_with_undo(self):
         self.enter('piano');self.open_editor('piano')
+        original_strokes=len(self.project('piano')['strokes'])
         canvas=self.canvas('piano')
         def pixels():
             return canvas.evaluate("c=>Array.from(c.getContext('2d').getImageData(730,130,50,60).data)")
@@ -309,7 +316,7 @@ class RoomDeveloperTests(_world.WorldBrowserCase):
         self.panel('piano').locator('[data-room-field="layer-size"]').select_option('32')
         self.drag(self.point('piano',746,145),self.point('piano',766,145))
         self.drag(self.point('piano',746,175),self.point('piano',766,175))
-        self.assertEqual(len(self.project('piano')['strokes']),2)
+        self.assertEqual(len(self.project('piano')['strokes']),original_strokes+2)
         self.tab('piano','objects')
         self.action('piano','lift').click()
         self.drag(self.point('piano',730,130),self.point('piano',780,190))

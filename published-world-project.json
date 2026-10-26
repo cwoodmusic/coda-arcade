@@ -184,7 +184,7 @@
     },
     {
       "id": "asset-5",
-      "name": "Cabinet \u00b7 Pitch Race",
+      "name": "Cabinet · Pitch Race",
       "kind": "builtin",
       "ref": "foreground",
       "data": null,
@@ -235,7 +235,7 @@
     },
     {
       "id": "asset-6",
-      "name": "Cabinet \u00b7 Music Triad",
+      "name": "Cabinet · Music Triad",
       "kind": "builtin",
       "ref": "foreground",
       "data": null,
@@ -506,7 +506,7 @@
     },
     {
       "id": "asset-12",
-      "name": "Cabinet \u00b7 Rhythm Room",
+      "name": "Cabinet · Rhythm Room",
       "kind": "builtin",
       "ref": "foreground",
       "data": null,
@@ -516,8 +516,8 @@
         104,
         138
       ],
-      "x": 964.0,
-      "y": 187.0,
+      "x": 964,
+      "y": 187,
       "w": 104,
       "h": 138,
       "rotation": 0,
@@ -557,7 +557,7 @@
     },
     {
       "id": "asset-13",
-      "name": "Cabinet \u00b7 Song Machine",
+      "name": "Cabinet · Song Machine",
       "kind": "builtin",
       "ref": "foreground",
       "data": null,
@@ -568,7 +568,7 @@
         138
       ],
       "x": 1081.5,
-      "y": 187.0,
+      "y": 187,
       "w": 107,
       "h": 138,
       "rotation": 0,
@@ -949,6 +949,14 @@
       0
     ],
     [
+      2922,
+      0
+    ],
+    [
+      2923,
+      0
+    ],
+    [
       3030,
       0
     ],
@@ -1062,6 +1070,14 @@
     ],
     [
       3081,
+      0
+    ],
+    [
+      3090,
+      0
+    ],
+    [
+      3091,
       0
     ],
     [
@@ -1209,6 +1225,14 @@
       0
     ],
     [
+      3258,
+      0
+    ],
+    [
+      3259,
+      0
+    ],
+    [
       3305,
       0
     ],
@@ -1313,6 +1337,14 @@
       0
     ],
     [
+      3426,
+      0
+    ],
+    [
+      3427,
+      0
+    ],
+    [
       3473,
       0
     ],
@@ -1402,6 +1434,22 @@
     ],
     [
       3585,
+      0
+    ],
+    [
+      3592,
+      0
+    ],
+    [
+      3593,
+      0
+    ],
+    [
+      3594,
+      0
+    ],
+    [
+      3595,
       0
     ],
     [
@@ -1533,6 +1581,22 @@
       0
     ],
     [
+      3760,
+      0
+    ],
+    [
+      3761,
+      0
+    ],
+    [
+      3762,
+      0
+    ],
+    [
+      3763,
+      0
+    ],
+    [
       3809,
       0
     ],
@@ -1645,6 +1709,22 @@
       0
     ],
     [
+      3928,
+      0
+    ],
+    [
+      3929,
+      0
+    ],
+    [
+      3930,
+      0
+    ],
+    [
+      3931,
+      0
+    ],
+    [
       3977,
       0
     ],
@@ -1702,6 +1782,22 @@
     ],
     [
       4065,
+      0
+    ],
+    [
+      4098,
+      0
+    ],
+    [
+      4099,
+      0
+    ],
+    [
+      4112,
+      0
+    ],
+    [
+      4113,
       0
     ],
     [
@@ -1765,6 +1861,14 @@
       0
     ],
     [
+      4266,
+      0
+    ],
+    [
+      4267,
+      0
+    ],
+    [
       4270,
       0
     ],
@@ -1778,6 +1882,54 @@
     ],
     [
       4273,
+      0
+    ],
+    [
+      4274,
+      0
+    ],
+    [
+      4275,
+      0
+    ],
+    [
+      4276,
+      0
+    ],
+    [
+      4277,
+      0
+    ],
+    [
+      4278,
+      0
+    ],
+    [
+      4279,
+      0
+    ],
+    [
+      4280,
+      0
+    ],
+    [
+      4281,
+      0
+    ],
+    [
+      4282,
+      0
+    ],
+    [
+      4283,
+      0
+    ],
+    [
+      4284,
+      0
+    ],
+    [
+      4285,
       0
     ],
     [
@@ -1798,7 +1950,7 @@
     ],
     [
       4290,
-      1
+      0
     ],
     [
       4291,
@@ -1822,6 +1974,70 @@
     ],
     [
       4296,
+      0
+    ],
+    [
+      4297,
+      0
+    ],
+    [
+      4298,
+      0
+    ],
+    [
+      4299,
+      0
+    ],
+    [
+      4300,
+      0
+    ],
+    [
+      4301,
+      0
+    ],
+    [
+      4302,
+      0
+    ],
+    [
+      4303,
+      0
+    ],
+    [
+      4304,
+      0
+    ],
+    [
+      4305,
+      0
+    ],
+    [
+      4306,
+      0
+    ],
+    [
+      4307,
+      0
+    ],
+    [
+      4308,
+      0
+    ],
+    [
+      4309,
+      0
+    ],
+    [
+      4310,
+      0
+    ],
+    [
+      4311,
+      0
+    ],
+    [
+      4312,
       0
     ],
     [
@@ -2017,6 +2233,22 @@
       1
     ],
     [
+      4469,
+      1
+    ],
+    [
+      4470,
+      1
+    ],
+    [
+      4471,
+      1
+    ],
+    [
+      4472,
+      1
+    ],
+    [
       4473,
       1
     ],
@@ -2054,7 +2286,7 @@
     ],
     [
       4482,
-      0
+      1
     ],
     [
       4503,
@@ -2274,7 +2506,7 @@
     ],
     [
       4650,
-      0
+      1
     ],
     [
       4671,
@@ -2558,7 +2790,7 @@
     ],
     [
       4818,
-      0
+      1
     ],
     [
       4839,
@@ -2862,7 +3094,7 @@
     ],
     [
       4986,
-      0
+      1
     ],
     [
       5007,
@@ -3274,7 +3506,7 @@
     ],
     [
       5154,
-      0
+      1
     ],
     [
       5175,
@@ -21364,6 +21596,8102 @@
         ]
       ],
       "depth": 182
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          809,
+          499
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          810,
+          499
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          809,
+          498
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          810,
+          498
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          809,
+          497
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          810,
+          497
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          809,
+          496
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          810,
+          496
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          811,
+          496
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          809,
+          495
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          810,
+          495
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          811,
+          495
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          809,
+          494
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          810,
+          494
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          811,
+          494
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          810,
+          493
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          810,
+          493
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          811,
+          493
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          809,
+          493
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          813,
+          489
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          813,
+          490
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          813,
+          491
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          813,
+          492
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          813,
+          492
+        ],
+        [
+          813,
+          493
+        ],
+        [
+          813,
+          494
+        ],
+        [
+          813,
+          495
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          812,
+          492
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          812,
+          493
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          812,
+          491
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          812,
+          494
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          812,
+          495
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          812,
+          496
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          812,
+          497
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          811,
+          497
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          811,
+          498
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          813,
+          496
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          814,
+          477
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          814,
+          479
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          814,
+          477
+        ],
+        [
+          814,
+          487
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          814,
+          477
+        ],
+        [
+          814,
+          463
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          809,
+          500
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          809,
+          501
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          809,
+          502
+        ],
+        [
+          809,
+          519
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          810,
+          533
+        ],
+        [
+          810,
+          546
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          811,
+          545
+        ],
+        [
+          811,
+          532
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          809,
+          533
+        ],
+        [
+          809,
+          525
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          812,
+          536
+        ],
+        [
+          812,
+          545
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          813,
+          543
+        ],
+        [
+          813,
+          545
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          813,
+          542
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          812,
+          535
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          812,
+          534
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          812,
+          533
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          812,
+          533
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          810,
+          532
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          810,
+          531
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          810,
+          530
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          810,
+          529
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          810,
+          564
+        ],
+        [
+          808,
+          564
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          808,
+          563
+        ],
+        [
+          808,
+          548
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          807,
+          549
+        ],
+        [
+          807,
+          554
+        ]
+      ],
+      "depth": 574
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          809,
+          555
+        ],
+        [
+          809,
+          563
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          807,
+          563
+        ],
+        [
+          807,
+          555
+        ]
+      ],
+      "depth": 574
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          806,
+          553
+        ],
+        [
+          807,
+          548
+        ]
+      ],
+      "depth": 574
+    },
+    {
+      "tool": "erase",
+      "size": 1,
+      "points": [
+        [
+          806,
+          550
+        ],
+        [
+          806,
+          549
+        ]
+      ],
+      "depth": 574
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          702,
+          691
+        ]
+      ],
+      "depth": 725
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          702,
+          685
+        ]
+      ],
+      "depth": 725
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          702,
+          680
+        ]
+      ],
+      "depth": 725
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          702,
+          676
+        ]
+      ],
+      "depth": 725
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          702,
+          673
+        ]
+      ],
+      "depth": 725
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          702,
+          669
+        ]
+      ],
+      "depth": 725
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          702,
+          691
+        ]
+      ],
+      "depth": 725
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          702,
+          696
+        ]
+      ],
+      "depth": 725
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          702,
+          700
+        ]
+      ],
+      "depth": 725
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          701,
+          700
+        ],
+        [
+          688,
+          700
+        ]
+      ],
+      "depth": 725
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          692,
+          700
+        ],
+        [
+          694,
+          682
+        ]
+      ],
+      "depth": 725
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          696,
+          692
+        ]
+      ],
+      "depth": 725
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          687,
+          690
+        ]
+      ],
+      "depth": 725
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          673,
+          698
+        ],
+        [
+          665,
+          692
+        ]
+      ],
+      "depth": 725
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          556,
+          657
+        ]
+      ],
+      "depth": 725
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          123,
+          806
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          113,
+          797
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          114,
+          798
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          115,
+          799
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          116,
+          800
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          117,
+          801
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          118,
+          802
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          119,
+          802
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          120,
+          803
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          121,
+          803
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          120,
+          802
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          118,
+          801
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          117,
+          800
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          116,
+          799
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          115,
+          798
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          114,
+          797
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          116,
+          798
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          117,
+          799
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          118,
+          800
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          119,
+          801
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          122,
+          804
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          123,
+          806
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          107,
+          799
+        ],
+        [
+          77,
+          795
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          106,
+          795
+        ],
+        [
+          107,
+          795
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          107,
+          795
+        ],
+        [
+          80,
+          791
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          106,
+          794
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          107,
+          793
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          106,
+          792
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          105,
+          790
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          115,
+          787
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          102,
+          770
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          111,
+          785
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          107,
+          785
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          104,
+          787
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          102,
+          788
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          102,
+          789
+        ],
+        [
+          102,
+          791
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          102,
+          791
+        ],
+        [
+          101,
+          792
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          100,
+          791
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          99,
+          791
+        ],
+        [
+          98,
+          791
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          98,
+          790
+        ],
+        [
+          98,
+          789
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          98,
+          789
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          99,
+          787
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          99,
+          787
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          114,
+          785
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          110,
+          783
+        ],
+        [
+          104,
+          783
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          106,
+          782
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          108,
+          782
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          109,
+          782
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          104,
+          784
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          103,
+          784
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          102,
+          785
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          115,
+          789
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          110,
+          783
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          110,
+          782
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          111,
+          782
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          113,
+          784
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          115,
+          784
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          113,
+          783
+        ]
+      ],
+      "foreground": true,
+      "depth": 892
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          508,
+          829
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          506,
+          829
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          507,
+          828
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          506,
+          828
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          507,
+          827
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          508,
+          828
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          508,
+          827
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          509,
+          826
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          510,
+          826
+        ],
+        [
+          511,
+          826
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          511,
+          826
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          512,
+          827
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          513,
+          827
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          513,
+          828
+        ],
+        [
+          509,
+          828
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          509,
+          827
+        ],
+        [
+          510,
+          827
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          510,
+          827
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          511,
+          827
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          509,
+          829
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          509,
+          829
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          507,
+          829
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          517,
+          828
+        ],
+        [
+          517,
+          822
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          516,
+          822
+        ],
+        [
+          516,
+          829
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          515,
+          825
+        ],
+        [
+          515,
+          829
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          529,
+          824
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          529,
+          823
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          528,
+          822
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          529,
+          822
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          527,
+          821
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          526,
+          820
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          525,
+          818
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          524,
+          817
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          523,
+          817
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          523,
+          816
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          522,
+          816
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          521,
+          816
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          520,
+          816
+        ],
+        [
+          517,
+          816
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          516,
+          817
+        ],
+        [
+          522,
+          817
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          516,
+          818
+        ],
+        [
+          524,
+          818
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          525,
+          819
+        ],
+        [
+          516,
+          819
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          518,
+          820
+        ],
+        [
+          526,
+          820
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          518,
+          821
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          517,
+          820
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          559,
+          799
+        ],
+        [
+          568,
+          808
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          569,
+          807
+        ],
+        [
+          568,
+          808
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          568,
+          807
+        ],
+        [
+          560,
+          799
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          558,
+          799
+        ],
+        [
+          547,
+          808
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 1,
+      "points": [
+        [
+          547,
+          809
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          564,
+          807
+        ],
+        [
+          565,
+          825
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          569,
+          824
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          569,
+          821
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          569,
+          819
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          569,
+          817
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          569,
+          813
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          569,
+          811
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          569,
+          810
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          567,
+          812
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          566,
+          814
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          480,
+          814
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          480,
+          812
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          744,
+          792
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          742,
+          792
+        ],
+        [
+          743,
+          790
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          744,
+          790
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          744,
+          790
+        ],
+        [
+          745,
+          790
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          745,
+          791
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          745,
+          791
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          747,
+          795
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          744,
+          802
+        ]
+      ],
+      "depth": 905
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          746,
+          803
+        ]
+      ],
+      "depth": 905
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          747,
+          779
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          749,
+          779
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          749,
+          778
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          749,
+          778
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          755,
+          780
+        ],
+        [
+          758,
+          775
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          759,
+          775
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          760,
+          774
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          761,
+          776
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          760,
+          776
+        ],
+        [
+          759,
+          776
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          759,
+          777
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          759,
+          778
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          759,
+          778
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          756,
+          777
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          755,
+          778
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          766,
+          775
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          765,
+          776
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          775,
+          780
+        ]
+      ],
+      "depth": 875
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          755,
+          790
+        ],
+        [
+          755,
+          811
+        ]
+      ],
+      "foreground": true,
+      "depth": 875
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          756,
+          786
+        ],
+        [
+          767,
+          776
+        ]
+      ],
+      "foreground": true,
+      "depth": 875
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          768,
+          776
+        ],
+        [
+          778,
+          786
+        ]
+      ],
+      "foreground": true,
+      "depth": 875
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          776,
+          786
+        ]
+      ],
+      "foreground": true,
+      "depth": 875
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          775,
+          788
+        ],
+        [
+          775,
+          805
+        ]
+      ],
+      "foreground": true,
+      "depth": 875
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          774,
+          804
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          777,
+          804
+        ],
+        [
+          777,
+          788
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          779,
+          787
+        ],
+        [
+          779,
+          806
+        ]
+      ],
+      "foreground": true,
+      "depth": 867
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          813,
+          523
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          814,
+          524
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          816,
+          524
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          818,
+          525
+        ],
+        [
+          824,
+          525
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          825,
+          524
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          826,
+          523
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          827,
+          522
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          828,
+          521
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          824,
+          524
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          817,
+          524
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          812,
+          523
+        ],
+        [
+          812,
+          531
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          813,
+          526
+        ],
+        [
+          813,
+          532
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          810,
+          521
+        ],
+        [
+          810,
+          529
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          815,
+          526
+        ],
+        [
+          827,
+          526
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          828,
+          523
+        ],
+        [
+          828,
+          525
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          827,
+          525
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          827,
+          527
+        ],
+        [
+          827,
+          531
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          828,
+          526
+        ],
+        [
+          828,
+          532
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          827,
+          528
+        ],
+        [
+          815,
+          528
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          824,
+          542
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          820,
+          542
+        ],
+        [
+          819,
+          542
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          819,
+          542
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          817,
+          542
+        ],
+        [
+          819,
+          532
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          824,
+          532
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          815,
+          530
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          825,
+          536
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          828,
+          542
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          828,
+          537
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          828,
+          531
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 8,
+      "points": [
+        [
+          828,
+          527
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 4,
+      "points": [
+        [
+          830,
+          522
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 4,
+      "points": [
+        [
+          830,
+          521
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          831,
+          519
+        ],
+        [
+          831,
+          503
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          830,
+          500
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          826,
+          477
+        ],
+        [
+          826,
+          494
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          828,
+          477
+        ],
+        [
+          828,
+          494
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          818,
+          475
+        ],
+        [
+          818,
+          494
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          816,
+          475
+        ],
+        [
+          816,
+          494
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          814,
+          495
+        ],
+        [
+          814,
+          487
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          827,
+          486
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 4,
+      "points": [
+        [
+          829,
+          470
+        ],
+        [
+          829,
+          457
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 4,
+      "points": [
+        [
+          827,
+          457
+        ],
+        [
+          827,
+          469
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 4,
+      "points": [
+        [
+          832,
+          462
+        ],
+        [
+          832,
+          470
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 4,
+      "points": [
+        [
+          833,
+          457
+        ],
+        [
+          827,
+          457
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 4,
+      "points": [
+        [
+          832,
+          464
+        ],
+        [
+          831,
+          464
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 4,
+      "points": [
+        [
+          832,
+          460
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 4,
+      "points": [
+        [
+          833,
+          461
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 4,
+      "points": [
+        [
+          833,
+          464
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 4,
+      "points": [
+        [
+          815,
+          534
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 4,
+      "points": [
+        [
+          819,
+          439
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 4,
+      "points": [
+        [
+          821,
+          438
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 4,
+      "points": [
+        [
+          820,
+          439
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 4,
+      "points": [
+        [
+          822,
+          437
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 4,
+      "points": [
+        [
+          819,
+          440
+        ]
+      ],
+      "depth": 774
+    },
+    {
+      "tool": "erase",
+      "size": 4,
+      "points": [
+        [
+          231,
+          305
+        ],
+        [
+          233,
+          310
+        ]
+      ],
+      "depth": 388
+    },
+    {
+      "tool": "erase",
+      "size": 4,
+      "points": [
+        [
+          233,
+          305
+        ]
+      ],
+      "depth": 388
+    },
+    {
+      "tool": "erase",
+      "size": 4,
+      "points": [
+        [
+          234,
+          305
+        ],
+        [
+          235,
+          306
+        ]
+      ],
+      "depth": 388
+    },
+    {
+      "tool": "erase",
+      "size": 4,
+      "points": [
+        [
+          235,
+          306
+        ]
+      ],
+      "depth": 388
+    },
+    {
+      "tool": "erase",
+      "size": 4,
+      "points": [
+        [
+          235,
+          304
+        ]
+      ],
+      "depth": 388
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          162,
+          299
+        ],
+        [
+          177,
+          289
+        ]
+      ],
+      "depth": 342
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          177,
+          291
+        ],
+        [
+          206,
+          291
+        ]
+      ],
+      "depth": 342
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          186,
+          293
+        ]
+      ],
+      "depth": 342
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          194,
+          293
+        ]
+      ],
+      "depth": 342
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          210,
+          292
+        ]
+      ],
+      "depth": 342
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          211,
+          295
+        ]
+      ],
+      "depth": 342
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          204,
+          295
+        ],
+        [
+          205,
+          295
+        ]
+      ],
+      "depth": 342
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          208,
+          296
+        ]
+      ],
+      "depth": 342
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          211,
+          297
+        ]
+      ],
+      "depth": 342
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          212,
+          298
+        ]
+      ],
+      "depth": 342
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          213,
+          299
+        ]
+      ],
+      "depth": 342
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          216,
+          302
+        ]
+      ],
+      "depth": 342
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          217,
+          303
+        ]
+      ],
+      "depth": 342
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          218,
+          304
+        ]
+      ],
+      "depth": 342
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          219,
+          306
+        ]
+      ],
+      "depth": 342
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          220,
+          308
+        ],
+        [
+          219,
+          319
+        ]
+      ],
+      "depth": 388
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          202,
+          317
+        ]
+      ],
+      "depth": 342
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          204,
+          316
+        ]
+      ],
+      "depth": 342
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          205,
+          316
+        ]
+      ],
+      "foreground": true,
+      "depth": 342
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          205,
+          315
+        ]
+      ],
+      "foreground": true,
+      "depth": 342
+    },
+    {
+      "tool": "paint",
+      "size": 8,
+      "points": [
+        [
+          205,
+          317
+        ]
+      ],
+      "foreground": true,
+      "depth": 342
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          208,
+          315
+        ]
+      ],
+      "foreground": true,
+      "depth": 342
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          208,
+          316
+        ]
+      ],
+      "foreground": true,
+      "depth": 342
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          524,
+          273
+        ],
+        [
+          554,
+          273
+        ]
+      ],
+      "foreground": true,
+      "depth": 303
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          552,
+          276
+        ],
+        [
+          529,
+          276
+        ]
+      ],
+      "foreground": true,
+      "depth": 306
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          529,
+          278
+        ],
+        [
+          550,
+          279
+        ]
+      ],
+      "foreground": true,
+      "depth": 308
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          542,
+          281
+        ],
+        [
+          533,
+          281
+        ]
+      ],
+      "foreground": true,
+      "depth": 311
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          490,
+          272
+        ],
+        [
+          591,
+          273
+        ]
+      ],
+      "foreground": true,
+      "depth": 971
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          592,
+          274
+        ]
+      ],
+      "foreground": true,
+      "depth": 374
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          593,
+          275
+        ]
+      ],
+      "foreground": true,
+      "depth": 374
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          544,
+          272
+        ],
+        [
+          591,
+          272
+        ]
+      ],
+      "foreground": true,
+      "depth": 302
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          592,
+          273
+        ]
+      ],
+      "foreground": true,
+      "depth": 374
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          593,
+          274
+        ]
+      ],
+      "foreground": true,
+      "depth": 374
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          594,
+          275
+        ]
+      ],
+      "foreground": true,
+      "depth": 374
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          595,
+          297
+        ],
+        [
+          595,
+          305
+        ]
+      ],
+      "foreground": true,
+      "depth": 374
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          596,
+          278
+        ],
+        [
+          596,
+          306
+        ]
+      ],
+      "foreground": true,
+      "depth": 374
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          609,
+          308
+        ],
+        [
+          598,
+          308
+        ]
+      ],
+      "foreground": true,
+      "depth": 374
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          599,
+          307
+        ],
+        [
+          611,
+          307
+        ]
+      ],
+      "foreground": true,
+      "depth": 374
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          612,
+          299
+        ]
+      ],
+      "foreground": true,
+      "depth": 374
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          612,
+          297
+        ]
+      ],
+      "foreground": true,
+      "depth": 374
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          611,
+          297
+        ]
+      ],
+      "foreground": true,
+      "depth": 374
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          610,
+          299
+        ]
+      ],
+      "foreground": true,
+      "depth": 374
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          608,
+          299
+        ]
+      ],
+      "foreground": true,
+      "depth": 374
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          609,
+          298
+        ]
+      ],
+      "foreground": true,
+      "depth": 374
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          606,
+          301
+        ]
+      ],
+      "foreground": true,
+      "depth": 374
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          607,
+          300
+        ]
+      ],
+      "foreground": true,
+      "depth": 374
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          489,
+          272
+        ]
+      ],
+      "foreground": true,
+      "depth": 971
+    },
+    {
+      "tool": "paint",
+      "size": 16,
+      "points": [
+        [
+          506,
+          280
+        ],
+        [
+          552,
+          280
+        ]
+      ],
+      "foreground": true,
+      "depth": 971
+    },
+    {
+      "tool": "paint",
+      "size": 16,
+      "points": [
+        [
+          572,
+          282
+        ],
+        [
+          565,
+          284
+        ]
+      ],
+      "foreground": true,
+      "depth": 374
+    },
+    {
+      "tool": "paint",
+      "size": 16,
+      "points": [
+        [
+          538,
+          286
+        ],
+        [
+          535,
+          287
+        ]
+      ],
+      "foreground": true,
+      "depth": 316
+    },
+    {
+      "tool": "paint",
+      "size": 16,
+      "points": [
+        [
+          526,
+          289
+        ]
+      ],
+      "foreground": true,
+      "depth": 319
+    },
+    {
+      "tool": "paint",
+      "size": 16,
+      "points": [
+        [
+          523,
+          289
+        ],
+        [
+          520,
+          288
+        ]
+      ],
+      "foreground": true,
+      "depth": 319
+    },
+    {
+      "tool": "paint",
+      "size": 16,
+      "points": [
+        [
+          515,
+          287
+        ],
+        [
+          514,
+          287
+        ]
+      ],
+      "foreground": true,
+      "depth": 971
+    },
+    {
+      "tool": "paint",
+      "size": 16,
+      "points": [
+        [
+          502,
+          285
+        ],
+        [
+          501,
+          285
+        ]
+      ],
+      "foreground": true,
+      "depth": 971
+    },
+    {
+      "tool": "paint",
+      "size": 16,
+      "points": [
+        [
+          500,
+          285
+        ]
+      ],
+      "foreground": true,
+      "depth": 971
+    },
+    {
+      "tool": "paint",
+      "size": 16,
+      "points": [
+        [
+          483,
+          278
+        ],
+        [
+          483,
+          279
+        ]
+      ],
+      "foreground": true,
+      "depth": 971
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          1382,
+          456
+        ],
+        [
+          1485,
+          456
+        ]
+      ],
+      "depth": 584
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          1493,
+          456
+        ]
+      ],
+      "depth": 584
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          1507,
+          456
+        ]
+      ],
+      "depth": 584
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          485,
+          263
+        ]
+      ],
+      "foreground": true,
+      "depth": 971
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          485,
+          264
+        ]
+      ],
+      "foreground": true,
+      "depth": 971
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          486,
+          263
+        ]
+      ],
+      "foreground": true,
+      "depth": 971
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          481,
+          266
+        ],
+        [
+          481,
+          268
+        ],
+        [
+          480,
+          269
+        ]
+      ],
+      "foreground": true,
+      "depth": 971
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          482,
+          266
+        ]
+      ],
+      "foreground": true,
+      "depth": 971
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          477,
+          266
+        ]
+      ],
+      "foreground": true,
+      "depth": 971
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          480,
+          263
+        ]
+      ],
+      "foreground": true,
+      "depth": 971
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          481,
+          262
+        ]
+      ],
+      "foreground": true,
+      "depth": 971
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          486,
+          261
+        ]
+      ],
+      "foreground": true,
+      "depth": 971
+    },
+    {
+      "tool": "paint",
+      "size": 4,
+      "points": [
+        [
+          488,
+          261
+        ]
+      ],
+      "foreground": true,
+      "depth": 971
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          694,
+          208
+        ]
+      ],
+      "depth": 238
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          695,
+          203
+        ]
+      ],
+      "depth": 233
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          694,
+          198
+        ]
+      ],
+      "depth": 228
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          694,
+          192
+        ]
+      ],
+      "depth": 222
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          693,
+          186
+        ]
+      ],
+      "depth": 216
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          694,
+          184
+        ]
+      ],
+      "depth": 214
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          694,
+          189
+        ],
+        [
+          693,
+          204
+        ],
+        [
+          693,
+          213
+        ],
+        [
+          693,
+          217
+        ]
+      ],
+      "depth": 219
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          730,
+          216
+        ]
+      ],
+      "depth": 246
+    },
+    {
+      "tool": "paint",
+      "size": 16,
+      "points": [
+        [
+          693,
+          206
+        ],
+        [
+          694,
+          210
+        ],
+        [
+          695,
+          214
+        ],
+        [
+          695,
+          216
+        ],
+        [
+          695,
+          219
+        ],
+        [
+          694,
+          220
+        ],
+        [
+          693,
+          220
+        ]
+      ],
+      "foreground": true,
+      "depth": 236
+    },
+    {
+      "tool": "paint",
+      "size": 16,
+      "points": [
+        [
+          705,
+          202
+        ],
+        [
+          705,
+          213
+        ],
+        [
+          705,
+          215
+        ],
+        [
+          704,
+          220
+        ],
+        [
+          704,
+          224
+        ],
+        [
+          711,
+          228
+        ],
+        [
+          726,
+          223
+        ],
+        [
+          729,
+          220
+        ],
+        [
+          732,
+          219
+        ],
+        [
+          733,
+          217
+        ],
+        [
+          725,
+          216
+        ],
+        [
+          713,
+          216
+        ],
+        [
+          709,
+          215
+        ],
+        [
+          707,
+          210
+        ],
+        [
+          707,
+          208
+        ],
+        [
+          706,
+          205
+        ],
+        [
+          706,
+          204
+        ]
+      ],
+      "foreground": true,
+      "depth": 232
+    },
+    {
+      "tool": "paint",
+      "size": 16,
+      "points": [
+        [
+          694,
+          197
+        ]
+      ],
+      "foreground": true,
+      "depth": 227
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          693,
+          225
+        ],
+        [
+          695,
+          225
+        ],
+        [
+          718,
+          226
+        ],
+        [
+          729,
+          226
+        ],
+        [
+          743,
+          227
+        ],
+        [
+          745,
+          227
+        ],
+        [
+          753,
+          226
+        ]
+      ],
+      "depth": 255
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          722,
+          225
+        ]
+      ],
+      "depth": 255
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          733,
+          225
+        ]
+      ],
+      "depth": 255
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          693,
+          219
+        ]
+      ],
+      "depth": 249
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          703,
+          219
+        ],
+        [
+          704,
+          219
+        ],
+        [
+          705,
+          219
+        ]
+      ],
+      "depth": 249
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          714,
+          219
+        ]
+      ],
+      "depth": 249
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          720,
+          219
+        ]
+      ],
+      "depth": 249
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          725,
+          218
+        ]
+      ],
+      "depth": 248
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          732,
+          218
+        ]
+      ],
+      "depth": 248
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          734,
+          218
+        ]
+      ],
+      "depth": 248
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          719,
+          213
+        ],
+        [
+          720,
+          213
+        ]
+      ],
+      "depth": 243
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          730,
+          211
+        ],
+        [
+          731,
+          211
+        ]
+      ],
+      "depth": 241
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          733,
+          212
+        ],
+        [
+          735,
+          212
+        ]
+      ],
+      "depth": 242
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          737,
+          212
+        ]
+      ],
+      "depth": 242
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          745,
+          211
+        ]
+      ],
+      "depth": 241
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          745,
+          211
+        ]
+      ],
+      "depth": 241
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          708,
+          208
+        ]
+      ],
+      "depth": 238
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          708,
+          201
+        ]
+      ],
+      "depth": 231
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          701,
+          198
+        ]
+      ],
+      "depth": 228
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          696,
+          195
+        ]
+      ],
+      "depth": 225
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          690,
+          195
+        ]
+      ],
+      "depth": 225
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          691,
+          201
+        ],
+        [
+          691,
+          203
+        ],
+        [
+          691,
+          204
+        ]
+      ],
+      "depth": 231
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          691,
+          205
+        ],
+        [
+          692,
+          205
+        ],
+        [
+          693,
+          207
+        ]
+      ],
+      "depth": 235
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          695,
+          208
+        ],
+        [
+          695,
+          209
+        ]
+      ],
+      "depth": 238
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          695,
+          209
+        ]
+      ],
+      "depth": 239
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          717,
+          238
+        ]
+      ],
+      "depth": 268
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          708,
+          236
+        ]
+      ],
+      "depth": 266
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          723,
+          224
+        ],
+        [
+          726,
+          224
+        ],
+        [
+          738,
+          222
+        ],
+        [
+          749,
+          222
+        ],
+        [
+          754,
+          222
+        ],
+        [
+          755,
+          221
+        ],
+        [
+          757,
+          218
+        ],
+        [
+          754,
+          215
+        ],
+        [
+          749,
+          212
+        ],
+        [
+          745,
+          211
+        ],
+        [
+          740,
+          211
+        ],
+        [
+          734,
+          211
+        ],
+        [
+          728,
+          211
+        ],
+        [
+          726,
+          211
+        ],
+        [
+          722,
+          211
+        ],
+        [
+          720,
+          211
+        ]
+      ],
+      "depth": 254
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          1219,
+          203
+        ]
+      ],
+      "depth": 233
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          1217,
+          208
+        ]
+      ],
+      "depth": 238
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          1220,
+          205
+        ]
+      ],
+      "depth": 235
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          1211,
+          183
+        ]
+      ],
+      "depth": 182
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          1211,
+          192
+        ]
+      ],
+      "depth": 222
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          1211,
+          185
+        ],
+        [
+          1211,
+          183
+        ]
+      ],
+      "depth": 182
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          1210,
+          177
+        ]
+      ],
+      "depth": 182
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          1218,
+          198
+        ],
+        [
+          1218,
+          199
+        ]
+      ],
+      "depth": 228
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          1192,
+          537
+        ]
+      ],
+      "depth": 584
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          1190,
+          539
+        ],
+        [
+          1191,
+          542
+        ],
+        [
+          1192,
+          548
+        ],
+        [
+          1192,
+          554
+        ],
+        [
+          1192,
+          559
+        ],
+        [
+          1192,
+          560
+        ],
+        [
+          1192,
+          562
+        ],
+        [
+          1191,
+          564
+        ],
+        [
+          1190,
+          564
+        ],
+        [
+          1191,
+          561
+        ],
+        [
+          1191,
+          560
+        ],
+        [
+          1192,
+          559
+        ],
+        [
+          1196,
+          565
+        ],
+        [
+          1198,
+          566
+        ],
+        [
+          1198,
+          567
+        ],
+        [
+          1201,
+          565
+        ],
+        [
+          1204,
+          563
+        ],
+        [
+          1205,
+          556
+        ],
+        [
+          1205,
+          551
+        ],
+        [
+          1203,
+          541
+        ],
+        [
+          1201,
+          539
+        ],
+        [
+          1202,
+          537
+        ],
+        [
+          1210,
+          547
+        ],
+        [
+          1210,
+          549
+        ],
+        [
+          1210,
+          550
+        ],
+        [
+          1208,
+          550
+        ],
+        [
+          1206,
+          551
+        ],
+        [
+          1203,
+          553
+        ],
+        [
+          1201,
+          554
+        ],
+        [
+          1200,
+          558
+        ],
+        [
+          1200,
+          562
+        ],
+        [
+          1200,
+          563
+        ]
+      ],
+      "depth": 584
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          1203,
+          568
+        ]
+      ],
+      "depth": 584
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          1177,
+          564
+        ]
+      ],
+      "depth": 584
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          652,
+          816
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          653,
+          815
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          652,
+          816
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          653,
+          815
+        ],
+        [
+          653,
+          813
+        ],
+        [
+          653,
+          812
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          652,
+          814
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          652,
+          813
+        ]
+      ],
+      "foreground": true,
+      "depth": 905
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          289,
+          840
+        ],
+        [
+          289,
+          838
+        ],
+        [
+          289,
+          837
+        ],
+        [
+          289,
+          835
+        ],
+        [
+          289,
+          832
+        ],
+        [
+          289,
+          831
+        ],
+        [
+          289,
+          829
+        ]
+      ],
+      "foreground": true,
+      "depth": 875
+    },
+    {
+      "tool": "paint",
+      "size": 2,
+      "points": [
+        [
+          289,
+          829
+        ],
+        [
+          289,
+          827
+        ],
+        [
+          289,
+          825
+        ],
+        [
+          289,
+          824
+        ],
+        [
+          289,
+          823
+        ],
+        [
+          289,
+          822
+        ]
+      ],
+      "foreground": true,
+      "depth": 875
+    },
+    {
+      "tool": "erase",
+      "size": 2,
+      "points": [
+        [
+          108,
+          718
+        ],
+        [
+          110,
+          718
+        ],
+        [
+          112,
+          718
+        ],
+        [
+          114,
+          719
+        ],
+        [
+          114,
+          722
+        ],
+        [
+          112,
+          721
+        ],
+        [
+          112,
+          720
+        ],
+        [
+          113,
+          719
+        ],
+        [
+          115,
+          719
+        ],
+        [
+          116,
+          719
+        ],
+        [
+          115,
+          720
+        ],
+        [
+          114,
+          721
+        ],
+        [
+          112,
+          721
+        ],
+        [
+          115,
+          721
+        ],
+        [
+          116,
+          721
+        ],
+        [
+          117,
+          721
+        ],
+        [
+          114,
+          721
+        ],
+        [
+          112,
+          722
+        ],
+        [
+          109,
+          721
+        ],
+        [
+          110,
+          719
+        ],
+        [
+          112,
+          718
+        ],
+        [
+          113,
+          719
+        ],
+        [
+          110,
+          722
+        ],
+        [
+          110,
+          723
+        ],
+        [
+          108,
+          726
+        ],
+        [
+          107,
+          731
+        ],
+        [
+          110,
+          725
+        ],
+        [
+          112,
+          721
+        ],
+        [
+          111,
+          723
+        ],
+        [
+          107,
+          731
+        ],
+        [
+          106,
+          733
+        ],
+        [
+          106,
+          734
+        ],
+        [
+          109,
+          728
+        ],
+        [
+          110,
+          724
+        ],
+        [
+          111,
+          724
+        ],
+        [
+          110,
+          728
+        ],
+        [
+          105,
+          737
+        ],
+        [
+          109,
+          732
+        ],
+        [
+          111,
+          726
+        ],
+        [
+          112,
+          725
+        ],
+        [
+          112,
+          726
+        ],
+        [
+          109,
+          732
+        ],
+        [
+          109,
+          731
+        ]
+      ],
+      "depth": 744
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          675,
+          648
+        ]
+      ],
+      "depth": 725
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          685,
+          648
+        ],
+        [
+          685,
+          650
+        ],
+        [
+          685,
+          653
+        ],
+        [
+          683,
+          654
+        ],
+        [
+          681,
+          656
+        ],
+        [
+          682,
+          659
+        ],
+        [
+          682,
+          662
+        ],
+        [
+          682,
+          663
+        ]
+      ],
+      "depth": 725
+    },
+    {
+      "tool": "erase",
+      "size": 16,
+      "points": [
+        [
+          687,
+          644
+        ],
+        [
+          684,
+          642
+        ],
+        [
+          679,
+          638
+        ],
+        [
+          673,
+          634
+        ],
+        [
+          667,
+          632
+        ],
+        [
+          660,
+          627
+        ],
+        [
+          655,
+          622
+        ],
+        [
+          655,
+          625
+        ],
+        [
+          665,
+          636
+        ],
+        [
+          668,
+          640
+        ],
+        [
+          673,
+          645
+        ],
+        [
+          678,
+          649
+        ],
+        [
+          679,
+          649
+        ]
+      ],
+      "depth": 725
     }
-  ]
+  ],
+  "rooms": {
+    "piano": {
+      "version": 1,
+      "assets": [],
+      "collision": [
+        [
+          4900,
+          0
+        ],
+        [
+          4901,
+          0
+        ],
+        [
+          4902,
+          0
+        ],
+        [
+          4903,
+          0
+        ],
+        [
+          4904,
+          0
+        ],
+        [
+          4905,
+          0
+        ],
+        [
+          4906,
+          0
+        ],
+        [
+          4907,
+          0
+        ],
+        [
+          4908,
+          0
+        ],
+        [
+          4909,
+          0
+        ],
+        [
+          4910,
+          0
+        ],
+        [
+          4989,
+          0
+        ],
+        [
+          4990,
+          0
+        ],
+        [
+          4991,
+          0
+        ],
+        [
+          4992,
+          0
+        ],
+        [
+          4993,
+          0
+        ],
+        [
+          4994,
+          0
+        ],
+        [
+          4995,
+          0
+        ],
+        [
+          4996,
+          0
+        ],
+        [
+          4997,
+          0
+        ],
+        [
+          4998,
+          0
+        ],
+        [
+          4999,
+          0
+        ],
+        [
+          5000,
+          0
+        ],
+        [
+          5001,
+          0
+        ],
+        [
+          5002,
+          0
+        ],
+        [
+          5003,
+          0
+        ],
+        [
+          5004,
+          0
+        ],
+        [
+          5005,
+          0
+        ],
+        [
+          5006,
+          0
+        ],
+        [
+          5007,
+          0
+        ],
+        [
+          5008,
+          0
+        ],
+        [
+          5009,
+          0
+        ],
+        [
+          5010,
+          0
+        ],
+        [
+          5089,
+          0
+        ],
+        [
+          5090,
+          0
+        ],
+        [
+          5091,
+          0
+        ],
+        [
+          5092,
+          0
+        ],
+        [
+          5093,
+          0
+        ],
+        [
+          5094,
+          0
+        ],
+        [
+          5095,
+          0
+        ],
+        [
+          5096,
+          0
+        ],
+        [
+          5097,
+          0
+        ],
+        [
+          5098,
+          0
+        ],
+        [
+          5099,
+          0
+        ],
+        [
+          5100,
+          0
+        ],
+        [
+          5101,
+          0
+        ],
+        [
+          5102,
+          0
+        ],
+        [
+          5104,
+          0
+        ],
+        [
+          5105,
+          0
+        ],
+        [
+          5106,
+          0
+        ],
+        [
+          5107,
+          0
+        ],
+        [
+          5108,
+          0
+        ],
+        [
+          5109,
+          0
+        ],
+        [
+          5110,
+          0
+        ],
+        [
+          5189,
+          0
+        ],
+        [
+          5190,
+          0
+        ],
+        [
+          5191,
+          0
+        ],
+        [
+          5192,
+          0
+        ],
+        [
+          5193,
+          0
+        ],
+        [
+          5194,
+          0
+        ],
+        [
+          5195,
+          0
+        ],
+        [
+          5196,
+          0
+        ],
+        [
+          5197,
+          0
+        ],
+        [
+          5198,
+          0
+        ],
+        [
+          5199,
+          0
+        ],
+        [
+          5200,
+          0
+        ],
+        [
+          5201,
+          0
+        ],
+        [
+          5202,
+          0
+        ],
+        [
+          5203,
+          0
+        ],
+        [
+          5204,
+          0
+        ],
+        [
+          5205,
+          0
+        ],
+        [
+          5206,
+          0
+        ],
+        [
+          5207,
+          0
+        ],
+        [
+          5208,
+          0
+        ],
+        [
+          5209,
+          0
+        ],
+        [
+          5210,
+          0
+        ],
+        [
+          5211,
+          0
+        ],
+        [
+          5288,
+          0
+        ],
+        [
+          5289,
+          0
+        ],
+        [
+          5290,
+          0
+        ],
+        [
+          5291,
+          0
+        ],
+        [
+          5292,
+          0
+        ],
+        [
+          5293,
+          0
+        ],
+        [
+          5294,
+          0
+        ],
+        [
+          5295,
+          0
+        ],
+        [
+          5296,
+          0
+        ],
+        [
+          5297,
+          0
+        ],
+        [
+          5298,
+          0
+        ],
+        [
+          5299,
+          0
+        ],
+        [
+          5300,
+          0
+        ],
+        [
+          5301,
+          0
+        ],
+        [
+          5302,
+          0
+        ],
+        [
+          5303,
+          0
+        ],
+        [
+          5304,
+          0
+        ],
+        [
+          5305,
+          0
+        ],
+        [
+          5306,
+          0
+        ],
+        [
+          5307,
+          0
+        ],
+        [
+          5308,
+          0
+        ],
+        [
+          5309,
+          0
+        ],
+        [
+          5310,
+          0
+        ],
+        [
+          5311,
+          0
+        ],
+        [
+          5388,
+          0
+        ],
+        [
+          5389,
+          0
+        ],
+        [
+          5390,
+          0
+        ],
+        [
+          5391,
+          0
+        ],
+        [
+          5392,
+          0
+        ],
+        [
+          5393,
+          0
+        ],
+        [
+          5394,
+          0
+        ],
+        [
+          5395,
+          0
+        ],
+        [
+          5396,
+          0
+        ],
+        [
+          5397,
+          0
+        ],
+        [
+          5398,
+          0
+        ],
+        [
+          5399,
+          0
+        ],
+        [
+          5400,
+          0
+        ],
+        [
+          5401,
+          0
+        ],
+        [
+          5402,
+          0
+        ],
+        [
+          5403,
+          0
+        ],
+        [
+          5404,
+          0
+        ],
+        [
+          5405,
+          0
+        ],
+        [
+          5406,
+          0
+        ],
+        [
+          5407,
+          0
+        ],
+        [
+          5408,
+          0
+        ],
+        [
+          5409,
+          0
+        ],
+        [
+          5410,
+          0
+        ],
+        [
+          5411,
+          0
+        ],
+        [
+          5488,
+          0
+        ],
+        [
+          5489,
+          0
+        ],
+        [
+          5490,
+          0
+        ],
+        [
+          5491,
+          0
+        ],
+        [
+          5492,
+          0
+        ],
+        [
+          5493,
+          0
+        ],
+        [
+          5494,
+          0
+        ],
+        [
+          5495,
+          0
+        ],
+        [
+          5496,
+          0
+        ],
+        [
+          5497,
+          0
+        ],
+        [
+          5498,
+          0
+        ],
+        [
+          5499,
+          0
+        ],
+        [
+          5500,
+          0
+        ],
+        [
+          5501,
+          0
+        ],
+        [
+          5502,
+          0
+        ],
+        [
+          5503,
+          0
+        ],
+        [
+          5504,
+          0
+        ],
+        [
+          5505,
+          0
+        ],
+        [
+          5506,
+          0
+        ],
+        [
+          5507,
+          0
+        ],
+        [
+          5508,
+          0
+        ],
+        [
+          5509,
+          0
+        ],
+        [
+          5510,
+          0
+        ],
+        [
+          5511,
+          0
+        ],
+        [
+          5588,
+          0
+        ],
+        [
+          5589,
+          0
+        ],
+        [
+          5590,
+          0
+        ],
+        [
+          5591,
+          0
+        ],
+        [
+          5593,
+          0
+        ],
+        [
+          5594,
+          0
+        ],
+        [
+          5595,
+          0
+        ],
+        [
+          5596,
+          0
+        ],
+        [
+          5597,
+          0
+        ],
+        [
+          5598,
+          0
+        ],
+        [
+          5599,
+          0
+        ],
+        [
+          5600,
+          0
+        ],
+        [
+          5601,
+          0
+        ],
+        [
+          5602,
+          0
+        ],
+        [
+          5603,
+          0
+        ],
+        [
+          5604,
+          0
+        ],
+        [
+          5605,
+          0
+        ],
+        [
+          5606,
+          0
+        ],
+        [
+          5607,
+          0
+        ],
+        [
+          5608,
+          0
+        ],
+        [
+          5609,
+          0
+        ],
+        [
+          5610,
+          0
+        ],
+        [
+          5611,
+          0
+        ],
+        [
+          5688,
+          0
+        ],
+        [
+          5689,
+          0
+        ],
+        [
+          5690,
+          0
+        ],
+        [
+          5691,
+          0
+        ],
+        [
+          5692,
+          0
+        ],
+        [
+          5693,
+          0
+        ],
+        [
+          5694,
+          0
+        ],
+        [
+          5695,
+          0
+        ],
+        [
+          5696,
+          0
+        ],
+        [
+          5697,
+          0
+        ],
+        [
+          5698,
+          0
+        ],
+        [
+          5699,
+          0
+        ],
+        [
+          5700,
+          0
+        ],
+        [
+          5701,
+          0
+        ],
+        [
+          5702,
+          0
+        ],
+        [
+          5703,
+          0
+        ],
+        [
+          5704,
+          0
+        ],
+        [
+          5705,
+          0
+        ],
+        [
+          5706,
+          0
+        ],
+        [
+          5707,
+          0
+        ],
+        [
+          5708,
+          0
+        ],
+        [
+          5709,
+          0
+        ],
+        [
+          5710,
+          0
+        ],
+        [
+          5711,
+          0
+        ],
+        [
+          5788,
+          0
+        ],
+        [
+          5789,
+          0
+        ],
+        [
+          5790,
+          0
+        ],
+        [
+          5791,
+          0
+        ],
+        [
+          5792,
+          0
+        ],
+        [
+          5793,
+          0
+        ],
+        [
+          5794,
+          0
+        ],
+        [
+          5795,
+          0
+        ],
+        [
+          5796,
+          0
+        ],
+        [
+          5797,
+          0
+        ],
+        [
+          5798,
+          0
+        ],
+        [
+          5799,
+          0
+        ],
+        [
+          5800,
+          0
+        ],
+        [
+          5801,
+          0
+        ],
+        [
+          5802,
+          0
+        ],
+        [
+          5803,
+          0
+        ],
+        [
+          5804,
+          0
+        ],
+        [
+          5805,
+          0
+        ],
+        [
+          5806,
+          0
+        ],
+        [
+          5807,
+          0
+        ],
+        [
+          5808,
+          0
+        ],
+        [
+          5809,
+          0
+        ],
+        [
+          5810,
+          0
+        ],
+        [
+          5811,
+          0
+        ],
+        [
+          5888,
+          0
+        ],
+        [
+          5889,
+          0
+        ],
+        [
+          5890,
+          0
+        ],
+        [
+          5891,
+          0
+        ],
+        [
+          5892,
+          0
+        ],
+        [
+          5893,
+          0
+        ],
+        [
+          5894,
+          0
+        ],
+        [
+          5895,
+          0
+        ],
+        [
+          5896,
+          0
+        ],
+        [
+          5897,
+          0
+        ],
+        [
+          5898,
+          0
+        ],
+        [
+          5899,
+          0
+        ],
+        [
+          5988,
+          0
+        ],
+        [
+          5989,
+          0
+        ],
+        [
+          5990,
+          0
+        ],
+        [
+          5991,
+          0
+        ],
+        [
+          5993,
+          0
+        ],
+        [
+          5994,
+          0
+        ],
+        [
+          5995,
+          0
+        ],
+        [
+          5996,
+          0
+        ],
+        [
+          5997,
+          0
+        ],
+        [
+          5998,
+          0
+        ],
+        [
+          5999,
+          0
+        ]
+      ],
+      "strokes": [
+        {
+          "tool": "paint",
+          "size": 16,
+          "points": [
+            [
+              72,
+              489
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 16,
+          "points": [
+            [
+              81,
+              502
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 16,
+          "points": [
+            [
+              77,
+              502
+            ],
+            [
+              76,
+              502
+            ],
+            [
+              75,
+              502
+            ],
+            [
+              74,
+              502
+            ],
+            [
+              73,
+              502
+            ],
+            [
+              72,
+              502
+            ],
+            [
+              71,
+              502
+            ],
+            [
+              70,
+              502
+            ],
+            [
+              69,
+              502
+            ],
+            [
+              67,
+              502
+            ],
+            [
+              66,
+              502
+            ],
+            [
+              65,
+              502
+            ],
+            [
+              64,
+              502
+            ],
+            [
+              63,
+              502
+            ],
+            [
+              63,
+              503
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 16,
+          "points": [
+            [
+              64,
+              500
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 16,
+          "points": [
+            [
+              65,
+              499
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 16,
+          "points": [
+            [
+              66,
+              498
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 16,
+          "points": [
+            [
+              65,
+              499
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 16,
+          "points": [
+            [
+              69,
+              492
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 16,
+          "points": [
+            [
+              70,
+              490
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 16,
+          "points": [
+            [
+              71,
+              489
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 16,
+          "points": [
+            [
+              73,
+              487
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 16,
+          "points": [
+            [
+              75,
+              490
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 16,
+          "points": [
+            [
+              57,
+              503
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 16,
+          "points": [
+            [
+              49,
+              503
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 8,
+          "points": [
+            [
+              45,
+              499
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 8,
+          "points": [
+            [
+              45,
+              499
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 8,
+          "points": [
+            [
+              45,
+              499
+            ],
+            [
+              1,
+              536
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 8,
+          "points": [
+            [
+              47,
+              498
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 8,
+          "points": [
+            [
+              51,
+              498
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 8,
+          "points": [
+            [
+              45,
+              498
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 8,
+          "points": [
+            [
+              44,
+              498
+            ],
+            [
+              0,
+              536
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 8,
+          "points": [
+            [
+              1,
+              539
+            ],
+            [
+              0,
+              540
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 8,
+          "points": [
+            [
+              71,
+              507
+            ],
+            [
+              83,
+              507
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              88,
+              493
+            ],
+            [
+              83,
+              493
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              83,
+              492
+            ],
+            [
+              88,
+              492
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              89,
+              494
+            ],
+            [
+              89,
+              507
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              86,
+              491
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              85,
+              491
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              84,
+              492
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              84,
+              491
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              83,
+              491
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              83,
+              490
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              84,
+              490
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              85,
+              490
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              83,
+              484
+            ],
+            [
+              83,
+              490
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              84,
+              485
+            ],
+            [
+              84,
+              493
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              85,
+              489
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              86,
+              490
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              86,
+              491
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              87,
+              491
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              88,
+              491
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              89,
+              492
+            ],
+            [
+              89,
+              493
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              89,
+              494
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              49,
+              493
+            ],
+            [
+              58,
+              493
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              55,
+              492
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              56,
+              491
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              57,
+              490
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              60,
+              490
+            ],
+            [
+              60,
+              484
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              59,
+              484
+            ],
+            [
+              59,
+              491
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              58,
+              489
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              57,
+              489
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              55,
+              491
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              56,
+              490
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              54,
+              492
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              61,
+              483
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              61,
+              482
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              60,
+              483
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              67,
+              478
+            ],
+            [
+              78,
+              478
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              78,
+              477
+            ],
+            [
+              66,
+              477
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              66,
+              478
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              65,
+              478
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              64,
+              480
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              64,
+              479
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              63,
+              480
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              62,
+              480
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              62,
+              481
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              61,
+              481
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              67,
+              476
+            ],
+            [
+              76,
+              476
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              75,
+              475
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              75,
+              475
+            ],
+            [
+              67,
+              475
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              66,
+              476
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              65,
+              477
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              64,
+              478
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              63,
+              479
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 1,
+          "points": [
+            [
+              81,
+              481
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 32,
+          "points": [
+            [
+              929,
+              510
+            ],
+            [
+              929,
+              550
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 16,
+          "points": [
+            [
+              930,
+              491
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 16,
+          "points": [
+            [
+              927,
+              491
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 16,
+          "points": [
+            [
+              928,
+              487
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 16,
+          "points": [
+            [
+              919,
+              502
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 16,
+          "points": [
+            [
+              938,
+              502
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 16,
+          "points": [
+            [
+              938,
+              557
+            ],
+            [
+              937,
+              557
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 16,
+          "points": [
+            [
+              918,
+              555
+            ],
+            [
+              918,
+              556
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              911,
+              495
+            ],
+            [
+              911,
+              509
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              911,
+              494
+            ],
+            [
+              916,
+              491
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              915,
+              491
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              913,
+              492
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              916,
+              493
+            ],
+            [
+              919,
+              494
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              918,
+              492
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              915,
+              493
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              917,
+              485
+            ],
+            [
+              918,
+              492
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              918,
+              485
+            ],
+            [
+              918,
+              492
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              917,
+              489
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              918,
+              484
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              918,
+              483
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              920,
+              482
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              919,
+              482
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              920,
+              481
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              922,
+              479
+            ],
+            [
+              933,
+              479
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              925,
+              478
+            ],
+            [
+              933,
+              478
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              924,
+              478
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              925,
+              477
+            ],
+            [
+              932,
+              477
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              934,
+              479
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              936,
+              481
+            ],
+            [
+              936,
+              484
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              937,
+              481
+            ],
+            [
+              937,
+              484
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              938,
+              482
+            ],
+            [
+              938,
+              491
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              939,
+              485
+            ],
+            [
+              939,
+              492
+            ]
+          ]
+        },
+        {
+          "tool": "paint",
+          "size": 2,
+          "points": [
+            [
+              940,
+              486
+            ],
+            [
+              940,
+              491
+            ]
+          ]
+        }
+      ],
+      "entities": {}
+    }
+  }
 }

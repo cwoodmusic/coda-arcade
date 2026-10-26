@@ -146,9 +146,13 @@ class PianoDeveloperEntryTests(unittest.TestCase):
         self.enter('piano')
         self.developer().click()
         self.tab('piano', 'collision')
-        self.drag(self.point('piano', 550, 255), self.point('piano', 550, 585))
-        self.assertGreater(len(self.project('piano')['collision']), 25)
-        self.assertTrue(all(value == 0 for _, value in self.project('piano')['collision']))
+        original_collision=dict(self.project('piano')['collision'])
+        wall={row*100+55 for row in range(25,59)}
+        self.drag(self.point('piano', 555, 255), self.point('piano', 555, 585))
+        blocked_cells=dict(self.project('piano')['collision'])
+        self.assertTrue(all(blocked_cells.get(index)==0 for index in wall))
+        self.assertEqual({index:value for index,value in blocked_cells.items() if index not in wall},
+                         {index:value for index,value in original_collision.items() if index not in wall})
         self.action('piano', 'playtest').click()
         self.canvas('piano').focus()
         self.page.keyboard.down('d')
@@ -159,8 +163,11 @@ class PianoDeveloperEntryTests(unittest.TestCase):
         self.assertLess(blocked['x'], 550, 'Painted red cells must stop actual walking')
         self.action('piano', 'playtest').click()
         self.panel('piano').locator('[data-room-field="collision-tool"]').select_option('open')
-        self.drag(self.point('piano', 550, 255), self.point('piano', 550, 585))
-        self.assertTrue(all(value == 1 for _, value in self.project('piano')['collision']))
+        self.drag(self.point('piano', 555, 255), self.point('piano', 555, 585))
+        opened_cells=dict(self.project('piano')['collision'])
+        self.assertTrue(all(opened_cells.get(index)==1 for index in wall))
+        self.assertEqual({index:value for index,value in opened_cells.items() if index not in wall},
+                         {index:value for index,value in original_collision.items() if index not in wall})
         self.action('piano', 'playtest').click()
         self.canvas('piano').focus()
         self.page.keyboard.down('d')
@@ -174,6 +181,7 @@ class PianoDeveloperEntryTests(unittest.TestCase):
         player = self.room_state('piano')['player']
         x, y = round(player['x']), round(player['y'] - 30)
         before = self.pixel('piano', x, y)
+        original_strokes=self.project('piano')['strokes']
         self.tab('piano', 'layers')
         self.panel('piano').locator('[data-room-field="layer-size"]').select_option('32')
         self.page.mouse.click(**self.point('piano', x, y))
@@ -185,7 +193,7 @@ class PianoDeveloperEntryTests(unittest.TestCase):
         saved = self.project('piano')
         self.assertEqual(saved['strokes'][-1]['tool'], 'paint')
         self.action('piano', 'undo').click()
-        self.assertEqual(self.project('piano')['strokes'], [])
+        self.assertEqual(self.project('piano')['strokes'], original_strokes)
         self.action('piano', 'redo').click()
         self.assertEqual(self.project('piano'), saved)
         self.tab('piano', 'project')

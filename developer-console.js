@@ -192,7 +192,7 @@ window.createCodaDeveloperConsole = function (api) {
     pixelEditor?.cancelGesture?.();artworkEditor?.cancelGesture?.();
     artwork=clone(data.artwork||{});
     dialogue=clone(data.dialogue||{});sprites=clone(data.sprites||{});api.renderer?.setPixelEdits?.(sprites);
-    if(data.rooms!==undefined||options.clearRooms)api.applyRooms?.(clone(data.rooms||{}));
+    if(data.rooms!==undefined||options.clearRooms)api.applyRooms?.(clone(data.rooms||{}),{published:options.published===true});
     studio.assets=clone(data.assets); layer.actions=clone(data.strokes); layer.redo=[]; layer.drawing=null; layer.dirty=true;
     collision.apply(data.collision); studio.nextId=Math.max(1,...studio.assets.map(a=>Number(a.id.match(/^asset-(\d+)$/)?.[1]||0)+1));
     if(!studio.assets.some(a=>a.id===studio.selected))studio.selected=studio.assets.at(-1)?.id||null;
@@ -477,7 +477,7 @@ window.createCodaDeveloperConsole = function (api) {
           collision.apply(api.legacyCollision||[]);invalidate();api.refresh();projectSource='legacy';
           message('Ready. Existing assets, collision and foreground edits preserved.'+(publication.error?' '+publication.error:''));
         }else if(publishedProject){
-          applyState(publishedProject);projectSource='published';
+          applyState(publishedProject,{published:true});projectSource='published';
           message('Loaded the published world layout. New edits save only in this browser.');
         }else{
           collision.apply([]);invalidate();api.refresh();
