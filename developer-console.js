@@ -247,32 +247,8 @@ window.createCodaDeveloperConsole = function (api) {
     return !a.visible||a.opacity<100||a.anim!=='none'||a.x!==x+w/2||a.y!==y+h/2||a.w!==w||a.h!==h||a.rotation!==0;
   }
   function cabinetFloor(a,repair) {
-    const [x,y,w,h]=a.origin.bounds,displaced=cabinetDisplaced(a);
-    const bottom=displaced?repair.reflectionBottom:y+h;
-    const canvas=makeCanvas(w,bottom-y),ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
-    // These are the actual grout rows in the approved arcade PNG. Its hand-drawn
-    // half-tiles vary from 11 to 14px, so repeating a square sample drifts out of
-    // phase. Clone quiet floor at the SAME world X, keeping vertical lines fixed,
-    // and fit one donor grout interval to each corresponding destination row.
-    const rows=[166,178,189,203,215,227,238,249,261,273,284,296,310,323,336,350,363,375];
-    const sourceRows=[386,399,412,426];
-    for(let i=0;i<rows.length-1;i++){
-      const top=Math.max(y,rows[i]),end=Math.min(bottom,rows[i+1]);if(end<=top)continue;
-      const donor=i%(sourceRows.length-1),sy=sourceRows[donor],sh=sourceRows[donor+1]-sy;
-      ctx.drawImage(worldArt,x,sy,w,sh,0,top-y,w,end-top);
-    }
-    if(displaced){
-      // Remove reflections belonging to the old cabinet too, feathering only
-      // that floor strip. The cabinet rectangle itself must be fully replaced
-      // so black feet and brightly painted controls cannot remain as ghosts.
-      const pixels=ctx.getImageData(0,0,w,canvas.height);
-      for(let yy=h;yy<canvas.height;yy++)for(let xx=0;xx<w;xx++){
-        const edge=Math.min(1,(xx+1)/5,(w-xx)/5,(canvas.height-yy)/24);
-        pixels.data[(yy*w+xx)*4+3]=Math.round(255*edge);
-      }
-      ctx.putImageData(pixels,0,0);
-    }
-    return canvas;
+    const bounds=a.origin.bounds,bottom=cabinetDisplaced(a)?repair.reflectionBottom:bounds[1]+bounds[3];
+    return arcadeFloor.cabinet(bounds,bottom);
   }
   function renderBase(g) {
     if(!worldArt.complete||!worldArt.naturalWidth)return;
@@ -310,9 +286,8 @@ window.createCodaDeveloperConsole = function (api) {
       }
       if(arcadeFloor){
         baseCache=arcadeFloor.render(baseCache,originals.map(a=>a.origin.name));
-        // Cleanup is drawn again after low background masks. Reuse the exact
-        // normalized colors through its existing alpha, so old grout cannot
-        // return over the new floor in any lifted object's source rectangle.
+        // Cleanup is drawn again after low background masks. Use the same
+        // repaired source pixels through its alpha in both draw passes.
         cleanup.globalCompositeOperation='source-in';cleanup.drawImage(baseCache,0,0);cleanup.globalCompositeOperation='source-over';
       }
       baseKey=key;

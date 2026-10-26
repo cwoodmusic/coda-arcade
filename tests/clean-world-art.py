@@ -1,11 +1,24 @@
 """Read-only checks for the cleaned pixel-art assets (requires Pillow)."""
 from pathlib import Path
+import hashlib
 import json
 import unittest
 
 from PIL import Image
 
 ROOT=Path(__file__).resolve().parents[1]
+COUCH=json.loads((ROOT/'scripts/dance-couch-repair.json').read_text())
+
+def couch_contains(x,y):
+    # Test pixel centres, with a half-pixel allowance for Canvas edge coverage.
+    def inside(px,py):
+        hit=False
+        for a,b in zip(COUCH['polygon'],COUCH['polygon'][1:]+COUCH['polygon'][:1]):
+            if (a[1]>py)!=(b[1]>py) and px<(b[0]-a[0])*(py-a[1])/(b[1]-a[1])+a[0]:
+                hit=not hit
+        return hit
+    return any(inside(x+dx,y+dy) for dx in (.01,.5,.99) for dy in (.01,.5,.99))
+
 def pixels(image):
     return image.get_flattened_data() if hasattr(image,'get_flattened_data') else image.getdata()
 
@@ -28,6 +41,10 @@ class CleanWorldArtTests(unittest.TestCase):
             x,y,w,h=region['bounds']
             for row in range(y,y+h):
                 allowed[row*width+x:row*width+x+w]=b'\x01'*w
+        bx,by,bw,bh=COUCH['foreground']['bounds']
+        for y in range(by,by+bh):
+            for x in range(bx,bx+bw):
+                if couch_contains(x,y):allowed[y*width+x]=1
         changed=0
         for index,(old,new) in enumerate(zip(pixels(original),pixels(clean))):
             if old!=new:
@@ -46,10 +63,44 @@ class CleanWorldArtTests(unittest.TestCase):
         for index,(old,new) in enumerate(zip(pixels(original),pixels(clean))):
             if old[3]!=new[3]:
                 x,y=index%2048,index//2048
+                bx,by,_,_=COUCH['foreground']['bounds']
+                ax,ay,aw,ah=COUCH['foreground']['atlas']
+                if ax<=x<ax+aw and ay<=y<ay+ah and couch_contains(bx+x-ax,by+y-ay):
+                    self.assertEqual(new[3],255,'The repaired sofa must lift as one complete object')
+                    continue
                 self.assertTrue(any(bx<=x<bx+w and by<=y<by+h for bx,by,w,h in allowed),(x,y))
                 self.assertEqual(new[3],0,'Cleanup must not grow new occluding regions')
                 removed+=1
         self.assertGreater(removed,100)
+
+    def test_repaired_sofa_arm_and_base_fit_the_existing_movable_atlas_entry(self):
+        world=Image.open(ROOT/'coda_arcade_world_clean.png').convert('RGBA')
+        atlas=Image.open(ROOT/'coda_arcade_foreground_clean.png').convert('RGBA')
+        with Image.open(ROOT/COUCH['source']) as source:
+            self.assertEqual(list(source.size),COUCH['sourceSize'])
+        bx,by,bw,bh=COUCH['foreground']['bounds'];ax,ay,aw,ah=COUCH['foreground']['atlas']
+        self.assertEqual((bw,bh),(aw,ah))
+        self.assertTrue(all(bx<=x<=bx+bw and by<=y<=by+bh for x,y in COUCH['polygon']))
+        # These right-arm/base pixels were outside the old cropped silhouette.
+        for x,y in [(700,672),(700,688),(689,696),(675,690),(635,674)]:
+            with self.subTest(point=(x,y)):
+                self.assertTrue(couch_contains(x,y))
+                self.assertEqual(atlas.getpixel((ax+x-bx,ay+y-by)),world.getpixel((x,y)))
+                self.assertEqual(atlas.getpixel((ax+x-bx,ay+y-by))[3],255)
+
+    def test_couch_repair_changes_no_other_world_or_atlas_pixels(self):
+        bx,by,bw,bh=COUCH['foreground']['bounds'];ax,ay,_,_=COUCH['foreground']['atlas']
+        for name,key in [('coda_arcade_world_clean.png','outsideWorldSha256'),
+                         ('coda_arcade_foreground_clean.png','outsideAtlasSha256')]:
+            with self.subTest(asset=name):
+                image=Image.open(ROOT/name).convert('RGBA');data=bytearray(image.tobytes())
+                for y in range(by,by+bh):
+                    for x in range(bx,bx+bw):
+                        if not couch_contains(x,y):continue
+                        px,py=(x,y) if 'world_clean' in name else (ax+x-bx,ay+y-by)
+                        at=(py*image.width+px)*4;data[at:at+4]=b'\0'*4
+                self.assertEqual(hashlib.sha256(data).hexdigest(),COUCH[key],
+                                 'Every pixel outside the tiny sofa repair must retain its reviewed value')
 
     def test_all_four_pictured_plants_are_removed_from_the_rebuilt_art(self):
         original=Image.open(ROOT/'coda_arcade_phase86_approved_world.png').convert('RGB')
