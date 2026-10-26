@@ -6,6 +6,7 @@ window.createCodaDeveloperConsole = function (api) {
   // retaining its stable name, so its original atlas pixels stay suppressed.
   const explicitCatalog=api.catalog||[];
   const catalog = [...explicitCatalog,...parts.filter(part=>!explicitCatalog.some(original=>original.name===part.name))];
+  const arcadeFloor=window.createCodaArcadeFloorGrid?.({worldArt,parts,catalog});
   const FORMAT = 'CodaArcadeWorldProject', VERSION = 1, STORE = 'codaWorldProjectV1';
   const $ = id => document.getElementById(id);
   const clone = value => JSON.parse(JSON.stringify(value));
@@ -241,13 +242,45 @@ window.createCodaDeveloperConsole = function (api) {
     }
     g.drawImage(cached.canvas,x,y);
   }
+  function cabinetDisplaced(a) {
+    const [x,y,w,h]=a.origin.bounds;
+    return !a.visible||a.opacity<100||a.anim!=='none'||a.x!==x+w/2||a.y!==y+h/2||a.w!==w||a.h!==h||a.rotation!==0;
+  }
+  function cabinetFloor(a,repair) {
+    const [x,y,w,h]=a.origin.bounds,displaced=cabinetDisplaced(a);
+    const bottom=displaced?repair.reflectionBottom:y+h;
+    const canvas=makeCanvas(w,bottom-y),ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
+    // These are the actual grout rows in the approved arcade PNG. Its hand-drawn
+    // half-tiles vary from 11 to 14px, so repeating a square sample drifts out of
+    // phase. Clone quiet floor at the SAME world X, keeping vertical lines fixed,
+    // and fit one donor grout interval to each corresponding destination row.
+    const rows=[166,178,189,203,215,227,238,249,261,273,284,296,310,323,336,350,363,375];
+    const sourceRows=[386,399,412,426];
+    for(let i=0;i<rows.length-1;i++){
+      const top=Math.max(y,rows[i]),end=Math.min(bottom,rows[i+1]);if(end<=top)continue;
+      const donor=i%(sourceRows.length-1),sy=sourceRows[donor],sh=sourceRows[donor+1]-sy;
+      ctx.drawImage(worldArt,x,sy,w,sh,0,top-y,w,end-top);
+    }
+    if(displaced){
+      // Remove reflections belonging to the old cabinet too, feathering only
+      // that floor strip. The cabinet rectangle itself must be fully replaced
+      // so black feet and brightly painted controls cannot remain as ghosts.
+      const pixels=ctx.getImageData(0,0,w,canvas.height);
+      for(let yy=h;yy<canvas.height;yy++)for(let xx=0;xx<w;xx++){
+        const edge=Math.min(1,(xx+1)/5,(w-xx)/5,(canvas.height-yy)/24);
+        pixels.data[(yy*w+xx)*4+3]=Math.round(255*edge);
+      }
+      ctx.putImageData(pixels,0,0);
+    }
+    return canvas;
+  }
   function renderBase(g) {
     if(!worldArt.complete||!worldArt.naturalWidth)return;
     const originals=studio.assets.filter(a=>a.origin&&!catalog.find(part=>part.name===a.origin.name)?.procedural);
-    if(!originals.length) {g.drawImage(worldArt,0,0,W,H);return;}
+    if(!originals.length) {g.drawImage(arcadeFloor?.render(worldArt)||worldArt,0,0,W,H);return;}
     // Images load independently. Do not memoize an incomplete cleanup surface.
     if(!foregroundArt.complete||!foregroundArt.naturalWidth){g.drawImage(worldArt,0,0,W,H);return;}
-    const key=JSON.stringify(originals.map(a=>a.origin));
+    const key=JSON.stringify(originals.map(a=>[a.origin,catalog.find(part=>part.name===a.origin.name)?.cleanup?.kind==='arcade-cabinet-floor'?cabinetDisplaced(a):false]));
     if(key!==baseKey||!baseCache) {
       const sourcePictures=originals.map(a=>picture(a.origin));
       if(sourcePictures.some(img=>!img)){g.drawImage(worldArt,0,0,W,H);return;}
@@ -258,7 +291,9 @@ window.createCodaDeveloperConsole = function (api) {
         const patch=makeCanvas(w,h),p=patch.getContext('2d'); p.imageSmoothingEnabled=false;
         const part=catalog.find(part=>part.name===o.name),repair=part?.cleanup;
         if(part?.permanentlyRemoved)continue;
-        if(repair?.kind==='dance-passage'&&JSON.stringify(part.bounds)===JSON.stringify(o.bounds)){
+        if(repair?.kind==='arcade-cabinet-floor'){
+          const floor=cabinetFloor(a,repair);bg.drawImage(floor,x,y);cleanup.drawImage(floor,x,y);continue;
+        }else if(repair?.kind==='dance-passage'&&JSON.stringify(part.bounds)===JSON.stringify(o.bounds)){
           // Clone the unoccupied right-hand floor strip at the same world Y.
           // Its 12px half-tiles preserve the corridor's 24px grid; repeating a
           // square 16px sample here would add broken horizontal grid lines.
@@ -272,6 +307,13 @@ window.createCodaDeveloperConsole = function (api) {
           for(let yy=0;yy<h;yy+=16)for(let xx=0;xx<w;xx+=16)p.drawImage(worldArt,o.sample[0],o.sample[1],16,16,xx,yy,16,16);
         }
         p.globalCompositeOperation='destination-in';p.drawImage(img,0,0);bg.drawImage(patch,x,y);cleanup.drawImage(patch,x,y);
+      }
+      if(arcadeFloor){
+        baseCache=arcadeFloor.render(baseCache,originals.map(a=>a.origin.name));
+        // Cleanup is drawn again after low background masks. Reuse the exact
+        // normalized colors through its existing alpha, so old grout cannot
+        // return over the new floor in any lifted object's source rectangle.
+        cleanup.globalCompositeOperation='source-in';cleanup.drawImage(baseCache,0,0);cleanup.globalCompositeOperation='source-over';
       }
       baseKey=key;
     }
@@ -562,6 +604,7 @@ window.createCodaDeveloperConsole = function (api) {
   setTab('objects');load();
   return {snapshot,recordChange,recordRoomChange,setSprites,undoRedo,save,refresh,refreshCamera,onToggle,open,renderBase,renderCleanup,suppressOriginal,drawUnliftedPixels,originalPicture:a=>a.origin?picture(a.origin):null,validateAssetExtension,walkableOverride,pointerDown,pointerMove,pointerEnd,drawOverlay,liftedRegion,finishGesture,isPlaytest:()=>playtest,isEditing:()=>studio.active&&!playtest,exportProject,loadReady:()=>!loading,validate,
     // Data-only inspection supports repeatable browser integration checks.
+    floorGrid:()=>arcadeFloor?.snapshot()||null,
     getProject:()=>clone(documentData()),getPublishedProject:()=>publishedProject?clone(publishedProject):null,getProjectSource:()=>projectSource,
     getDialogue:id=>id===undefined?clone(dialogue):dialogue[id]?clone(dialogue[id]):null,getSprites:()=>clone(sprites),getState:()=>({open:studio.active,editing:studio.active&&!playtest,playtest,tab,overlays:{collision:collisionOverlay,layers:layerOverlay,visible:studio.active&&!playtest}})};
 };

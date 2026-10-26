@@ -120,6 +120,19 @@ class CollisionIntegrationTests(unittest.TestCase):
         self.page.set_viewport_size({'width':390, 'height':844})
         self.page.locator('#worldDeveloperBtn').click()
         self.page.locator('#devTab-collision').click()
+        self.page.locator('#view').scroll_into_view_if_needed()
+        # The phone keeps its 150% world framing. This east-side target starts
+        # just outside the viewport, so bring it onto the map using the actual
+        # editor's right-drag gesture instead of changing camera internals.
+        before=self.page.evaluate('CodaArcadeQA.camera()')
+        start={'x':250,'y':350};end={'x':150,'y':350}
+        self.assertTrue(self.page.evaluate('''point=>document.elementFromPoint(point.x,point.y)===view''',start))
+        self.page.mouse.move(**start);self.page.mouse.down(button='right')
+        self.page.mouse.move(**end,steps=5);self.page.mouse.up(button='right')
+        self.assertGreater(self.page.evaluate('CodaArcadeQA.camera().x'),before['x']+30)
+        self.assertTrue(self.page.locator('#assetStudio .dev-camera').evaluate('''node=>{
+          const box=node.getBoundingClientRect();return box.top>=0&&box.bottom<=innerHeight;
+        }'''),'Camera controls stay visible while panning and painting the map')
         self.paint(1205,505,'open')
         self.assertTrue(self.page.evaluate('CodaArcadeQA.walkable(1205,505)'))
         self.paint(1205,505,'block')
@@ -170,7 +183,10 @@ class CollisionIntegrationTests(unittest.TestCase):
                          'Old blue floor annotations must not reopen a red cell')
 
     def test_restoring_a_green_cell_releases_the_old_hidden_wall_edge(self):
-        self.open_collision();self.paint(1205,455,'block')
+        self.open_collision()
+        # Build the neighboring barrier explicitly; the published user layout
+        # may legitimately make this next cell green as well.
+        self.paint(1205,465,'block');self.paint(1205,455,'block')
         self.page.locator('#devPlaytest').click()
         self.assertTrue(self.page.evaluate('CodaArcadeQA.place(1205,445)'))
         self.page.locator('#view').focus();self.page.keyboard.down('s')
@@ -178,6 +194,8 @@ class CollisionIntegrationTests(unittest.TestCase):
         self.assertLess(self.page.evaluate('CodaArcadeQA.position().y'),450)
         self.page.locator('#devPlaytest').click();self.paint(1205,455,'restore')
         self.assertTrue(self.page.evaluate('CodaArcadeQA.walkable(1205,459)'))
+        self.assertFalse(self.page.evaluate('CodaArcadeQA.walkable(1205,465)'),
+                         'Restoring one cell must preserve the neighboring painted barrier')
         self.page.locator('#devPlaytest').click()
         self.assertTrue(self.page.evaluate('CodaArcadeQA.place(1205,455)'))
         self.page.locator('#view').focus();self.page.keyboard.down('s')
@@ -209,6 +227,7 @@ class CollisionIntegrationTests(unittest.TestCase):
                            'Changing the same corridor cell to green must release movement')
 
     def test_painted_cells_control_live_walking_routes_and_survive_reload(self):
+        initial_assets=self.page.evaluate('CodaDeveloperConsole.getProject().assets')
         self.open_collision(); self.paint(1005,425,'block','5')
         self.assertFalse(self.page.evaluate('CodaArcadeQA.walkable(1005,425)'))
         route = self.page.evaluate('CodaArcadeQA.route(950,425,1060,425)')
@@ -234,7 +253,8 @@ class CollisionIntegrationTests(unittest.TestCase):
         self.page.reload(wait_until='domcontentloaded')
         self.page.wait_for_function('window.CodaDeveloperConsole.ready()')
         self.assertTrue(self.page.evaluate('CodaArcadeQA.walkable(1005,425)'))
-        self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getProject().assets.length'),8)
+        self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getProject().assets'),initial_assets,
+                         'Collision painting and reload must preserve every published asset')
         self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getProjectSource()'),'local')
 
 

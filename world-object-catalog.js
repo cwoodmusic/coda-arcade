@@ -24,24 +24,28 @@ window.CodaWorldObjectCatalog = [
     name: 'cabinet_pitch_race', label: 'Cabinet · Pitch Race', group: 'Arcade cabinets', source: 'world',
     bounds: [682, 166, 95, 138], layer: 'world', sortY: 303, gameIndex: 0,
     collision: [676,177,90,104], screen: [696,207,52,45],
+    cleanup: {kind:'arcade-cabinet-floor',reflectionBottom:375},
     polygon: [[691,168],[763,168],[772,173],[775,182],[775,286],[771,300],[764,302],[759,295],[702,295],[698,302],[688,302],[684,292],[683,180],[686,172]]
   },
   {
     name: 'cabinet_music_triad', label: 'Cabinet · Music Triad', group: 'Arcade cabinets', source: 'world',
     bounds: [791, 166, 104, 138], layer: 'world', sortY: 303, gameIndex: 1,
     collision: [781,174,100,104], screen: [802,208,59,44],
+    cleanup: {kind:'arcade-cabinet-floor',reflectionBottom:375},
     polygon: [[802,168],[884,168],[892,174],[894,285],[889,300],[881,302],[877,295],[811,295],[807,302],[798,302],[794,292],[792,181],[795,173]]
   },
   {
     name: 'cabinet_rhythm_room', label: 'Cabinet · Rhythm Room', group: 'Arcade cabinets', source: 'world',
     bounds: [912, 166, 104, 138], layer: 'world', sortY: 303, gameIndex: 2,
     collision: [900,174,104,107], screen: [916,208,59,44],
+    cleanup: {kind:'arcade-cabinet-floor',reflectionBottom:375},
     polygon: [[923,168],[1005,168],[1013,174],[1015,285],[1010,300],[1002,302],[998,295],[932,295],[928,302],[919,302],[915,292],[913,181],[916,173]]
   },
   {
     name: 'cabinet_song_machine', label: 'Cabinet · Song Machine', group: 'Arcade cabinets', source: 'world',
     bounds: [1028, 166, 107, 138], layer: 'world', sortY: 303, gameIndex: 3,
     collision: [1011,171,108,109], screen: [1033,205,63,42],
+    cleanup: {kind:'arcade-cabinet-floor',reflectionBottom:375},
     polygon: [[1040,168],[1123,168],[1132,174],[1134,285],[1128,300],[1120,302],[1116,295],[1049,295],[1045,302],[1035,302],[1031,292],[1029,181],[1033,173]]
   },
   {

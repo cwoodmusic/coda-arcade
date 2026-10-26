@@ -315,13 +315,18 @@ class WorldEditorTests(unittest.TestCase):
                  [1206,340],[915,380],[761,399],[1083,405],[1351,474],[1223,743],[1345,739],
                  [392,610],[221,679],[295,697],[403,713],[495,691],[570,690],[661,715],
                  [128,747],[211,735],[296,764],[403,795],[493,760],[626,774],[230,808]]
+        self.page.wait_for_function('CodaArcadeQA.floorGrid()?.ready')
         mismatches=self.page.evaluate('''async(samples)=>{
           const image=new Image();image.src='coda_arcade_world_clean.png';await image.decode();
           const canvas=document.createElement('canvas');canvas.width=1672;canvas.height=941;
           const reference=canvas.getContext('2d');reference.drawImage(image,0,0);
-          const game=document.querySelector('#view').getContext('2d');
+          const game=document.querySelector('#view').getContext('2d'),floor=CodaArcadeQA.floorGrid();
           const characters=CodaArcadeQA.characters(),dj=CodaArcadeQA.dj(),actors=[characters.player,...characters.npcs.filter(p=>!p.hidden),...(dj.visible?[dj]:[]),...CodaArcadeQA.shopkeepers().filter(p=>p.visible)];
-          return samples.filter(([x,y])=>!actors.some(p=>Math.abs(p.x-x)<45&&y>p.y-90&&y<p.y+8)).filter(([x,y])=>{const a=game.getImageData(x,y,1,1).data,b=reference.getImageData(x,y,1,1).data;return [0,1,2].some(i=>Math.abs(a[i]-b[i])>2)});
+          return samples.filter(([x,y])=>!actors.some(p=>Math.abs(p.x-x)<45&&y>p.y-90&&y<p.y+8)).flatMap(([x,y])=>{
+            const rebuilt=floor.maskAt(x,y)>0,a=game.getImageData(x,y,1,1).data,
+              b=rebuilt?floor.pixelAt(x,y):reference.getImageData(x,y,1,1).data;
+            return [0,1,2].some(i=>Math.abs(a[i]-b[i])>2)?[{x,y,rebuilt,actual:Array.from(a),expected:Array.from(b)}]:[];
+          });
         }''',samples)
         self.assertEqual(mismatches,[],'Foreground masks must not put the old people back over the clean background')
         # Fresh cabinet cutouts must include the reconstructed front, without customer holes.
@@ -373,13 +378,23 @@ class WorldEditorTests(unittest.TestCase):
         self.assertFalse(self.page.evaluate('CodaArcadeQA.characters().npcs.find(p=>p.id==="miles").conversation'))
 
     def test_npc_recovers_when_editor_blocks_their_standing_position(self):
-        person=self.page.evaluate('CodaArcadeQA.characters().npcs.find(p=>!p.hidden)')
-        self.assertIsNotNone(person)
-        self.assertTrue(self.page.evaluate('id=>CodaArcadeQA.findMusician(id)',person['id']))
         self.tab('collision')
         self.page.get_by_label('Collision tool',exact=True).select_option('block')
         self.page.get_by_label('Collision brush',exact=True).select_option('5')
+        person=self.page.evaluate('''()=>{
+          const canvas=document.querySelector('#view'),box=canvas.getBoundingClientRect(),cam=CodaArcadeQA.camera();
+          return CodaArcadeQA.characters().npcs.find(person=>{
+            if(person.hidden)return false;
+            const x=box.left+(person.x-cam.x)*cam.zoom*box.width/1672,
+              y=box.top+(person.y-cam.y)*cam.zoom*box.height/941;
+            return document.elementFromPoint(x,y)===canvas;
+          })||null;
+        }''')
+        self.assertIsNotNone(person,'Choose a visible NPC whose standing cell can actually be painted')
+        self.assertTrue(self.page.evaluate('id=>CodaArcadeQA.findMusician(id)',person['id']))
         self.map_click(person['x'],person['y'])
+        self.assertFalse(self.page.evaluate('person=>CodaArcadeQA.walkable(person.x,person.y)',person),
+                         'The real collision brush must first block the NPC’s standing cell')
         self.assertTrue(self.page.evaluate('id=>CodaArcadeQA.characters().npcs.find(p=>p.id===id).hidden',person['id']),'An invalid standing location should despawn rather than walk through a new wall')
         self.page.keyboard.press('F2')
         self.page.wait_for_function('id=>!CodaArcadeQA.characters().npcs.find(p=>p.id===id).hidden',arg=person['id'],timeout=10000)
