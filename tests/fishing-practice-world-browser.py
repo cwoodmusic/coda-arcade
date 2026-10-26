@@ -16,7 +16,9 @@ class FishingPracticeWorldTests(_upgrade._fish._world.WorldBrowserCase):
     enter=_upgrade.FishingUpgradeTests.enter
     walk_to=_upgrade.FishingUpgradeTests.walk_to
     board=_upgrade.FishingUpgradeTests.board
-    start_exploring=_upgrade.FishingUpgradeTests.start_exploring
+    fishing_action=_upgrade._fish.FishingWorldTests.fishing_action
+    fishing_option=_upgrade._fish.FishingWorldTests.fishing_option
+    fishing_meter=_upgrade._fish.FishingWorldTests.fishing_meter
     place_single_fish=_upgrade.FishingUpgradeTests.place_single_fish
     advance_to=_upgrade.FishingUpgradeTests.advance_to
 
@@ -24,6 +26,10 @@ class FishingPracticeWorldTests(_upgrade._fish._world.WorldBrowserCase):
         _upgrade._fish.FishingWorldTests.setUp(self)
         self.page.clock.pause_at(self.page.evaluate('Date.now()/1000')+5)
         self.page.wait_for_function('!!window.createCodaFishingPractice')
+
+    def start_exploring(self,meter='4/4'):
+        self.enter();self.fishing_meter(meter);self.board()
+        self.assertEqual(self.state()['phase'],'explore')
 
     def rewards(self):
         return self.page.evaluate('''()=>({notes:CodaArcadeQA.notes().balance,
@@ -34,7 +40,7 @@ class FishingPracticeWorldTests(_upgrade._fish._world.WorldBrowserCase):
         return [(fish['id'],fish['fishId'],fish['visible'],fish['escaped']) for fish in self.state()['shadows']]
 
     def choose_practice(self,meter='4/4',rarity='common'):
-        self.page.locator('#fishingPractice').click(force=True)
+        self.fishing_action('#fishingPractice')
         self.assertTrue(self.state()['practiceSettingsOpen'])
         self.page.locator('input[name="fishingPracticeMeter"][value="'+meter+'"]').check(force=True)
         self.page.locator('input[name="fishingPracticeRarity"][value="'+rarity+'"]').check(force=True)
@@ -82,8 +88,14 @@ class FishingPracticeWorldTests(_upgrade._fish._world.WorldBrowserCase):
         self.assertEqual(zero['phase'],'rhythm');self.assertIsNone(zero['challenge']['result'])
         self.assertGreater(zero['challenge']['misses'],10)
         self.assertTrue(any(note['bar']>=8 for note in zero['challenge']['notes']))
-        for _ in range(35):
-            if self.state()['challenge']['progress']==100:break
+        # Progress is earned per written bar, not per tap. Recovery from
+        # zero needs more than the old fixed35-note budget after longer battles.
+        recovery_bar_limit=zero['challenge']['completedBars']+zero['challenge']['targetBars']*2+2
+        for _ in range(128):
+            state=self.state()
+            if state['challenge']['progress']==100:break
+            self.assertLess(state['challenge']['completedBars'],recovery_bar_limit,
+                            'Correct practice input must recover within the written-bar budget')
             self.play_pending_note()
         full=self.state();self.assertEqual(full['challenge']['progress'],100)
         hits=full['challenge']['hits']
@@ -94,7 +106,7 @@ class FishingPracticeWorldTests(_upgrade._fish._world.WorldBrowserCase):
         self.assertEqual(self.rewards(),before);self.assertEqual(self.fish_slots(),slots)
         self.end_practice('explore','2/2')
         self.assertEqual(self.rewards(),before);self.assertEqual(self.fish_slots(),slots)
-        self.place_single_fish('silver-minnow');self.page.locator('#fishingCast').click(force=True)
+        self.place_single_fish('silver-minnow');self.fishing_action('#fishingCast')
         self.page.clock.run_for(1400)
         normal=self.state();self.assertFalse(normal['practice']);self.assertFalse(normal['challenge']['practice'])
         self.assertEqual(normal['phase'],'rhythm');self.assertEqual(normal['meter'],'2/2')
@@ -107,7 +119,7 @@ class FishingPracticeWorldTests(_upgrade._fish._world.WorldBrowserCase):
         before=self.rewards()
         for size in [{'width':390,'height':844},{'width':844,'height':390}]:
             self.page.set_viewport_size(size);self.page.clock.run_for(32)
-            self.page.locator('#fishingPractice').click(force=True)
+            self.fishing_action('#fishingPractice')
             panel=self.page.locator('#fishingPracticePanel');box=panel.bounding_box()
             self.assertGreaterEqual(box['x'],0);self.assertGreaterEqual(box['y'],0)
             self.assertLessEqual(box['x']+box['width'],size['width']+1)

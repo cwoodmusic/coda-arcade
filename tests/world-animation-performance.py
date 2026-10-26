@@ -85,6 +85,20 @@ class AnimationPerformanceTests(unittest.TestCase):
         self.assertLessEqual(beams['width']*beams['height'],1672*941/3,
                              'Volumetric beams must use a smaller cached surface; floor pins stay sharp')
 
+    def test_foreground_sampling_is_bounded_by_frames_not_the_number_of_strokes(self):
+        self.page.wait_for_function('window.CodaDeveloperConsole?.ready()')
+        self.page.evaluate('displayFrames(4)')
+        before=self.page.evaluate('({work:renderWork.worldDraws,paint:CodaArcadeQA.foregroundRendering()})')
+        self.page.evaluate('displayFrames(16)')
+        after=self.page.evaluate('({work:renderWork.worldDraws,paint:CodaArcadeQA.foregroundRendering()})')
+        frames=after['work']-before['work']
+        self.assertGreater(frames,8)
+        self.assertGreater(after['paint']['builds'],before['paint']['builds'])
+        self.assertLessEqual(after['paint']['samples']-before['paint']['samples'],frames,
+                             'Hundreds of saved paint strokes must share one artwork sample per frame')
+        self.assertLessEqual(after['paint']['builds']-before['paint']['builds'],frames)
+        self.assertEqual((after['paint']['width'],after['paint']['height']),(1672,941))
+
     def test_paused_world_backdrop_stays_still_while_the_boutique_keeps_animating(self):
         open_destination(self.page,'boutique')
         self.page.evaluate('displayFrames(3)')

@@ -89,6 +89,7 @@ window.createCodaDeveloperConsole = function (api) {
     <label class="studioField">Brush tool<select id="devLayerTool"><option value="paint">Paint foreground</option><option value="erase">Send to background / erase mask</option></select></label>
     <label class="studioField">Stroke shape<select id="devLayerShape"><option value="pen">Freehand</option><option value="line">Line · drag a straight line</option></select></label>
     <label class="studioField">Brush size<select id="devLayerSize"><option>1</option><option>2</option><option selected>4</option><option>8</option><option>16</option></select></label>
+    <label class="studioField">Paint placement<select id="devLayerPlacement"><option value="front">Foreground · above characters</option><option value="depth">Actor depth · use offset</option></select></label>
     <label class="studioField">Depth offset (px)<input id="devLayerDepth" type="number" min="-120" max="120" step="5" value="0"></label>
     <label class="studioCheck"><input id="devMasks" type="checkbox">Show foreground masks</label>`);
   const dialoguePane=pane('dialogue','');
@@ -202,7 +203,7 @@ window.createCodaDeveloperConsole = function (api) {
     finishGesture();if(name!==tab)artworkEditor?.setExpanded(false); tab=name; pickSample=false; studio.capturing=null;
     if(name==='collision')collisionOverlay=true;if(name==='layers')layerOverlay=true;
     for(const name of TABS) { $('dev-'+name).hidden=name!==tab; $('devTab-'+name).setAttribute('aria-selected',String(name===tab)); }
-    layer.active=studio.active&&tab==='layers'&&!playtest; layer.preview=false;
+    layer.active=studio.active&&tab==='layers'&&!playtest;if(layer.active)api.showForeground?.(); layer.preview=false;
     collision.setActive(studio.active&&tab==='collision'&&!playtest);
     studio.showGuides=tab==='objects'&&!playtest&&$('assetGuides').checked;
     c.classList.toggle('layer-editing',layer.active);panel.scrollTop=0; refreshCamera();refresh();
@@ -505,7 +506,7 @@ window.createCodaDeveloperConsole = function (api) {
   function refresh() {
     dialogueEditor?.refresh();pixelEditor?.refresh();if(tab==='artwork')artworkEditor?.refresh();
     for(const [id,shown,label]of [['devShowCollision',collisionOverlay,'collision'],['devShowLayers',layerOverlay,'layers']]){$(id).setAttribute('aria-pressed',String(shown));$(id).textContent=(shown?'Hide ':'Show ')+label;$(id).disabled=playtest;}
-    $('devOverlayLegend').hidden=playtest||!collisionOverlay&&!layerOverlay;$('devMasks').checked=layerOverlay;$('devMasks').disabled=playtest;
+    $('devOverlayLegend').hidden=playtest||!collisionOverlay&&!layerOverlay;$('devMasks').checked=layerOverlay;layer.maskView=layerOverlay;$('devMasks').disabled=playtest;
     const a=api.selected(); $('devUndo').disabled=!studio.undo.length;$('devRedo').disabled=!studio.redo.length;
     const part=catalog.find(p=>p.name===a?.origin?.name);$('devDisco').hidden=part?.ballIndex===undefined;
     if(part?.ballIndex!==undefined){$('devDiscoSpin').value=a.discoSpin??part.spin;$('devDiscoRays').checked=a.discoRays!==false;}
@@ -554,7 +555,7 @@ window.createCodaDeveloperConsole = function (api) {
     if(layerOverlay){
       g.save();g.fillStyle='#58a9ff1f';g.fillRect(0,0,W,H);
       const source=api.getForegroundMask?.(),maskKey=JSON.stringify(studio.assets.filter(a=>a.origin).map(a=>[a.origin.name,a.origin.bounds]));
-      if(source){if(source!==layerMaskSource||maskKey!==layerMaskKey){layerMaskSource=source;layerMaskKey=maskKey;layerMaskTint=makeCanvas(W,H);const tint=layerMaskTint.getContext('2d');drawUnliftedPixels(tint,source,0,0);tint.globalCompositeOperation='source-in';tint.fillStyle='#69ffd0';tint.fillRect(0,0,W,H);}g.globalAlpha=.58;g.drawImage(layerMaskTint,0,0);g.globalAlpha=1;}
+      if(source){if(source!==layerMaskSource||maskKey!==layerMaskKey){layerMaskSource=source;layerMaskKey=maskKey;layerMaskTint=makeCanvas(W,H);const tint=layerMaskTint.getContext('2d');drawUnliftedPixels(tint,source,0,0);tint.fillStyle='#fff';for(const path of api.getPaintPaths?.()||[])tint.fill(path);tint.globalCompositeOperation='source-in';tint.fillStyle='#69ffd0';tint.fillRect(0,0,W,H);}g.globalAlpha=.58;g.drawImage(layerMaskTint,0,0);g.globalAlpha=1;}
       for(const a of studio.assets){if(a.visible===false)continue;const color=['back','background'].includes(a.layer)?'#70b6ff':['front','foreground'].includes(a.layer)?'#69ffd0':'#ffd46b';g.save();g.translate(a.x,a.y);g.rotate((a.rotation||0)*Math.PI/180);g.strokeStyle=color;g.lineWidth=2/(cam?.zoom||1);g.strokeRect(-a.w/2,-a.h/2,a.w,a.h);g.fillStyle=color;g.font=11/(cam?.zoom||1)+'px monospace';g.fillText((['back','background'].includes(a.layer)?'Background':['front','foreground'].includes(a.layer)?'Foreground':'Actor depth')+' · '+(a.name||a.id),-a.w/2,-a.h/2-4/(cam?.zoom||1));g.restore();}
       g.restore();
     }
@@ -582,7 +583,7 @@ window.createCodaDeveloperConsole = function (api) {
   $('devReplaceFile').onchange=async e=>{const file=e.target.files?.[0],id=studio.selected;e.target.value='';if(!file)return;try{if(!/^image\/(png|jpeg|webp|gif|apng)$/.test(file.type)||file.size>8*1024*1024)throw Error('Choose a supported image up to 8 MB.');const data=await api.fileData(file),[w,h]=await api.imageDimensions(data);if(w>8192||h>8192)throw Error('Image exceeds 8192 pixels.');if(studio.selected!==id)throw Error('Selection changed. Select the object and try again.');editSelected(a=>{a.kind='image';a.data=data;a.ref=null;a.crop=null;a.cols=a.rows=a.frames=1;a.fps=0;});message('Replaced selected artwork; size, placement and source cleanup preserved.');}catch(err){message(err.message);}};
   function setOverlay(name,value){if(!studio.active||playtest)return;finishGesture();if(name==='collision')collisionOverlay=!!value;else layerOverlay=!!value;refresh();message((name==='collision'?'Collision map':'Foreground / background layers')+(value?' shown.':' hidden.')+' Project edits are unchanged.');}
   $('devShowCollision').onclick=()=>setOverlay('collision',!collisionOverlay);$('devShowLayers').onclick=()=>setOverlay('layers',!layerOverlay);
-  $('devLayerTool').onchange=e=>{layer.tool=e.target.value;};$('devLayerShape').onchange=e=>{layer.shape=e.target.value;};$('devLayerSize').onchange=e=>{layer.size=Number(e.target.value);};$('devLayerDepth').onchange=e=>{layer.offset=api.bound(e.target.value,-120,120,0);};$('devMasks').onchange=e=>setOverlay('layers',e.target.checked);
+  $('devLayerTool').onchange=e=>{layer.tool=e.target.value;};$('devLayerShape').onchange=e=>{layer.shape=e.target.value;};$('devLayerSize').onchange=e=>{layer.size=Number(e.target.value);};$('devLayerPlacement').onchange=e=>{layer.placement=e.target.value;};$('devLayerDepth').onchange=e=>{layer.offset=api.bound(e.target.value,-120,120,0);layer.placement='depth';$('devLayerPlacement').value='depth';};$('devMasks').onchange=e=>setOverlay('layers',e.target.checked);
   $('devUndo').onclick=()=>undoRedo(true);$('devRedo').onclick=()=>undoRedo(false);$('devPlaytest').onclick=togglePlaytest;
   $('devSave').onclick=save;$('devExport').onclick=exportProject;$('assetExport').onclick=exportProject;
   $('devImport').onclick=$('assetImport').onclick=()=>$('devImportFile').click();

@@ -23,9 +23,9 @@ class RoomEditorInputTests(unittest.TestCase):
         self.page.set_content('<meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0}canvas{display:block;width:100%;height:auto;touch-action:none}</style><section id="room"><header></header><canvas width="1000" height="620" tabindex="0"></canvas></section>')
         self.page.add_style_tag(path=str(ROOT/'room-developer-editor.css'))
         self.page.add_script_tag(path=str(ROOT/'room-developer-editor.js'))
-        self.page.evaluate('''()=>{window.saves=0;window.changes=0;window.editor=createCodaRoomDeveloperEditor({
+        self.page.evaluate('''()=>{window.saves=0;window.changes=0;window.roomEditAllowed=true;window.editor=createCodaRoomDeveloperEditor({
           id:'gesture-test',host:document.querySelector('#room'),canvas:document.querySelector('canvas'),width:1000,height:620,
-          storage:{getItem:()=>null,setItem:()=>saves++},onProjectChange:()=>changes++});}''')
+          canEdit:()=>roomEditAllowed,storage:{getItem:()=>null,setItem:()=>saves++},onProjectChange:()=>changes++});}''')
         self.cdp=self.context.new_cdp_session(self.page)
 
     def tearDown(self):
@@ -76,6 +76,47 @@ class RoomEditorInputTests(unittest.TestCase):
                         self.touch('touchEnd',[])
                     self.assert_pristine()
                     self.page.evaluate('editor.close()')
+
+
+    def test_pending_room_strokes_are_excluded_from_committed_snapshots(self):
+        for tab in ['layers','collision']:
+            with self.subTest(tab=tab):
+                self.page.evaluate('tab=>editor.open(tab)',tab)
+                before=self.page.evaluate('editor.getCommittedProject()')
+                self.touch('touchStart',[(1,120,100)])
+                self.touch('touchMove',[(1,145,110)])
+                self.assertNotEqual(self.state()['project'],before,'The live preview should include the draft stroke')
+                self.assertEqual(self.page.evaluate('editor.getCommittedProject()'),before,
+                                 'A queued world save must not include an unfinished room stroke')
+                self.touch('touchCancel',[])
+                self.assert_pristine()
+                self.assertEqual(self.page.evaluate('editor.getCommittedProject()'),before)
+                self.page.evaluate('editor.close()')
+
+    def test_revoking_edit_access_cancels_the_current_stroke_and_blocks_history(self):
+        self.page.evaluate("editor.open('layers')")
+        self.touch('touchStart',[(1,120,100)])
+        self.touch('touchMove',[(1,145,110)])
+        self.assertTrue(self.state()['project']['strokes'])
+        self.page.evaluate('roomEditAllowed=false')
+        self.touch('touchEnd',[])
+        self.assert_pristine()
+        self.page.evaluate('roomEditAllowed=true')
+        self.touch('touchStart',[(1,120,100)])
+        self.touch('touchEnd',[])
+        committed=self.state()['project']
+        self.assertEqual(len(committed['strokes']),1)
+        self.assertEqual(self.state()['undo'],1)
+        self.assertEqual(self.page.evaluate('[saves,changes]'),[1,1])
+        self.page.evaluate('roomEditAllowed=false')
+        self.page.locator('[data-room-action="undo"]').click()
+        self.page.locator('[data-room-tab="project"]').click()
+        self.page.locator('[data-room-action="reset"]').click()
+        self.page.locator('[data-room-action="save"]').click()
+        self.assertEqual(self.state()['project'],committed,
+                         'A console already open when access changes must stop writing immediately')
+        self.assertEqual(self.state()['undo'],1)
+        self.assertEqual(self.page.evaluate('[saves,changes]'),[1,1])
 
 
 if __name__=='__main__':unittest.main(verbosity=2)

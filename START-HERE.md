@@ -53,3 +53,10 @@ Pixel edits save locally and are included in the complete world-project JSON
 export. Existing object placement, collision, layers, and old project exports
 remain supported. Export your project to share or publish your edits; editing
 in the console does not change the live site's files by itself.
+
+In **Developer → Layers**, **Paint foreground** puts the visible artwork above
+characters, including moved/imported assets and pixel edits. **Send to background**
+lowers the brushed pixels. Brushes and straight lines use exact world pixels at
+any zoom. For intentional depth sorting, choose **Actor depth** and set the
+**Depth offset**; existing project strokes keep their original depth settings.
+The **Show layers** toggle controls the inspection tint separately from the art.

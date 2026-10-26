@@ -52,6 +52,20 @@ class SongMobileTests(unittest.TestCase):
             self.touch('touchMove',start[0]+(end[0]-start[0])*step/8,start[1]+(end[1]-start[1])*step/8)
             self.page.wait_for_timeout(22)
         self.touch('touchEnd');self.page.wait_for_timeout(220)
+        # Wait for native momentum to finish before choosing/capturing a cell.
+        # A fixed delay can record coordinates while the grid still drifts.
+        self.page.evaluate('''()=>new Promise((resolve,reject)=>{
+          let previous='',stable=0,frames=0;
+          function next(){
+            const position=JSON.stringify([scrollX,scrollY,...Array.from(
+              document.querySelectorAll('.grid-wrap'),node=>[node.scrollLeft,node.scrollTop])]);
+            stable=position===previous?stable+1:0;previous=position;
+            if(stable>=4)return resolve();
+            if(++frames>180)return reject(Error('Touch scrolling did not settle'));
+            requestAnimationFrame(next);
+          }
+          requestAnimationFrame(next);
+        })''')
     def grid(self):
         wrap=self.page.locator('#tracks>.track').first.locator('.grid-wrap')
         wrap.scroll_into_view_if_needed();self.page.wait_for_timeout(50);return wrap
@@ -105,7 +119,11 @@ class SongMobileTests(unittest.TestCase):
         point=self.blank_cell(span=4);before=self.song()
         self.swipe((point['x'],point['y']),(point['x']+3*36,point['y']))
         self.assertTrue(any(note['p']==point['pitch'] and note['t']==point['step'] and note['d']==4 for note in self.song()['tracks'][0]['notes']))
-        self.page.locator('#undo').tap();self.assertEqual(self.song(),before)
+        self.page.locator('#undo').tap()
+        # Touch activation dispatches a compatibility click after pointerup.
+        # Await its real undo result instead of racing that browser event.
+        self.page.wait_for_function('expected=>JSON.stringify(songMachineBridge.get())===JSON.stringify(expected)',arg=before)
+        self.assertEqual(self.song(),before)
         point=self.blank_cell();self.touch('touchStart',point['x'],point['y']);self.touch('touchCancel')
         self.assertEqual(self.song(),before)
         self.page.get_by_role('button',name='Tap & scroll',exact=False).tap();wrap=self.grid();box=wrap.bounding_box()
@@ -140,7 +158,8 @@ class SongMobileTests(unittest.TestCase):
                         'Stop releases already sounding and scheduled sources')
         self.page.locator('#settings-toggle').tap()
         self.assertTrue(self.page.locator('#settings-panel').is_visible())
-        self.assertTrue(self.page.get_by_role('button',name='Import Song File',exact=True).is_visible())
+        self.assertTrue(self.page.locator('#load').is_visible())
+        self.assertEqual(self.page.locator('#load').inner_text().lower(),'import song file')
         self.assertEqual(self.page.get_by_label('Meter',exact=True).evaluate('(node)=>getComputedStyle(node).fontSize'),'16px')
 
 if __name__=='__main__':unittest.main(verbosity=2)

@@ -39,7 +39,7 @@
   const store='codaRoomProjectV1:'+id,COLS=Math.ceil(W/10);let storage=api.storage;
   if(storage===undefined)try{storage=win.localStorage;}catch{}
   let project=EMPTY(),opened=false,playtest=false,tab='objects',selected=null,mode='select',panTool=false,spaceHeld=false,gesture=null,destroyed=false,layerDirty=true,serial=0,pinching=null,projectRevision=0;
-  let undo=[],redo=[],maskCanvas=null,promotedCanvas=null,maskImageStamp='',maskBuilds=0,collisionMap=new Map(),entityVersions=new Map(),images=new Map(),loadError='';
+  let undo=[],redo=[],maskCanvas=null,erasedCanvas=null,promotedCanvas=null,paintPath=null,erasePath=null,normalPath=null,outsidePaintPath=null,maskImageSource=null,maskImageStamp='',maskBuilds=0,collisionMap=new Map(),entityVersions=new Map(),images=new Map(),loadError='';
   const camera={x:0,y:0,zoom:1},pointers=new Map(),TABS=['objects','collision','layers','project'];
   let pixelEditor=null,artworkEditor=null,backgroundCache=null,assetArtworkCache=new Map(),spriteUndo=[],spriteRedo=[],collisionOverlay=false,layerOverlay=false,brushHover=null;
   if(win.CodaPixelEditor&&api.renderer&&typeof api.getSharedSprites==='function'&&typeof api.setSharedSprites==='function')TABS.splice(3,0,'sprites');
@@ -71,7 +71,7 @@
    pixelEditor=win.CodaPixelEditor.mount({host:spritePane,renderer:api.renderer,getData:()=>api.getSharedSprites()||{},
     getTargets:()=>api.getPixelTargets?.()||[{id:'player',name:'Your avatar'},...entities().filter(entity=>entity.kind!=='fish').map(entity=>({id:entity.id,name:entity.name}))],
     getProfile:entityId=>api.getPixelProfile?.(entityId)||(entityId==='player'?api.getAvatar?.()||{}:api.renderer.appearanceFor?.(entityId)||{}),
-    onChange:next=>{const before=copy(api.getSharedSprites()||{});if(api.setSharedSprites(copy(next))===false)return false;spriteUndo.push(before);if(spriteUndo.length>50)spriteUndo.shift();spriteRedo=[];refresh();status('Saved shared character pixel details.');return true;}});
+    onChange:next=>{if(!canMutateUI())return false;const before=copy(api.getSharedSprites()||{});if(api.setSharedSprites(copy(next))===false)return false;spriteUndo.push(before);if(spriteUndo.length>50)spriteUndo.shift();spriteRedo=[];refresh();status('Saved shared character pixel details.');return true;}});
    const grid=spritePane.querySelector('#pixelEditCanvas'),preview=spritePane.querySelector('#pixelLivePreview');if(grid)grid.id='roomPixelEditCanvas-'+id;if(preview)preview.id='roomPixelLivePreview-'+id;
   }
   function disposeSprites(){pixelEditor?.dispose();pixelEditor=null;}
@@ -129,7 +129,12 @@
    const canvas=win.CodaArtworkEditor.compose(image,project.artwork);backgroundCache={source:image,texture:project.artwork,canvas};return canvas||image;
   }
   function active(){return opened&&!playtest;}
+  function canMutateUI(){return active()&&!destroyed&&(!api.canEdit||api.canEdit()!==false);}
   function getProject(){return copy(project);}
+  function getCommittedProject(){
+   const before=gesture?.before;if(!before)return getProject();
+   return typeof before==='string'?JSON.parse(before):copy(before);
+  }
   function snapshot(){return JSON.stringify(project);}
   function persist(){try{storage?.setItem(store,snapshot());return true;}catch{status('Browser storage is full or blocked. Export room JSON to preserve these edits.');return false;}}
   function changed(before,text='Saved room edits locally.'){
@@ -187,9 +192,9 @@
    if(tab==='sprites'&&opened){mountSprites();pixelEditor?.refresh();}
    if(tab==='artwork'&&opened){mountArtwork();artworkEditor?.refresh();}
   }
-  function editEntity(patch){const entity=selectedEntity();if(!entity)return;const before=snapshot();project.entities[entity.id]={...(project.entities[entity.id]||{}),...patch};applyEntity(entity.id,project.entities[entity.id]);changed(before,'Saved '+(entity.name||'character')+' changes.');}
-  function editAsset(patch){const asset=selectedAsset();if(!asset)return;const before=snapshot();Object.assign(asset,patch);changed(before);}
-  function undoRedo(isUndo){finishGesture();if(characterHistory()){const from=isUndo?spriteUndo:spriteRedo,to=isUndo?spriteRedo:spriteUndo;if(!from.length)return;const next=from.pop();to.push(copy(api.getSharedSprites()||{}));api.setSharedSprites(copy(next));refresh();status(isUndo?'Undid sprite edit.':'Redid sprite edit.');return;}const from=isUndo?undo:redo,to=isUndo?redo:undo;if(!from.length)return;const entry=from.pop();if(entry&&typeof entry==='object'&&entry.kind==='sprites'){to.push({kind:'sprites',data:copy(api.getSharedSprites()||{})});api.setSharedSprites(copy(entry.data));refresh();status(isUndo?'Undid character artwork edit.':'Redid character artwork edit.');return;}const before=getProject();to.push(snapshot());applyProject(JSON.parse(entry));api.onProjectChange?.(before,getProject());refresh();status(isUndo?'Undid room edit.':'Redid room edit.');}
+  function editEntity(patch){if(!canMutateUI())return;const entity=selectedEntity();if(!entity)return;const before=snapshot();project.entities[entity.id]={...(project.entities[entity.id]||{}),...patch};applyEntity(entity.id,project.entities[entity.id]);changed(before,'Saved '+(entity.name||'character')+' changes.');}
+  function editAsset(patch){if(!canMutateUI())return;const asset=selectedAsset();if(!asset)return;const before=snapshot();Object.assign(asset,patch);changed(before);}
+  function undoRedo(isUndo){if(!canMutateUI()){finishGesture();return;}finishGesture();if(characterHistory()){const from=isUndo?spriteUndo:spriteRedo,to=isUndo?spriteRedo:spriteUndo;if(!from.length)return;const next=from.pop();to.push(copy(api.getSharedSprites()||{}));api.setSharedSprites(copy(next));refresh();status(isUndo?'Undid sprite edit.':'Redid sprite edit.');return;}const from=isUndo?undo:redo,to=isUndo?redo:undo;if(!from.length)return;const entry=from.pop();if(entry&&typeof entry==='object'&&entry.kind==='sprites'){to.push({kind:'sprites',data:copy(api.getSharedSprites()||{})});api.setSharedSprites(copy(entry.data));refresh();status(isUndo?'Undid character artwork edit.':'Redid character artwork edit.');return;}const before=getProject();to.push(snapshot());applyProject(JSON.parse(entry));api.onProjectChange?.(before,getProject());refresh();status(isUndo?'Undid room edit.':'Redid room edit.');}
   function hit(point){
    const current=selectedAsset();if(current&&Math.hypot(point.x-(current.x+current.w/2),point.y-(current.y+current.h/2))<12/camera.zoom)return {type:'asset',id:current.id,resize:true};
    const currentEntity=selectedEntity();if(currentEntity?.kind==='fish'&&Math.hypot(point.x-(currentEntity.x+(currentEntity.w||50)/2),point.y-(currentEntity.y+(currentEntity.h||30)/2))<12/camera.zoom)return {type:'entity',id:currentEntity.id,resize:true};
@@ -202,7 +207,7 @@
   function eachStrokePixel(points,size,stamp){const half=Math.floor(size/2);for(let index=0;index<points.length;index++){const previous=(points[index-1]||points[index]).map(Math.floor),next=points[index].map(Math.floor);let [x,y]=previous;const dx=Math.abs(next[0]-x),dy=Math.abs(next[1]-y),sx=x<next[0]?1:-1,sy=y<next[1]?1:-1;let error=dx-dy;for(;;){stamp(x-half,y-half,size,size);if(x===next[0]&&y===next[1])break;const twice=2*error;if(twice>-dy){error-=dy;x+=sx;}if(twice<dx){error+=dx;y+=sy;}}}}
   function brushPreview(){if(!active()||tab!=='layers'||!brushHover||panTool||spaceHeld||pinching)return null;const size=Number(field('layer-size').value),half=Math.floor(size/2),[x,y]=layerPoint(brushHover);return{x:Math.max(0,x-half),y:Math.max(0,y-half),w:Math.min(W,x-half+size)-Math.max(0,x-half),h:Math.min(H,y-half+size)-Math.max(0,y-half),size,tool:field('layer-tool').value};}
   function begin(event){
-   if(!active()||destroyed)return;event.preventDefault();event.stopImmediatePropagation();canvas.focus({preventScroll:true});pointers.set(event.pointerId,{clientX:event.clientX,clientY:event.clientY});try{canvas.setPointerCapture(event.pointerId);}catch{}
+   if(!canMutateUI())return;event.preventDefault();event.stopImmediatePropagation();canvas.focus({preventScroll:true});pointers.set(event.pointerId,{clientX:event.clientX,clientY:event.clientY});try{canvas.setPointerCapture(event.pointerId);}catch{}
    if(pointers.size===2){cancelGesture();const points=[...pointers.values()];pinching={distance:Math.hypot(points[0].clientX-points[1].clientX,points[0].clientY-points[1].clientY),zoom:camera.zoom};return;}
    if(event.button===1||event.button===2||panTool||spaceHeld){gesture={kind:'pan',id:event.pointerId,clientX:event.clientX,clientY:event.clientY};return;}
    if(event.button!==0)return;const point=toWorld(event.clientX,event.clientY),before=snapshot();brushHover=point;
@@ -214,7 +219,7 @@
    const target=hit(point);selected=target;if(target){const object=target.type==='entity'?selectedEntity():selectedAsset();gesture={kind:target.resize?'resize':'move',id:event.pointerId,before,start:point,origin:copy(object),target};}refresh();
   }
   function move(event){
-   if(!active())return;event.preventDefault();event.stopImmediatePropagation();brushHover=toWorld(event.clientX,event.clientY);if(pointers.has(event.pointerId))pointers.set(event.pointerId,{clientX:event.clientX,clientY:event.clientY});
+   if(!active())return;if(!canMutateUI()){cancelGesture();return;}event.preventDefault();event.stopImmediatePropagation();brushHover=toWorld(event.clientX,event.clientY);if(pointers.has(event.pointerId))pointers.set(event.pointerId,{clientX:event.clientX,clientY:event.clientY});
    if(pinching&&pointers.size===2){const points=[...pointers.values()],distance=Math.hypot(points[0].clientX-points[1].clientX,points[0].clientY-points[1].clientY);zoom(pinching.zoom*distance/Math.max(1,pinching.distance),{clientX:(points[0].clientX+points[1].clientX)/2,clientY:(points[0].clientY+points[1].clientY)/2});return;}
    if(!gesture||gesture.id!==event.pointerId)return;
    if(gesture.kind==='pan'){const rect=canvas.getBoundingClientRect();camera.x+=(gesture.clientX-event.clientX)*W/rect.width/camera.zoom;camera.y+=(gesture.clientY-event.clientY)*H/rect.height/camera.zoom;gesture.clientX=event.clientX;gesture.clientY=event.clientY;clampCamera();return;}
@@ -227,7 +232,7 @@
     project.entities[target.id]={...(project.entities[target.id]||{}),...patch};applyEntity(target.id,project.entities[target.id]);
    }else if(gesture.kind==='resize'){object.w=clamp(Math.round(gesture.origin.w+(point.x-gesture.start.x)*2),1,W*2);object.h=clamp(Math.round(gesture.origin.h+(point.y-gesture.start.y)*2),1,H*2);}else{object.x=clamp(Math.round(gesture.origin.x+point.x-gesture.start.x),-W,W*2);object.y=clamp(Math.round(gesture.origin.y+point.y-gesture.start.y),-H,H*2);}
   }
-  function finishGesture(){pixelEditor?.finishGesture();artworkEditor?.finishGesture();const previous=gesture;gesture=null;if(!previous)return;
+  function finishGesture(){if(!canMutateUI()){pixelEditor?.cancelGesture();artworkEditor?.cancelGesture();cancelGesture();return;}pixelEditor?.finishGesture();artworkEditor?.finishGesture();const previous=gesture;gesture=null;if(!previous)return;
    if(previous.kind==='lift'){
     const x=clamp(Math.floor(Math.min(previous.start.x,previous.end.x)),0,W-1),y=clamp(Math.floor(Math.min(previous.start.y,previous.end.y)),0,H-1),w=clamp(Math.ceil(Math.abs(previous.end.x-previous.start.x)),1,W-x),h=clamp(Math.ceil(Math.abs(previous.end.y-previous.start.y)),1,H-y);
     if(w>=3&&h>=3&&background()&&project.assets.length<150){const asset={id:'room-asset-'+Date.now().toString(36)+'-'+(++serial),name:'Lifted artwork '+(project.assets.length+1),x:x+w/2,y:y+h/2,w,h,layer:'world',visible:true,solid:false,origin:{bounds:[x,y,w,h],sample:[clamp(x+w+8,0,W-16),clamp(y+h+8,0,H-16)]}};project.assets.push(asset);selected={type:'asset',id:asset.id};}mode='select';
@@ -245,7 +250,7 @@
    if(previous?.kind==='lift')mode='select';
    refresh();
   }
-  function end(event){if(!active())return;event.preventDefault();event.stopImmediatePropagation();pointers.delete(event.pointerId);if(pointers.size<2)pinching=null;if(gesture?.id===event.pointerId)finishGesture();try{if(canvas.hasPointerCapture(event.pointerId))canvas.releasePointerCapture(event.pointerId);}catch{}}
+  function end(event){if(!active())return;if(!canMutateUI())cancelGesture();event.preventDefault();event.stopImmediatePropagation();pointers.delete(event.pointerId);if(pointers.size<2)pinching=null;if(gesture?.id===event.pointerId)finishGesture();try{if(canvas.hasPointerCapture(event.pointerId))canvas.releasePointerCapture(event.pointerId);}catch{}}
   function cancel(event){
    if(active()){event.preventDefault();event.stopImmediatePropagation();}
    pointers.delete(event.pointerId);if(pointers.size<2)pinching=null;
@@ -271,7 +276,7 @@
   }
   function keyUp(event){if(event.code==='Space'){spaceHeld=false;refreshCamera();}if(event.target?.closest?.('button')&&panel.contains(event.target)&&['Enter',' '].includes(event.key)){event.stopImmediatePropagation();return;}if(active()&&!typing(event.target)&&!(tab==='sprites'&&event.target?.closest?.('.pixel-editor')||tab==='artwork'&&event.target?.closest?.('.artwork-editor'))){event.preventDefault();event.stopImmediatePropagation();}}
   function blur(){spaceHeld=false;brushHover=null;cancelGesture();pixelEditor?.cancelGesture();artworkEditor?.cancelGesture();for(const pointerId of pointers.keys())try{if(canvas.hasPointerCapture(pointerId))canvas.releasePointerCapture(pointerId);}catch{}pointers.clear();pinching=null;refreshCamera();}
-  function getImage(asset){if(!asset.data)return null;let image=images.get(asset.data);if(!image){image=new win.Image();images.set(asset.data,image);image.src=asset.data;}return image.complete&&image.naturalWidth?image:null;}
+  function getImage(asset){if(!asset.data)return null;let image=images.get(asset.data);if(!image){image=new win.Image();image.onload=()=>{layerDirty=true;};images.set(asset.data,image);image.src=asset.data;}return image.complete&&image.naturalWidth?image:null;}
   function assetSource(asset){
    if(asset.data)return getImage(asset);
    const image=background();if(!asset.origin||!image)return null;
@@ -285,27 +290,66 @@
    ctx.imageSmoothingEnabled=false;ctx.drawImage(image,asset.x-asset.w/2,asset.y-asset.h/2,asset.w,asset.h);
   }
   function drawPatches(ctx){const image=background();if(!image)return;const sx=(image.naturalWidth||image.width)/W,sy=(image.naturalHeight||image.height)/H;for(const asset of project.assets){if(!asset.origin)continue;const [x,y,w,h]=asset.origin.bounds,[sampleX,sampleY]=asset.origin.sample,tile=Math.min(16,W-sampleX,H-sampleY);if(tile<1)continue;ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();for(let yy=y;yy<y+h;yy+=tile)for(let xx=x;xx<x+w;xx+=tile)ctx.drawImage(image,sampleX*sx,sampleY*sy,tile*sx,tile*sy,xx,yy,tile,tile);ctx.restore();}}
+  function maskPath(pixels,inverse=false){
+   const path=new win.Path2D();if(inverse)path.rect(0,0,W,H);
+   for(let y=0;y<H;y++)for(let x=0;x<W;){
+    if(pixels[(y*W+x)*4+3]<128){x++;continue;}
+    const left=x;while(x<W&&pixels[(y*W+x)*4+3]>=128)x++;
+    path.rect(left,y,x-left,1);
+   }
+   return path;
+  }
   function buildMask(){
+   const image=background(),stamp=image?(image.src||'')+':'+(image.naturalWidth||image.width)+'x'+(image.naturalHeight||image.height):'';
+   if(image!==maskImageSource||stamp!==maskImageStamp){maskImageSource=image;maskImageStamp=stamp;layerDirty=true;}
    if(!layerDirty)return;
-   if(!maskCanvas){maskCanvas=doc.createElement('canvas');maskCanvas.width=W;maskCanvas.height=H;promotedCanvas=doc.createElement('canvas');promotedCanvas.width=W;promotedCanvas.height=H;}
-   const ctx=maskCanvas.getContext('2d');ctx.clearRect(0,0,W,H);
-   for(const stroke of project.strokes){ctx.globalCompositeOperation=stroke.tool==='erase'?'destination-out':'source-over';ctx.fillStyle='#69ffd0';eachStrokePixel(stroke.points,stroke.size,(x,y,w,h)=>ctx.fillRect(x,y,w,h));}
-   // Lifted artwork is now drawn as its own object. Its old painting must not
-   // return above actors when an earlier foreground stroke overlaps the source.
-   // Preserve the saved strokes so restoring the object also restores its mask.
-   ctx.globalCompositeOperation='destination-out';ctx.fillStyle='#000';
-   for(const asset of project.assets)if(asset.origin)ctx.fillRect(...asset.origin.bounds);
-   ctx.globalCompositeOperation='source-over';
-   const image=background(),promoted=promotedCanvas.getContext('2d');promoted.clearRect(0,0,W,H);if(image)promoted.drawImage(image,0,0,W,H);promoted.globalCompositeOperation='destination-in';promoted.drawImage(maskCanvas,0,0);promoted.globalCompositeOperation='source-over';
-   // Only edits, changed lift origins, or a newly loaded background invalidate
-   // this full-size surface; ordinary room frames only draw the cached texture.
+   if(!maskCanvas){
+    maskCanvas=doc.createElement('canvas');maskCanvas.width=W;maskCanvas.height=H;
+    erasedCanvas=doc.createElement('canvas');erasedCanvas.width=W;erasedCanvas.height=H;
+    promotedCanvas=doc.createElement('canvas');promotedCanvas.width=W;promotedCanvas.height=H;
+   }
+   const ctx=maskCanvas.getContext('2d',{willReadFrequently:true}),erased=erasedCanvas.getContext('2d',{willReadFrequently:true});ctx.clearRect(0,0,W,H);erased.clearRect(0,0,W,H);
+   for(const stroke of project.strokes){
+    ctx.globalCompositeOperation=stroke.tool==='erase'?'destination-out':'source-over';ctx.fillStyle='#69ffd0';
+    erased.globalCompositeOperation=stroke.tool==='paint'?'destination-out':'source-over';erased.fillStyle='#fff';
+    eachStrokePixel(stroke.points,stroke.size,(x,y,w,h)=>{ctx.fillRect(x,y,w,h);erased.fillRect(x,y,w,h);});
+   }
+   ctx.globalCompositeOperation=erased.globalCompositeOperation='source-over';
+   const painted=ctx.getImageData(0,0,W,H).data,sentBack=erased.getImageData(0,0,W,H).data;
+   paintPath=maskPath(painted);erasePath=maskPath(sentBack);outsidePaintPath=maskPath(painted,true);
+   normalPath=new win.Path2D(outsidePaintPath);normalPath.addPath(erasePath);
+   const promoted=promotedCanvas.getContext('2d');promoted.clearRect(0,0,W,H);
+   if(image){promoted.imageSmoothingEnabled=false;promoted.drawImage(image,0,0,W,H);drawPatches(promoted);}
+   promoted.globalCompositeOperation='destination-in';promoted.drawImage(maskCanvas,0,0);promoted.globalCompositeOperation='source-over';
+   // Cleaned room pixels and asset fragments share world-space masks. Never
+   // disable a painted rectangle merely because its original art was lifted.
    layerDirty=false;maskBuilds++;
   }
+  function beforeActor(asset,playerY){return asset.layer==='background'||asset.layer==='world'&&asset.y+asset.h/2<=playerY;}
+  function drawAssets(ctx,predicate,path){
+   ctx.save();if(path)ctx.clip(path,'evenodd');
+   for(const asset of project.assets)if(predicate(asset))drawAsset(ctx,asset);
+   ctx.restore();
+  }
   function beforeScene(ctx){ctx.save();if(active()){clampCamera();ctx.scale(camera.zoom,camera.zoom);ctx.translate(-camera.x,-camera.y);}}
-  function afterBackground(ctx,playerY=H){drawPatches(ctx);for(const asset of project.assets)if(asset.layer==='background'||asset.layer==='world'&&asset.y+asset.h/2<=playerY)drawAsset(ctx,asset);}
+  function afterBackground(ctx,playerY=H){
+   drawPatches(ctx);
+   if(!project.strokes.length){drawAssets(ctx,asset=>beforeActor(asset,playerY));return;}
+   buildMask();
+   drawAssets(ctx,asset=>beforeActor(asset,playerY),outsidePaintPath);
+   drawAssets(ctx,asset=>!beforeActor(asset,playerY),erasePath);
+  }
   function afterScene(ctx,playerY=H){
-   for(const asset of project.assets)if(asset.layer==='foreground'||asset.layer==='world'&&asset.y+asset.h/2>playerY)drawAsset(ctx,asset);
-   if(project.strokes.length){const image=background(),stamp=image?(image.src||'')+':'+(image.naturalWidth||image.width)+'x'+(image.naturalHeight||image.height):'';if(stamp!==maskImageStamp){maskImageStamp=stamp;layerDirty=true;}buildMask();ctx.drawImage(promotedCanvas,0,0);}
+   if(!project.strokes.length)drawAssets(ctx,asset=>!beforeActor(asset,playerY));
+   else{
+    buildMask();drawAssets(ctx,asset=>!beforeActor(asset,playerY),normalPath);
+    ctx.drawImage(promotedCanvas,0,0);
+    // Preserve the same object order on both sides of the actor. The painted
+    // pieces use their current image, alpha, position and size instead of a
+    // frozen background sample, and the erase mask can lower any asset layer.
+    drawAssets(ctx,asset=>beforeActor(asset,playerY),paintPath);
+    drawAssets(ctx,asset=>!beforeActor(asset,playerY),paintPath);
+   }
    if(active())drawOverlay(ctx);ctx.restore();
   }
   function drawOverlay(ctx){
@@ -317,7 +361,7 @@
    if(gesture?.kind==='lift'){ctx.strokeStyle='#ffe19a';ctx.setLineDash([5/camera.zoom,4/camera.zoom]);ctx.strokeRect(gesture.start.x,gesture.start.y,gesture.end.x-gesture.start.x,gesture.end.y-gesture.start.y);}ctx.restore();
   }
   function walkable(x,y,base){if(!finite(x,0,W-.001)||!finite(y,0,H-.001))return false;const cell=collisionMap.get(Math.floor(y/10)*COLS+Math.floor(x/10));if(cell!==undefined)return cell===1;for(const asset of project.assets)if(asset.visible&&asset.solid&&Math.abs(x-asset.x)<asset.w*.4&&y>asset.y+asset.h*.2&&y<asset.y+asset.h*.5)return false;return !!base;}
-  function exportProject(){const value={format:'CodaArcadeRoomProject',room:id,width:W,height:H,...getProject()},blob=new win.Blob([JSON.stringify(value,null,2)],{type:'application/json'}),url=win.URL.createObjectURL(blob),link=doc.createElement('a');link.href=url;link.download='coda-'+id+'-room.json';link.click();win.setTimeout(()=>win.URL.revokeObjectURL(url),1000);status('Exported room project JSON.');}
+  function exportProject(){finishGesture();const value={format:'CodaArcadeRoomProject',room:id,width:W,height:H,...getProject()},blob=new win.Blob([JSON.stringify(value,null,2)],{type:'application/json'}),url=win.URL.createObjectURL(blob),link=doc.createElement('a');link.href=url;link.download='coda-'+id+'-room.json';link.click();win.setTimeout(()=>win.URL.revokeObjectURL(url),1000);status('Exported room project JSON.');}
   button.onclick=toggle;action('close').onclick=close;action('dock').onclick=()=>panel.classList.toggle('room-dev-dock-right');for(const node of panel.querySelectorAll('[data-room-tab]'))node.onclick=()=>setTab(node.dataset.roomTab);
   action('show-collision').onclick=()=>setOverlay('collision',!collisionOverlay);action('show-layers').onclick=()=>setOverlay('layers',!layerOverlay);field('mask-visible').onchange=()=>setOverlay('layers',field('mask-visible').checked);
   action('zoom-in').onclick=()=>zoom(camera.zoom+.25);action('zoom-out').onclick=()=>zoom(camera.zoom-.25);action('zoom-reset').onclick=()=>zoom(1);action('pan').onclick=()=>{finishGesture();panTool=!panTool;refreshCamera();};action('undo').onclick=()=>undoRedo(true);action('redo').onclick=()=>undoRedo(false);
@@ -326,22 +370,22 @@
   for(const key of ['x','y'])field('entity-'+key).onchange=()=>editEntity({[key]:clamp(Number(field('entity-'+key).value)||0,0,key==='x'?W:H)});
   field('species').onchange=()=>{const entity=selectedEntity();if(entity?.speciesOptions?.some(option=>option.id===field('species').value))editEntity({speciesId:field('species').value});};field('fish-size').onchange=()=>editEntity({size:clamp(Number(field('fish-size').value)||1,.25,4)});field('fish-color').onchange=()=>editEntity({color:field('fish-color').value});field('fish-accent').onchange=()=>editEntity({accent:field('fish-accent').value});field('entity-visible').onchange=()=>editEntity({visible:field('entity-visible').checked});
   action('edit-character-artwork').onclick=()=>{const entity=selectedEntity();if(!entity)return;setTab('artwork');artworkEditor?.selectTarget('character.'+entity.id+'.down');};
-  action('entity-reset').onclick=()=>{const entity=selectedEntity();if(!entity)return;const before=snapshot();delete project.entities[entity.id];api.onEntityChange?.(entity.id,{});entityVersions.set(entity.id,'{}');changed(before,'Restored character / fish defaults.');};
+  action('entity-reset').onclick=()=>{if(!canMutateUI())return;const entity=selectedEntity();if(!entity)return;const before=snapshot();delete project.entities[entity.id];api.onEntityChange?.(entity.id,{});entityVersions.set(entity.id,'{}');changed(before,'Restored character / fish defaults.');};
   for(const key of ['name','x','y','w','h','layer'])field('asset-'+key).onchange=()=>{let value=field('asset-'+key).value;if(['x','y','w','h'].includes(key))value=clamp(Number(value)||1,key==='w'||key==='h'?1:key==='x'?-W:-H,key==='x'||key==='w'?W*2:H*2);editAsset({[key]:value});};field('asset-visible').onchange=()=>editAsset({visible:field('asset-visible').checked});field('asset-solid').onchange=()=>editAsset({solid:field('asset-solid').checked});
-  for(const [key,index]of [['sample-x',0],['sample-y',1]])field(key).onchange=()=>{const asset=selectedAsset();if(!asset?.origin)return;const before=snapshot();asset.origin.sample[index]=clamp(Number(field(key).value)||0,0,index?H-1:W-1);changed(before);};
+  for(const [key,index]of [['sample-x',0],['sample-y',1]])field(key).onchange=()=>{if(!canMutateUI())return;const asset=selectedAsset();if(!asset?.origin)return;const before=snapshot();asset.origin.sample[index]=clamp(Number(field(key).value)||0,0,index?H-1:W-1);changed(before);};
   action('edit-artwork').onclick=()=>{const asset=selectedAsset();if(!asset)return;setTab('artwork');artworkEditor?.selectTarget(assetPrefix+asset.id);};
   action('pick-sample').onclick=()=>{mode='sample';status('Click a clean floor or wall area to use as the source patch.');canvas.focus({preventScroll:true});};action('lift').onclick=()=>{if(!background()){status('Wait for the room artwork to load before lifting a region.');return;}mode='lift';status('Drag a rectangle around the artwork to move.');canvas.focus({preventScroll:true});};
-  action('asset-remove').onclick=()=>{const asset=selectedAsset();if(asset)editAsset({visible:false});};action('asset-restore').onclick=()=>{const asset=selectedAsset();if(!asset)return;const before=snapshot();project.assets=project.assets.filter(item=>item.id!==asset.id);selected=null;changed(before,'Restored original room artwork.');};
-  action('add-image').onclick=()=>field('image-file').click();field('image-file').onchange=async event=>{const file=event.target.files?.[0];event.target.value='';if(!file)return;try{if(!/^image\/(png|jpeg|webp|gif)$/.test(file.type)||file.size>8*1024*1024||project.assets.length>=150)throw Error('Choose PNG, JPEG, WebP, or GIF artwork up to 8 MB.');const data=await new Promise((resolve,reject)=>{const reader=new win.FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);}),image=await new Promise((resolve,reject)=>{const image=new win.Image();image.onload=()=>resolve(image);image.onerror=reject;image.src=data;});if(destroyed)return;if(image.width>8192||image.height>8192)throw Error('Image exceeds 8192 pixels.');const before=snapshot(),scale=Math.min(1,250/image.width,200/image.height),asset={id:'room-asset-'+Date.now().toString(36)+'-'+(++serial),name:file.name.slice(0,100),x:camera.x+W/camera.zoom/2,y:camera.y+H/camera.zoom/2,w:Math.max(1,Math.round(image.width*scale)),h:Math.max(1,Math.round(image.height*scale)),data,layer:'world',visible:true,solid:false};project.assets.push(asset);selected={type:'asset',id:asset.id};changed(before);}catch(error){status(error.message||'The image could not load.');}};
-  action('save').onclick=()=>{finishGesture();if(persist())status('Saved '+(api.name||'room')+' edits in this browser.');};action('export').onclick=exportProject;action('import').onclick=()=>field('project-file').click();field('project-file').onchange=async event=>{const file=event.target.files?.[0];event.target.value='';if(!file)return;try{if(file.size>20*1024*1024)throw Error('Room project is too large.');const data=JSON.parse(await file.text());if(data.room&&data.room!==id||data.width&&data.width!==W||data.height&&data.height!==H)throw Error('Choose a project exported from this room.');if(!validProject(data,W,H))throw Error('This is not a valid room project. The current edits were kept.');await Promise.all(data.assets.filter(asset=>asset.data).map(asset=>new Promise((resolve,reject)=>{const image=new win.Image();image.onload=()=>image.naturalWidth>8192||image.naturalHeight>8192?reject(Error('An embedded image exceeds 8192 pixels.')):asset.artwork&&!win.CodaArtworkEditor?.validateTexture(asset.artwork,image.naturalWidth,image.naturalHeight)?reject(Error('Edited artwork dimensions do not match the embedded image.')):resolve();image.onerror=()=>reject(Error('An embedded image could not be decoded. Current edits were kept.'));image.src=asset.data;})));if(destroyed)return;if(!await validateArtworkProject(data))throw Error('Edited artwork dimensions do not match this room. Current edits were kept.');const before=snapshot();if(!applyProject(data,{persist:false}))return;changed(before,'Imported room project. Undo is available.');}catch(error){status(error.message||'Could not read room project.');}};
-  action('reset').onclick=()=>{const before=snapshot();applyProject(EMPTY(),{persist:false});changed(before,'Restored the original room. Undo is available.');};
+  action('asset-remove').onclick=()=>{const asset=selectedAsset();if(asset)editAsset({visible:false});};action('asset-restore').onclick=()=>{if(!canMutateUI())return;const asset=selectedAsset();if(!asset)return;const before=snapshot();project.assets=project.assets.filter(item=>item.id!==asset.id);selected=null;changed(before,'Restored original room artwork.');};
+  action('add-image').onclick=()=>field('image-file').click();field('image-file').onchange=async event=>{const file=event.target.files?.[0];event.target.value='';if(!file||!canMutateUI())return;try{if(!/^image\/(png|jpeg|webp|gif)$/.test(file.type)||file.size>8*1024*1024||project.assets.length>=150)throw Error('Choose PNG, JPEG, WebP, or GIF artwork up to 8 MB.');const data=await new Promise((resolve,reject)=>{const reader=new win.FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);}),image=await new Promise((resolve,reject)=>{const image=new win.Image();image.onload=()=>resolve(image);image.onerror=reject;image.src=data;});if(destroyed||!canMutateUI())return;if(image.width>8192||image.height>8192)throw Error('Image exceeds 8192 pixels.');const before=snapshot(),scale=Math.min(1,250/image.width,200/image.height),asset={id:'room-asset-'+Date.now().toString(36)+'-'+(++serial),name:file.name.slice(0,100),x:camera.x+W/camera.zoom/2,y:camera.y+H/camera.zoom/2,w:Math.max(1,Math.round(image.width*scale)),h:Math.max(1,Math.round(image.height*scale)),data,layer:'world',visible:true,solid:false};project.assets.push(asset);selected={type:'asset',id:asset.id};changed(before);}catch(error){status(error.message||'The image could not load.');}};
+  action('save').onclick=()=>{if(!canMutateUI()){finishGesture();status('Editing is unavailable. The current project was kept.');return;}finishGesture();if(persist())status('Saved '+(api.name||'room')+' edits in this browser.');};action('export').onclick=exportProject;action('import').onclick=()=>field('project-file').click();field('project-file').onchange=async event=>{const file=event.target.files?.[0];event.target.value='';if(!file||!canMutateUI())return;try{if(file.size>20*1024*1024)throw Error('Room project is too large.');const data=JSON.parse(await file.text());if(data.room&&data.room!==id||data.width&&data.width!==W||data.height&&data.height!==H)throw Error('Choose a project exported from this room.');if(!validProject(data,W,H))throw Error('This is not a valid room project. The current edits were kept.');await Promise.all(data.assets.filter(asset=>asset.data).map(asset=>new Promise((resolve,reject)=>{const image=new win.Image();image.onload=()=>image.naturalWidth>8192||image.naturalHeight>8192?reject(Error('An embedded image exceeds 8192 pixels.')):asset.artwork&&!win.CodaArtworkEditor?.validateTexture(asset.artwork,image.naturalWidth,image.naturalHeight)?reject(Error('Edited artwork dimensions do not match the embedded image.')):resolve();image.onerror=()=>reject(Error('An embedded image could not be decoded. Current edits were kept.'));image.src=asset.data;})));if(destroyed)return;if(!await validateArtworkProject(data))throw Error('Edited artwork dimensions do not match this room. Current edits were kept.');if(!canMutateUI())return;const before=snapshot();if(!applyProject(data,{persist:false}))return;changed(before,'Imported room project. Undo is available.');}catch(error){status(error.message||'Could not read room project.');}};
+  action('reset').onclick=()=>{if(!canMutateUI())return;const before=snapshot();applyProject(EMPTY(),{persist:false});changed(before,'Restored the original room. Undo is available.');};
   const leave=()=>{if(!gesture)brushHover=null;};canvas.addEventListener('pointerleave',leave,true);
   canvas.addEventListener('pointerdown',begin,true);canvas.addEventListener('pointermove',move,true);canvas.addEventListener('pointerup',end,true);canvas.addEventListener('pointercancel',cancel,true);canvas.addEventListener('lostpointercapture',cancel,true);canvas.addEventListener('wheel',wheel,{capture:true,passive:false});const contextMenu=event=>{if(active()){event.preventDefault();event.stopImmediatePropagation();}};canvas.addEventListener('contextmenu',contextMenu,true);
   win.addEventListener('keydown',keyDown,true);win.addEventListener('keyup',keyUp,true);win.addEventListener('blur',blur);
   try{const raw=storage?.getItem(store);if(raw){const saved=JSON.parse(raw);if(validProject(saved,W,H)){if(saved.artwork||saved.assets.some(asset=>asset.artwork)){const revision=projectRevision;validateArtworkProject(saved).then(valid=>{if(destroyed||revision!==projectRevision)return;if(valid)applyProject(saved,{persist:false});else{loadError='Saved pixel artwork dimensions do not match this room. Import a valid backup.';status(loadError);}});}else applyProject(saved,{persist:false});}else loadError='Saved room edits are invalid. Original room kept; import a valid backup.';}}catch{loadError='Saved room edits could not load. Original room kept.';}
   refresh();
   function destroy(){if(destroyed)return;close();destroyed=true;canvas.removeEventListener('pointerleave',leave,true);canvas.removeEventListener('pointerdown',begin,true);canvas.removeEventListener('pointermove',move,true);canvas.removeEventListener('pointerup',end,true);canvas.removeEventListener('pointercancel',cancel,true);canvas.removeEventListener('lostpointercapture',cancel,true);canvas.removeEventListener('wheel',wheel,true);canvas.removeEventListener('contextmenu',contextMenu,true);win.removeEventListener('keydown',keyDown,true);win.removeEventListener('keyup',keyUp,true);win.removeEventListener('blur',blur);pixelEditor?.dispose();artworkEditor?.dispose();panel.remove();button.remove();images.clear();}
-  return {open,close,toggle,isOpen:()=>opened,isEditing:active,isPlaytest:()=>opened&&playtest,getProject,applyProject,validateArtworkProject,getBackground:background,getArtworkEditor:()=>artworkEditor,getArtworkTargets:artworkTargets,getArtworkSource,getArtworkData,setArtworkData,getBackgroundArtwork:()=>project.artwork?copy(project.artwork):null,setBackgroundArtwork:value=>{const next=getArtworkData();if(value)next[backgroundId]=value;else delete next[backgroundId];return setArtworkData(next);},getEntityOverride:entityId=>copy(project.entities[entityId]||{}),toWorld,walkable,beforeScene,afterBackground,afterScene,destroy,getState:()=>({open:opened,editing:active(),playtest,tab,artwork:artworkEditor?.getState()||null,overlays:{collision:collisionOverlay,layers:layerOverlay,visible:active()},brush:brushPreview(),selected:copy(selected),camera:{...camera},panTool,undo:undo.length,redo:redo.length,renderCache:{maskBuilds},project:getProject()})};
+  return {open,close,toggle,isOpen:()=>opened,isEditing:active,isPlaytest:()=>opened&&playtest,getProject,getCommittedProject,applyProject,validateArtworkProject,getBackground:background,getArtworkEditor:()=>artworkEditor,getArtworkTargets:artworkTargets,getArtworkSource,getArtworkData,setArtworkData,getBackgroundArtwork:()=>project.artwork?copy(project.artwork):null,setBackgroundArtwork:value=>{const next=getArtworkData();if(value)next[backgroundId]=value;else delete next[backgroundId];return setArtworkData(next);},getEntityOverride:entityId=>copy(project.entities[entityId]||{}),toWorld,walkable,beforeScene,afterBackground,afterScene,destroy,getState:()=>({open:opened,editing:active(),playtest,tab,artwork:artworkEditor?.getState()||null,overlays:{collision:collisionOverlay,layers:layerOverlay,visible:active()},brush:brushPreview(),selected:copy(selected),camera:{...camera},panTool,undo:undo.length,redo:redo.length,renderCache:{maskBuilds},project:getProject()})};
  }
  root.createCodaRoomDeveloperEditor=createCodaRoomDeveloperEditor;
  root.CodaRoomDeveloperEditor={validateProject:validProject,emptyProject:EMPTY};

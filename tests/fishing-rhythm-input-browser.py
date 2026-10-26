@@ -78,12 +78,15 @@ class FishingRhythmInputTests(_upgrade._fish._world.WorldBrowserCase):
         # than the contacts that stay down. An empty list ends the final one.
         self.client.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[ended] if self.points else []})
 
-    def test_three_fast_alternating_touches_hit_presto_notes_with_delayed_frames_phone(self):
+    def test_three_fast_alternating_touches_hit_capped_sixteenths_with_delayed_frames_phone(self):
         self.begin()
         initial=self.state();notes=[note for note in initial['challenge']['notes'] if not note['rest']][:3]
         self.assertTrue(all(note['duration']<1 for note in notes))
-        self.assertLess(notes[1]['time']-notes[0]['time'],.15)
-        self.assertLess(notes[2]['time']-notes[1]['time'],.15)
+        # The authored 100-quarter-BPM cap makes the fastest permitted
+        # sixteenths150ms apart; the old Presto-only expectation is obsolete.
+        self.assertLessEqual(initial['challenge']['quarterBpm'],100)
+        self.assertAlmostEqual(notes[1]['time']-notes[0]['time'],.15,places=8)
+        self.assertAlmostEqual(notes[2]['time']-notes[1]['time'],.15,places=8)
         self.assertEqual(self.page.locator('#fishingTap').evaluate('e=>getComputedStyle(e).touchAction'),'none')
         scale=self.page.evaluate('visualViewport.scale');scroll=self.page.locator('#rhythmFishing').evaluate('e=>e.scrollTop')
         self.source_to(notes[0]['time']);self.down(1,fraction=.35)
