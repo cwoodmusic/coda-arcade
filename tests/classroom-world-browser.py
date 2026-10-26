@@ -124,7 +124,7 @@ parent.postMessage({coda:1,type:'ready',game:'pitch'},'*');
         expect(page.locator('#gameoverlay')).to_be_visible()
         src=page.locator('#gameiframe').get_attribute('src')
         self.assertEqual(urllib.parse.parse_qs(urllib.parse.urlsplit(src).query).get('classroom'),['1'])
-        self.assertEqual(urllib.parse.parse_qs(urllib.parse.urlsplit(page.locator('#externalgame').get_attribute('href')).query).get('classroom'),['1'])
+        self.assertEqual(page.locator('#externalgame').count(),0)
         frame=page.frame_locator('#gameiframe')
         expect(frame.locator('body')).to_contain_text('Cabinet boundary fixture')
         page.wait_for_function('document.querySelector("#gameiframe").contentWindow!==null')
