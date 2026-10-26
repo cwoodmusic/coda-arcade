@@ -1,4 +1,4 @@
-"""Buy long-term rewards, equip at the boutique, and follow between rooms."""
+"""Buy and wear long-term rewards, and follow between rooms."""
 import importlib.util
 import math
 from pathlib import Path
@@ -50,7 +50,7 @@ class PremiumWorldTests(_world.WorldBrowserCase):
             card=self.page.locator('[data-shop-item="'+item+'"]')
             self.assertIn(str(price),card.inner_text());self.assertTrue(card.get_by_role('button').is_disabled())
         for item in ['lakeotter','rhythmfox','pianophoenix','triadchampion','starlight']:
-            self.assertTrue(self.page.locator('[data-shop-item="'+item+'"]').get_by_role('button').is_disabled())
+            self.assertEqual(self.page.locator('[data-shop-item="'+item+'"]').count(),0,'Mastery rewards belong in the boutique, not the Notes shop')
         self.assertEqual(self.wallet()['balance'],150)
         self.assertEqual(self.avatar()['form'],'human');self.assertEqual(self.avatar()['pet'],'none')
         self.page.keyboard.press('Escape');self.assertFalse(self.page.locator('#panel').is_visible())
@@ -68,20 +68,20 @@ class PremiumWorldTests(_world.WorldBrowserCase):
         self.page.locator('#boutiqueSave').click();self.page.clock.run_for(96)
         self.assertEqual(self.avatar()['pet'],'pianophoenix');self.assertTrue(self.companion()['active'])
 
-    def test_actual_shop_purchase_boutique_equipment_and_following_survive_doors_and_reload(self):
+    def test_actual_shop_purchase_wear_and_following_survive_doors_and_reload(self):
         self.fund();open_destination(self.page,'shop')
         self.buy('alien');self.buy('cosmiccat')
         self.assertEqual(self.wallet()['balance'],12150)
         self.assertEqual(self.avatar()['form'],'human');self.assertEqual(self.avatar()['pet'],'none')
         self.assertFalse(self.companion()['active'])
-        # Owned rewards offer a route to Pip; the shop cannot dress you remotely.
-        self.page.locator('[data-shop-item="cosmiccat"] button').click();self.page.clock.run_for(32)
-        self.assertFalse(self.page.locator('#panel').is_visible())
-        self.assertEqual(self.avatar()['pet'],'none')
-        open_destination(self.page,'boutique')
-        self.page.locator('#boutique-form').select_option('alien')
-        self.page.locator('#boutique-pet').select_option('cosmiccat')
-        self.page.locator('#boutiqueSave').click();self.page.clock.run_for(128)
+        # Wear is an explicit second step at the shop, including on mobile.
+        for item in ['alien','cosmiccat']:
+            action=self.page.locator('[data-shop-item="'+item+'"] button')
+            self.assertEqual(action.inner_text(),'Wear this')
+            action.click();self.page.clock.run_for(64)
+            self.assertTrue(self.page.locator('#panel').is_visible())
+        self.assertEqual(self.wallet()['balance'],12150,'Wearing owned rewards is free')
+        self.page.keyboard.press('Escape');self.page.clock.run_for(128)
         self.assertEqual(self.avatar()['form'],'alien');self.assertEqual(self.avatar()['pet'],'cosmiccat')
         self.assertEqual(self.page.evaluate('JSON.parse(localStorage.musicArcadeV1).pet'),'cosmiccat')
         self.assertTrue(self.page.evaluate('CodaArcadeQA.place(1225,675)'));self.page.clock.run_for(64)

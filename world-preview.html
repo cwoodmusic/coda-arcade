@@ -1128,7 +1128,7 @@ async function loadAssetStudio(){let found=null;
 window.CodaAssetStudioQA={get:()=>({active:assetStudio.active,count:assetStudio.assets.length,selected:assetStudio.selected,assets:assetStudio.assets.map(a=>({id:a.id,name:a.name,kind:a.kind,x:a.x,y:a.y,w:a.w,h:a.h,layer:a.layer,anim:a.anim,frames:a.frames}))}),open:()=>toggleAssetStudio(true),close:()=>toggleAssetStudio(false),preset:()=>assetUI('assetPreset').click(),export:downloadAssetJSON,save:persistAssets};
 // --- END ASSET STUDIO ------------------------------------------------------
 
-window.CODA_BUILD="65.0-foreground-and-repository-audit";
+window.CODA_BUILD="66.0-shop-wear";
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -1955,7 +1955,7 @@ function installMobileWorld(){
  const legacy=document.createElement('div');legacy.id='worldLegacyShortcuts';legacy.hidden=true;legacy.inert=true;document.body.append(legacy);
  for(const id of ['hallFameBtn','notesBtn','pianoLabBtn','classroomBtn','fishingBtn','jukeboxBtn','assetToggle','editorToggle','avatarBtn','musiciansBtn']){const node=document.getElementById(id);if(node)legacy.append(node);}
  const oldArcadeLink=menu.querySelector('a[href="classic-arcade.html"]');if(oldArcadeLink)legacy.append(oldArcadeLink);
- const titleLink=document.createElement('a');titleLink.id='worldTitleScreenLink';titleLink.href='index.html?v=world-65';titleLink.textContent='← Title screen';menu.append(titleLink);
+ const titleLink=document.createElement('a');titleLink.id='worldTitleScreenLink';titleLink.href='index.html?v=world-66';titleLink.textContent='← Title screen';menu.append(titleLink);
  const quick=document.createElement('div');quick.className='world-quick-actions';
  const developer=document.createElement('button');developer.id='worldDeveloperBtn';developer.type='button';developer.textContent='Developer';developer.title='Developer console (F2)';developer.onclick=()=>{closeMenu();window.CodaDeveloperConsole.open('objects');};
  quick.append(document.querySelector('#levelBtn'),developer,document.querySelector('#musicBtn'));header.insertBefore(quick,menu);
@@ -2274,7 +2274,7 @@ const updateMusicianLevel=value=>{
 };
 progression.subscribe(updateMusicianLevel);updateMusicianLevel(progression.getState());
 document.querySelector('#levelBtn').onclick=()=>classroomCanPlay()?playerProfile?.open():openAccount();document.querySelector('#hallFameBtn').onclick=()=>{if(classroomCanPlay())hallFame.open();};
-notesShop=window.CodaNotesShop.createShopUI({unlocked:id=>progression.unlocked(id),wallet:notesWallet,renderer:characterRenderer,panelBody,openPanel,equipInBoutique:true,wardrobeLabel:'Find the boutique',openWardrobe:()=>guideToLandmark(shopkeeperStates().find(person=>person.type==='shop')?.approaches[0],'the boutique'),getAvatar:()=>avatar,applyAvatar:look=>applyBoutiqueLook('player',look)});
+notesShop=window.CodaNotesShop.createShopUI({unlocked:id=>progression.unlocked(id),wallet:notesWallet,renderer:characterRenderer,panelBody,openPanel,wardrobeLabel:'Find the boutique',openWardrobe:()=>guideToLandmark(shopkeeperStates().find(person=>person.type==='shop')?.approaches[0],'the boutique'),getAvatar:()=>avatar,applyAvatar:look=>applyBoutiqueLook('player',look)});
 const updateNotesBalance=value=>{const button=document.querySelector('#notesBtn');button.textContent='♫ '+value.balance+' Notes';button.setAttribute('aria-label',value.balance+' Notes · Open accessory shop');boutiqueUI?.refresh();playerProfile?.refresh();};
 notesWallet.subscribe(updateNotesBalance);updateNotesBalance(notesWallet.snapshot());
 document.querySelector('#notesBtn').onclick=openNotesShop;
