@@ -25,7 +25,7 @@ FIXTURE=r'''()=>{
   async leave(options){__record('leave',options);if(__unsaved&&!options?.discard)return{ok:false,code:'unsaved-progress'};__emit({profile:null,waitingTakeover:false});return{ok:true};},
   async flush(){__record('flush');if(['newer-progress','unsaved-conflict','unavailable','offline'].includes(__state.code))return{ok:false,code:__state.code};__unsaved=false;__emit({pending:false});return{ok:true};},
   async useSavedProgress(){__record('useSavedProgress');__pendingCache=null;__emit({code:'',pending:false,locked:false});return{ok:true};},
-  async adminSignIn(){__record('adminSignIn');__emit({admin:{signedIn:true,authorized:window.__approveAdmin!==false,uid:'teacherSetupUID_123456',email:'private-teacher@example.org'}});return{ok:true};},
+  async adminSignIn(){__record('adminSignIn');const authorized=window.__approveAdmin!==false;__emit({admin:{signedIn:true,authorized,uid:'teacherSetupUID_123456',email:'private-teacher@example.org'},code:authorized?'':'admin-not-approved'});return authorized?{ok:true}:{ok:false,code:'admin-not-approved'};},
   async adminSignOut(){__record('adminSignOut');__emit({admin:{signedIn:false,authorized:false}});return{ok:true};},
   async listClasses(){__record('listClasses');return{ok:true,classes:__classes};},
   async createClass(label){__record('createClass',label);const item={classId:'class-new',label};__classes.push(item);__profiles[item.classId]=[];return{ok:true,...item};},
@@ -165,6 +165,18 @@ class ClassroomProfileUITests(unittest.TestCase):
   self.page.locator('#classpassTab-student').click();self.page.evaluate('__nextError={code:"functions/permission-denied",message:"PII Alice alice@example.org private backend trace"}')
   self.page.locator('#classpassJoinInput').fill('any-pass');self.page.locator('#classpassJoin').click();self.idle()
   self.assertIn('Ask your teacher',self.page.locator('#classpassStatus').inner_text());self.assertNotIn('Alice',self.page.locator('body').inner_text());self.assertNotIn('private backend trace',self.page.locator('body').inner_text())
+
+ def test_unapproved_google_signin_explains_account_approval_instead_of_generic_retry(self):
+  self.page.evaluate('__approveAdmin=false');self.page.locator('#classpassTab-admin').click();self.page.locator('#classpassAdminSignIn').click();self.idle()
+  status=self.page.locator('#classpassStatus');self.assertTrue(status.is_visible())
+  self.assertIn('This Google account is not approved as a school administrator',status.inner_text())
+  self.assertIn('approved teacher account',status.inner_text());self.assertIn('setup ID above',status.inner_text())
+  self.assertNotIn('We could not finish that',self.page.locator('body').inner_text());self.assertNotIn('Please try again',status.inner_text())
+  self.assertIn('not a school administrator here',self.page.locator('body').inner_text())
+  self.assertEqual(self.page.get_by_label('Administrator setup ID',exact=True).inner_text(),'teacherSetupUID_123456')
+  self.assertTrue(self.page.locator('#classpassAdminSignOut').is_visible())
+  self.assertEqual(self.page.locator('#classpassCreateProfile,#classpassCreateClass').count(),0);self.assertEqual(self.calls('listClasses'),[])
+  self.assertNotIn('private-teacher@example.org',self.page.locator('body').inner_text())
 
  def test_conflicting_pending_progress_is_kept_until_saved_progress_is_explicitly_confirmed(self):
   self.page.evaluate('''()=>{window.__pendingCache={notes:77,xp:123};__emit({profile:{profileId:'profile-one',alias:'Amber Fox 14',picture:'fox'},code:'unsaved-conflict',pending:true,locked:true});}''')

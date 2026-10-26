@@ -10,6 +10,7 @@
   'profile-not-found':'That profile is no longer available. Ask your teacher for help.',
   'permission-denied':'This Google account cannot manage classes. Ask your school administrator.',
   'admin-required':'This Google account cannot manage classes. Ask your school administrator.',
+  'admin-not-approved':'This Google account is not approved as a school administrator. Use your approved teacher account, or ask your school administrator to approve the setup ID above.',
   'unauthenticated':'Please sign in again to manage your classes.',
   'unavailable':'We could not connect. Check your connection and try again.',
   'network-request-failed':'We could not connect. Check your connection and try again.',
