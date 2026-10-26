@@ -1,7 +1,7 @@
 <!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><script src="account-config.js?v=profiles-57"></script>
 <script src="classroom-profile-data.js?v=classroom-54"></script>
 <script src="classroom-storage.js?v=classroom-54"></script>
-<script src="classroom-service.js?v=classroom-54"></script>
+<script src="classroom-service.js?v=teacher-70"></script>
 <script src="vendor/qrcode-generator.js?v=classroom-54"></script>
 <script src="classroom-pass-qr.js?v=classroom-54"></script>
 <link rel="stylesheet" href="classroom-ui.css?v=roster-58">
@@ -1128,7 +1128,7 @@ async function loadAssetStudio(){let found=null;
 window.CodaAssetStudioQA={get:()=>({active:assetStudio.active,count:assetStudio.assets.length,selected:assetStudio.selected,assets:assetStudio.assets.map(a=>({id:a.id,name:a.name,kind:a.kind,x:a.x,y:a.y,w:a.w,h:a.h,layer:a.layer,anim:a.anim,frames:a.frames}))}),open:()=>toggleAssetStudio(true),close:()=>toggleAssetStudio(false),preset:()=>assetUI('assetPreset').click(),export:downloadAssetJSON,save:persistAssets};
 // --- END ASSET STUDIO ------------------------------------------------------
 
-window.CODA_BUILD="69.0-dance-and-walking";
+window.CODA_BUILD="70.0-teacher-session";
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -1955,7 +1955,7 @@ function installMobileWorld(){
  const legacy=document.createElement('div');legacy.id='worldLegacyShortcuts';legacy.hidden=true;legacy.inert=true;document.body.append(legacy);
  for(const id of ['hallFameBtn','notesBtn','pianoLabBtn','classroomBtn','fishingBtn','jukeboxBtn','assetToggle','editorToggle','avatarBtn','musiciansBtn']){const node=document.getElementById(id);if(node)legacy.append(node);}
  const oldArcadeLink=menu.querySelector('a[href="classic-arcade.html"]');if(oldArcadeLink)legacy.append(oldArcadeLink);
- const titleLink=document.createElement('a');titleLink.id='worldTitleScreenLink';titleLink.href='index.html?v=world-69';titleLink.textContent='← Title screen';menu.append(titleLink);
+ const titleLink=document.createElement('a');titleLink.id='worldTitleScreenLink';titleLink.href='index.html?v=world-70';titleLink.textContent='← Title screen';menu.append(titleLink);
  const quick=document.createElement('div');quick.className='world-quick-actions';
  const developer=document.createElement('button');developer.id='worldDeveloperBtn';developer.type='button';developer.textContent='Developer';developer.title='Developer console (F2)';developer.onclick=()=>{closeMenu();window.CodaDeveloperConsole.open('objects');};
  quick.append(document.querySelector('#levelBtn'),developer,document.querySelector('#musicBtn'));header.insertBefore(quick,menu);

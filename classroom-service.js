@@ -209,10 +209,15 @@
      }catch{if(bindingChanged&&active)lock('join-failed');message('Your card could not open. Ask your teacher for help.','join-failed');return fail('join-failed');}finally{loading=false;notify();}
    }
    async function resume(){
-     if(!enabled||!sessionMarker())return {ok:true,guest:true};loading=true;notify();
+     const marker=enabled?sessionMarker():null,teacher=readBound(ADMIN_KEY);
+     if(!marker&&!teacher?.uid)return {ok:true,guest:true};loading=true;notify();
      try{
-       if(storageScope&&!ownsWorkspace()){lock('workspace-lost');return fail('workspace-lost');}
-       const ready=await connect();if(!ready.ok)return ready;if(!auth.currentUser){lock('session-ended');return fail('session-ended');}
+       if(marker&&storageScope&&!ownsWorkspace()){lock('workspace-lost');return fail('workspace-lost');}
+       const ready=await connect();if(!ready.ok)return ready;
+       // Teacher sessions have no student profile marker. Restore their
+       // tab-bound Firebase identity before rendering the teacher entry page.
+       if(!marker)return {ok:true,guest:true};
+       if(!auth.currentUser){lock('session-ended');return fail('session-ended');}
        studentUid=auth.currentUser.uid;
        const snap=await sdk.get(sdk.ref(db,path('sessions/'+studentUid))),binding=snap.val();
        if(!binding||!validId(binding.classId)||!validId(binding.profileId)){lock('access-revoked');return fail('session-ended');}
