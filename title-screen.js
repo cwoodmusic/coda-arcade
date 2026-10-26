@@ -2,7 +2,7 @@
 (function(win){
  'use strict';
  const doc=win.document,$=id=>doc.getElementById(id),config=win.ARCADE_ACCOUNTS_CONFIG||{};
- const world=new URL('world-preview.html?v=world-72',win.location.href);
+ const world=new URL('world-preview.html?v=world-73',win.location.href);
  const incoming=win.CodaClassroom?.consumeFragment(win.location,win.history);
  if(incoming!==null&&incoming!==undefined){world.hash=new URLSearchParams({'classroom-pass':incoming}).toString();win.location.replace(world.href);return;}
  let scope=null,storage=null;

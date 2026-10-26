@@ -1,5 +1,7 @@
 /* Static arcade proxy. Firebase stays a direct browser connection. */
-export const SITE_ORIGIN = 'https://www.coda-arcade.com';
+const SITE_HOST = 'www.coda-aracde.com';
+const APEX_HOST = 'coda-aracde.com';
+export const SITE_ORIGIN = 'https://' + SITE_HOST;
 export const UPSTREAM_ORIGIN = 'https://cwoodmusic.github.io';
 const MAIN = '/coda-arcade';
 const GAMES = ['/Pitch-Race', '/musictriad', '/rhythmroom'];
@@ -50,10 +52,11 @@ export async function handleRequest(request, fetcher = fetch) {
   let incoming, target;
   try { incoming = new URL(request.url); target = upstreamURL(incoming); }
   catch { return message('Invalid URL.', 400); }
-  if (incoming.hostname !== 'www.coda-arcade.com' || incoming.port) return message('Unknown arcade host.', 421);
-  if (incoming.protocol === 'http:') return Response.redirect(SITE_ORIGIN + incoming.pathname + incoming.search, 308);
-  if (incoming.origin !== SITE_ORIGIN) return message('Invalid arcade origin.', 400);
+  if (![SITE_HOST, APEX_HOST].includes(incoming.hostname) || incoming.port) return message('Unknown arcade host.', 421);
   if (!target) return message('Invalid asset path.', 400);
+  if (!['http:', 'https:'].includes(incoming.protocol)) return message('Invalid arcade origin.', 400);
+  if (incoming.hostname === APEX_HOST || incoming.protocol === 'http:') return Response.redirect(SITE_ORIGIN + incoming.pathname + incoming.search, 308);
+  if (incoming.origin !== SITE_ORIGIN) return message('Invalid arcade origin.', 400);
   const headers = new Headers();
   for (const name of REQUEST_HEADERS) if (request.headers.has(name)) headers.set(name, request.headers.get(name));
   // Construct a fresh request: no browser credentials, cookies, or private headers.

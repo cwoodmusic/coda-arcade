@@ -48,7 +48,7 @@ For local development, run `python3 -m http.server 8000 --bind 127.0.0.1` from
 the repository. This is a static site; no application installation or build
 step is required. Browser tests start their own temporary servers.
 
-The custom address **www.coda-arcade.com** is prepared for a Cloudflare Worker
+The custom address **www.coda-aracde.com** is prepared for a Cloudflare Worker
 that serves the arcade and its games together. See the
 [Cloudflare deployment instructions](deploy/cloudflare/README.md). The existing
 GitHub Pages address remains available; do not add a `CNAME` for this setup.

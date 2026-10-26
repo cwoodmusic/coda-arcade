@@ -2,7 +2,7 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const worker=import('../deploy/cloudflare/worker.mjs');
-const site='https://www.coda-arcade.com';
+const site='https://www.coda-aracde.com';
 
 test('main pages and nested assets map to the fixed main project',async()=>{
  const {upstreamURL}=await worker;
@@ -82,9 +82,43 @@ test('upstream failures return a readable noncacheable error',async()=>{
 test('the domain uses HTTPS and refuses unrelated worker hostnames',async()=>{
  const worker=await import('../deploy/cloudflare/worker.mjs');
  let requests=0;const fetcher=async()=>{requests++;return new Response('unexpected');};
- const redirect=await worker.handleRequest(new Request('http://www.coda-arcade.com/Pitch-Race/?classroom=1'),fetcher);
+ const redirect=await worker.handleRequest(new Request('http://www.coda-aracde.com/Pitch-Race/?classroom=1'),fetcher);
  assert.equal(redirect.status,308);
- assert.equal(redirect.headers.get('Location'),'https://www.coda-arcade.com/Pitch-Race/?classroom=1');
- const denied=await worker.handleRequest(new Request('https://www.coda-arcade.com.attacker.test/'),fetcher);
+ assert.equal(redirect.headers.get('Location'),'https://www.coda-aracde.com/Pitch-Race/?classroom=1');
+ const denied=await worker.handleRequest(new Request('https://www.coda-aracde.com.attacker.test/'),fetcher);
  assert.equal(denied.status,421);assert.equal(requests,0);
+});
+
+test('both HTTP and HTTPS apex GET/HEAD redirect to www without fetching or losing path and query',async()=>{
+ const {handleRequest}=await worker;let requests=0;
+ const fetcher=async()=>{requests++;return new Response('unexpected');};
+ for(const protocol of ['http:','https:'])for(const method of ['GET','HEAD']){
+  const response=await handleRequest(new Request(protocol+'//coda-aracde.com/musictriad/?classroom=1&v=registered-73',{method}),fetcher);
+  assert.equal(response.status,308);
+  assert.equal(response.headers.get('Location'),site+'/musictriad/?classroom=1&v=registered-73');
+  assert.equal(response.body,null);
+ }
+ assert.equal(requests,0);
+});
+
+test('the former unowned spelling and deceptive registered-domain hosts are refused',async()=>{
+ const {handleRequest}=await worker;let requests=0;
+ const fetcher=async()=>{requests++;return new Response('unexpected');};
+ for(const origin of ['https://www.coda-arcade.com','https://coda-arcade.com','https://www.coda-aracde.com.attacker.test','https://coda-aracde.com.attacker.test','https://www.coda-aracde.com:444','https://coda-aracde.com:444']){
+  const response=await handleRequest(new Request(origin+'/'),fetcher);
+  assert.equal(response.status,421,origin);
+ }
+ assert.equal(requests,0);
+});
+
+test('apex redirects retain path validation and reject write methods without upstream access',async()=>{
+ const {handleRequest}=await worker;let requests=0;
+ const fetcher=async()=>{requests++;return new Response('unexpected');};
+ for(const path of ['/assets%2fsecret','/%252e%252e/musictriad/','/bad%GG']){
+  const response=await handleRequest(new Request('https://coda-aracde.com'+path),fetcher);
+  assert.equal(response.status,400,path);assert.equal(response.headers.get('Location'),null);
+ }
+ const response=await handleRequest(new Request('https://coda-aracde.com/',{method:'POST'}),fetcher);
+ assert.equal(response.status,405);assert.equal(response.headers.get('Location'),null);
+ assert.equal(requests,0);
 });

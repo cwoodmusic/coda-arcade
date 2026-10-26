@@ -1,6 +1,6 @@
-# Coda Arcade at www.coda-arcade.com
+# Coda Arcade at www.coda-aracde.com
 
-This Worker serves the existing GitHub Pages files at **https://www.coda-arcade.com/**.
+This Worker serves the existing GitHub Pages files at **https://www.coda-aracde.com/**.
 The arcade and its three cabinet games share one browser origin, so classroom
 profiles, game progress, and achievements keep their existing storage guards.
 GitHub remains the source of the game files; pushing game updates still updates
@@ -13,22 +13,36 @@ and existing Profile Pass links remain available.
 
 ## Deploy through the Cloudflare dashboard
 
-1. Open **Workers & Pages** in the Cloudflare account that owns `coda-arcade.com`.
-   Create a Worker named `coda-arcade-site`.
-2. Choose **Edit code**, replace the sample with the complete contents of
-   [worker.mjs](worker.mjs), and deploy it as an ES module.
-3. Open the Worker's **Settings → Domains & Routes → Add → Custom Domain**.
-   Enter **www.coda-arcade.com** and complete the setup. Cloudflare creates the
-   domain's routing/DNS and manages its TLS certificate. If an existing `www`
-   record conflicts, review that record before replacing it.
-4. Once Cloudflare reports the domain and certificate active, open
-   **https://www.coda-arcade.com/** and check the games and teacher sign-in.
-   Firebase Authentication is already configured to authorize this exact hostname; existing authorized domains are preserved.
+The registered domain is **coda-aracde.com** (`aracde`), including that spelling.
+It is a different domain from `coda-arcade.com`; the Worker accepts only the
+registered address and its `www` hostname.
 
-Do not point `www` directly at GitHub Pages for this setup: its requests must
-reach this Worker. The apex `coda-arcade.com` is optional; a separate Cloudflare
-redirect rule can send it to `https://www.coda-arcade.com/`. Preserve paths and
-query strings if you configure that redirect.
+1. Open **Workers & Pages** and select the existing Worker `coda-aracde-site`.
+   If setting up a new account, create that Worker in the account owning
+   `coda-aracde.com`.
+2. Choose **Edit code**, replace the existing code with the complete contents of
+   [worker.mjs](worker.mjs), and click **Deploy**. Updating this repository alone
+   does not replace the code already deployed in Cloudflare; this step is also
+   required when correcting an existing Worker's domain spelling.
+3. Under the Worker's **Settings → Domains & Routes**, ensure both
+   **www.coda-aracde.com** and **coda-aracde.com** are listed. For a missing entry,
+   choose **Add Domain** (or **Add → Custom Domain**) and enter that exact
+   hostname. Cloudflare creates the domain's routing/DNS and manages its TLS
+   certificate. If an existing record conflicts, review it before replacement.
+4. Open **https://www.coda-aracde.com/** and check the games and teacher sign-in.
+   The bare address **https://coda-aracde.com/** redirects to the `www` address,
+   preserving the path and query string. The Worker table does not necessarily
+   show an **Active** label; it can list these bindings as **Production**.
+
+Both DNS records should appear under the domain's **DNS → Records** as proxied
+**Worker** records linked to this Worker. An `NXDOMAIN` browser error indicates
+a DNS lookup problem; check the exact `aracde` spelling and those records. The
+Firebase authorized-domain configuration and app/game hostname allowlists are
+separate from DNS and must also use the registered hostname.
+
+Requests must reach the Worker rather than point `www` directly at GitHub Pages.
+The GitHub Pages custom-domain setting stays empty and no repository `CNAME`
+file is needed. The original GitHub Pages address remains available.
 
 ## Deploy with Wrangler instead
 
@@ -39,7 +53,8 @@ directory:
 npx wrangler deploy
 ```
 
-The provided [wrangler.jsonc](wrangler.jsonc) binds only `www.coda-arcade.com`.
+The provided [wrangler.jsonc](wrangler.jsonc) binds both `www.coda-aracde.com`
+and `coda-aracde.com` to the existing `coda-aracde-site` Worker.
 Deployment requires access to that Cloudflare account and zone; no account
 credentials or API tokens are included here. The static game itself still needs
 no dependency installation or build step.
