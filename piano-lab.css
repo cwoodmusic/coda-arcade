@@ -276,3 +276,8 @@
  #pianoroom.piano-lab .piano-menu-panel .piano-tool-menu{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
 @media(max-width:360px){#pianoroom.piano-lab .piano-room-heading>div:first-child{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}#pianoroom.piano-lab .piano-room-heading-actions{margin-left:auto}}
+
+/* Keep room editing one click away without covering the instrument. */
+#pianoroom.piano-lab .piano-room-heading-actions [data-room-dev-open]{background:#324a42;border-color:#9ce7b9;color:#e1ffed}
+#pianoroom.piano-lab .piano-room-heading-actions [data-room-dev-open][aria-expanded=true]{background:#365f50;border-color:#c9ffe6}
+@media(max-width:480px){#pianoroom.piano-lab .piano-room-heading>div:first-child{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}#pianoroom.piano-lab .piano-room-heading-actions{width:100%;margin-left:0;justify-content:space-between;gap:4px}}

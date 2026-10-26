@@ -86,6 +86,7 @@
   function syncPanels(){host.dataset.menuOpen=String(menuOpen);host.dataset.dialogueOpen=String(dialogueOpen);el('pianoMenuBackdrop').hidden=!menuOpen;el('pianoDialogueBackdrop').hidden=!dialogueOpen;el('pianoMenuButton').setAttribute('aria-expanded',String(menuOpen));el('pianoRoomCanvas').inert=blocked();roomCamera?.update();api.onViewChange?.(mobileView);}
   function setMobileView(view,focus=false){
    if(!['room','games','keyboard','recording','settings'].includes(view))return;
+   if(view!=='room')roomEditor?.close();
    stopDemo();pauseRoom();if(view==='room'){menuOpen=false;mobileView='room';}else{menuOpen=true;dialogueOpen=false;mobileView=view;}
    host.dataset.mobileView=mobileView;
    for(const button of host.querySelectorAll('[data-piano-view]'))button.setAttribute('aria-pressed',String(button.dataset.pianoView===view));
@@ -96,6 +97,7 @@
   function stopDemo(){for(const timer of demoTimers)win.clearTimeout(timer);demoTimers=[];listening=false;releaseAll();}
   function closeDialogue(focus=true){stopDemo();dialogueOpen=false;dialogueKind='';syncPanels();if(focus)(dialogueFocus?.isConnected&&dialogueFocus.getClientRects().length&&!el('pianoDialogueBackdrop').contains(dialogueFocus)?dialogueFocus:el('pianoRoomCanvas')).focus({preventScroll:true});}
   function dialogue(text,choices=[],kind='talk'){
+   roomEditor?.close();
    stopDemo();stopPlayback();pauseRoom();dialogueFocus=dialogueOpen?dialogueFocus:doc.activeElement;menuOpen=false;mobileView='room';host.dataset.mobileView='room';dialogueOpen=true;dialogueKind=kind;el('pianoDialogueText').textContent=text;el('pianoDialogueChoices').replaceChildren();
    for(const choice of choices){const button=doc.createElement('button');button.type='button';button.textContent=choice.label;if(choice.action)button.dataset.pianoDialogueAction=choice.action;if(choice.melody)button.dataset.pianoMelody=choice.melody;if(choice.scale)button.dataset.pianoScale=choice.scale;button.addEventListener('click',choice.run);el('pianoDialogueChoices').append(button);}
    syncPanels();(el('pianoDialogueChoices').querySelector('button')||el('pianoDialogueClose')).focus({preventScroll:true});
@@ -345,14 +347,27 @@
   win.addEventListener('keydown',keyDown);win.addEventListener('keyup',keyUp);win.addEventListener('pointerup',pointerUp);win.addEventListener('pointercancel',pointerUp);win.addEventListener('blur',blur);doc.addEventListener('visibilitychange',visibility);
   for(const button of host.querySelectorAll('[data-piano-view]'))button.addEventListener('click',()=>setMobileView(button.dataset.pianoView,true));
   win.CodaMusicNotation?.load?.(doc).catch?.(()=>{});loadProgress();drawKeys();loadTake();updateRecordingUI();renderLesson();setMobileView('room');
-  roomEditor=win.createCodaRoomDeveloperEditor?.({id:'piano',name:'Piano Lab',host,canvas:el('pianoRoomCanvas'),width:ROOM.width,height:ROOM.height,renderer,getAvatar:api.getAvatar,storage,canEdit:()=>!blocked(),baseWalkable:(x,y)=>x>=50&&x<=950&&y>=250&&y<=590&&(!roomChopin.visible||Math.hypot(x-roomChopin.x,y-roomChopin.y)>30),
+  function openDeveloperConsole(tab='objects'){
+   if(!opened||destroyed||!roomEditor||api.canDevelop?.()===false)return false;
+   closeDialogue(false);stopRecording();stopPlayback();setMobileView('room');
+   roomEditor.open(tab);return roomEditor.isOpen();
+  }
+  roomEditor=win.createCodaRoomDeveloperEditor?.({id:'piano',name:'Piano Lab',host,canvas:el('pianoRoomCanvas'),width:ROOM.width,height:ROOM.height,renderer,getAvatar:api.getAvatar,storage,canEdit:()=>opened&&!destroyed&&api.canDevelop?.()!==false&&!blocked(),baseWalkable:(x,y)=>x>=50&&x<=950&&y>=250&&y<=590&&(!roomChopin.visible||Math.hypot(x-roomChopin.x,y-roomChopin.y)>30),
    getSharedSprites:api.getSharedSprites,setSharedSprites:api.setSharedSprites,getPixelProfile:id=>id==='chopin'?{name:'Chopin',skin:'#e6b99d',hair:'#493239',shirt:'#282b42',lowerColor:'#3d3a4a',hairstyle:'long',outfit:'coat',shoes:'oxfords',accessory:'bowtie'}:api.getAvatar?.()||{},getPixelTargets:()=>[{id:'player',name:'Your avatar'},{id:'chopin',name:'Frédéric Chopin'}],
    getBackground:()=>backdropReady?roomBackdrop:null,getEntities:()=>[{id:'chopin',name:'Frédéric Chopin',kind:'npc',...roomChopin,w:40,h:64}],
    onEntityChange:(id,patch)=>{if(id==='chopin')Object.assign(roomChopin,{x:860,y:306,visible:true},patch);},
    onActiveChange:active=>{roomFinger?.stop('editor');releaseControls();roomKeys.clear();roomDest=null;stopRecording();stopPlayback();releaseAll();setSustain(false);roomPlayer.jump=roomPlayer.velocity=0;frameTime=0;if(active){closeDialogue(false);setMobileView('room');}},
    onProjectChange:(before,after)=>api.onEditorProjectChange?.(before,after)
-  })||null;const developerButton=host.querySelector('[data-room-dev-open]');if(developerButton){el('pianoRoomTools').append(developerButton);developerButton.addEventListener('click',()=>setMobileView('room'),{capture:true});}const cameraControls=host.querySelector('.piano-camera-controls');if(cameraControls)el('pianoRoomTools').append(cameraControls);drawRoom();
-  return {open,close,destroy,getState,getControlState:()=>({open:opened,mobileView,menuOpen,dialogueOpen,blocked:blocked(),challengeMode,editing:roomEditor?.isEditing()||false,pinching:pinchBlocked()}),control,controlMove,releaseControls,setMobileView,getEditor:()=>roomEditor};
+  })||null;
+  const developerButton=host.querySelector('[data-room-dev-open]'),developerPanel=host.querySelector('[data-room-editor="piano"]');
+  if(developerPanel)developerPanel.id='room-dev-console-piano';
+  if(developerButton){
+   host.querySelector('.piano-room-heading-actions').insertBefore(developerButton,el('pianoMenuButton'));
+   developerButton.textContent='Developer';developerButton.title='Open Piano Lab developer console (F2)';developerButton.setAttribute('aria-controls','room-dev-console-piano');
+   developerButton.onclick=()=>{if(roomEditor.isOpen())roomEditor.close();else openDeveloperConsole();};
+  }
+  const cameraControls=host.querySelector('.piano-camera-controls');if(cameraControls)el('pianoRoomTools').append(cameraControls);drawRoom();
+  return {open,close,destroy,openDeveloperConsole,getState,getControlState:()=>({open:opened,mobileView,menuOpen,dialogueOpen,blocked:blocked(),challengeMode,editing:roomEditor?.isEditing()||false,pinching:pinchBlocked()}),control,controlMove,releaseControls,setMobileView,getEditor:()=>roomEditor};
  }
  const exported={createCodaPianoLab,noteName,noteLetter,keyPositionName,frequency,fitMelodyRegister,LESSONS,SCALES,INTERVALS,paintedFloorKeys,polygonContains};
  if(typeof module==='object'&&module.exports)module.exports=exported;else root.createCodaPianoLab=createCodaPianoLab;

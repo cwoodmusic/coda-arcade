@@ -146,7 +146,15 @@ class PianoLabTests(unittest.TestCase):
         self.menu('games');self.page.locator('#pianoLesson').select_option('hot-cross-buns')
         self.page.locator('[data-piano-dialogue-action="listen"]').click()
         self.assertTrue(self.state()['listening']);self.assertEqual(self.state()['lessonStep'],0)
-        self.page.clock.run_for(9000)
+        # Use the actual arrangement length and demonstration tempo. A longer
+        # written note must finish sounding before checking that the lesson
+        # still waits for the student's first pitch.
+        demo_ms=self.page.evaluate('''()=>{
+          const state=lab.getState(),tune=CodaPianoMelodies.lessonFor(state.lesson),
+            endBeat=Math.max(0,...state.lessonScore.map(event=>event.onset+event.beats));
+          return Math.ceil(endBeat*60000/(tune.quarterBpm||100))+200;
+        }''')
+        self.page.clock.run_for(demo_ms)
         self.assertFalse(self.state()['listening']);self.assertEqual(self.state()['lessonStep'],0)
         self.assertEqual(self.page.evaluate('rewards'),[]);self.assertEqual(self.state()['held'],[])
         self.page.locator('[data-piano-dialogue-action="play"]').click()
