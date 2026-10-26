@@ -2,7 +2,7 @@
  * trusted school administrators, and one writing device per profile. */
 (function(root,factory){const api=factory(root);if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaClassroom=api;})(typeof window==='undefined'?null:window,function(root){
  'use strict';
- const ALPHABET='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',NS='classroomV1';
+ const ALPHABET='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',NS='classroomV1',PERSONAL_CLASS='teacher_personal';
  const ACTIVE_KEY='codaClassroomActiveV1',BACKUP_KEY='codaClassroomGuestBackupV1',PENDING_KEY='codaClassroomPendingV1',ADMIN_KEY='codaClassroomAdminTabV1';
  const COLORS=['Amber','Blue','Coral','Gold','Green','Lilac','Mint','Pink','Red','Silver','Teal','Violet'];
  const ANIMALS=['Cat','Fox','Frog','Owl','Otter','Penguin','Rabbit','Turtle'];
@@ -43,24 +43,27 @@
    const configured=!!(supported&&config.firebase?.projectId&&dataApi&&crypto?.getRandomValues&&crypto?.subtle&&namespace===NS);
    const enabled=configured&&config.classroom?.enabled===true;
    const listeners=new Set(),subscriptions=[];
-   let sdk,db,auth,adminDb,adminAuth,connecting,studentUid=null,adminUid=null,adminAuthorized=false,adminRoleStop=null;
+   let sdk,db,auth,adminDb,adminAuth,connecting,studentUid=null,adminUid=null,adminAuthorized=false,adminRoleStop=null,personalAvailable=false;
    let active=null,leaseOwned=false,loaded=false,baseRevision=0,lastSaved='',pending=false,saving=false;
-   let loading=false,locked=false,waitingTakeover=false,code='',status='',destroyed=false,generation=0,inFlightSave=null,transitioning=false;
+   let loading=false,locked=false,waitingTakeover=false,code='',status='',destroyed=false,generation=0,inFlightSave=null,transitioning=false,retiredPersonalSave=null,signingOut=false;
    let offset=0,lastActivity=now(),flushTimer=null,leaseTimer=null,idleTimer=null,queuedPass=null;
    const pendingJobs=new Set();
    const state=()=>({configured,enabled,ready:!!sdk,loading,locked,waitingTakeover,pending,
-     profile:active?{classId:active.classId,classLabel:active.classLabel||'Classroom',profileId:active.profileId,alias:active.alias,picture:active.picture}:null,
+     profile:active?{classId:active.classId,classLabel:active.classLabel||'Classroom',profileId:active.profileId,alias:active.alias,picture:active.picture,...(personalProfile(active)?{kind:'teacher'}:{})}:null,
      admin:{signedIn:!!adminUid,authorized:adminAuthorized,uid:adminUid||null},
+     personal:{available:adminAuthorized&&personalAvailable,active:personalProfile(active)},
      role:adminAuthorized?'admin':active?'student':'guest',readOnly:!!active&&!isWritable(),status,code});
    function notify(){const value=state();for(const listener of listeners)try{listener(clone(value));}catch{}return value;}
    function message(value,nextCode=''){status=value;code=nextCode;notify();}
    const path=suffix=>namespace+'/'+suffix;
    const validId=id=>typeof id==='string'&&/^[a-zA-Z0-9_-]{6,80}$/.test(id);
-   const profilePath=p=>path('classes/'+p.classId+'/profiles/'+p.profileId);
+   const personalProfile=p=>!!p&&(p.kind==='teacher'||p.classId===PERSONAL_CLASS);
+   const profilePath=p=>personalProfile(p)?path('teacherPlayers/'+p.profileId):path('classes/'+p.classId+'/profiles/'+p.profileId);
+   const profileDatabase=p=>personalProfile(p)?adminDb:db;
    function random(size){const bytes=new Uint8Array(size);crypto.getRandomValues(bytes);return bytes;}
    function id(prefix){return prefix+'_'+encode(random(12)).toLowerCase();}
    function ownsWorkspace(){return !storageScope||storageScope.owns();}
-   function maySave(){return !destroyed&&!locked&&!waitingTakeover&&!!active&&loaded&&leaseOwned&&ownsWorkspace();}
+   function maySave(){return !destroyed&&!locked&&!waitingTakeover&&!!active&&loaded&&leaseOwned&&ownsWorkspace()&&(!personalProfile(active)||(adminAuthorized&&adminUid===active.profileId&&adminAuth?.currentUser?.uid===adminUid));}
    function isWritable(){return !loading&&!transitioning&&maySave();}
    function guardedStorage(){return storageScope?storageScope.guardedStorage():native;}
    function stopSubscriptions(){for(const stop of subscriptions.splice(0))try{stop();}catch{}}
@@ -89,36 +92,89 @@
    }
    async function student(){const connected=await connect();if(!connected.ok)return connected;if(!auth.currentUser)await sdk.signInAnonymously(auth);studentUid=auth.currentUser?.uid;return studentUid?{ok:true}:fail('sign-in-unavailable');}
    async function checkAdmin(){
-     adminUid=adminAuth?.currentUser?.uid||null;adminAuthorized=false;if(!adminUid)return false;
-     try{const token=await adminAuth.currentUser.getIdTokenResult();if(token.signInProvider&&token.signInProvider!=='google.com')return false;
-       const snap=await sdk.get(sdk.ref(adminDb,path('admins/'+adminUid)));adminAuthorized=snap.val()===true;
-     }catch{}return adminAuthorized;
+     const uid=adminAuth?.currentUser?.uid||null;
+     if(uid!==adminUid){adminAuthorized=false;personalAvailable=false;}adminUid=uid;if(!uid){adminAuthorized=false;return false;}
+     let approved=false;
+     try{const token=await adminAuth.currentUser.getIdTokenResult();if(!token.signInProvider||token.signInProvider==='google.com'){
+       const snap=await sdk.get(sdk.ref(adminDb,path('admins/'+uid)));approved=snap.val()===true;
+     }}catch{}
+     if(adminUid===uid)adminAuthorized=approved;return adminUid===uid&&approved;
    }
    function watchAdmin(){
      if(adminRoleStop){adminRoleStop();adminRoleStop=null;}if(!adminAuthorized||!adminUid)return;
+     const revoked=()=>{adminAuthorized=false;personalAvailable=false;if(personalProfile(active))lock('admin-not-approved');message('This admin account is no longer approved.','admin-not-approved');};
      const uid=adminUid;adminRoleStop=sdk.onValue(sdk.ref(adminDb,path('admins/'+uid)),snap=>{
-       if(adminUid===uid&&snap.val()!==true){adminAuthorized=false;message('This admin account is no longer approved.','admin-not-approved');}
-     },()=>{if(adminUid===uid){adminAuthorized=false;message('Admin access needs to be checked again.','admin-not-approved');}});
+       if(adminUid===uid&&snap.val()!==true)revoked();
+     },()=>{if(adminUid===uid)revoked();});
    }
-   async function adminSignIn(){const result=await connect();if(!result.ok)return result;loading=true;lastActivity=now();notify();try{
+   async function refreshPersonal(){
+     personalAvailable=false;if(!adminAuthorized||!adminUid)return false;
+     const uid=adminUid,snap=await sdk.get(sdk.ref(adminDb,path('teacherPlayers/'+uid)));
+     if(adminUid!==uid||!adminAuthorized)return false;
+     personalAvailable=!!snap.val();notify();return personalAvailable;
+   }
+   async function adminSignIn(){
+     if(loading||transitioning)return fail('busy');const result=await connect();if(!result.ok)return result;
+     // An offline transaction retired during sign-out must finish without an
+     // authenticated owner before this SDK connection may sign in again.
+     if(retiredPersonalSave)await retiredPersonalSave;
+     let closedPersonal=false;
+     if(personalProfile(active)){const closed=await leave({silentIdentity:true});if(!closed.ok)return closed;closedPersonal=true;}
+     loading=true;lastActivity=now();notify();try{
      const provider=new sdk.GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});await sdk.signInWithPopup(adminAuth,provider);
      session.setItem(ADMIN_KEY,JSON.stringify({version:1,tabId,uid:adminAuth.currentUser?.uid}));
      await checkAdmin();watchAdmin();message(adminAuthorized?'School admin ready.':'Your school administrator needs to approve this admin account.',adminAuthorized?'':'admin-not-approved');
+     if(adminAuthorized&&enabled){
+       try{if(await refreshPersonal()&&!active&&(!sessionMarker()||sessionMarker().classId===PERSONAL_CLASS))return await activate({kind:'teacher',classId:PERSONAL_CLASS,profileId:adminUid,classLabel:'My player'},{reason:'personal-opened'});}
+       catch{message('Your player could not open. Keep this tab open and try again.','personal-open-failed');return fail('personal-open-failed');}
+     }
      return adminAuthorized?{ok:true}:fail('admin-not-approved');
-   }catch{message('Admin sign-in could not finish. Try again.','admin-sign-in-failed');return fail('admin-sign-in-failed');}finally{loading=false;notify();}}
-   async function adminSignOut(){if(adminRoleStop){adminRoleStop();adminRoleStop=null;}adminUid=null;adminAuthorized=false;try{session.removeItem(ADMIN_KEY);}catch{}notify();if(adminAuth)try{await sdk.signOut(adminAuth);}catch{}return {ok:true};}
+   }catch{message('Admin sign-in could not finish. Try again.','admin-sign-in-failed');return fail('admin-sign-in-failed');}finally{loading=false;notify();if(closedPersonal&&!active)identity('left',true);}}
+   async function adminSignOut(){
+     if(loading||transitioning)return fail('busy');
+     loading=true;signingOut=true;notify();let pausedPersonalDatabase=false,closedPersonal=false;
+     if(personalProfile(active)){
+       // A failed or offline save stays in this tab's private recovery buffer.
+       // Signing out must still stop the old player from writing afterwards.
+       if(loaded&&!locked){
+         keepPending();const attempt=flush();
+         const saved=await Promise.race([attempt,new Promise(resolve=>win.setTimeout(()=>resolve(null),1500))]);
+         if(!saved){
+           sdk.goOffline?.(adminDb);pausedPersonalDatabase=true;
+           const retired=attempt.catch(()=>fail('save-unavailable'));
+           retiredPersonalSave=retired;retired.finally(()=>{if(retiredPersonalSave===retired)retiredPersonalSave=null;});
+         }else if(!saved.ok)keepPending();
+       }
+       const left=await leave({skipFlush:true,silentIdentity:true,internal:true});if(!left.ok){loading=false;signingOut=false;notify();if(pausedPersonalDatabase)sdk.goOnline?.(adminDb);return left;}closedPersonal=true;loading=true;
+     }
+     if(adminRoleStop){adminRoleStop();adminRoleStop=null;}adminUid=null;adminAuthorized=false;personalAvailable=false;try{session.removeItem(ADMIN_KEY);}catch{}notify();if(adminAuth)try{await sdk.signOut(adminAuth);}catch{}finally{if(pausedPersonalDatabase)sdk.goOnline?.(adminDb);}loading=false;signingOut=false;notify();if(closedPersonal)identity('left',true);return {ok:true};
+   }
    async function staff(){const ready=await connect();if(!ready.ok)return ready;if(!enabled)return fail('classroom-not-enabled');return await checkAdmin()?{ok:true}:fail('admin-not-approved');}
    async function withWorkspace(fn){return storageScope?.withLock?storageScope.withLock(fn):fn();}
    const tabId=storageScope?.tabId||'single-window';
    function readBound(key){try{const value=JSON.parse(session.getItem(key)||'null');return value?.version===1&&value.tabId===tabId?value:null;}catch{return null;}}
+   function closePersonal(closed){const marker=readBound(ADMIN_KEY);if(marker?.uid===adminUid)session.setItem(ADMIN_KEY,JSON.stringify({...marker,personalClosed:closed}));}
    function backupGuest(){if(!readBound(BACKUP_KEY))session.setItem(BACKUP_KEY,JSON.stringify({version:1,tabId,backup:dataApi.backup(storageScope?.storage||win?.localStorage||native)}));}
-   function cachedProgress(profile=active){const value=readBound(PENDING_KEY);if(!profile||value?.classId!==profile.classId||value?.profileId!==profile.profileId||!Number.isSafeInteger(value.revision))return null;const valid=dataApi.validate(value.data);return valid.ok?{...value,data:valid.data}:null;}
-   function clearPending(profile=active){if(cachedProgress(profile))session.removeItem(PENDING_KEY);}
+   const sameProfile=(a,b)=>a&&b&&a.classId===b.classId&&a.profileId===b.profileId;
+   function pendingRecords(){
+     const value=readBound(PENDING_KEY);if(!value)return [];
+     return [value,...(Array.isArray(value.previous)?value.previous:[])].flatMap(entry=>{
+       if(!validId(entry?.classId)||!validId(entry?.profileId)||!Number.isSafeInteger(entry.revision)||entry.revision<1)return [];
+       const valid=dataApi.validate(entry.data);return valid.ok?[{classId:entry.classId,profileId:entry.profileId,revision:entry.revision,data:valid.data}]:[];
+     });
+   }
+   function writePending(records){
+     if(!records.length){session.removeItem(PENDING_KEY);return;}
+     const [current,...previous]=records;session.setItem(PENDING_KEY,JSON.stringify({version:1,tabId,...current,...(previous.length?{previous}:{})}));
+   }
+   function cachedProgress(profile=active){return profile?pendingRecords().find(value=>sameProfile(value,profile))||null:null;}
+   function clearPending(profile=active){if(profile)writePending(pendingRecords().filter(value=>!sameProfile(value,profile)));}
+   function storePending(value){writePending([value,...pendingRecords().filter(old=>!sameProfile(old,value))]);}
    function keepPending(){
      if(!active||!loaded)return;
      try{const captured=dataApi.capture(storageScope?.storage||native);if(!captured.ok)return;
        if(stable(captured.data)===lastSaved){clearPending();return;}
-       session.setItem(PENDING_KEY,JSON.stringify({version:1,tabId,classId:active.classId,profileId:active.profileId,revision:baseRevision,data:captured.data}));pending=true;
+       storePending({classId:active.classId,profileId:active.profileId,revision:baseRevision,data:captured.data});pending=true;
      }catch{}
    }
    function sessionMarker(){try{return JSON.parse(session.getItem(ACTIVE_KEY)||'null');}catch{return null;}}
@@ -135,9 +191,10 @@
      if(destroyed||locked)return;keepPending();generation++;stopSubscriptions();leaseOwned=false;loaded=false;locked=true;waitingTakeover=false;
      const restored=reason!=='workspace-lost'&&reason!=='unsaved-conflict'&&restoreGuest();
      message(reason==='workspace-lost'?'This arcade tab is resting. Use your other tab.':reason==='device-changed'?'Your profile is open on another device.':reason==='unsaved-conflict'?'Another device saved newer progress. Ask your teacher which saved progress to use.':reason==='idle'?'Your profile is resting. Scan your card to play again.':'This card is no longer active. Ask your teacher for a new card.',reason);
-     try{options.onLock?.({reason,profile:state().profile,pending,reloadNeeded:restored});}catch{}
+     if(!signingOut)try{options.onLock?.({reason,profile:state().profile,pending,reloadNeeded:restored});}catch{}
    }
    async function lease(takeover=false,renew=false){
+     if(personalProfile(active)){leaseOwned=adminAuthorized&&adminUid===active.profileId;return leaseOwned;}
      if(!active||!studentUid)return false;const p=active,uid=studentUid,owner=generation;
      const result=await sdk.runTransaction(sdk.ref(db,profilePath(p)+'/lease'),current=>{
        if(owner!==generation||locked||!ownsWorkspace())return;
@@ -148,12 +205,16 @@
      if(owner!==generation)return false;leaseOwned=result.committed&&result.snapshot.val()?.uid===uid;return leaseOwned;
    }
    async function releaseLease(profile=active,uid=studentUid){
-     if(!sdk||!profile||!uid)return;
+     if(!sdk||!profile||!uid||personalProfile(profile))return;
      try{await sdk.runTransaction(sdk.ref(db,profilePath(profile)+'/lease'),current=>current===null?null:current.uid===uid?null:undefined,{applyLocally:false});}catch{}
    }
    function observeProfile(){
      const owner=generation,p=active;
      const invalid=()=>{if(owner===generation)lock('access-revoked');};
+     if(personalProfile(p)){
+       subscriptions.push(sdk.onValue(sdk.ref(adminDb,profilePath(p)+'/meta'),snap=>{if(owner!==generation)return;const value=snap.val();if(!value||typeof value.alias!=='string'||!value.alias.trim())invalid();},invalid));
+       return;
+     }
      subscriptions.push(sdk.onValue(sdk.ref(db,profilePath(p)+'/meta'),snap=>{if(owner!==generation)return;const value=snap.val();if(!value||value.passHash!==p.passHash)invalid();},invalid));
      subscriptions.push(sdk.onValue(sdk.ref(db,path('sessions/'+studentUid)),snap=>{if(owner!==generation)return;const value=snap.val();if(!value||value.profileId!==p.profileId||value.classId!==p.classId||value.passHash!==p.passHash)invalid();},invalid));
      subscriptions.push(sdk.onValue(sdk.ref(db,profilePath(p)+'/lease'),snap=>{
@@ -161,11 +222,11 @@
      },invalid));
    }
    async function loadActive(reason){
-     const owner=generation,p=active;
-     const [metaSnap,stateSnap]=await Promise.all([sdk.get(sdk.ref(db,profilePath(p)+'/meta')),sdk.get(sdk.ref(db,profilePath(p)+'/state'))]);
+     const owner=generation,p=active,database=profileDatabase(p);
+     const [metaSnap,stateSnap]=await Promise.all([sdk.get(sdk.ref(database,profilePath(p)+'/meta')),sdk.get(sdk.ref(database,profilePath(p)+'/state'))]);
      if(owner!==generation)return fail('closed');
      const meta=metaSnap.val(),saved=stateSnap.val();
-     if(!meta||meta.passHash!==p.passHash||!saved||saved.schemaVersion!==1||!Number.isSafeInteger(saved.revision))return fail('profile-unavailable');
+     if(!meta||(personalProfile(p)?!adminAuthorized||adminUid!==p.profileId||typeof meta.alias!=='string'||meta.alias.length<1||meta.alias.length>40:meta.passHash!==p.passHash)||!saved||saved.schemaVersion!==1||!Number.isSafeInteger(saved.revision)||saved.revision<1)return fail('profile-unavailable');
      const valid=dataApi.validate(saved.data);if(!valid.ok)return fail('profile-data-invalid');
      const cached=cachedProgress(p),encoded=stable(valid.data);
      if(cached&&cached.revision!==saved.revision&&stable(cached.data)!==encoded)return fail('unsaved-conflict');
@@ -175,7 +236,8 @@
      if(changed){const result=dataApi.apply(guardedStorage(),working);if(!result.ok)return fail('local-saving-unavailable');}
      if(owner!==generation||!ownsWorkspace())return fail('workspace-lost');
      loaded=true;pending=stable(working)!==lastSaved;locked=false;waitingTakeover=false;if(!pending)clearPending();
-     observeProfile();message('Your classroom profile is ready.');identity(reason,changed);return {ok:true};
+     if(personalProfile(p)){personalAvailable=true;closePersonal(false);}
+     observeProfile();message(personalProfile(p)?'Your player is ready.':'Your classroom profile is ready.');identity(reason,changed);return {ok:true};
    }
    async function activate(binding,{takeover=false,reason='joined'}={}){
      const owner=++generation;stopSubscriptions();loaded=false;leaseOwned=false;locked=false;pending=false;waitingTakeover=false;transitioning=true;
@@ -214,13 +276,20 @@
      try{
        if(marker&&storageScope&&!ownsWorkspace()){lock('workspace-lost');return fail('workspace-lost');}
        const ready=await connect();if(!ready.ok)return ready;
-       // Teacher sessions have no student profile marker. Restore their
-       // tab-bound Firebase identity before rendering the teacher entry page.
-       if(!marker)return {ok:true,guest:true};
+       // An approved teacher's player uses the Google identity and revision
+       // guard directly. It never creates a student's anonymous session/lease.
+       if(!marker||marker.classId===PERSONAL_CLASS){
+         if(adminAuthorized&&enabled){
+           if(await refreshPersonal()&&(marker||!teacher?.personalClosed))return await activate({kind:'teacher',classId:PERSONAL_CLASS,profileId:adminUid,classLabel:'My player'},{reason:'resumed'});
+         }
+         if(marker){lock('session-ended');return fail('session-ended');}
+         return {ok:true,guest:true};
+       }
        if(!auth.currentUser){lock('session-ended');return fail('session-ended');}
        studentUid=auth.currentUser.uid;
        const snap=await sdk.get(sdk.ref(db,path('sessions/'+studentUid))),binding=snap.val();
        if(!binding||!validId(binding.classId)||!validId(binding.profileId)){lock('access-revoked');return fail('session-ended');}
+       if(adminAuthorized)try{await refreshPersonal();}catch{}
        return await activate(binding,{reason:'resumed'});
      }catch{lock('connection-unavailable');return fail('connection-unavailable');}finally{loading=false;notify();}
    }
@@ -228,15 +297,15 @@
    async function flush(){
      if(!active)return {ok:true,guest:true};if(!maySave())return fail(locked?'access-revoked':'profile-read-only');
      if(inFlightSave){const previous=await inFlightSave;return previous.ok?flush():previous;}
-     const owner=generation,revision=baseRevision;let captured;
+     const owner=generation,revision=baseRevision,profile=active,database=profileDatabase(profile);let captured;
      try{captured=dataApi.capture(guardedStorage());}catch{return fail('workspace-lost');}
      if(!captured.ok){pending=true;message('Your teacher needs to check this profile before it can save.','profile-data-invalid');return fail('profile-data-invalid');}
      const encoded=stable(captured.data);if(encoded===lastSaved)return {ok:true};
      if(!maySave()||owner!==generation)return fail('workspace-lost');
-     try{session.setItem(PENDING_KEY,JSON.stringify({version:1,tabId,classId:active.classId,profileId:active.profileId,revision,data:captured.data}));}catch{message('This device cannot keep an unsent save safely. Ask your teacher for help.','local-saving-unavailable');return fail('local-saving-unavailable');}
+     try{storePending({classId:active.classId,profileId:active.profileId,revision,data:captured.data});}catch{message('This device cannot keep an unsent save safely. Ask your teacher for help.','local-saving-unavailable');return fail('local-saving-unavailable');}
      saving=true;pending=true;notify();
      inFlightSave=(async()=>{try{
-       const result=await sdk.runTransaction(sdk.ref(db,profilePath(active)+'/state'),current=>{
+       const result=await sdk.runTransaction(sdk.ref(database,profilePath(profile)+'/state'),current=>{
          // Firebase first calls a transaction with an uncached null value.
          // The server retries it against the real revision; only a known
          // different revision is a conflict, and rules enforce old + 1.
@@ -246,30 +315,67 @@
        if(owner!==generation||!ownsWorkspace())return fail('workspace-lost');
        if(!result.committed){lock('newer-progress');return fail('newer-progress');}
        baseRevision=revision+1;lastSaved=encoded;pending=false;keepPending();message(pending?'Saving your newest progress…':'Progress saved.');return {ok:true};
-     }catch{pending=true;message('Not saved yet. Keep this tab open and try again.','save-unavailable');return fail('save-unavailable');}finally{saving=false;inFlightSave=null;notify();}})();
+     }catch{if(owner!==generation)return fail('closed');pending=true;message('Not saved yet. Keep this tab open and try again.','save-unavailable');return fail('save-unavailable');}finally{saving=false;inFlightSave=null;notify();}})();
      return inFlightSave;
    }
    async function leave(settings={}){
-     if(loading||transitioning)return fail('busy');loading=true;transitioning=true;notify();
-     if(active&&loaded&&!settings.discard){const saved=await flush();if(!saved.ok){loading=false;transitioning=false;notify();return fail('unsaved-progress');}}
+     if((loading||transitioning)&&!settings.internal)return fail('busy');loading=true;transitioning=true;notify();
+     if(active&&loaded&&!settings.discard&&!settings.skipFlush){const saved=await flush();if(!saved.ok){loading=false;transitioning=false;notify();return fail('unsaved-progress');}}
      const old=active,uid=studentUid;let restored=false;
      try{await withWorkspace(()=>{if(ownsWorkspace())restored=restoreGuest();});}
      catch{loading=false;transitioning=false;notify();return fail('local-saving-unavailable');}
      if(ownsWorkspace()&&!restored){loading=false;transitioning=false;message('This device could not switch players safely. Ask your teacher for help.','local-saving-unavailable');return fail('local-saving-unavailable');}
      if(settings.discard)clearPending(old);
+     if(personalProfile(old))closePersonal(true);
      generation++;stopSubscriptions();leaseOwned=false;loaded=false;waitingTakeover=false;locked=false;active=null;pending=false;transitioning=false;
-     if(sdk&&uid){
+     if(sdk&&uid&&!personalProfile(old)){
        const cleanup=(async()=>{await releaseLease(old,uid);try{await sdk.remove(sdk.ref(db,path('sessions/'+uid)));}catch{}})();
        // Online devices release their lease first. Offline cleanup may remain
        // queued; expiry still bounds it, without trapping the child in a menu.
        await Promise.race([cleanup,new Promise(resolve=>win.setTimeout(resolve,1500))]);
        try{await sdk.signOut(auth);}catch{}
      }
-     studentUid=null;loading=false;message('This device is ready for another player.');identity(old?'left':'guest',!!old||restored);return {ok:true};
+     if(!personalProfile(old))studentUid=null;loading=false;message('This device is ready for another player.');if(!settings.silentIdentity)identity(old?'left':'guest',!!old||restored);return {ok:true};
    }
    async function useSavedProgress(){
      if(!active||code!=='unsaved-conflict'||loading)return fail('no-conflict');
      clearPending();loading=true;notify();try{return await activate(active,{reason:'saved-progress-selected'});}catch{return fail('connection-unavailable');}finally{loading=false;notify();}
+   }
+   async function savePersonalPlayer(){
+     if(loading||transitioning)return fail('busy');
+     if(active&&!personalProfile(active)||sessionMarker()&&sessionMarker().classId!==PERSONAL_CLASS){message('Leave the student profile before saving your own player.','personal-player-student-active');return fail('personal-player-student-active');}
+     if(personalProfile(active)){message('This Google account already has a saved player.','personal-player-exists');return fail('personal-player-exists');}
+     if(storageScope?.getState().blocked)return fail('workspace-lost');
+     loading=true;notify();const owner=generation;
+     try{
+       const allowed=await staff();if(!allowed.ok)return allowed;
+       const uid=adminUid,captured=dataApi.capture(storageScope?.storage||win?.localStorage||native);
+       if(!captured.ok)return fail('profile-data-invalid');
+       let alias='My player';try{const avatar=JSON.parse((storageScope?.storage||native).getItem('musicArcadeV1')||'null');if(typeof avatar?.name==='string'&&avatar.name.trim())alias=avatar.name.trim().slice(0,40);}catch{}
+       const record={meta:{alias,picture:'owl',createdAt:sdk.serverTimestamp()},state:{schemaVersion:1,revision:1,updatedAt:sdk.serverTimestamp(),data:captured.data}};
+       const created=await sdk.runTransaction(sdk.ref(adminDb,path('teacherPlayers/'+uid)),current=>{
+         if(owner!==generation||destroyed||!adminAuthorized||adminUid!==uid||storageScope?.getState().blocked||current!==null)return;
+         return record;
+       },{applyLocally:false});
+       if(owner!==generation||!adminAuthorized||adminUid!==uid)return fail('closed');
+       personalAvailable=!!created.snapshot.val();
+       if(!created.committed){message('This Google account already has a saved player. Choose Open my player.','personal-player-exists');return fail('personal-player-exists');}
+       return await activate({kind:'teacher',classId:PERSONAL_CLASS,profileId:uid,classLabel:'My player'},{reason:'personal-created'});
+     }catch{message('Your player has not been saved yet. Keep this tab open and try again.','personal-save-failed');return fail('personal-save-failed');}finally{loading=false;notify();}
+   }
+   async function openPersonalPlayer(){
+     if(loading||transitioning)return fail('busy');
+     loading=true;notify();let owner=generation;
+     try{
+       const allowed=await staff();if(!allowed.ok)return allowed;const uid=adminUid;
+       if(!await refreshPersonal()){message('Save your player from the device with your latest progress first.','personal-player-unavailable');return fail('personal-player-unavailable');}
+       if(owner!==generation||!adminAuthorized||adminUid!==uid)return fail('closed');
+       if(personalProfile(active)&&active.profileId===adminUid&&maySave())return {ok:true};
+       if(active&&!personalProfile(active)){const left=await leave({silentIdentity:true,internal:true});if(!left.ok)return left;owner=generation;}
+       loading=true;notify();
+       if(owner!==generation||!adminAuthorized||adminUid!==uid)return fail('closed');
+       return await activate({kind:'teacher',classId:PERSONAL_CLASS,profileId:uid,classLabel:'My player'},{reason:'personal-opened'});
+     }catch{message('Your player could not open. Keep this tab open and try again.','personal-open-failed');return fail('personal-open-failed');}finally{loading=false;notify();}
    }
    async function listClasses(){const allowed=await staff();if(!allowed.ok)return allowed;try{
      const snap=await sdk.get(sdk.ref(adminDb,path('directory')));const classes=[];
@@ -324,9 +430,9 @@
    if(storageScope?.subscribe)pendingJobs.add(storageScope.subscribe(()=>{if(active&&!transitioning&&!ownsWorkspace())lock('workspace-lost');}));
    flushTimer=win?.setInterval?.(()=>{if(isWritable())flush();},1500);
    leaseTimer=win?.setInterval?.(async()=>{if(!isWritable())return;try{if(!await lease(false,true))lock('device-changed');}catch{message('Connection paused. Keep this tab open.','connection-unavailable');}},20000);
-   idleTimer=win?.setInterval?.(()=>{if(now()-lastActivity<=Math.max(60000,options.idleMs||600000))return;if(adminUid)adminSignOut();if(active&&!locked&&!loading)flush().then(result=>{if(result.ok)leave({discard:true});else lock('idle');});},10000);
+   idleTimer=win?.setInterval?.(()=>{if(now()-lastActivity<=Math.max(60000,options.idleMs||600000))return;if(adminUid){const personal=personalProfile(active);adminSignOut();if(personal)return;}if(active&&!locked&&!loading)flush().then(result=>{if(result.ok)leave({discard:true});else lock('idle');});},10000);
    function destroy(){keepPending();destroyed=true;generation++;stopSubscriptions();if(adminRoleStop){adminRoleStop();adminRoleStop=null;}for(const stop of pendingJobs)try{stop();}catch{}for(const timer of [flushTimer,leaseTimer,idleTimer])if(timer!==null)win?.clearInterval?.(timer);for(const type of ['pointerdown','keydown','touchstart'])win?.removeEventListener?.(type,activity);win?.removeEventListener?.('pagehide',keepPending);win?.document?.removeEventListener?.('visibilitychange',pageHidden);listeners.clear();}
-   return {getState:state,subscribe(listener){listeners.add(listener);return()=>listeners.delete(listener);},connect,resume,join,leave,takeOver,useSavedProgress,adminSignIn,adminSignOut,listClasses,createClass,listProfiles,createProfile,reissuePass,deleteProfile,deleteClass,flush,isWritable,destroy};
+   return {getState:state,subscribe(listener){listeners.add(listener);return()=>listeners.delete(listener);},connect,resume,join,leave,takeOver,useSavedProgress,adminSignIn,adminSignOut,savePersonalPlayer,openPersonalPlayer,listClasses,createClass,listProfiles,createProfile,reissuePass,deleteProfile,deleteClass,flush,isWritable,destroy};
  }
  return Object.freeze({create,consumeFragment,parsePass:passCode,formatPass,hashPass});
 });

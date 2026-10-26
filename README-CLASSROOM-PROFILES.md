@@ -42,6 +42,7 @@ The `classroomV1` Realtime Database namespace contains:
 | Path | Purpose | Who can access it |
 | --- | --- | --- |
 | `admins/{uid}` | Project-provisioned school-admin allowlist | A Google-signed-in user can check only their own entry. No browser client can write any entry. |
+| `teacherPlayers/{uid}` | Teacher's private player alias, animal picture and versioned progress DTO | Only that exact Google-signed-in UID while approved as a school admin; parent listing and cross-teacher access are denied |
 | `directory/{classId}/meta` | Class label, creator UID, creation time for lightweight class lists | School admins |
 | `directory/{classId}/profiles/{profileId}` | Generated alias and animal picture only, for lightweight rosters | School admins |
 | `classes/{classId}/meta` | Class label, creator UID, creation time | School admins |
@@ -76,6 +77,41 @@ Aliases and progress are pseudonymous school records. Firebase Authentication
 still creates a technical anonymous UID for each student device; its normal
 service and network metadata are separate from this progress DTO. Staff use
 their own approved Google accounts. Do not ask children to use Google sign-in.
+
+## Teacher's own player
+
+On the device with the teacher's latest progress, open **For teachers**, sign in,
+and choose **Save this player to my account**. Confirm the current player. A
+missing personal save is never created automatically during sign-in, so an old
+computer cannot accidentally become the first authoritative save. A selected
+student cannot be saved as the teacher's player.
+
+Subsequent sign-ins open the existing personal save when no student is selected.
+With a student selected, teacher sign-in keeps the student active; **Open my
+player** explicitly switches after saving and leaving that student. Signing out
+of the teacher's personal player restores the previous local guest. Student
+class cards and teacher administration remain separate.
+
+The teacher record uses the same closed progress DTO as students, plus a private
+player nickname (up to 40 characters) and fixed animal picture. It adds no email,
+real-name field or Google display-name copy. Compositions, recordings and editor
+projects remain local. Existing local progress is not automatically merged with
+an older legacy `arcadeProfiles` save. The first save must come from the correct
+device.
+
+Personal saves use revision compare-and-set. If two devices play concurrently,
+an older snapshot cannot replace a newer cloud revision; the old device pauses
+and offers the existing saved-progress recovery. Wait for saving to finish
+before changing devices. Personal records use the approved Google database
+connection, never student anonymous sessions or student saving leases. Removing
+admin approval removes personal cloud access too. Client deletion is denied.
+
+The teacher-player rules were activated on 2026-10-26 after 19 emulator security
+cases, ten personal-player browser cases and four main-game browser cases passed.
+Only `classroomV1/teacherPlayers` was added to a fresh backup of the full live
+rules; every existing rule was preserved and the installed rules were compared
+with the candidate. Logged-out listing was denied. These checks did not read or
+create the teacher's real player save; the explicit first save above is required.
 
 ## Room-code multiplayer
 
@@ -305,6 +341,8 @@ The separate production-service browser check is:
 
 ```sh
 node tools/test-classroom-service.cjs
+node tools/test-classroom-service.cjs --teacher-player
+node tools/test-classroom-service.cjs --world
 node --test tests/classroom-storage.test.cjs
 python3 tests/classroom-storage-browser.py
 ```

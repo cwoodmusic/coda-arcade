@@ -107,6 +107,7 @@ function createdAt(immutable=true){
 
 function buildClassroomRules(schema){
  const student=validStudent(),lease=profileNode('$classId','$profileId')+'.child("lease")';
+ const teacher=join([admin,'auth.uid === $uid']);
  const dto=convertSchema(schema);
  const classMeta=()=>closed({'.validate':'newData.hasChildren(["ownerUid","label","createdAt"])',
   ownerUid:{'.validate':join([string('newData',1,128),'data.exists() ? newData.val() === data.val() : newData.val() === auth.uid'])},
@@ -117,6 +118,21 @@ function buildClassroomRules(schema){
  const sessionBinding=passMatches(sessionHash,sessionClass,sessionProfile);
  const namespace={'.read':false,'.write':false,
   admins:{'.read':false,'.write':false,$uid:{'.read':join([google,'auth.uid === $uid']),'.write':false}},
+  teacherPlayers:{'.read':false,'.write':false,$uid:closed({
+   '.read':teacher,
+   // Create the complete private player once; later writes target meta/state.
+   // A missing record may be read by its approved owner for create-if-null.
+   '.write':join([teacher,'!data.exists()','newData.exists()']),
+   '.validate':'newData.hasChildren(["meta","state"])',
+   meta:closed({'.write':join([teacher,'data.parent().exists()','newData.exists()']),
+    '.validate':'newData.hasChildren(["alias","picture","createdAt"])',
+    alias:{'.validate':string('newData',1,40)},picture:picture(),createdAt:createdAt()}),
+   state:closed({'.write':join([teacher,'data.parent().exists()','newData.exists()']),
+    '.validate':join(['newData.hasChildren(["schemaVersion","revision","updatedAt","data"])',
+     'data.exists() ? newData.child("revision").val() === data.child("revision").val() + 1 : newData.child("revision").val() === 1']),
+    schemaVersion:{'.validate':'newData.isNumber() && newData.val() === 1'},
+    revision:{'.validate':integer('newData',1,1000000000000)},updatedAt:createdAt(false),data:dto})
+  })},
   directory:{'.read':admin,'.write':admin,'.validate':objectCondition,$classId:closed({
    '.validate':join([matches('$classId',ID_PATTERN),'newData.hasChildren(["meta"])']),meta:classMeta(),
    profiles:{'.validate':objectCondition,$profileId:closed({

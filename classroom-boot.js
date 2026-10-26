@@ -49,6 +49,8 @@
    const current=card;let entryView=requestedView,identityReloading=false;card=null;requestedView=null;
    const reloadIdentity=()=>{
      identityReloading=true;
+     preparing=true;
+     win.document.documentElement.classList.add('classroom-preparing');
      if(entryView&&scope?.tabId)try{win.sessionStorage.setItem(ENTRY_KEY,JSON.stringify({version:1,tabId:scope.tabId,view:entryView}));}catch{}
      win.location.reload();
    };

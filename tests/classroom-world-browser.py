@@ -58,6 +58,7 @@ parent.postMessage({coda:1,type:'ready',game:'pitch'},'*');
                 request_route.continue_()
         context.route('**/*',route)
         page=context.new_page()
+        page.add_init_script('window.fixtureTeacherToken='+json.dumps(self.token)+';')
         page.on('pageerror',lambda error:self.page_errors.append(str(error)))
         page.on('framenavigated',lambda frame:self.world_navigations.append(frame.url) if frame==page.main_frame else None)
         page.on('response',lambda response:self.failed_assets.append((response.status,response.url)) if response.status>=400 and urllib.parse.urlsplit(response.url).hostname=='127.0.0.1' else None)
@@ -194,6 +195,73 @@ parent.postMessage({coda:1,type:'ready',game:'pitch'},'*');
         self.assertFalse(page.evaluate('fixturePianoReward("piano-lesson:mary",24).ok'))
         self.assertEqual(other.evaluate('CodaClassroomProfileData.capture(localStorage).data.wallet.balance'),150)
         self.assertEqual(other.evaluate('CodaClassroomProfileData.capture(localStorage).data.progression.xp'),0)
+
+    def teacher_entry(self,page):
+        page.goto(self.url.rsplit('/',1)[0]+'/index.html')
+        page.locator('#titleTeacher').click()
+        self.ready(page)
+        return page
+
+    def test_main_site_teacher_first_save_and_title_return_keep_progress_and_developer_access(self):
+        page=self.world()
+        page.evaluate('''()=>{
+          const data=CodaClassroomProfileData.capture(localStorage).data;
+          data.progression.events=[{id:'game:world-fixture',xp:480}];data.progression.xp=480;
+          data.wallet.balance=370;data.wallet.earned=370;data.wallet.rewards=['game:world-fixture'];
+          CodaClassroomProfileData.apply(localStorage,data);
+          const avatar=JSON.parse(localStorage.musicArcadeV1);
+          Object.assign(avatar,{name:'Mr Wood',shirt:'#7252b5',headwear:'beanie'});
+          localStorage.musicArcadeV1=JSON.stringify(avatar);
+        }''')
+        self.teacher_entry(page)
+        page.locator('#classpassAdminSignIn').click()
+        expect(page.locator('#classpassPersonalSave')).to_be_enabled()
+        self.assertIsNone(fixture.database('classroomV1/teacherPlayers/'+self.teacher_uid))
+        self.assertEqual(page.evaluate('CodaArcadeQA.progression().xp'),480)
+        page.locator('#classpassPersonalSave').click()
+        expect(page.locator('#panelBody')).to_contain_text('Mr Wood')
+        with page.expect_navigation(wait_until='load'):
+            page.locator('#classpassConfirm').click()
+        self.ready(page,{'profileId':self.teacher_uid})
+        navigations=len(self.world_navigations)
+        page.wait_for_timeout(1800)
+        self.assertEqual(len(self.world_navigations),navigations,'Personal resume must not reload repeatedly')
+        self.assertEqual(page.evaluate('CodaArcadeQA.notes().balance'),370)
+        self.assertEqual(page.evaluate('CodaArcadeQA.progression().xp'),480)
+        self.assertFalse(page.evaluate('CodaArcadeQA.classroomSession().student'))
+        page.locator('#panelClose').click() if page.locator('#panel').is_visible() else None
+        page.evaluate('CodaDeveloperConsole.open()')
+        self.assertTrue(page.evaluate('CodaDeveloperConsole.getState().open'))
+        page.keyboard.press('F2')
+        self.teacher_entry(page)
+        self.ready(page,{'profileId':self.teacher_uid})
+        expect(page.locator('#classpassAdminSignIn')).to_have_count(0)
+        expect(page.locator('#classpassPersonalOpen')).to_have_text('Your player is open')
+        self.assertEqual(page.evaluate('CodaArcadeQA.notes().balance'),370)
+        self.assertEqual(page.evaluate('CodaArcadeQA.progression().xp'),480)
+        with page.expect_navigation(wait_until='load'):
+            page.locator('#classpassAdminSignOut').click()
+        self.ready(page)
+        page.wait_for_function('!CodaClassroomSession.getState().admin.signedIn&&!CodaClassroomSession.getState().profile')
+        self.assertTrue(page.evaluate('CodaArcadeQA.classroomSession().canPlay'))
+        self.assertEqual(page.evaluate('CodaArcadeQA.notes().balance'),370)
+        self.assertEqual(self.failed_assets,[])
+
+    def test_main_site_other_device_sign_in_opens_the_saved_teacher_player(self):
+        self.admin.evaluate('fixtureProgress(830,420)')
+        self.admin.evaluate('localStorage.musicArcadeV1=JSON.stringify({...JSON.parse(localStorage.musicArcadeV1),name:"Mr Wood",shirt:"#146f85",headwear:"beanie"})')
+        self.assert_ok(self.call(self.admin,'savePersonalPlayer'))
+        page=self.teacher_entry(self.world())
+        with page.expect_navigation(wait_until='load'):
+            page.locator('#classpassAdminSignIn').click()
+        self.ready(page,{'profileId':self.teacher_uid})
+        self.assertEqual(page.evaluate('CodaArcadeQA.progression().xp'),830)
+        self.assertEqual(page.evaluate('CodaArcadeQA.notes().balance'),570)
+        self.assertEqual(page.evaluate('CodaArcadeQA.classroomSession().alias'),'Mr Wood')
+        self.assertEqual(page.evaluate('CodaArcadeQA.characters().player.appearance.shirt'),'#146f85')
+        self.assertFalse(page.evaluate('CodaArcadeQA.classroomSession().student'))
+        self.assertIsNone(fixture.database('classroomV1/sessions'))
+        self.assertEqual(self.failed_assets,[])
 
 
 if __name__=='__main__':

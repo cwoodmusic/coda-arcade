@@ -38,7 +38,7 @@ before(async()=>{
 });
 beforeEach(async()=>{
  const now=stamp(),seed={existingScores:{top:{alias:'COD',score:123}},[ROOT]:{
-  admins:{school_admin:true,password_admin:true},
+  admins:{school_admin:true,password_admin:true,other_admin:true},
   directory:{
    [CLASS]:{meta:{ownerUid:'school_admin',label:'Blue group',createdAt:now},profiles:{[PROFILE]:{alias:'Blue Otter 27',picture:'otter'}}},
    [OTHER_CLASS]:{meta:{ownerUid:'school_admin',label:'Green group',createdAt:now},profiles:{[OTHER_PROFILE]:{alias:'Green Fox 8',picture:'fox'}}}
@@ -262,4 +262,98 @@ test('removing a class/profile or admin allowlist entry revokes access without c
  await assertFails(write(staff(),`${ROOT}/classes/another_class/meta`,{ownerUid:'school_admin',label:'Revoked',createdAt:stamp()}));
  assert.equal((await assertSucceeds(read(env.unauthenticatedContext().database(),'existingScores/top'))).val().score,123);
  await assertFails(write(student,'existingScores/top/score',900));
+});
+
+const TEACHER_PATH=`${ROOT}/teacherPlayers/school_admin`;
+const teacherRecord=(revision=1,data=DTO.blank())=>({
+ meta:{alias:'Your musician',picture:'owl',createdAt:stamp()},state:state(revision,data)
+});
+
+test('approved Google teachers create their own private player once and save only with revision CAS',async()=>{
+ const owner=staff();
+ assert.equal((await assertSucceeds(read(owner,TEACHER_PATH))).exists(),false,'The owner may check whether a personal player already exists');
+ const initial=teacherRecord();
+ const created=await assertSucceeds(ref(owner,TEACHER_PATH).transaction(current=>current===null?initial:undefined,undefined,false));
+ assert.equal(created.committed,true);
+ const first=(await assertSucceeds(read(owner,TEACHER_PATH))).val();
+ assert.equal(first.meta.alias,'Your musician');assert.equal(first.meta.picture,'owl');assert.equal(first.state.revision,1);
+ assert.equal(first.state.data.wallet.balance,150);
+ const updated=DTO.blank();updated.wallet.balance=166;updated.wallet.earned=166;updated.wallet.rewards=['game:triad:teacher-fixture'];
+ await assertSucceeds(write(owner,`${TEACHER_PATH}/state`,state(2,updated)));
+ assert.equal((await read(owner,`${TEACHER_PATH}/state`)).val().data.wallet.balance,166);
+ await assertFails(write(owner,`${TEACHER_PATH}/state`,state(2,updated)),'A stale writer cannot overwrite revision two');
+ await assertFails(write(owner,`${TEACHER_PATH}/state`,state(4,updated)),'Revisions cannot be skipped');
+ await assertSucceeds(write(owner,`${TEACHER_PATH}/state`,state(3,updated)));
+ const secondSeed=await assertSucceeds(ref(owner,TEACHER_PATH).transaction(current=>current===null?teacherRecord():undefined,undefined,false));
+ assert.equal(secondSeed.committed,false,'First-device seeding aborts when cloud progress already exists');
+ assert.equal((await read(owner,`${TEACHER_PATH}/state`)).val().revision,3);
+ await assertFails(write(owner,TEACHER_PATH,teacherRecord(4,updated)),'Existing whole records cannot be replaced by another initial seed');
+});
+
+test('teacher personal players cannot be listed or accessed by another approved teacher or any student identity',async()=>{
+ const owner=staff(),other=google('other_admin');
+ await assertSucceeds(write(owner,TEACHER_PATH,teacherRecord()));
+ const otherPath=`${ROOT}/teacherPlayers/other_admin`;
+ await assertSucceeds(write(other,otherPath,teacherRecord()));
+ const password=env.authenticatedContext('password_admin',{firebase:{sign_in_provider:'password'}}).database();
+ const noProvider=env.authenticatedContext('school_admin',{}).database();
+ for(const database of [env.unauthenticatedContext().database(),other,anonymous('student_one'),anonymous('school_admin'),google('ordinary_google'),password,noProvider]){
+  await assertFails(read(database,TEACHER_PATH));
+  await assertFails(write(database,`${TEACHER_PATH}/state`,state(2)));
+  await assertFails(write(database,`${TEACHER_PATH}/meta/alias`,'Other musician'));
+ }
+ await assertFails(read(owner,otherPath));await assertFails(write(owner,`${otherPath}/state`,state(2)));
+ for(const database of [owner,other,anonymous('student_one')]){
+  await assertFails(read(database,`${ROOT}/teacherPlayers`));
+  await assertFails(ref(database,`${ROOT}/teacherPlayers`).orderByKey().equalTo('school_admin').get());
+ }
+ for(const [database,uid]of [[google('ordinary_google'),'ordinary_google'],[anonymous('student_one'),'student_one'],[password,'password_admin'],[anonymous('school_admin'),'school_admin'],[noProvider,'school_admin']])
+  await assertFails(write(database,`${ROOT}/teacherPlayers/${uid}`,teacherRecord()),'An exact UID alone cannot create a teacher player');
+});
+
+test('teacher player envelopes and metadata are closed, bounded, and exclude names and email fields',async()=>{
+ const owner=staff(),invalid=[];
+ const mutate=action=>{const value=teacherRecord();action(value);invalid.push(value);};
+ mutate(value=>{value.name='Teacher real name';});mutate(value=>{value.email='teacher@example.invalid';});
+ mutate(value=>{value.meta.name='Teacher real name';});mutate(value=>{value.meta.email='teacher@example.invalid';});
+ mutate(value=>{value.meta.alias='';});mutate(value=>{value.meta.alias='A'.repeat(41);});mutate(value=>{value.meta.alias=123;});
+ mutate(value=>{value.meta.picture='dragon';});mutate(value=>{value.meta.picture='https://example.invalid/photo';});
+ mutate(value=>{value.meta.createdAt=-1;});mutate(value=>{value.meta.createdAt=stamp()+60000;});
+ mutate(value=>{delete value.meta;});mutate(value=>{delete value.state;});
+ mutate(value=>{value.state.email='teacher@example.invalid';});mutate(value=>{value.state.schemaVersion=2;});
+ mutate(value=>{value.state.revision=0;});mutate(value=>{value.state.revision=2;});
+ for(const [index,value]of invalid.entries())await assertFails(write(owner,TEACHER_PATH,value),`Closed teacher record case ${index}`);
+ const valid=teacherRecord();valid.meta.alias='A'.repeat(40);
+ await assertSucceeds(write(owner,TEACHER_PATH,valid));
+ await assertSucceeds(write(owner,`${TEACHER_PATH}/meta/alias`,'Music teacher'));
+ await assertSucceeds(write(owner,`${TEACHER_PATH}/meta/picture`,'cat'));
+ await assertFails(write(owner,`${TEACHER_PATH}/meta/createdAt`,valid.meta.createdAt-1),'Creation time is immutable');
+ await assertFails(write(owner,`${TEACHER_PATH}/unexpected`,true));
+});
+
+test('teacher player states use the exact closed student DTO and reject invalid data and partial saves',async()=>{
+ const owner=staff();await assertSucceeds(write(owner,TEACHER_PATH,teacherRecord()));
+ const invalid=[];
+ const mutate=action=>{const value=state(2);action(value);invalid.push(value);};
+ mutate(value=>{value.data.name='Real teacher name';});mutate(value=>{value.data.avatar.name='Real teacher name';});
+ mutate(value=>{value.data.wallet.balance=-1;});mutate(value=>{value.data.wallet.balance=1000001;});
+ mutate(value=>{value.data.pitch.bestCompleted=1000;});mutate(value=>{value.data.progression.xp='500';});
+ mutate(value=>{value.data.piano.learned=['unlisted-song'];});mutate(value=>{value.data.avatar.form='unlisted-form';});
+ mutate(value=>{value.data.wallet.rewards={email:'teacher@example.invalid'};});
+ mutate(value=>{value.updatedAt=stamp()+60000;});mutate(value=>{value.updatedAt=-1;});
+ for(const [index,value]of invalid.entries())await assertFails(write(owner,`${TEACHER_PATH}/state`,value),`Canonical teacher DTO case ${index}`);
+ await assertFails(write(owner,`${TEACHER_PATH}/state/data/wallet/balance`,900),'A partial update cannot bypass revision CAS');
+ await assertSucceeds(write(owner,`${TEACHER_PATH}/state`,state(2)));
+});
+
+test('teacher player deletion remains unavailable and allowlist revocation immediately denies the owner',async()=>{
+ const owner=staff();await assertSucceeds(write(owner,TEACHER_PATH,teacherRecord()));
+ for(const location of [TEACHER_PATH,`${TEACHER_PATH}/meta`,`${TEACHER_PATH}/state`])await assertFails(remove(owner,location));
+ await assertFails(ref(owner,TEACHER_PATH).update({meta:null,state:null}));
+ await env.withSecurityRulesDisabled(context=>remove(context.database(),`${ROOT}/admins/school_admin`));
+ await assertFails(read(owner,TEACHER_PATH));await assertFails(write(owner,`${TEACHER_PATH}/state`,state(2)));
+ let stored;await env.withSecurityRulesDisabled(async context=>{stored=await read(context.database(),TEACHER_PATH);});
+ assert.equal(stored.val().state.revision,1,'Revocation does not destroy the private player');
+ await env.withSecurityRulesDisabled(context=>write(context.database(),`${ROOT}/admins/school_admin`,true));
+ await assertSucceeds(read(owner,TEACHER_PATH));
 });

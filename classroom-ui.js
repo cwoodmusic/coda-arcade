@@ -24,7 +24,12 @@
   'lease-lost':'This profile has moved to another device. Use your card to play here again.',
   'session-revoked':'This card has been replaced. Ask your teacher for the new card.',
   'qr-unavailable':'The card picture could not load. You can still copy the pass link.',
-  'class-full':'This class has 200 profiles. Create another class to add more.'
+  'class-full':'This class has 200 profiles. Create another class to add more.',
+  'personal-player-unavailable':'This Google account has no saved player yet. Save your player from the device with your latest progress first.',
+  'personal-player-exists':'This Google account already has a saved player. Choose Open my player to continue.',
+  'personal-player-student-active':'Leave the student profile before saving your own player.',
+  'personal-save-failed':'Your player could not save. Check your connection and try again on this device.',
+  'personal-open-failed':'Your player could not open. Check your connection and try again.'
  });
  const errorCode=value=>typeof value?.code==='string'?value.code.replace(/^(?:auth|functions)\//,''):typeof value==='string'?value:'';
  const friendlyError=value=>ERRORS[errorCode(value)]||'We could not finish that. Please try again.';
@@ -100,9 +105,23 @@
   }
   function refreshClasses(select=''){if(!canManage())return;return act('Loading classes',async()=>({ok:true}),(_,token)=>readClasses(token,select));}
   function requestConfirmation(value){confirmation=value;setMessage('');render();section?.querySelector('#classpassCancel')?.focus({preventScroll:true});}
-  function leave(discard=false){return act('Leaving',()=>service.leave(discard?{discard:true}:undefined),()=>{confirmation=null;joinDraft='';setMessage('You have left this device. Use your card to return.');api.onProfile?.(null);});}
+  const studentSelected=state=>!!state.profile&&state.profile.kind!=='teacher';
+  function localPlayerName(){try{const profile=JSON.parse(win.localStorage.getItem('musicArcadeV1')||'null');return text(profile?.name).trim().slice(0,40);}catch{return '';}}
+  function personalOpened(){setMessage('Your player is saved with your Google account.');const state=snapshot();if(state.profile?.kind==='teacher'&&!state.locked&&!state.waitingTakeover)api.onProfile?.(state.profile);}
+  function openPersonalPlayer(){if(!canManage()||!snapshot().personal?.available||typeof service.openPersonalPlayer!=='function')return;return act('Opening your player',()=>service.openPersonalPlayer(),personalOpened);}
+  function savePersonalPlayer(){
+   const state=snapshot();if(!canManage()||!state.personal||state.personal.available||studentSelected(state)||typeof service.savePersonalPlayer!=='function')return;
+   requestConfirmation({kind:'save-personal',alias:localPlayerName()});
+  }
+  function leave(discard=false){const teacher=snapshot().profile?.kind==='teacher';return act('Leaving',()=>service.leave(discard?{discard:true}:undefined),()=>{confirmation=null;joinDraft='';setMessage(teacher?'Your player is closed on this device. It stays saved with your Google account.':'You have left this device. Use your card to return.');api.onProfile?.(null);});}
   function confirmAction(){
    const pending=confirmation;if(!pending)return;
+   if(pending.kind==='save-personal'){
+    const state=snapshot();confirmation=null;
+    if(!canManage()||!state.personal||state.personal.available||studentSelected(state)||typeof service.savePersonalPlayer!=='function'){render();return;}
+    if(pending.alias!==localPlayerName()){setMessage('Your player changed. Check the current player and try again.');render();return;}
+    return act('Saving your player',()=>service.savePersonalPlayer(),personalOpened);
+   }
    if(pending.kind==='leave'){confirmation=null;return leave();}
    if(pending.kind==='takeover'){confirmation=null;return act('Opening your profile',()=>service.takeOver(),()=>{setMessage('Your profile is ready on this device.');api.onProfile?.(snapshot().profile);});}
    if(pending.kind==='unsaved-leave'){confirmation=null;return leave(true);}
@@ -148,8 +167,9 @@
   function renderConfirmation(){
    const pending=confirmation,box=element('section','classpass-confirm');box.setAttribute('role','alertdialog');box.setAttribute('aria-labelledby','classpassConfirmTitle');box.setAttribute('aria-describedby','classpassConfirmText');
    const values={
-    leave:['Leave this device?','Your profile and saved progress stay safe. Use your card to play here again.','Leave this device'],
-    takeover:['Use this device?','Your profile will close on the other device. Your saved progress stays with your card.','Use this device'],
+    leave:pending.personal?['Close your player here?','Your progress stays saved with your Google account.','Close my player']:['Leave this device?','Your profile and saved progress stay safe. Use your card to play here again.','Leave this device'],
+    takeover:['Use this device?',pending.personal?'Your player will close on the other device. Your saved progress stays with your Google account.':'Your profile will close on the other device. Your saved progress stays with your card.','Use this device'],
+    'save-personal':['Save this player to your Google account?',(pending.alias?'Save “'+pending.alias+'”':'Save the current player')+' with its avatar, level, Notes and outfits. Use the device with your latest progress for this first save.','Save this player to my account'],
     'unsaved-leave':['Some progress has not saved.','Stay here and try saving. Leaving now will lose the unsaved changes on this device.','Leave without saving'],
     'use-saved':['Use your saved progress?','This replaces the unsaved changes on this device with your saved progress. The unsaved changes will be lost.','Use saved progress'],
     reissue:['Replace this pass?','This keeps '+text(pending.alias,'the profile')+'’s saved progress. Old cards and signed-in devices will stop working.','Replace pass'],
@@ -163,7 +183,8 @@
    },'classpassCancel'));box.append(actions);section.append(box);
   }
   function renderStudent(state){
-   section.append(element('h2','','Your Profile Pass'));
+   const personal=state.profile?.kind==='teacher';
+   section.append(element('h2','',personal?'Your player':'Your Profile Pass'));
    if(state.configured!==false&&state.enabled===false){section.append(element('p','classpass-lead','Your teacher is finishing classroom setup.'),element('p','','You can keep playing on this device.'));return;}
    const code=errorCode(state),conflict=['newer-progress','unsaved-conflict'].includes(code),retryConnection=state.profile&&state.pending&&state.locked&&['unavailable','offline','network-request-failed'].includes(code);
    if(conflict||retryConnection){
@@ -174,13 +195,14 @@
    }
    if(state.waitingTakeover){
     section.append(element('p','classpass-lead','Your profile is open on another device.'),element('p','','You can use this device instead. The other one will close.'));
-    section.append(button('Use this device',()=>requestConfirmation({kind:'takeover'}),'classpassTakeover','is-primary'));return;
+    section.append(button('Use this device',()=>requestConfirmation({kind:'takeover',personal}),'classpassTakeover','is-primary'));return;
    }
    if(state.profile&&!state.locked){
     const identity=element('div','classpass-identity');identity.append(pictureNode(doc,state.profile.picture,state.profile.profileId),element('h3','',text(state.profile.alias,'Music friend')));section.append(identity);
-    section.append(element('p','classpass-lead','Your profile is ready.'),element('p','classpass-save-status',state.pending?'Saving your progress…':'Use your card on another device to keep playing.'));
-    section.append(button('Leave this device',()=>requestConfirmation({kind:'leave'}),'classpassLeave'));return;
+    section.append(element('p','classpass-lead',personal?'Your player is ready.':'Your profile is ready.'),element('p','classpass-save-status',state.pending?'Saving your progress…':personal?'Saved with your Google account. Sign in on another device to keep playing.':'Use your card on another device to keep playing.'));
+    section.append(button(personal?'Close my player here':'Leave this device',()=>requestConfirmation({kind:'leave',personal}),'classpassLeave'));return;
    }
+   if(personal){section.append(element('p','classpass-notice','Your player is closed on this device. It stays saved with your Google account.'));if(canManage()&&state.personal?.available)section.append(button('Open my player',openPersonalPlayer,'classpassPersonalOpen','is-primary'));return;}
    if(state.locked)section.append(element('p','classpass-notice','Your profile has closed on this device. Use your card to play here again.'));
    section.append(element('p','classpass-lead','Scan your picture card with your camera. Tap the link to play.'));
    const form=element('form','classpass-join-form'),label=element('label','','Have a pass link or code?');label.htmlFor='classpassJoinInput';
@@ -223,6 +245,21 @@
    if(!matches.length)roster.append(element('p','classpass-empty',profiles.length?'No profiles match this search. Try another alias or clear the search.':'No profiles yet. Make a new profile card to begin.'));
    browser.append(roster);if(matches.length>PAGE_SIZE)browser.append(pager(true));section.append(browser);
   }
+  function renderPersonalPlayer(state){
+   if(!state.personal||typeof service.savePersonalPlayer!=='function'||typeof service.openPersonalPlayer!=='function')return;
+   const box=element('section','classpass-personal-player classpass-notice');box.setAttribute('aria-label','Your Google-saved player');box.append(element('h3','','Your arcade player'));
+   if(state.profile?.kind==='teacher'&&(state.locked||state.waitingTakeover)){
+    box.append(element('p','classpass-help','Your player needs a check before you keep playing.'),button('Check saved progress',()=>{view='student';setMessage('');render();},'classpassPersonalCheck','is-primary'));
+   }
+   else if(state.personal.active){const active=button('Your player is open',()=>{},'classpassPersonalOpen');active.disabled=true;box.append(element('p','classpass-help','Your avatar, level, Notes and outfits save with your Google account.'),active);}
+   else if(state.personal.available){box.append(element('p','classpass-help','Open your Google-saved player on this device.'),button('Open my player',openPersonalPlayer,'classpassPersonalOpen','is-primary'));}
+   else{
+    box.append(element('p','classpass-help','On the device with your latest progress, save this player to your Google account. Then sign in on other devices.'));
+    const save=button('Save this player to my account',savePersonalPlayer,'classpassPersonalSave','is-primary');save.disabled=save.disabled||studentSelected(state);box.append(save);
+    if(studentSelected(state)){box.append(element('p','classpass-help','Leave the student profile before saving your own player.'),button('Leave student profile',()=>requestConfirmation({kind:'leave'}),'classpassPersonalLeaveStudent'));}
+   }
+   section.append(box);
+  }
   function renderAdmin(state){
    section.append(element('h2','','Teacher class passes'));
    const uid=text(state.admin?.uid),showSetup=()=>{
@@ -237,6 +274,7 @@
     return;
    }
    if(state.enabled===false){showSetup();section.append(button('Sign out of Google',()=>act('Signing out',()=>service.adminSignOut()),'classpassAdminSignOut'));return;}
+   renderPersonalPlayer(state);
    const actions=element('div','classpass-actions classpass-admin-tools');actions.append(button('Refresh lists',()=>refreshClasses(),'classpassRefresh'),button('Sign out of Google',()=>{clearCard();classes=[];profiles=[];act('Signing out',()=>service.adminSignOut());},'classpassAdminSignOut'));section.append(actions);
    const createForm=element('form','classpass-create-class'),label=element('label','','Class label');label.htmlFor='classpassClassLabel';const input=element('input');input.type='text';input.id='classpassClassLabel';input.maxLength=40;input.value=classDraft;input.placeholder='Blue class';input.disabled=!!busy;input.oninput=()=>{classDraft=input.value;};
    const add=button('Create class',()=>{},'classpassCreateClass');add.type='submit';createForm.append(label,input,add,element('p','classpass-help','Use a group label. Do not enter children’s names.'));
@@ -252,7 +290,7 @@
    if(!opened||disposed||!section?.isConnected)return;
    const focus=section.contains(doc.activeElement)?doc.activeElement:null,focusId=focus?.id,selection=focus&&typeof focus.selectionStart==='number'?{start:focus.selectionStart,end:focus.selectionEnd}:null;
    section.replaceChildren();const state=snapshot();
-   const tabs=element('nav','classpass-tabs');tabs.setAttribute('aria-label','Profile Pass pages');for(const [id,label]of [['student','My pass'],['admin','For teachers']]){const tab=button(label,()=>{if(busy)return;clearCard();confirmation=null;view=id;setMessage('');render();if(id==='admin'&&authorized())refreshClasses();},'classpassTab-'+id);tab.setAttribute('aria-pressed',String(view===id));tab.disabled=tab.disabled||!!confirmation||!!card;tabs.append(tab);}section.append(tabs);
+   const tabs=element('nav','classpass-tabs');tabs.setAttribute('aria-label',state.profile?.kind==='teacher'?'Player and teacher pages':'Profile Pass pages');for(const [id,label]of [['student',state.profile?.kind==='teacher'?'My player':'My pass'],['admin','For teachers']]){const tab=button(label,()=>{if(busy)return;clearCard();confirmation=null;view=id;setMessage('');render();if(id==='admin'&&authorized())refreshClasses();},'classpassTab-'+id);tab.setAttribute('aria-pressed',String(view===id));tab.disabled=tab.disabled||!!confirmation||!!card;tabs.append(tab);}section.append(tabs);
    if(state.configured===false)section.append(element('p','classpass-notice',ERRORS['not-configured']));
    if(confirmation)renderConfirmation();else if(card&&canManage())renderCard();else if(view==='admin')renderAdmin(state);else renderStudent(state);
    const code=errorCode(state),shownRecovery=view==='student'&&['newer-progress','unsaved-conflict'].includes(code),notice=message||(state.code&&!state.waitingTakeover?friendlyError(state):'');
@@ -261,11 +299,12 @@
   }
   function open(next='student'){
    if(disposed)return;generation++;busy='';clearCard();confirmation=null;message='';joinDraft='';classDraft='';view=next==='admin'?'admin':'student';opened=true;
-   api.openPanel?.(view==='admin'?'Teacher class passes':'Your Profile Pass');section=element('section','classroom-profile-ui');section.setAttribute('aria-label','Private classroom profiles');body.append(section);render();
+   api.openPanel?.(view==='admin'?'Teacher class passes':snapshot().profile?.kind==='teacher'?'Your player':'Your Profile Pass');section=element('section','classroom-profile-ui');section.setAttribute('aria-label','Private classroom profiles');body.append(section);render();
    if(view==='admin'&&canManage())refreshClasses();else section.querySelector('#classpassJoinInput')?.focus({preventScroll:true});
   }
   const unsubscribe=service.subscribe?.(()=>{
    const allowed=canManage();if(!allowed){clearCard();classes=[];profiles=[];selectClass('');resetBrowser();classDraft='';if(confirmation&&['reissue','delete-profile','delete-class'].includes(confirmation.kind))confirmation=null;if(lastAuthorized){generation++;busy='';}}
+   if(confirmation?.kind==='save-personal'&&(!allowed||studentSelected(snapshot())||snapshot().personal?.available))confirmation=null;
    if(opened){render();if(view==='admin'&&allowed&&!lastAuthorized&&!busy)refreshClasses();}
    lastAuthorized=allowed;
   });

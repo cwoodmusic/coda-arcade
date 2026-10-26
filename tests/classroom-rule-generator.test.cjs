@@ -68,3 +68,22 @@ test('generated artifact is deterministic and contains only the private namespac
  assert.deepEqual(space.$other,{'.validate':false});
  assert.equal(renderClassroomRules(SCHEMA),fs.readFileSync(path.join(__dirname,'../classroom-database.rules.json'),'utf8'));
 });
+
+test('teacher players are closed exact-owner Google records using the same canonical progress schema',()=>{
+ const space=buildClassroomRules(SCHEMA).rules.classroomV1,players=space.teacherPlayers,owner=players.$uid;
+ assert.equal(players['.read'],false);assert.equal(players['.write'],false);
+ for(const expression of [owner['.read'],owner['.write'],owner.meta['.write'],owner.state['.write']]){
+  assert.match(expression,/auth\.uid === \$uid/);
+  assert.match(expression,/sign_in_provider === "google\.com"/);
+  assert.match(expression,/classroomV1\/admins/);
+ }
+ assert.match(owner['.write'],/!data\.exists\(\)/);assert.match(owner['.write'],/newData\.exists\(\)/);
+ assert.deepEqual(owner.$other,{'.validate':false});assert.deepEqual(owner.meta.$other,{'.validate':false});assert.deepEqual(owner.state.$other,{'.validate':false});
+ assert.deepEqual(Object.keys(owner.meta).filter(key=>!key.startsWith('.')&&!key.startsWith('$')).sort(),['alias','createdAt','picture']);
+ assert.match(owner.meta.alias['.validate'],/length <= 40/);
+ assert.match(owner.meta.createdAt['.validate'],/newData\.val\(\) === data\.val\(\)/);
+ assert.deepEqual(owner.state.data,convertSchema(SCHEMA));
+ assert.deepEqual(owner.state.data,space.classes.$classId.profiles.$profileId.state.data);
+ assert.match(owner.state['.validate'],/data\.child\("revision"\)\.val\(\) \+ 1/);
+ assert.match(owner.state['.validate'],/newData\.child\("revision"\)\.val\(\) === 1/);
+});

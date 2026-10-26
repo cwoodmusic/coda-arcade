@@ -5,8 +5,15 @@
 opens the teacher tools. The classroom buttons never start Google sign-in
 automatically. Student profiles use private cards; Google sign-in is for staff.
 Returning through the title screen in the same tab restores an active teacher
-sign-in and rechecks account approval before showing class tools. Teacher
-sign-in does not replace the currently selected player profile.
+sign-in and rechecks account approval before showing class tools.
+
+For your own teacher player, first use the device with your newest avatar,
+level, Notes and achievements. Open **For teachers**, sign in with your approved
+Google account, then choose **Save this player to my account** and confirm the
+player shown. This first save is explicit; an older device is never adopted
+automatically. Later sign-ins open that saved player across devices. If a student
+profile is selected, it stays selected until you choose **Open my player**;
+student progress is never turned into a teacher's personal save.
 
 When this tab already has a classroom profile, the title screen offers
 **Continue profile** and **Change player**. Changing players opens the existing
@@ -20,6 +27,8 @@ existing arcade artwork without starting gameplay, music, or Firebase SDKs.
 The original arcade remains available at `classic-arcade.html`, linked from the
 title screen. In the connected world's **Settings**, **Title screen** returns
 to the front door. Direct world links and existing picture-card links still work.
+The main game's internal filename is still `world-preview.html`; it serves the
+main Coda Arcade, not a separate preview build.
 
 Classroom profiles are enabled. An approved administrator signs into **For
 teachers**, creates a class, and chooses **Make a new profile card** for each
