@@ -68,8 +68,12 @@ test('movement follows traveled phase, while emotes and reduced motion remain pr
   const {value:r}=renderer(),a=r.sampleMotion({walking:true,phase:.7},0),b=r.sampleMotion({walking:true,phase:.7},100);assert.equal(a.stride,b.stride);assert.equal(a.bob,b.bob);
   assert.notEqual(signature(draw(r,{}, {walking:true,phase:.7})),signature(draw(r,{}, {walking:true,phase:3.8})));
   const idle=signature(draw(r,{}, {},.6));for(const emote of ['wave','dance','robot','disco','playing','sit'])assert.notEqual(signature(draw(r,{}, {emote,emoteTime:.6},.6)),idle,emote+' must have a visible pose');
-  const {value:still}=renderer({reducedMotion:()=>true}),quiet=signature(draw(still,{}, {walking:true,phase:0,emote:'wave',emoteTime:0},0));
-  assert.equal(signature(draw(still,{}, {walking:true,phase:5,emote:'wave',emoteTime:8},8)),quiet);
+  const {value:still}=renderer({reducedMotion:()=>true}),quiet=signature(draw(still,{}, {walking:false,phase:0,emote:'wave',emoteTime:0},0));
+  assert.equal(signature(draw(still,{}, {walking:false,phase:5,emote:'wave',emoteTime:8},8)),quiet);
+  const steps=[0,Math.PI/2,Math.PI,Math.PI*1.5].map(phase=>still.sampleMotion({walking:true,phase},8));
+  assert.deepEqual(steps.map(pose=>pose.stride),[0,1,0,-1]);
+  assert.ok(steps.every(pose=>pose.bob===0&&pose.blink===false));
+  assert.notEqual(signature(draw(still,{}, {walking:true,phase:0},8)),signature(draw(still,{}, {walking:true,phase:Math.PI/2},8)));
 });
 test('jumping raises the character drawing while its shadow remains at the ground anchor',()=>{
   const {value:r}=renderer({reducedMotion:()=>true});

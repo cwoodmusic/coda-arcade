@@ -128,7 +128,7 @@ class JavaScriptCharacterTests(unittest.TestCase):
                 self.assertNotEqual(row['worn'],row['plain'])
                 self.assertEqual(row['removed'],row['plain'])
 
-    def test_all_musician_costumes_animate_and_reduced_motion_freezes_them(self):
+    def test_all_musician_costumes_animate_and_reduced_motion_keeps_idle_quiet(self):
         rows=self.page.evaluate('''()=>{
           const rows=[];
           for(const id of ['bach','mozart','beethoven','clara','joplin','ellington','ella','nina','miles'])for(const facing of ['down','left','up','right']){
@@ -144,9 +144,31 @@ class JavaScriptCharacterTests(unittest.TestCase):
                     self.assert_visible(frame)
         frozen=self.page.evaluate('''async()=>{
           window.stillRenderer=createCodaCharacterRenderer({reducedMotion:()=>true});await stillRenderer.ready;
-          return [0,.5,2,9].map(time=>drawCharacter({hairstyle:'buns',headwear:'crown'}, {facing:'down',walking:true,phase:time*4,emote:'dance',emoteTime:time},time,null,true).png);
+          return [0,.5,2,9].map(time=>drawCharacter({hairstyle:'buns',headwear:'crown'}, {facing:'down',walking:false,phase:time*4,emote:'dance',emoteTime:time},time,null,true).png);
         }''')
         self.assertEqual(len(set(frozen)),1,'Reduced motion must keep a quiet pose')
+
+    def test_reduced_motion_walking_changes_feet_without_bobbing_the_head(self):
+        rows=self.page.evaluate('''async()=>{
+          const renderer=createCodaCharacterRenderer({reducedMotion:()=>true});await renderer.ready;
+          const rows=[];
+          for(const id of ['player','bach','mozart','beethoven','clara','joplin','ellington','ella','nina','miles'])
+            for(const facing of ['down','left','up','right']){
+              const feet=new Set(),heads=new Set();
+              for(let step=0;step<8;step++){
+                const phase=step/8*Math.PI*2,frame=renderer.renderPixelFrame(id,{},
+                  {facing,walking:true,phase},0,{base:true}),ctx=frame.getContext('2d');
+                feet.add(Array.from(ctx.getImageData(25,72,30,17).data).join(','));
+                heads.add(Array.from(ctx.getImageData(20,12,40,42).data).join(','));
+              }
+              rows.push({id,facing,feet:feet.size,heads:heads.size});
+            }
+          return rows;
+        }''')
+        for row in rows:
+            with self.subTest(character=row['id'],facing=row['facing']):
+                self.assertGreater(row['feet'],1,'A moving character must retain visible step feedback')
+                self.assertEqual(row['heads'],1,'Reduced motion still removes head/body bobbing')
 
 
 if __name__=='__main__':

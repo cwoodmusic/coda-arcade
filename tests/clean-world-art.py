@@ -8,16 +8,79 @@ from PIL import Image
 
 ROOT=Path(__file__).resolve().parents[1]
 COUCH=json.loads((ROOT/'scripts/dance-couch-repair.json').read_text())
+ALIGNMENT=json.loads((ROOT/'scripts/dance-alignment-repair.json').read_text())
+
+def polygon_contains(px,py,polygon):
+    hit=False
+    for a,b in zip(polygon,polygon[1:]+polygon[:1]):
+        if (a[1]>py)!=(b[1]>py) and px<(b[0]-a[0])*(py-a[1])/(b[1]-a[1])+a[0]:
+            hit=not hit
+    return hit
 
 def couch_contains(x,y):
     # Test pixel centres, with a half-pixel allowance for Canvas edge coverage.
-    def inside(px,py):
-        hit=False
-        for a,b in zip(COUCH['polygon'],COUCH['polygon'][1:]+COUCH['polygon'][:1]):
-            if (a[1]>py)!=(b[1]>py) and px<(b[0]-a[0])*(py-a[1])/(b[1]-a[1])+a[0]:
-                hit=not hit
-        return hit
-    return any(inside(x+dx,y+dy) for dx in (.01,.5,.99) for dy in (.01,.5,.99))
+    return any(polygon_contains(x+dx,y+dy,COUCH['polygon']) for dx in (.01,.5,.99) for dy in (.01,.5,.99))
+
+def alignment_floor_contains(x,y,atlas):
+    if not any(polygon_contains(x+.5,y+.5,polygon) for polygon in ALIGNMENT['floorPolygons']):
+        return False
+    # The palm and sofa are authored fixtures, not floor texture. Even where
+    # their bounds overlap the repair polygon, every opaque mask pixel stays.
+    for fixture in ALIGNMENT['floorExclusions']:
+        bx,by,bw,bh=fixture['bounds'];ax,ay,_,_=fixture['atlas']
+        if bx<=x<bx+bw and by<=y<by+bh and atlas.getpixel((ax+x-bx,ay+y-by))[3]>0:
+            return False
+    return True
+
+def alignment_world_mask(atlas):
+    width,height=ALIGNMENT['worldSize'];mask=bytearray(width*height)
+    bx,by,bw,bh=COUCH['foreground']['bounds']
+    for y in range(by,by+bh):
+        for x in range(bx,bx+bw):
+            if couch_contains(x,y):mask[y*width+x]=1
+    for polygon in ALIGNMENT['floorPolygons']:
+        for y in range(min(p[1] for p in polygon),max(p[1] for p in polygon)):
+            for x in range(min(p[0] for p in polygon),max(p[0] for p in polygon)):
+                if alignment_floor_contains(x,y,atlas):mask[y*width+x]=1
+    return mask
+
+def couch_atlas_mask(atlas):
+    mask=bytearray(atlas.width*atlas.height)
+    bx,by,bw,bh=COUCH['foreground']['bounds'];ax,ay,_,_=COUCH['foreground']['atlas']
+    for y in range(by,by+bh):
+        for x in range(bx,bx+bw):
+            if couch_contains(x,y):mask[(ay+y-by)*atlas.width+ax+x-bx]=1
+    return mask
+
+def outside_hash(image,mask):
+    data=bytearray(image.convert('RGBA').tobytes())
+    for index,allowed in enumerate(mask):
+        if allowed:data[index*4:index*4+4]=b'\0'*4
+    return hashlib.sha256(data).hexdigest()
+
+def aisle_grid_failures(image):
+    """Independent native-pixel witnesses taken from surviving aisle grout.
+
+    A tile's middle must stay brighter than its two grout edges: the old
+    inpaint put a second dark row through that middle below the sofa. The
+    vertical checks ensure those horizontal edges meet the original columns.
+    Neither these coordinates nor the contrast bound comes from repair UVs.
+    """
+    rgb=image.convert('RGB')
+    shade=lambda x,y:sum(rgb.getpixel((x,y)))/3
+    failures=[]
+    for top,bottom,middle in [(702,714,708),(714,725,719),(725,737,731),(737,748,742)]:
+        for x in (659,671,683):
+            edge=max(min(shade(x,y) for y in range(top-1,top+2)),
+                     min(shade(x,y) for y in range(bottom-1,bottom+2)))
+            interior=sum(shade(x,y) for y in range(middle-1,middle+2))/3
+            if interior-edge<8:failures.append(('extra-row',x,middle,round(interior-edge,2)))
+    for y in (708,719,731,742):
+        for x in (653,665,677):
+            edge=min(shade(xx,y) for xx in range(x-1,x+2))
+            interior=(shade(x-4,y)+shade(x+4,y))/2
+            if interior-edge<8:failures.append(('column-break',x,y,round(interior-edge,2)))
+    return failures
 
 def pixels(image):
     return image.get_flattened_data() if hasattr(image,'get_flattened_data') else image.getdata()
@@ -45,6 +108,10 @@ class CleanWorldArtTests(unittest.TestCase):
         for y in range(by,by+bh):
             for x in range(bx,bx+bw):
                 if couch_contains(x,y):allowed[y*width+x]=1
+        # Release 69 repairs only the aisle's old character-removal patch.
+        atlas=Image.open(ROOT/'coda_arcade_foreground_clean.png').convert('RGBA')
+        for index,value in enumerate(alignment_world_mask(atlas)):
+            if value:allowed[index]=1
         changed=0
         for index,(old,new) in enumerate(zip(pixels(original),pixels(clean))):
             if old!=new:
@@ -88,19 +155,35 @@ class CleanWorldArtTests(unittest.TestCase):
                 self.assertEqual(atlas.getpixel((ax+x-bx,ay+y-by)),world.getpixel((x,y)))
                 self.assertEqual(atlas.getpixel((ax+x-bx,ay+y-by))[3],255)
 
-    def test_couch_repair_changes_no_other_world_or_atlas_pixels(self):
-        bx,by,bw,bh=COUCH['foreground']['bounds'];ax,ay,_,_=COUCH['foreground']['atlas']
-        for name,key in [('coda_arcade_world_clean.png','outsideWorldSha256'),
-                         ('coda_arcade_foreground_clean.png','outsideAtlasSha256')]:
-            with self.subTest(asset=name):
-                image=Image.open(ROOT/name).convert('RGBA');data=bytearray(image.tobytes())
-                for y in range(by,by+bh):
-                    for x in range(bx,bx+bw):
-                        if not couch_contains(x,y):continue
-                        px,py=(x,y) if 'world_clean' in name else (ax+x-bx,ay+y-by)
-                        at=(py*image.width+px)*4;data[at:at+4]=b'\0'*4
-                self.assertEqual(hashlib.sha256(data).hexdigest(),COUCH[key],
-                                 'Every pixel outside the tiny sofa repair must retain its reviewed value')
+    def test_alignment_changes_only_the_reviewed_couch_and_aisle_pixels(self):
+        world=Image.open(ROOT/'coda_arcade_world_clean.png').convert('RGBA')
+        atlas=Image.open(ROOT/'coda_arcade_foreground_clean.png').convert('RGBA')
+        self.assertEqual(ALIGNMENT['worldSize'],[1672,941])
+        self.assertEqual(ALIGNMENT['couchPolygon'],COUCH['polygon'])
+        self.assertEqual(ALIGNMENT['foreground'],COUCH['foreground'])
+        self.assertEqual(ALIGNMENT['floorPolygons'],[
+            [[618,675],[708,675],[708,778],[661,778],[651,753],[639,723],[626,693]]])
+        self.assertEqual(ALIGNMENT['floorExclusions'],[
+            COUCH['foreground'],
+            {'name':'dance_right_palm','bounds':[687,683,72,84],'atlas':[1004,280,72,84]}])
+        with Image.open(ROOT/ALIGNMENT['source']) as source:
+            self.assertEqual(list(source.size),ALIGNMENT['sourceSize'])
+        # These digests were computed from the immutable pre-69 PNGs before
+        # compositing, zeroing exactly this polygon union. They do not depend on
+        # a temporary file, the generated texture, or the compositor's output.
+        self.assertEqual(outside_hash(world,alignment_world_mask(atlas)),ALIGNMENT['outsideWorldSha256'],
+                         'Pixels outside the sofa/aisle scopes, including protected fixture pixels, changed')
+        self.assertEqual(outside_hash(atlas,couch_atlas_mask(atlas)),ALIGNMENT['outsideAtlasSha256'],
+                         'No foreground atlas entry outside the existing sofa mask may change')
+        self.assertEqual(ALIGNMENT['outsideAtlasSha256'],COUCH['outsideAtlasSha256'],
+                         'The earlier atlas preservation contract still applies')
+        self.assertEqual(hashlib.sha256(atlas.getchannel('A').tobytes()).hexdigest(),ALIGNMENT['beforeAtlasAlphaSha256'],
+                         'Aligning cushion seams must retain every pre-69 occlusion-alpha pixel')
+
+    def test_rebuilt_aisle_grout_meets_the_surviving_rows_and_columns(self):
+        image=Image.open(ROOT/'coda_arcade_world_clean.png')
+        self.assertEqual(aisle_grid_failures(image),[],
+                         'Aisle tiles need continuous grout and an unbroken interior between each pair of rows')
 
     def test_all_four_pictured_plants_are_removed_from_the_rebuilt_art(self):
         original=Image.open(ROOT/'coda_arcade_phase86_approved_world.png').convert('RGB')

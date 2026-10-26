@@ -68,7 +68,9 @@ window.createCodaCharacterRenderer=function(api){
     let facing=choose(m.facing,DIRECTIONS,'down');
     if(emote==='spin'&&!quiet)facing=DIRECTIONS[((Math.floor(actionTime*7)%4)+4)%4];
     if(m.frontEmote&&EMOTES.includes(emote))facing='down';
-    const stride=!quiet&&walking?Math.round(Math.sin(phase)*3):0;
+    // A small step is movement feedback, even with decorative motion reduced.
+    // Keep the head/body quiet while the feet still show that an actor walks.
+    const stride=walking?Math.round(Math.sin(phase)*(quiet?1:3)):0;
     let dx=0,lift=0,bob=0,gesture='',clip=walking?'walk':'idle',sit=false,lean=0;
       if(!quiet)bob=walking?Math.round(Math.abs(Math.sin(phase))):Math.round(Math.sin(t*1.9+finite(m.seed))*.55);
       if(!walking){
