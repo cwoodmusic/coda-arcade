@@ -4,6 +4,9 @@
 **Open my profile** opens the student's picture-card screen, and **For teachers**
 opens the teacher tools. The classroom buttons never start Google sign-in
 automatically. Student profiles use private cards; Google sign-in is for staff.
+Returning through the title screen in the same tab restores an active teacher
+sign-in and rechecks account approval before showing class tools. Teacher
+sign-in does not replace the currently selected player profile.
 
 When this tab already has a classroom profile, the title screen offers
 **Continue profile** and **Change player**. Changing players opens the existing
@@ -35,6 +38,11 @@ fragment must be merged into a backup of the full live rules before deployment.
 For local development, run `python3 -m http.server 8000 --bind 127.0.0.1` from
 the repository. This is a static site; no application installation or build
 step is required. Browser tests start their own temporary servers.
+
+The custom address **www.coda-arcade.com** is prepared for a Cloudflare Worker
+that serves the arcade and its games together. See the
+[Cloudflare deployment instructions](deploy/cloudflare/README.md). The existing
+GitHub Pages address remains available; do not add a `CNAME` for this setup.
 
 For pixel artwork, open **Developer → Pixel editor** in the arcade, or
 **Developer → Artwork** in Piano Lab or Fishing Cave. Choose a background,

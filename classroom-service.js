@@ -39,7 +39,7 @@
    const session=options.sessionStorage||win?.sessionStorage;
    const now=options.clock||Date.now,namespace=config.classroom?.namespace||NS;
    const local=['localhost','127.0.0.1','[::1]'].includes(location?.hostname);
-   const supported=location?.hostname==='cwoodmusic.github.io'||local||!!options.sdkLoader;
+   const supported=(win?.CodaArcadeHost?.supports(location?.hostname)??location?.hostname==='cwoodmusic.github.io')||local||!!options.sdkLoader;
    const configured=!!(supported&&config.firebase?.projectId&&dataApi&&crypto?.getRandomValues&&crypto?.subtle&&namespace===NS);
    const enabled=configured&&config.classroom?.enabled===true;
    const listeners=new Set(),subscriptions=[];

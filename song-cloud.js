@@ -3,7 +3,7 @@ const inEditor=!!window.songMachineBridge;
 const config=window.ARCADE_ACCOUNTS_CONFIG;
 let classroomMode=config?.mode==='classroom'||config?.classroom?.privacy===true||config?.classroom?.enabled===true;
 try{classroomMode=classroomMode||new URLSearchParams(location.search).get('classroom')==='1';const parent=window.parent;if(parent!==window&&parent.location.origin===location.origin){const parentConfig=parent.ARCADE_ACCOUNTS_CONFIG;classroomMode=classroomMode||parentConfig?.mode==='classroom'||parentConfig?.classroom?.privacy===true||parentConfig?.classroom?.enabled===true;}}catch{}
-const supported=location.hostname==='cwoodmusic.github.io';
+const supported=window.CodaArcadeHost?.supports(location.hostname)??location.hostname==='cwoodmusic.github.io';
 const $=id=>document.getElementById(id);
 let auth,db,api,currentUser=null,ready=false,selectedSongId=null,player=null;
 let userSongs={};
