@@ -4,8 +4,8 @@
  // Measured from the adjoining, unoccupied floor in the approved artwork.
  // It is hand drawn: its grout does not fall on a uniform 12px lattice.
  const ROWS=[166,178,189,203,215,227,238,249,262,273,284,296,310,323,336,349,362,375];
- // Start below the cyan floor star at y392, so it is never cloned.
- const DONOR_ROWS=[399,412,426];
+ // These intervals end above the cyan floor star at y410.
+ const DONOR_ROWS=[375,387,399];
  root.createCodaArcadeFloorGrid=function({worldArt}){
   let source=null,sourceKey='',plate=null,repairMask=null,pixels=null,sourcePixels=null;
   const make=(w,h)=>Object.assign(document.createElement('canvas'),{width:w,height:h});

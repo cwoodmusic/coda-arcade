@@ -178,6 +178,21 @@ class ArcadeFloorGridTests(unittest.TestCase):
                 compared += 1
         self.assertGreaterEqual(compared, 28, 'Check clear joins beneath every cabinet')
 
+    def test_cabinet_cleanup_does_not_clone_a_floor_star_into_repeating_lights(self):
+        self.load()
+        result = self.page.evaluate('''async()=>{
+          const image=new Image();image.src='coda_arcade_world_clean.png';await image.decode();
+          const ground=createCodaArcadeFloorGrid({worldArt:image}),
+            patch=ground.cabinet([912,166,104,138],375),
+            pixels=patch.getContext('2d').getImageData(0,91,104,47).data;
+          let hot=0;
+          for(let i=0;i<pixels.length;i+=4)
+            if(pixels[i+1]>210&&pixels[i+2]>230)hot++;
+          return hot;
+        }''')
+        self.assertEqual(result, 0,
+                         'The cleared cabinet body must not repeat the donor floor star')
+
     def test_phone_zoom_keeps_the_original_grout_pixels_sharp(self):
         self.load()
         self.page.wait_for_function('CodaArcadeQA.floorGrid()?.ready')
