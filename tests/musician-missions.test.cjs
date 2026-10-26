@@ -237,6 +237,29 @@ test('cross-origin Rhythm fallback extends streaks only with complete clean roun
   assert.equal(f.manager.get('ellington').status,'complete');
 });
 
+test('Ella accepts every matched note with no extras even when accepted taps are early or late',()=>{
+  for(const timing of [{early:2},{late:3},{early:2,late:3}]){
+    const f=fixture({game:'rhythm'});f.manager.accept('ella');f.attach();
+    f.result(rhythm(timing),'matched-round');
+    assert.equal(f.manager.get('ella').status,'complete');
+    assert.equal(f.wallet.snapshot().balance,150,'The player must still return to Ella');
+    f.approach('ella');assert.equal(f.manager.turnIn('ella').ok,true);
+    assert.equal(f.wallet.snapshot().balance,250);
+    f.result(rhythm(timing),'matched-round');f.result(rhythm(timing),'another-round');
+    assert.equal(f.manager.turnIn('ella').alreadyRewarded,true);
+    assert.equal(f.wallet.snapshot().balance,250,'The stable mission reward pays once');
+  }
+});
+
+test('Ella still requires at least eight notes, no misses, and no extra taps',()=>{
+  for(const result of [rhythm({total:7,hits:7}),rhythm({hits:7}),rhythm({extra:1}),rhythm({total:0,hits:0})]){
+    const f=fixture({game:'rhythm'});f.manager.accept('ella');f.attach();
+    f.result({...result,perfect:true},'not-perfect');
+    assert.equal(f.manager.get('ella').status,'active','An untrusted Perfect flag cannot replace note evidence');
+    assert.equal(f.wallet.snapshot().balance,150);
+  }
+});
+
 test('malformed result data never becomes mission evidence',()=>{
   assert.equal(validResult('triad',triad()),true);assert.equal(validResult('pitch',pitch()),true);assert.equal(validResult('rhythm',rhythm()),true);
   for(const value of [null,[],{},triad({captures:-1}),triad({won:'yes'}),triad({score:NaN})])assert.equal(validResult('triad',value),false);

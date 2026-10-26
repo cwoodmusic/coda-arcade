@@ -92,10 +92,11 @@
   }
   function recordGameEvent(game,runId,result){
    if(typeof runId!=='string'||!runId.length||runId.length>128||!validResult(game,result))return {ok:false,error:'A verified game result is required.'};
+   const rhythmPerfect=game==='rhythm'&&result.hits===result.total&&result.extra===0;
    let xp=0,title='';
    if(game==='pitch'){xp=10+Math.min(60,result.correct*2)+(result.won?30:0);title='Pitch Race run';}
    if(game==='triad'){xp=15+Math.min(30,result.captures*3)+(result.won?35:0);title='Music Triad match';}
-   if(game==='rhythm'){xp=10+Math.min(60,result.hits*2)+(result.hits===result.total&&result.extra===0&&result.early===0&&result.late===0?20:0);title='Rhythm Room round';}
+   if(game==='rhythm'){xp=10+Math.min(60,result.hits*2)+(rhythmPerfect?20:0);title='Rhythm Room round';}
    const before=levelForXP(state.xp),resultAward=awardXP('game:'+game+':'+runId,xp,title,{pitchLevel:game==='pitch'?reportedPitchLevel(result):0});if(!resultAward.ok)return resultAward;
    const achievements=['first-'+game+'-result'];
    if(game==='triad'&&result.won)achievements.push('triad-first-win');
@@ -112,7 +113,7 @@
    }
    if(game==='rhythm'&&integer(result.streak)&&result.streak>=100&&result.streak<=result.hits)achievements.push('rhythm-hundred-streak');
    if(game==='pitch'&&result.correct>0&&result.misses===0)achievements.push('pitch-perfect-run');
-   if(game==='rhythm'&&result.hits===result.total&&result.extra===0&&result.early===0&&result.late===0)achievements.push('rhythm-perfect-round');
+   if(rhythmPerfect)achievements.push('rhythm-perfect-round');
    const awarded=[resultAward,...achievements.map(recordAchievement)].filter(value=>value.ok&&!value.alreadyAwarded);
    return {...getState(),ok:true,alreadyAwarded:awarded.length===0,amount:awarded.reduce((sum,value)=>sum+value.amount,0),leveledUp:levelForXP(state.xp)>before};
   }

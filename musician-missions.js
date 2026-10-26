@@ -15,7 +15,7 @@
     {id:'clara-pitch-streak',person:'clara',title:'A Clear Musical Line',game:'pitch',goal:'Identify 20 notes in a row in Pitch Race, then finish the run. Classic, Endless, and Level Challenge count.',kind:'pitch-streak',target:20,reward:100},
     {id:'joplin-rhythm-streak',person:'joplin',title:'Ragtime Steady',game:'rhythm',goal:'Match 20 notes in a row in Rhythm Room Tap Practice. Missed notes and extra taps reset the streak; keep the loop running between rounds.',kind:'rhythm-streak',target:20,reward:90},
     {id:'ellington-rhythm-streak',person:'ellington',title:'In the Pocket',game:'rhythm',goal:'Match 50 notes in a row in Rhythm Room Tap Practice. Missed notes and extra taps reset the streak; keep the loop running between rounds.',kind:'rhythm-streak',target:50,reward:160},
-    {id:'ella-rhythm-perfect',person:'ella',title:'Every Entrance Counts',game:'rhythm',goal:'Finish a Rhythm Room tap round with at least 8 notes, matching every note with no extra, early, or late taps.',kind:'rhythm-perfect',target:1,reward:100},
+    {id:'ella-rhythm-perfect',person:'ella',title:'Every Entrance Counts',game:'rhythm',goal:'Finish a Rhythm Room tap round with at least 8 notes, matching every note with no missed notes or extra taps.',kind:'rhythm-perfect',target:1,reward:100},
     {id:'nina-pitch-notes',person:'nina',title:'Make Every Note Speak',game:'pitch',goal:'Correctly identify at least 15 notes in one completed Pitch Race run. Classic, Endless, and Level Challenge count.',kind:'pitch-correct',target:15,reward:80},
     {id:'miles-triad-comeback',person:'miles',title:'Find Another Way',game:'triad',goal:'Win a Music Triad computer match after trailing your opponent during the match.',kind:'triad-comeback',target:1,reward:140}
   ].map(item=>Object.freeze(item)));
@@ -36,7 +36,7 @@
       case 'pitch-win':return result.mode==='classic'&&result.won&&result.correct>0?1:0;
       case 'pitch-streak':return result.mode!=='multi'?result.streak:0;
       case 'pitch-correct':return result.mode!=='multi'?result.correct:0;
-      case 'rhythm-perfect':return result.total>=8&&result.hits===result.total&&result.extra===0&&result.early===0&&result.late===0?1:0;
+      case 'rhythm-perfect':return result.total>=8&&result.hits===result.total&&result.extra===0?1:0;
       default:return 0;
     }
   }
