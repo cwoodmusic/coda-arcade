@@ -77,6 +77,29 @@ still creates a technical anonymous UID for each student device; its normal
 service and network metadata are separate from this progress DTO. Staff use
 their own approved Google accounts. Do not ask children to use Google sign-in.
 
+## Room-code multiplayer
+
+Pitch Race multiplayer races and Music Triad Simple classmate matches and
+2–4 player tournaments are available inside the classroom arcade. Players
+create or join a room using its short game code; they do not share Profile
+Passes. Advanced Triad remains a computer mode.
+
+These games load their Firebase SDKs only when a player creates or joins an
+online room. Classroom game authentication uses a separate anonymous session
+held in memory. Room records contain technical player UIDs and game state;
+Pitch Race also uses the players' chosen three-letter racing initials. The
+parent's private profile, pass, and classroom roster are not sent to game rooms.
+Public Pitch Race leaderboards and score-submission forms stay disabled, and
+local game progress continues to use the parent's captured profile store.
+
+Pitch Race's deployed room validation now accepts the existing clef choices and
+note positions −2 through 10. Only those two validation leaves changed; all
+read/write permissions and the complete private-profile namespace were preserved
+and verified by readback. A temporary two-browser live check created, joined,
+started, and synchronized a Grand Staff race, then removed its room and accounts.
+Triad's UI and room flows passed isolated browser checks; a live database check
+was blocked by the development environment's network policy.
+
 ## Treat cards and hashes as private credentials
 
 Generate each Profile Pass from at least 128 bits of cryptographically random
