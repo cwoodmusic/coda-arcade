@@ -71,10 +71,15 @@ For local development, run `python3 -m http.server 8000 --bind 127.0.0.1` from
 the repository. This is a static site; no application installation or build
 step is required. Browser tests start their own temporary servers.
 
-The custom address **www.coda-aracde.com** is prepared for a Cloudflare Worker
+The custom address **www.coda-arcade.com** is prepared for a Cloudflare Worker
 that serves the arcade and its games together. See the
 [Cloudflare deployment instructions](deploy/cloudflare/README.md). The existing
 GitHub Pages address remains available; do not add a `CNAME` for this setup.
+The app and cabinet bridges explicitly support the correctly spelled domain
+and keep earlier domain sessions on their own origin. Firebase Authentication
+must authorize `www.coda-arcade.com` and `coda-arcade.com`; this is independent
+of the Google-account administrator allowlist. A disabled teacher sign-in
+button now explains unsupported addresses or missing secure browser features.
 
 For pixel artwork, open **Developer → Pixel editor** in the arcade, or
 **Developer → Artwork** in Piano Lab or Fishing Cave. Choose a background,

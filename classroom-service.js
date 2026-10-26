@@ -40,7 +40,8 @@
    const now=options.clock||Date.now,namespace=config.classroom?.namespace||NS;
    const local=['localhost','127.0.0.1','[::1]'].includes(location?.hostname);
    const supported=(win?.CodaArcadeHost?.supports(location?.hostname)??location?.hostname==='cwoodmusic.github.io')||local||!!options.sdkLoader;
-   const configured=!!(supported&&config.firebase?.projectId&&dataApi&&crypto?.getRandomValues&&crypto?.subtle&&namespace===NS);
+   const configurationReason=!supported?'unsupported-host':!crypto?.getRandomValues||!crypto?.subtle?'secure-crypto-unavailable':!config.firebase?.projectId||!dataApi||namespace!==NS?'not-configured':'';
+   const configured=!configurationReason;
    const enabled=configured&&config.classroom?.enabled===true;
    const listeners=new Set(),subscriptions=[];
    let sdk,db,auth,adminDb,adminAuth,connecting,studentUid=null,adminUid=null,adminAuthorized=false,adminRoleStop=null,personalAvailable=false;
@@ -48,7 +49,7 @@
    let loading=false,locked=false,waitingTakeover=false,code='',status='',destroyed=false,generation=0,inFlightSave=null,transitioning=false,retiredPersonalSave=null,signingOut=false;
    let offset=0,lastActivity=now(),flushTimer=null,leaseTimer=null,idleTimer=null,queuedPass=null;
    const pendingJobs=new Set();
-   const state=()=>({configured,enabled,ready:!!sdk,loading,locked,waitingTakeover,pending,
+   const state=()=>({configured,configurationReason,enabled,ready:!!sdk,loading,locked,waitingTakeover,pending,
      profile:active?{classId:active.classId,classLabel:active.classLabel||'Classroom',profileId:active.profileId,alias:active.alias,picture:active.picture,...(personalProfile(active)?{kind:'teacher'}:{})}:null,
      admin:{signedIn:!!adminUid,authorized:adminAuthorized,uid:adminUid||null},
      personal:{available:adminAuthorized&&personalAvailable,active:personalProfile(active)},

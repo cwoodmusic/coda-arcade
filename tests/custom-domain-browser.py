@@ -16,7 +16,7 @@ sys.dont_write_bytecode=True
 from world_navigation_helpers import open_cabinet
 
 ROOT=Path(__file__).resolve().parents[1]
-SITE='https://www.coda-aracde.com'
+SITE='https://www.coda-arcade.com'
 PROJECTS={name:ROOT.parent/name for name in ('Pitch-Race','musictriad','rhythmroom')}
 PITCH={'mode':'classic','score':3,'correct':3,'misses':0,'streak':3,'won':True,'perfect':True,
        'staff':'treble','clefStats':{'treble':{'correct':3,'misses':0,'bestStreak':3},'bass':{'correct':0,'misses':0,'bestStreak':0}}}
@@ -41,14 +41,14 @@ class CustomDomainTests(unittest.TestCase):
         self.page=self.context.new_page();self.page.set_default_timeout(15000)
 
     def prepare(self,context):
-        context.add_init_script("if(window===window.top&&location.origin==='https://www.coda-aracde.com')localStorage.setItem('codaArcadeFXV1','off')")
+        context.add_init_script("if(window===window.top&&location.origin==='https://www.coda-arcade.com')localStorage.setItem('codaArcadeFXV1','off')")
         context.route('https://**/*',self.route_static_worker)
         context.on('request',lambda request:self.requests.append(request.url))
         context.on('page',lambda page:page.on('pageerror',lambda error:self.errors.append(str(error))))
 
     def route_static_worker(self,route):
         parsed=urlparse(route.request.url)
-        if parsed.netloc!='www.coda-aracde.com':
+        if parsed.netloc!='www.coda-arcade.com':
             self.external.append(route.request.url);return route.abort()
         path=unquote(parsed.path)
         if path=='/favicon.ico':return route.fulfill(status=204)
@@ -78,7 +78,7 @@ class CustomDomainTests(unittest.TestCase):
         open_cabinet(self.page,index)
         self.page.wait_for_function('!document.querySelector("#gameoverlay").hidden')
         url=self.page.locator('#gameiframe').get_attribute('src')
-        self.assertEqual(urlparse(url).netloc,'www.coda-aracde.com')
+        self.assertEqual(urlparse(url).netloc,'www.coda-arcade.com')
         self.assertEqual(parse_qs(urlparse(url).query).get('classroom'),['1'])
         frame=self.page.locator('#gameiframe').element_handle().content_frame()
         if index<3:
@@ -137,7 +137,7 @@ class CustomDomainTests(unittest.TestCase):
             with self.subTest(game=index):
                 self.page.locator('[data-game="'+str(index)+'"]').click()
                 src=self.page.locator('#gameframe').get_attribute('src')
-                self.assertEqual(urlparse(src).netloc,'www.coda-aracde.com')
+                self.assertEqual(urlparse(src).netloc,'www.coda-arcade.com')
                 self.assertEqual(parse_qs(urlparse(src).query).get('classroom'),['1'])
                 frame=self.page.locator('#gameframe').element_handle().content_frame()
                 frame.wait_for_function('window.CodaBridge' if index<3 else 'window.songMachineBridge')

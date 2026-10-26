@@ -1,6 +1,6 @@
-# Coda Arcade at www.coda-aracde.com
+# Coda Arcade at www.coda-arcade.com
 
-This Worker serves the existing GitHub Pages files at **https://www.coda-aracde.com/**.
+This Worker serves the existing GitHub Pages files at **https://www.coda-arcade.com/**.
 The arcade and its three cabinet games share one browser origin, so classroom
 profiles, game progress, and achievements keep their existing storage guards.
 GitHub remains the source of the game files; pushing game updates still updates
@@ -13,30 +13,29 @@ and existing Profile Pass links remain available.
 
 ## Deploy through the Cloudflare dashboard
 
-The registered domain is **coda-aracde.com** (`aracde`), including that spelling.
-It is a different domain from `coda-arcade.com`; the Worker accepts only the
-registered address and its `www` hostname.
+The public address is **www.coda-arcade.com** (`arcade`). The Worker accepts
+that address and its apex hostname `coda-arcade.com`.
 
-1. Open **Workers & Pages** and select the existing Worker `coda-aracde-site`.
+1. Open **Workers & Pages** and select the existing Worker `coda-arcade-site`.
    If setting up a new account, create that Worker in the account owning
-   `coda-aracde.com`.
+   `coda-arcade.com`.
 2. Choose **Edit code**, replace the existing code with the complete contents of
    [worker.mjs](worker.mjs), and click **Deploy**. Updating this repository alone
    does not replace the code already deployed in Cloudflare; this step is also
    required when correcting an existing Worker's domain spelling.
 3. Under the Worker's **Settings → Domains & Routes**, ensure both
-   **www.coda-aracde.com** and **coda-aracde.com** are listed. For a missing entry,
+   **www.coda-arcade.com** and **coda-arcade.com** are listed. For a missing entry,
    choose **Add Domain** (or **Add → Custom Domain**) and enter that exact
    hostname. Cloudflare creates the domain's routing/DNS and manages its TLS
    certificate. If an existing record conflicts, review it before replacement.
-4. Open **https://www.coda-aracde.com/** and check the games and teacher sign-in.
-   The bare address **https://coda-aracde.com/** redirects to the `www` address,
+4. Open **https://www.coda-arcade.com/** and check the games and teacher sign-in.
+   The bare address **https://coda-arcade.com/** redirects to the `www` address,
    preserving the path and query string. The Worker table does not necessarily
    show an **Active** label; it can list these bindings as **Production**.
 
 Both DNS records should appear under the domain's **DNS → Records** as proxied
 **Worker** records linked to this Worker. An `NXDOMAIN` browser error indicates
-a DNS lookup problem; check the exact `aracde` spelling and those records. The
+a DNS lookup problem; check the exact domain spelling and those records. The
 Firebase authorized-domain configuration and app/game hostname allowlists are
 separate from DNS and must also use the registered hostname.
 
@@ -53,8 +52,8 @@ directory:
 npx wrangler deploy
 ```
 
-The provided [wrangler.jsonc](wrangler.jsonc) binds both `www.coda-aracde.com`
-and `coda-aracde.com` to the existing `coda-aracde-site` Worker.
+The provided [wrangler.jsonc](wrangler.jsonc) binds both `www.coda-arcade.com`
+and `coda-arcade.com` to the existing `coda-arcade-site` Worker.
 Deployment requires access to that Cloudflare account and zone; no account
 credentials or API tokens are included here. The static game itself still needs
 no dependency installation or build step.

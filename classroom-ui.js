@@ -64,6 +64,14 @@
   const canManage=()=>authorized()&&snapshot().enabled!==false;
   const element=(tag,className,value)=>{const node=doc.createElement(tag);if(className)node.className=className;if(value!==undefined)node.textContent=value;return node;};
   const button=(label,action,id,kind='')=>{const node=element('button','classpass-button '+kind,label);node.type='button';if(id)node.id=id;node.disabled=!!busy||snapshot().loading===true;node.onclick=action;return node;};
+  function configurationNotice(state){
+   if(view!=='admin')return element('p','classpass-notice',ERRORS['not-configured']);
+   const reason=state.configurationReason,notice=element('p','classpass-notice',reason==='unsupported-host'?'Google sign-in is not available at this website address. ':reason==='secure-crypto-unavailable'?'Google sign-in needs a secure browser connection. Open the site using HTTPS in an up-to-date browser. ':'Google sign-in is not ready here yet. You can still play on this device.');
+   if(reason==='unsupported-host'||reason==='secure-crypto-unavailable'){
+    const link=element('a','','Open Coda Arcade securely');link.id='classpassSigninSite';link.href=win.CodaArcadeHost?.CUSTOM_ORIGIN||'https://www.coda-arcade.com';notice.append(link);
+   }
+   return notice;
+  }
   function setMessage(value,kind='status'){message=value;messageKind=kind;}
   function resetBrowser(){profileSearch='';profilePage=0;}
   function selectClass(value){if(selectedClass!==value){resetBrowser();profiles=[];}selectedClass=value;}
@@ -291,7 +299,7 @@
    const focus=section.contains(doc.activeElement)?doc.activeElement:null,focusId=focus?.id,selection=focus&&typeof focus.selectionStart==='number'?{start:focus.selectionStart,end:focus.selectionEnd}:null;
    section.replaceChildren();const state=snapshot();
    const tabs=element('nav','classpass-tabs');tabs.setAttribute('aria-label',state.profile?.kind==='teacher'?'Player and teacher pages':'Profile Pass pages');for(const [id,label]of [['student',state.profile?.kind==='teacher'?'My player':'My pass'],['admin','For teachers']]){const tab=button(label,()=>{if(busy)return;clearCard();confirmation=null;view=id;setMessage('');render();if(id==='admin'&&authorized())refreshClasses();},'classpassTab-'+id);tab.setAttribute('aria-pressed',String(view===id));tab.disabled=tab.disabled||!!confirmation||!!card;tabs.append(tab);}section.append(tabs);
-   if(state.configured===false)section.append(element('p','classpass-notice',ERRORS['not-configured']));
+   if(state.configured===false)section.append(configurationNotice(state));
    if(confirmation)renderConfirmation();else if(card&&canManage())renderCard();else if(view==='admin')renderAdmin(state);else renderStudent(state);
    const code=errorCode(state),shownRecovery=view==='student'&&['newer-progress','unsaved-conflict'].includes(code),notice=message||(state.code&&!state.waitingTakeover?friendlyError(state):'');
    const status=element('p','classpass-status',busy?busy+'…':shownRecovery&&notice===ERRORS[code]?'':notice);status.id='classpassStatus';status.setAttribute('role',messageKind==='error'?'alert':'status');status.setAttribute('aria-live','polite');if(messageKind==='error')status.classList.add('is-error');section.append(status);

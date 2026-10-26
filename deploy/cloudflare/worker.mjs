@@ -1,6 +1,6 @@
 /* Static arcade proxy. Firebase stays a direct browser connection. */
-const SITE_HOST = 'www.coda-aracde.com';
-const APEX_HOST = 'coda-aracde.com';
+const SITE_HOST = 'www.coda-arcade.com';
+const APEX_HOST = 'coda-arcade.com';
 export const SITE_ORIGIN = 'https://' + SITE_HOST;
 export const UPSTREAM_ORIGIN = 'https://cwoodmusic.github.io';
 const MAIN = '/coda-arcade';
