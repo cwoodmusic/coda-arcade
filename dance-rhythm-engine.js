@@ -30,7 +30,14 @@
    let beatInBar=0;
    for(const value of pattern){
     const duration=Math.abs(value),rest=value<0;let direction=null;
-    if(!rest){const choices=DIRECTIONS.filter(value=>value!==lastDirection);direction=choices[Math.floor(random()*choices.length)];lastDirection=direction;}
+    if(!rest){
+     const previous=events[events.length-1];
+     // Keep consecutive sixteenths on one arrow so quick taps never need a turn.
+     const sameSixteenthGroup=difficulty.id==='hard'&&duration===.25&&previous&&!previous.rest&&previous.duration===.25;
+     if(sameSixteenthGroup)direction=previous.direction;
+     else{const choices=DIRECTIONS.filter(value=>value!==lastDirection);direction=choices[Math.floor(random()*choices.length)];}
+     lastDirection=direction;
+    }
     events.push({id:'dance-'+bar+'-'+events.length,bar,beat:bar*BEATS_PER_BAR+beatInBar,onset:bar*BEATS_PER_BAR+beatInBar,beatInBar,duration,rest,direction,...noteShape(duration),beamGroup:null});beatInBar+=duration;
    }
   }

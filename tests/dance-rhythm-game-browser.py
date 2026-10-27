@@ -1,6 +1,7 @@
 """The dance game's real notation, input, audio lifecycle, and phone controls."""
 import json
 import mimetypes
+from itertools import groupby
 from pathlib import Path
 import sys
 import unittest
@@ -109,6 +110,13 @@ class DanceRhythmGameTests(unittest.TestCase):
         self.assertTrue(self.page.evaluate('async()=>{await CodaMusicNotation.load(document);return CodaMusicNotation.isReady(document)}'))
         self.assertGreater(int(self.page.locator('.dance-rhythm-staff').get_attribute('data-beam-groups')),0)
         state=self.state()['engine']
+        sixteenth_runs=[list(notes) for is_sixteenth,notes in groupby(
+            state['chart']['events'],lambda note:not note['rest'] and note['duration']==.25)
+            if is_sixteenth]
+        self.assertTrue({2,4}.issubset({len(notes) for notes in sixteenth_runs}))
+        for notes in sixteenth_runs:
+            self.assertEqual(len({note['direction'] for note in notes}),1,
+                             'Quick sixteenth taps must stay on the same arrow.')
         for note in state['notes']:
             self.advance(self.event_time(note))
             self.page.keyboard.press('Arrow'+note['direction'].capitalize())
@@ -118,6 +126,8 @@ class DanceRhythmGameTests(unittest.TestCase):
         self.assertEqual(result['accuracy'],1)
         self.assertEqual(result['hits'],len(state['notes']))
         self.assertEqual(self.page.evaluate('cues.length'),len(state['notes']))
+        self.assertEqual(self.page.evaluate('cues.map(cue=>cue.direction)'),
+                         [note['direction'] for note in state['notes']])
         self.assertIn('Perfect dance!',self.page.locator('.dance-rhythm-result').inner_text())
 
     def test_mobile_arrow_buttons_contextmenu_resize_and_profile_pause(self):

@@ -23,10 +23,10 @@ test('stages one player and three random eligible visitors on separated walkable
  for(const p of npcs){if(!state.poses[p.id])assert.deepEqual(p,old.find(actor=>actor.id===p.id));}
 });
 
-test('dance steps ease out and return, with front-facing character poses and no avatar/profile mutation',()=>{
+test('larger dance steps and bounce ease out and return, with front-facing poses and no avatar/profile mutation',()=>{
  const {player,npcs,stage}=fixture(),original=clone({player,npcs});stage.start();const base=stage.pose();
  assert.equal(stage.hit('left'),true);assert.equal(stage.pose().x,base.x,'input does not teleport the sprite');
- advance(stage,.16);const moving=stage.pose();assert.ok(moving.x<base.x-6&&moving.x>=base.x-12);assert.equal(moving.facing,'down');assert.equal(moving.emote,'dance');assert.equal(moving.walking,true);assert.ok(moving.jumpHeight>0);assert.ok(moving.phase>0);
+ advance(stage,.16);const moving=stage.pose();assert.ok(moving.x<base.x-12&&moving.x>=base.x-18);assert.equal(moving.facing,'down');assert.equal(moving.emote,'dance');assert.equal(moving.walking,true);assert.ok(moving.jumpHeight>5);assert.ok(moving.phase>0);
  advance(stage,.7);const settled=stage.pose();assert.ok(Math.abs(settled.x-base.x)<.02);assert.equal(settled.walking,false);assert.equal(settled.jumpHeight,0);
  assert.equal(player.facing,original.player.facing);assert.deepEqual(player.profile,original.player.profile);
  for(const npc of npcs){const old=original.npcs.find(other=>other.id===npc.id);assert.equal(npc.activity,old.activity);assert.equal(npc.facing,old.facing);assert.deepEqual(npc.route,old.route);assert.deepEqual(npc.appearance,old.appearance);}

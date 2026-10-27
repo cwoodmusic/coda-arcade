@@ -43,6 +43,41 @@ test('beam metadata joins real consecutive short notes within a beat, never rest
  const loneEighth=chart.events.find(event=>event.duration===.5&&event.beatInBar===1.5&&event.bar===2);assert.ok(loneEighth);assert.equal(loneEighth.beamGroup,null);assert.equal(loneEighth.beamLevel,1);
 });
 
+test('hard sixteenth runs share one arrow while other steps and new runs change direction',()=>{
+ const sizes=new Set(),pairPositions=new Set();let mixedBeamGroups=0,beatBoundaries=0,barBoundaries=0;
+ for(let seed=0;seed<128;seed++){
+  const chart=engine.generateChart({difficulty:'hard',seed});let previous=null;
+  const groups=[];let group=[];
+  function finishGroup(){if(group.length){groups.push(group);group=[];}}
+  for(const event of chart.events){
+   if(event.rest){finishGroup();continue;}
+   // A written beat or barline does not interrupt consecutive sixteenths.
+   const sameSixteenthGroup=event.duration===.25&&previous?.duration===.25&&previous.beat+previous.duration===event.beat;
+   if(previous){
+    if(sameSixteenthGroup)assert.equal(event.direction,previous.direction,`Seed ${seed}: one sixteenth group must keep its arrow`);
+    else assert.notEqual(event.direction,previous.direction,`Seed ${seed}: a new step or sixteenth run must still change direction`);
+    if(previous.bar!==event.bar)barBoundaries++;
+    else if(Math.floor(previous.beatInBar)!==Math.floor(event.beatInBar))beatBoundaries++;
+   }
+   if(event.duration===.25){if(!sameSixteenthGroup)finishGroup();group.push(event);}else finishGroup();
+   previous=event;
+  }
+  finishGroup();
+  for(const events of groups){
+   sizes.add(events.length);assert.ok([2,4].includes(events.length));
+   if(events.length===2)pairPositions.add(events[0].beatInBar%1);
+   assert.equal(new Set(events.map(event=>event.direction)).size,1);
+   const beam=chart.events.filter(event=>event.beamGroup===events[0].beamGroup);
+   if(beam.some(event=>event.duration===.5)){
+    mixedBeamGroups++;
+    assert.ok(beam.some(event=>event.duration===.5&&event.direction!==events[0].direction),'A beamed eighth stays a separate step');
+   }
+  }
+ }
+ assert.deepEqual([...sizes].sort(),[2,4]);assert.deepEqual([...pairPositions].sort(),[0,.5]);
+ assert.ok(mixedBeamGroups>0);assert.ok(beatBoundaries>0);assert.ok(barBoundaries>0);
+});
+
 test('four-count preparation says 1, 2, 3, GO and accepts an early first note without a premature penalty',()=>{
  const game=engine.create({difficulty:'easy',seed:3});assert.equal(game.getState().phase,'idle');assert.equal(game.input('left',0).ignored,true);
  game.start(0);const beat=game.getState().beatSeconds;

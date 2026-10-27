@@ -74,10 +74,10 @@
   function pose(id='player'){
    if(!active)return null;const actor=actors.find(value=>value.id===(typeof id==='object'?id?.id:id));if(!actor)return null;
    const age=elapsed-actor.stepAt,fallAge=elapsed-actor.fallAt,falling=actor.isPlayer&&fallAge>=0&&fallAge<FALL_SECONDS,simple=reduced(),lift=age>=0&&age<STEP_SECONDS?Math.sin(age/STEP_SECONDS*Math.PI):0,fall=falling?Math.sin(fallAge/FALL_SECONDS*Math.PI):0;
-   return {x:actor.actor.x,y:actor.actor.y,facing:'down',walking:!falling&&Math.hypot(actor.offsetX,actor.offsetY)>.35,phase:actor.phase,emote:'dance',jumpHeight:simple||falling?0:Math.max(0,lift)*2.8,rotation:simple||!fall?0:fall*1.3*actor.fallSign,scaleY:simple?1:1-fall*.17,falling,direction:actor.direction};
+   return {x:actor.actor.x,y:actor.actor.y,facing:'down',walking:!falling&&Math.hypot(actor.offsetX,actor.offsetY)>.35,phase:actor.phase,emote:'dance',jumpHeight:simple||falling?0:Math.max(0,lift)*6,rotation:simple||!fall?0:fall*1.3*actor.fallSign,scaleY:simple?1:1-fall*.17,falling,direction:actor.direction};
   }
   function update(dt){
-   if(!active||!Number.isFinite(dt)||dt<=0)return;dt=Math.min(dt,.25);elapsed+=dt;const simple=reduced(),distance=simple?3:12,follow=1-Math.exp(-dt*30);
+   if(!active||!Number.isFinite(dt)||dt<=0)return;dt=Math.min(dt,.25);elapsed+=dt;const simple=reduced(),distance=simple?3:18,follow=1-Math.exp(-dt*30);
    for(const actor of actors){
     const age=elapsed-actor.stepAt,envelope=age>=0&&age<STEP_SECONDS?Math.sin(age/STEP_SECONDS*Math.PI):0,vector=VECTORS[actor.direction],wantedX=vector.x*distance*envelope,wantedY=vector.y*distance*envelope;
     let offsetX=actor.offsetX+(wantedX-actor.offsetX)*follow,offsetY=actor.offsetY+(wantedY-actor.offsetY)*follow;

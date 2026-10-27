@@ -138,7 +138,6 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
         self.assertEqual(stepped['dancers'][0]['steps'], 1)
         self.assertGreater(math.hypot(stepped['poses']['player']['x']-stepped['dancers'][0]['base']['x'],
                                       stepped['poses']['player']['y']-stepped['dancers'][0]['base']['y']), .5)
-        self.page.screenshot(path='/tmp/coda-dance-desktop.png')
         wrong = next(direction for direction in KEYS if direction != second['direction'])
         self.press_at_note(second, wrong)
         failed = self.state()
@@ -153,10 +152,11 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
                 continue
             self.assertGreaterEqual(dancer['steps'], 2, 'The other dancers keep the beat when the player misses.')
             self.assertFalse(falling['poses'][dancer['id']]['falling'])
-        self.page.screenshot(path='/tmp/coda-dance-fall.png')
         self.press_at_note(notes[2])
         self.page.wait_for_timeout(200)
         self.assertFalse(self.state()['stage']['poses']['player']['falling'])
+        # Capture after the timed presses; screenshots can take longer than a beat.
+        self.page.screenshot(path='/tmp/coda-dance-desktop.png')
         self.page.keyboard.press('Escape')
 
     def test_phone_keeps_the_whole_floor_visible_and_replaces_world_movement_with_touch_arrows(self):
@@ -174,7 +174,6 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
             self.assertLessEqual(bounds['x']+bounds['width'], 390)
         self.assertFalse(self.page.locator('body').evaluate('element=>element.scrollWidth>innerWidth'))
         self.assertFalse(self.page.evaluate('CodaArcadeQA.touch().visible'))
-        self.page.screenshot(path='/tmp/coda-dance-phone.png')
         engine = self.state()['game']['engine']
         first = engine['notes'][0]
         control = self.page.locator('[data-dance-arrow="'+first['direction']+'"]').bounding_box()
@@ -184,6 +183,7 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
             self.page.wait_for_timeout(timing-15)
         self.page.mouse.click(control['x']+control['width']/2, control['y']+control['height']/2)
         self.assertEqual(self.state()['game']['engine']['hits'], 1)
+        self.page.screenshot(path='/tmp/coda-dance-phone.png')
         self.page.locator('[data-dance-close]').click()
         self.assertFalse(self.state()['active'])
         self.assertEqual(self.page.evaluate('CodaArcadeQA.position()'), before['position'])
