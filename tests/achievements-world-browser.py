@@ -23,8 +23,8 @@ class AchievementsWorldTests(_world.WorldBrowserCase):
 
     def test_all_includes_locked_requirements_and_filters_never_award_rewards(self):
         self.open_achievements();before=self.journals()
-        self.assertEqual(self.page.locator('[data-achievement-id]').count(),42)
-        self.assertEqual(self.page.locator('[data-achievement-id][data-earned="false"]').count(),42)
+        self.assertEqual(self.page.locator('[data-achievement-id]').count(),43)
+        self.assertEqual(self.page.locator('[data-achievement-id][data-earned="false"]').count(),43)
         locked=self.page.locator('[data-achievement-id="triad-hard-advanced-win"]')
         expect(locked).to_contain_text('Locked');expect(locked).to_contain_text('Hard')
         self.page.locator('#fame-achievement-category').select_option('fishing')
@@ -33,6 +33,8 @@ class AchievementsWorldTests(_world.WorldBrowserCase):
         self.assertEqual(self.page.locator('[data-achievement-id]').count(),0)
         self.page.locator('#fame-achievement-status').select_option('locked')
         self.assertEqual(self.page.locator('[data-achievement-id]').count(),9)
+        self.page.locator('#fame-achievement-category').select_option('classroom')
+        self.assertEqual(self.page.locator('[data-achievement-id]').count(),10)
         self.page.get_by_role('tab',name='Records',exact=True).click()
         for name in ['Pitch Race','Music Triad','Rhythm Room']:
             expect(self.page.locator('.hall-of-fame')).to_contain_text(name)
@@ -61,7 +63,7 @@ class AchievementsWorldTests(_world.WorldBrowserCase):
         self.assertTrue(result['ok']);self.page.reload(wait_until='domcontentloaded')
         self.page.wait_for_function('CodaDeveloperConsole?.ready()');self.open_achievements()
         self.assertEqual(self.page.locator('[data-achievement-id][data-earned="true"]').count(),0)
-        self.assertEqual(self.page.locator('[data-achievement-id]').count(),42)
+        self.assertEqual(self.page.locator('[data-achievement-id]').count(),43)
 
     def test_mobile_tabs_and_filters_fit_and_escape_returns_to_the_arcade(self):
         self.page.set_viewport_size({'width':390,'height':844});self.open_achievements()

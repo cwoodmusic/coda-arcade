@@ -7,6 +7,7 @@ from world_navigation_helpers import enter_room
 
 sys.dont_write_bytecode=True
 from classroom_quiz_helpers import QUIZ_ANSWERS,answer_quiz
+from exam_study_helpers import finish_exam_study
 _spec=importlib.util.spec_from_file_location('quiz_learning_world',Path(__file__).with_name('learning-world-browser.py'))
 _world=importlib.util.module_from_spec(_spec);_spec.loader.exec_module(_world)
 
@@ -48,7 +49,9 @@ class ClassroomQuizWorldTests(_world.WorldBrowserCase):
           localStorage.setItem('codaClassroomLessonsV1',JSON.stringify(progress));
         }''',{'lesson':lesson,'legacy':legacy})
         self.load();self.open_lesson(lesson)
-        if not legacy:self.assertEqual(self.state()['active']['phase'],'quiz')
+        if not legacy:
+            finish_exam_study(self.page,lesson)
+            self.assertEqual(self.state()['active']['phase'],'quiz')
 
     def assert_score(self,score):
         self.assertRegex(self.page.locator('.classroom-quiz-score').get_attribute('aria-label'),str(score)+r'\s*(?:/|of)\s*5')

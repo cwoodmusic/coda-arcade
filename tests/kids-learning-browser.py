@@ -1,3 +1,4 @@
+from exam_study_helpers import finish_note_reminders, finish_exam_study
 """Child-friendly classroom steps and uncluttered, fullscreen music rooms.
 
 Run with Python Playwright and Chromium. The production origin is routed to
@@ -78,6 +79,7 @@ class KidsLearningTests(_world.WorldBrowserCase):
             lessons:{[lesson]:{step:total,completed:legacy,completedAt:legacy?1:0}}}));
         }''', {'lesson':lesson,'legacy':legacy})
         self.load();self.open_lesson(lesson)
+        finish_exam_study(self.page, lesson)
 
     def assert_lesson_below_header(self):
         header=self.page.locator('#musicClassroom .classroom-heading').bounding_box()
@@ -111,6 +113,7 @@ class KidsLearningTests(_world.WorldBrowserCase):
             self.assertGreaterEqual(button.bounding_box()['height'],47.5,button.inner_text())
 
     def begin_try(self, meter=False):
+        finish_note_reminders(self.page)
         active=self.state()['active'];step=active['step']
         selector='[data-signature-try]' if meter else '[data-lesson-try]'
         self.assertTrue(self.page.locator(selector).is_visible())
@@ -136,6 +139,7 @@ class KidsLearningTests(_world.WorldBrowserCase):
             self.page.locator('[data-note-answer="'+answer+'"]').first.click()
             self.assertTrue(self.state()['active']['answered'])
             self.page.locator('[data-tutorial-next]').click()
+        finish_exam_study(self.page, lesson)
         self.assertEqual(self.state()['active']['phase'],'quiz')
 
     def finish_rhythm(self):
@@ -153,6 +157,7 @@ class KidsLearningTests(_world.WorldBrowserCase):
         for units in [4,2,2,8]:self.page.locator('[data-add-value="'+str(units)+'"]').click()
         self.page.locator('[data-check-rhythm]').click()
         if self.state()['active']['phase']!='quiz':self.page.locator('[data-tutorial-next]').click()
+        finish_exam_study(self.page, 'rhythm-tree')
         self.assertEqual(self.state()['active']['phase'],'quiz')
 
     def finish_meter(self):
@@ -169,6 +174,7 @@ class KidsLearningTests(_world.WorldBrowserCase):
                 self.page.locator('[data-signature-check]').click()
             if index==4:self.page.screenshot(path='/tmp/music48-meter.png')
             self.page.locator('[data-tutorial-next]').click()
+        finish_exam_study(self.page, 'time-signatures')
         self.assertEqual(self.state()['active']['phase'],'quiz')
 
     def test_both_rooms_remove_bottom_menus_and_native_fullscreen_exits_without_closing_room(self):

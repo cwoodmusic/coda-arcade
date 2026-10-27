@@ -1,3 +1,4 @@
+from exam_study_helpers import finish_note_reminders, finish_exam_study
 """Author content in the real developer console, then use it in Haydn's room.
 
 The normal arcade, developer controls, content persistence, notation, classroom,
@@ -238,6 +239,7 @@ class EducationEditorWorldTests(_world.WorldBrowserCase):
         while self.page.evaluate('CodaArcadeQA.classroom().tutorials.active.phase') == 'lesson':
             active = self.page.evaluate('CodaArcadeQA.classroom().tutorials.active')
             expected = self.page.evaluate('index=>CodaEducationContent.getLessonSteps("note-naming")[index]', active['step'])
+            finish_note_reminders(self.page)
             self.page.locator('[data-lesson-try]').click()
             if active['step'] == 0:
                 self.assertIn('Your turn: choose C for our edited lesson.', tutorial.inner_text())
@@ -246,6 +248,7 @@ class EducationEditorWorldTests(_world.WorldBrowserCase):
             else:
                 self.page.locator('[data-note-answer="' + expected['answer'] + '"]').click()
             self.page.locator('[data-tutorial-next]').click()
+        finish_exam_study(self.page, 'note-naming')
         self.assertIn('Our teacher-authored quiz: which answer means C?', tutorial.inner_text())
         self.assertEqual(tutorial.locator('[data-quiz-answer]').count(), 4)
         self.assertEqual(tutorial.locator('.education-score').get_attribute('data-score-clef'), 'bass')

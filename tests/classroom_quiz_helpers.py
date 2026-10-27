@@ -13,6 +13,8 @@ QUIZ_ANSWERS = {
 
 def answer_quiz(page, lesson, wrong=(), finish=True):
     """Answer a fresh five-question quiz; callers still assert rewards/state."""
+    from exam_study_helpers import finish_exam_study
+    finish_exam_study(page, lesson)
     for index, correct in enumerate(QUIZ_ANSWERS[lesson]):
         choice = (correct + 1) % 3 if index in wrong else correct
         page.locator('[data-quiz-answer="' + str(choice) + '"]').click()

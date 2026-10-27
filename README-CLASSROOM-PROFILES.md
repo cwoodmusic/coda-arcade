@@ -120,6 +120,11 @@ keys; profile changes clear them and restore the guest's original attempts on
 exit. Older guest backups remain restorable. These attempts and authoring text
 are excluded from the cloud DTO; existing one-time XP rewards still sync through
 the normal achievement journal.
+The exam-study cards also use a browser-only scoped progress key. Their saved
+card IDs and current position stay out of the cloud DTO; player changes clear
+them and restore the original guest study progress on exit. The supplemental
+accidentals/key-signatures lesson uses those study and authored-quiz journals,
+with its existing-style once-only XP award in the normal progress ledger.
 An additional 8 MiB UTF-8 limit applies in the client; Realtime Database
 rules enforce the typed field and collection bounds, not that overall byte
 limit.

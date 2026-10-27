@@ -22,10 +22,10 @@ test('catalog lists every issued achievement and matches the real cosmetic, fish
   'pitch-ten-correct','pitch-ten-streak','pitch-perfect-run','rhythm-perfect-round',
   ...P.ACHIEVEMENT_REWARDS.map(reward=>reward.achievement),
   ...F.ACHIEVEMENTS.map(achievement=>achievement.id),
-  ...Lessons.LESSONS.map(lesson=>'classroom-'+lesson.id),'haydn-final-exam'
+  ...Lessons.LESSONS.map(lesson=>'classroom-'+lesson.id),'classroom-accidentals-key-signatures','haydn-final-exam'
  ];
  assert.deepEqual(new Set(A.CATALOG.map(row=>row.id)),new Set(emitted));
- assert.equal(A.CATALOG.length,42);assert.equal(new Set(A.CATALOG.map(row=>row.id)).size,42);
+ assert.equal(A.CATALOG.length,43);assert.equal(new Set(A.CATALOG.map(row=>row.id)).size,43);
  assert.equal(A.CATEGORIES.length,7);
  for(const reward of P.ACHIEVEMENT_REWARDS)assert.ok(A.CATALOG.find(row=>row.id===reward.achievement).rewards.includes('Unlock: '+reward.label));
  for(const source of F.ACHIEVEMENTS){const row=A.CATALOG.find(row=>row.id===source.id);assert.equal(row.xp,source.xp);assert.equal(row.target,source.target);assert.equal(row.description,source.description);}
@@ -112,7 +112,7 @@ test('snapshots are independent, do not mutate player data, and run in a browser
  const input={progression:journal([event('starclip')]),avatar:{jumps:10}},before=JSON.stringify(input),first=snapshot(input);
  first.items[0].rewards.push('not a real reward');first.items[0].title='Changed';first.categories[0].label='Changed';
  assert.equal(JSON.stringify(input),before);assert.equal(snapshot().earned,0);assert.equal(snapshot(input).items[0].title,'Your Own Style');
- assert.equal(snapshot(null).total,42);
+ assert.equal(snapshot(null).total,43);
  const win={};Object.defineProperty(win,'localStorage',{get(){throw Error('No storage reads are permitted');}});win.fetch=()=>{throw Error('No network');};
  const context=vm.createContext({window:win});vm.runInContext(fs.readFileSync(require.resolve('../achievement-catalog.js'),'utf8'),context);
  assert.equal(JSON.stringify(win.CodaAchievements.buildSnapshot(input)),JSON.stringify(snapshot(input)));

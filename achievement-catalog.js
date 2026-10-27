@@ -56,6 +56,7 @@
   ...FISHING.map(([id,title,description,target,reward])=>({...row(id,'fishing',title,description,50,reward),target})),
   row('piano-memory-master','piano','Melody Memory Master','Complete all nine Piano Lab melodies from memory.',250,'Piano phoenix companion'),
   ...LESSONS.map(([id,title,description])=>row('classroom-'+id,'classroom',title,description)),
+  row('classroom-accidentals-key-signatures','classroom','Signs and Signatures','Complete Accidentals & key signatures and pass its five-question quiz.'),
   row('haydn-final-exam','classroom','Haydn’s Final Exam','Pass Haydn’s Final Exam with at least 80% correct.',200)
  ];
  const integer=(value,max=1000000)=>Number.isSafeInteger(value)&&value>=0&&value<=max;
@@ -102,6 +103,7 @@
    return {progress,target:MEMORIES.length,progressLabel:progress+' / '+MEMORIES.length+' melodies played from memory'};
   }
   if(def.id.startsWith('classroom-')){
+   if(def.id==='classroom-accidentals-key-signatures')return {};
    const id=def.id.slice('classroom-'.length),lesson=LESSONS.find(item=>item[0]===id),total=lesson[3];
    const raw=input.lessons?.version===1?input.lessons.lessons?.[id]:null;
    const step=object(raw)&&integer(raw.step,total)?raw.step:0;

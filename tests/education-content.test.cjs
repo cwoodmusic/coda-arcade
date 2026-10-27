@@ -5,7 +5,7 @@ const score={version:1,clef:'grand',meter:'6/8',items:[{type:'repeat-start'},{ty
 
 test('the default editor includes all canonical questions and the actual child-friendly lesson copy',()=>{
  const defaults=content.getDefaults(),storage=disk(),store=content.createStore({storage,canEdit:()=>true});
- assert.equal(defaults.exam.questions.length,800);assert.equal(Object.keys(defaults.quizzes).length,8);assert.equal(Object.keys(defaults.lessons).length,8);
+ assert.equal(defaults.exam.questions.length,800);assert.equal(content.CATEGORIES.length,8);assert.equal(content.EXAM_IDS.length,8);assert.equal(content.LESSON_IDS.length,9);assert.equal(Object.keys(defaults.quizzes).length,9);assert.equal(Object.keys(defaults.lessons).length,9);
  assert.deepEqual(defaults.lessons['note-naming'].steps[0].teach,tutorials.SIMPLE_NOTE_COPY['note-naming'][0][0]);
  assert.equal(store.saveDocument(defaults).ok,true);assert.strictEqual(store.getExamBank(),bank);
  for(const id of content.CATEGORIES.map(item=>item.id)){assert.strictEqual(store.getQuiz(id),quiz.QUIZZES[id]);assert.equal(store.isLessonEdited(id),false);}

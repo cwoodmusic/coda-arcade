@@ -132,7 +132,7 @@
   return {getState,answer,next,restart,save};
  }
  function createSession(api={}){
-  const lessonId=api.lessonId,model=authoredModel(api);if(!QUIZZES[lessonId]||!model)throw Error('Choose a known classroom quiz.');
+  const lessonId=api.lessonId,model=authoredModel(api),supplemental=lessonId==='accidentals-key-signatures'&&model?.custom===true;if((!QUIZZES[lessonId]&&!supplemental)||!model)throw Error('Choose a known classroom quiz.');
   const canRecord=contentGuard(api);
   if(model.custom===true||api.custom===true)return createAuthoredSession({...api,canRecord},model);
   const storage=resolveStorage(api.storage),record=copy(readJournal(storage).quizzes[lessonId]);let saved=!!storage,error='';
@@ -162,6 +162,7 @@
   function visual(parent,value){
    if(!value||!notation)return;
    const figure=element('div','classroom-quiz-visual');
+   if(typeof api.renderVisual==='function'&&api.renderVisual(figure,value)===true){parent.append(figure);notation.load?.(doc);return;}
    if(value.kind==='notation'&&win?.CodaEducationNotation){const checked=win.CodaEducationNotation.validate(value.score);if(checked.ok)figure.innerHTML=win.CodaEducationNotation.toSVG(checked.data);}
    else if(value.kind==='middle-c-pair'){figure.classList.add('classroom-quiz-middle-pair');figure.innerHTML=staffSVG(-2,{clef:'treble',label:'Middle C below treble'})+staffSVG(10,{clef:'bass',label:'Middle C above bass'});}
    else if(value.kind==='staff')figure.innerHTML=staffSVG(value.position,value);

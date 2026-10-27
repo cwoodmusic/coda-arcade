@@ -228,6 +228,7 @@
   const host=api.host;if(!host)throw Error('A tutorial needs a host element.');const doc=host.ownerDocument,win=doc.defaultView,storage=storageFor(api.storage);
   let id=null,step=0,learningStage='look',answered=false,complete=false,message='',correct=null,level=0,explored=new Set([0]),bar=[],names=false,hintShown=false,quizzing=false,quiz=null,freshQuiz=false,award=null,error='',destroyed=false,audio=null,voices=[],timers=[];
   let authored=false,contentRevision='',lessonSteps=null,expectedLesson='null',contentChanged=false;
+  let studying=false,study=null,studyError='',studyThenQuiz=false,noteReminder=null,noteReminderReturn=null;
   const content=api.content||win?.CodaEducationContent;
   function canRecord(){try{if(contentChanged)return false;if(contentRevision&&content?.getLessonRevision?.(id)!==contentRevision){contentChanged=true;return false;}return !destroyed&&api.canRecord?.()!==false;}catch{return false;}}
   function authoredJournal(){let value=null;try{value=JSON.parse(storage?.getItem(CUSTOM_KEY)||'null');}catch{}return value?.version===1&&value.lessons&&typeof value.lessons==='object'&&!Array.isArray(value.lessons)?value:{version:1,lessons:{}};}
@@ -239,7 +240,7 @@
   const signatureLesson=timeLesson?.create({host,notation,getSteps:()=>authored&&id==='time-signatures'?lessonSteps:null,canRecord,onCorrect:()=>{if(complete||answered)return;answered=true;persist(step+1);const progress=host.querySelector('progress');if(progress)progress.value=step+1;},onNext:next});
   const element=(tag,className,text)=>{const node=doc.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
   function button(text,action,attributes={}){const node=element('button','',text);node.type='button';for(const [key,value]of Object.entries(attributes))node.setAttribute(key,value);node.onclick=event=>{if(!canRecord()){feedback('Your profile or lesson changed. Reopen the lesson before continuing.',false);return;}action(event);};return node;}
-  function stopAudio(){signatureLesson?.stopAudio();for(const timer of timers)win.clearTimeout(timer);timers=[];for(const voice of voices)try{voice.stop();}catch{}voices=[];if(audio){audio.close().catch(()=>{});audio=null;}for(const node of host.querySelectorAll('.is-playing'))node.classList.remove('is-playing');}
+  function stopAudio(){study?.stopAudio?.();signatureLesson?.stopAudio();for(const timer of timers)win.clearTimeout(timer);timers=[];for(const voice of voices)try{voice.stop();}catch{}voices=[];if(audio){audio.close().catch(()=>{});audio=null;}for(const node of host.querySelectorAll('.is-playing'))node.classList.remove('is-playing');}
   function play(notes,{rhythm=false,treeLevel=null}={}){
    stopAudio();const Constructor=api.AudioContext||win.AudioContext||win.webkitAudioContext;if(!Constructor){feedback('You can still try every question without sound.',null);return;}
    try{audio=new Constructor();audio.resume().catch(()=>{});const context=audio,beat=.55;let at=context.currentTime+.05;
@@ -264,6 +265,22 @@
   function ensureQuiz(){
    if(!quiz&&win.CodaClassroomQuiz)quiz=win.CodaClassroomQuiz.create({host,lessonId:id,storage,custom:authored,contentRevision,canRecord,onPassed:()=>finish()});
    return quiz;
+  }
+  function studyCards(){return content?.getStudyCards?.(id)||win.CodaExamCurriculum?.forLesson?.(id)||[];}
+  function studyRevision(){return content?.getStudyRevision?.(id)||win.CodaClassroomExamStudy?.revisionOf(studyCards())||'';}
+  function studyOptions(){return {host,lessonId:id,cards:studyCards(),storage,revision:studyRevision(),getRevision:studyRevision,canRecord};}
+  function hasStudy(){return !!win.CodaClassroomExamStudy&&studyCards().length>0;}
+  function finishStudy(){if(!canRecord())return;const continueQuiz=studyThenQuiz;study?.destroy();study=null;studying=false;studyError='';if(continueQuiz)beginQuiz();else{render();host.querySelector('h3')?.focus({preventScroll:true});}}
+  function leaveStudy(){study?.destroy();study=null;studying=false;studyError='';if(studyThenQuiz){step=Math.min(step,LESSONS.find(lesson=>lesson.id===id).total-1);quizzing=false;complete=false;answered=false;learningStage='look';}render();host.querySelector('h3')?.focus({preventScroll:true});}
+  function startStudy(thenQuiz=false){
+   if(!canRecord())return false;stopAudio();study?.destroy();study=null;studying=true;studyThenQuiz=thenQuiz;if(thenQuiz){quizzing=false;complete=false;}studyError=hasStudy()?'':'These study cards could not load. Reload the game, then reopen this lesson.';render();host.querySelector('[data-study-heading],h3')?.focus({preventScroll:true});return true;
+  }
+  function beginAssessment(){
+   if(hasStudy()){
+    const check=win.CodaClassroomExamStudy.createSession(studyOptions()),state=check.getState();check.destroy();
+    if(!state.completed||!state.saved){startStudy(true);return;}
+   }else if(api.requireExamCurriculum){startStudy(true);return;}
+   beginQuiz();
   }
   function beginQuiz(restart=false){
    stopAudio();step=LESSONS.find(lesson=>lesson.id===id).total;complete=false;answered=false;quizzing=true;message='';correct=null;persist(step);
@@ -290,7 +307,7 @@
    const staff=host.querySelector('.lesson-staff-wrap');if(staff)staff.classList.add('is-hint');
    const hint=host.querySelector('[data-note-hint]');if(hint)hint.setAttribute('aria-expanded','true');
   }
-  function next(){if(!answered||complete)return;stopAudio();step++;learningStage='look';answered=false;hintShown=false;message='';correct=null;if(step>=LESSONS.find(lesson=>lesson.id===id).total)beginQuiz();else{persist(step);render();}}
+  function next(){if(!answered||complete)return;stopAudio();step++;if(id==='note-naming'&&step===4){noteReminder='lines';noteReminderReturn=null;}learningStage='look';answered=false;hintShown=false;message='';correct=null;if(step>=LESSONS.find(lesson=>lesson.id===id).total)beginAssessment();else{persist(step);render();}}
   function answerRhythm(value){
    if(complete||answered||learningStage!=='try')return;
    const question=authored?lessonSteps[step]:null,expected=question?.answers?question.answer:2;if(value!==expected){feedback('Not yet. Try again.',false);return;}
@@ -324,8 +341,23 @@
    example.append(element('figcaption','lesson-model-label',noteCopy()[1]));return example;
   }
   function nextButton(section,label='Next'){const advance=button(label,next,{'data-tutorial-next':''});advance.disabled=!answered;section.append(advance);}
+  function openNoteReminders(){noteReminderReturn={learningStage,answered,message,correct};noteReminder='lines';render();host.querySelector('h3')?.focus({preventScroll:true});}
+  function finishNoteReminders(){noteReminder=null;if(noteReminderReturn){({learningStage,answered,message,correct}=noteReminderReturn);noteReminderReturn=null;}else{learningStage='look';answered=false;message='';correct=null;}render();host.querySelector('h3')?.focus({preventScroll:true});}
+  function renderNoteReminders(section){
+   const lines=noteReminder==='lines';section.dataset.noteReminder=noteReminder;
+   actionCue(section,lines?'The lines: Every Good Boy Does Fine.':'The spaces spell FACE.');
+   section.append(element('p','lesson-read-direction',lines?'Read the lines from the BOTTOM to the TOP.':'Read the spaces from the BOTTOM to the TOP.'));
+   const picture=element('figure','lesson-note-reminder-picture'),letters=lines?['E','G','B','D','F']:['F','A','C','E'],words=lines?['Every','Good','Boy','Does','Fine']:[];
+   let svg='<svg viewBox="0 0 430 260" role="img" aria-label="'+(lines?'Five treble lines, bottom to top: E G B D F. Every Good Boy Does Fine.':'Four treble spaces, bottom to top: F A C E. FACE.')+'"><rect x="1" y="1" width="428" height="258" rx="12" fill="#fff9e9"/>';
+   for(let line=0;line<5;line++)svg+='<path d="M24 '+(200-line*32)+'H188" fill="none" stroke="#725c83" stroke-width="1.8"/>';
+   svg+='<text class="coda-music-glyph" x="36" y="168" font-size="128" fill="#49345c">'+notation.glyph('gClef')+'</text>';
+   letters.forEach((letter,index)=>{const y=(lines?200:184)-index*32;svg+='<ellipse cx="156" cy="'+y+'" rx="12" ry="8" transform="rotate(-16 156 '+y+')" fill="#8051aa"/><text x="215" y="'+(y+8)+'" font-family="system-ui,sans-serif" font-size="30" font-weight="700" fill="#49345c">'+letter+(lines?' · '+words[index]:'')+'</text>';});
+   svg+='<path d="M404 204V66M396 78L404 64L412 78" stroke="#41675f" stroke-width="3" fill="none"/><text x="392" y="239" text-anchor="end" font-family="system-ui,sans-serif" font-size="17" fill="#41675f">bottom → top</text></svg>';
+   picture.innerHTML=svg;picture.append(element('figcaption','lesson-model-label',letters.join(' → ')));section.append(picture);notation.load?.(doc);
+   section.append(button(lines?'Next: spaces':'Now look at a note',()=>{if(lines){noteReminder='spaces';render();host.querySelector('h3')?.focus({preventScroll:true});}else finishNoteReminders();},{'data-note-reminder-next':''}));
+  }
   function renderNaming(section){
-   section.dataset.kind='note';const question=namingSteps()[step],copy=noteCopy();
+   section.dataset.kind='note';const question=namingSteps()[step],copy=noteCopy();if(id==='note-naming'&&question.kind==='staff')section.append(button('Show note reminders',openNoteReminders,{'data-note-reminders':''}));
    if(learningStage==='look'){actionCue(section,copy[0]);section.append(namingExample(question));tryButton(section);return;}
    actionCue(section,answered?'That’s '+question.answer+'.':copy[2]);
    if(question.kind==='keys')buildKeyboard(section);else{
@@ -417,7 +449,7 @@
   }
   function appendFeedback(section){const feedbackNode=element('p','tutorial-feedback',message);feedbackNode.setAttribute('role','status');feedbackNode.setAttribute('aria-live','polite');feedbackNode.dataset.correct=String(correct);section.append(feedbackNode);}
   function renderAuthoredPicture(section){
-   const value=authored&&!complete&&!quizzing?lessonSteps?.[step]?.visual:null,module=win.CodaEducationNotation;
+   const value=authored&&!complete&&!quizzing&&!studying&&!noteReminder?lessonSteps?.[step]?.visual:null,module=win.CodaEducationNotation;
    if(value?.kind!=='notation'||!module)return;const checked=module.validate(value.score);if(!checked.ok)return;
    const picture=element('figure','lesson-authored-notation');picture.innerHTML=module.toSVG(checked.data);const original=section.querySelector('.lesson-naming-example,.lesson-staff-wrap,.lesson-rhythm-example,.lesson-split-picture,.lesson-keys-picture,.lesson-expression-picture');
    if(original)original.replaceWith(picture);else section.querySelector('.lesson-action-cue')?.after(picture);notation.load?.(doc);
@@ -429,18 +461,19 @@
    section.append(button('Quiz again',()=>beginQuiz(true),{'data-tutorial-quiz':''}),button('Practice again',()=>reset(false),{'data-tutorial-replay':''}));
   }
   function render(){
-   if(destroyed||!id)return;const oldFocus=host.contains(doc.activeElement)?doc.activeElement:null;let restore=null;if(oldFocus){for(const attr of ['data-pitch','data-note-answer','data-tree-split','data-tree-join','data-tutorial-next','data-add-value','data-check-rhythm','data-tutorial-replay'])if(oldFocus.hasAttribute(attr)){restore='['+attr+'=\"'+oldFocus.getAttribute(attr)+'\"]';break;}}host.replaceChildren();host.classList.add('classroom-tutorial');host.dataset.tutorial=id;host.dataset.phase=complete?'complete':quizzing?'quiz':'lesson';host.dataset.learningStage=learningStage;const lesson=LESSONS.find(item=>item.id===id),heading=element('div','lesson-topline');heading.append(element('span','lesson-step-label',complete?'Finished':quizzing?'Quiz':'Step '+(step+1)+' of '+lesson.total));host.append(heading);
-   if(!quizzing){const progress=element('progress');progress.max=lesson.total;progress.value=complete?lesson.total:step+(answered?1:0);progress.setAttribute('aria-label',lesson.title+' progress');host.append(progress);}
+   if(destroyed||!id)return;const oldFocus=host.contains(doc.activeElement)?doc.activeElement:null;let restore=null;if(oldFocus){for(const attr of ['data-pitch','data-note-answer','data-tree-split','data-tree-join','data-tutorial-next','data-add-value','data-check-rhythm','data-tutorial-replay'])if(oldFocus.hasAttribute(attr)){restore='['+attr+'=\"'+oldFocus.getAttribute(attr)+'\"]';break;}}host.replaceChildren();host.classList.add('classroom-tutorial');host.dataset.tutorial=id;host.dataset.phase=studying?'study':complete?'complete':quizzing?'quiz':'lesson';host.dataset.learningStage=studying?study?.getState().stage||'look':learningStage;const lesson=LESSONS.find(item=>item.id===id),heading=element('div','lesson-topline');heading.append(element('span','lesson-step-label',studying?'Exam lesson':complete?'Finished':quizzing?'Quiz':'Step '+(step+1)+' of '+lesson.total));host.append(heading);
+   if(!studying&&!quizzing){const progress=element('progress');progress.max=lesson.total;progress.value=complete?lesson.total:step+(answered?1:0);progress.setAttribute('aria-label',lesson.title+' progress');host.append(progress);}
+   if(!studying&&!noteReminder&&!quizzing&&(complete||learningStage==='look')&&(hasStudy()||api.requireExamCurriculum)){const entry=element('div','lesson-exam-study-entry');entry.append(button('Study for the exam',()=>startStudy(false),{'data-tutorial-study':''}));host.append(entry);}
    const section=element('section','lesson-content');section.setAttribute('aria-label',lesson.title+(quizzing?' quiz':' activity'));host.append(section);
-   if(complete)renderComplete(section);else if(quizzing){if(ensureQuiz())quiz.render(section);else section.append(element('p','lesson-teach','The quiz could not load. Reload the page to try again.'));}else if(NOTE_LESSONS[id])renderNaming(section);else if(id==='major-minor-keys')renderKeys(section);else if(EXPRESSION_LESSONS[id])renderExpression(section);else if(id==='time-signatures'){if(signatureLesson)signatureLesson.render(section,{step,answered});else section.append(element('p','','The time-signature lesson could not load. Reload the page to try again.'));}else renderRhythm(section);const bookViewport=host.closest('.classroom-books');if(bookViewport)bookViewport.scrollTop=0;if(oldFocus&&!quizzing){let target=restore?host.querySelector(restore):null;if(!target||target.disabled)target=host.querySelector('h3');if(target){if(target.tagName==='H3')target.tabIndex=-1;target.focus({preventScroll:true});}}
+   if(studying){if(studyError){const message=element('p','tutorial-feedback',studyError);message.setAttribute('role','status');section.append(message,button('Try loading again',()=>startStudy(studyThenQuiz),{'data-study-retry-load':''}),button('Back to lesson',leaveStudy,{'data-study-exit':''}));}else{if(!study)study=win.CodaClassroomExamStudy.create({...studyOptions(),host:section,onComplete:finishStudy,onExit:leaveStudy});study.render(section);}}else if(complete)renderComplete(section);else if(quizzing){if(ensureQuiz())quiz.render(section);else section.append(element('p','lesson-teach','The quiz could not load. Reload the page to try again.'));}else if(noteReminder&&id==='note-naming')renderNoteReminders(section);else if(NOTE_LESSONS[id])renderNaming(section);else if(id==='major-minor-keys')renderKeys(section);else if(EXPRESSION_LESSONS[id])renderExpression(section);else if(id==='time-signatures'){if(signatureLesson)signatureLesson.render(section,{step,answered});else section.append(element('p','','The time-signature lesson could not load. Reload the page to try again.'));}else renderRhythm(section);const bookViewport=host.closest('.classroom-books');if(bookViewport)bookViewport.scrollTop=0;if(oldFocus&&!quizzing){let target=restore?host.querySelector(restore):null;if(!target||target.disabled)target=host.querySelector('h3');if(target){if(target.tagName==='H3')target.tabIndex=-1;target.focus({preventScroll:true});}}
    renderAuthoredPicture(section);
   }
   function reset(resume=true){
-   stopAudio();quiz?.destroy();quiz=null;signatureLesson?.reset();const saved=progress().lessons.find(lesson=>lesson.id===id),total=LESSONS.find(lesson=>lesson.id===id).total;step=resume?saved.step:0;complete=resume&&saved.completed;quizzing=resume&&!complete&&step>=total;freshQuiz=!resume;learningStage='look';answered=false;message='';correct=null;hintShown=false;level=0;explored=new Set([0]);bar=[];award=null;
-   if(complete){ensureQuiz();notifyCompletion();}else if(quizzing)ensureQuiz();render();
+   stopAudio();study?.destroy();study=null;studying=false;studyError='';quiz?.destroy();quiz=null;signatureLesson?.reset();const saved=progress().lessons.find(lesson=>lesson.id===id),total=LESSONS.find(lesson=>lesson.id===id).total;step=resume?saved.step:0;complete=resume&&saved.completed;quizzing=resume&&!complete&&step>=total;freshQuiz=!resume;noteReminder=id==='note-naming'&&step===4&&!complete&&!quizzing?'lines':null;noteReminderReturn=null;learningStage='look';answered=false;message='';correct=null;hintShown=false;level=0;explored=new Set([0]);bar=[];award=null;
+   if(complete){ensureQuiz();notifyCompletion();}else if(quizzing){const prior=ensureQuiz()?.getState();if(!prior?.answers.length){beginAssessment();return;}}render();
   }
-  function open(lessonId){if(!LESSONS.some(lesson=>lesson.id===lessonId))return false;id=lessonId;contentChanged=false;authored=content?.isLessonEdited?.(id)===true;contentRevision=content?.getLessonRevision?.(id)||'';lessonSteps=authored?content.getLessonSteps(id):null;expectedLesson=JSON.stringify(authoredJournal().lessons[id]??null);reset();return true;}
-  return {open,stopAudio,destroy(){stopAudio();quiz?.destroy();signatureLesson?.destroy();destroyed=true;host.replaceChildren();},getState:()=>({...progress(),active:id?{id,step,custom:authored,contentRevision,learningStage:id==='time-signatures'?signatureLesson?.getState().stage||'look':learningStage,answered,complete,phase:complete?'complete':quizzing?'quiz':'lesson',quiz:quiz?.getState()||null,treeLevel:level,explored:[...explored],bar:[...bar],timeSignatures:id==='time-signatures'?signatureLesson?.getState():null,audioPlaying:!!audio||signatureLesson?.getState().audioPlaying===true,error}:null})};
+  function open(lessonId,options={}){if(!LESSONS.some(lesson=>lesson.id===lessonId))return false;id=lessonId;contentChanged=false;authored=content?.isLessonEdited?.(id)===true;contentRevision=content?.getLessonRevision?.(id)||'';lessonSteps=authored?content.getLessonSteps(id):null;expectedLesson=JSON.stringify(authoredJournal().lessons[id]??null);reset();if(options.study)startStudy(false);return true;}
+  return {open,openStudy:()=>startStudy(false),stopAudio,destroy(){stopAudio();study?.destroy();quiz?.destroy();signatureLesson?.destroy();destroyed=true;host.replaceChildren();},getState:()=>({...progress(),active:id?{id,step,custom:authored,contentRevision,noteReminder,learningStage:studying?study?.getState().stage||'look':id==='time-signatures'?signatureLesson?.getState().stage||'look':learningStage,answered,complete,phase:studying?'study':complete?'complete':quizzing?'quiz':'lesson',study:studying?study?.getState()||{error:studyError}:null,quiz:quiz?.getState()||null,treeLevel:level,explored:[...explored],bar:[...bar],timeSignatures:id==='time-signatures'?signatureLesson?.getState():null,audioPlaying:!!audio||signatureLesson?.getState().audioPlaying===true,error}:null})};
  }
  return {KEY,CUSTOM_KEY,LESSONS,VALUES,NOTE_STEPS,BASS_STEPS,GRAND_STEPS,KEY_STEPS,NOTE_LESSONS,DYNAMIC_LEVELS,DYNAMICS_STEPS,TEMPO_STEPS,EXPRESSION_LESSONS,EXPRESSION_NOTES,SIMPLE_NOTE_COPY,splitExample,validBar,normalize,readProgress,glyph,staffSVG,treeSVG,create};
 });

@@ -341,8 +341,8 @@ test('new exam and browser-only Song Machine drafts cannot cross profiles and ol
  for(const key of [D.KEYS.finalExam,'codaSongMachineDraftV1']){const failing=storage(Object.fromEntries(D.SCOPED_KEYS.map(key=>[key,'original '+key]))),prior=dump(failing);failing.failNext(key,key==='codaSongMachineDraftV1'?'remove':'set');assert.equal(D.apply(failing,D.blank()).ok,false);assert.deepEqual(dump(failing),prior);}
 });
 
-test('authored assessment attempts follow player isolation while teaching configuration stays on the device',()=>{
- const keys=['codaAuthoredExamSessionV1','codaAuthoredQuizzesV1','codaAuthoredLessonsV1'];
+test('authored assessments and exam study follow player isolation while teaching configuration stays on the device',()=>{
+ const keys=['codaAuthoredExamSessionV1','codaAuthoredQuizzesV1','codaAuthoredLessonsV1','codaClassroomExamStudyV1'];
  const authorKey='codaEducationContentDraftV1',original=Object.fromEntries(keys.map(key=>[key,'guest attempt '+key]));
  original[authorKey]='teacher content';const store=storage(original),saved=D.backup(store);
  for(const key of keys){assert.ok(D.LOCAL_ONLY_KEYS.includes(key));assert.ok(D.SCOPED_KEYS.includes(key));assert.ok(!Object.values(D.KEYS).includes(key));}

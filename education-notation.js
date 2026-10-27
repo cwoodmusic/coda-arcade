@@ -4,7 +4,7 @@
  const api=factory(notation);if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaEducationNotation=api;
 })(typeof window==='undefined'?null:window,function(notation){
  'use strict';
- const VERSION=1,MAX_ITEMS=64,CLEFS=Object.freeze(['treble','bass','grand']),METERS=Object.freeze(['4/4','3/4','2/2','6/8']),DURATIONS=Object.freeze([4,2,1,.5,.25]);
+ const VERSION=1,MAX_ITEMS=64,CLEFS=Object.freeze(['treble','bass','grand']),METERS=Object.freeze(['4/4','3/4','2/4','2/2','6/8']),DURATIONS=Object.freeze([4,2,1,.5,.25]);
  const TYPES=Object.freeze(['note','rest','bar','repeat-start','repeat-end','clef']),ACCIDENTALS=Object.freeze(['none','sharp','flat','natural']);
  const copy=value=>JSON.parse(JSON.stringify(value));
  const plain=value=>value&&typeof value==='object'&&!Array.isArray(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
@@ -106,7 +106,7 @@
   function selectControl(parent,name,label,choices,action){const group=element('label','education-notation-field'),title=element('span','',label),select=element('select');select.dataset.notationControl=name;select.setAttribute('aria-label',label);for(const [value,text]of choices){const option=element('option','',text);option.value=value;select.append(option);}select.onchange=()=>{if(canEdit())action(select.value);else render();};group.append(title,select);parent.append(group);controls[name]=select;return select;}
   function button(text,action,name){const node=element('button','',text);node.type='button';if(name)node.dataset.notationAction=name;node.onclick=()=>{if(canEdit())action();};actions.append(node);return node;}
   selectControl(toolbar,'staff','Staff',[['treble','Treble'],['bass','Bass'],['grand','Grand staff']],value=>change({...score,clef:value}));
-  selectControl(toolbar,'meter','Time signature',[['','No time signature'],['4/4','4/4'],['3/4','3/4'],['2/2','2/2 · cut time'],['6/8','6/8']],value=>change({...score,meter:value||null}));
+  selectControl(toolbar,'meter','Time signature',[['','No time signature'],['4/4','4/4'],['3/4','3/4'],['2/4','2/4'],['2/2','2/2 · cut time'],['6/8','6/8']],value=>change({...score,meter:value||null}));
   selectControl(toolbar,'tool','Place symbol',[['select','Select / drag'],['note','Note'],['rest','Rest'],['bar','Bar line'],['repeat-start','Start repeat'],['repeat-end','End repeat'],['clef','Clef change']],value=>{tool=value;renderStatus();});
   selectControl(settings,'duration','Note length',[['4','Whole'],['2','Half'],['1','Quarter'],['0.5','Eighth'],['0.25','Sixteenth']],value=>{duration=Number(value);updateSelected({duration},['note','rest']);});
   selectControl(settings,'dots','Dot',[['0','No dot'],['1','Dotted']],value=>{dots=Number(value);updateSelected({dots},['note','rest']);});

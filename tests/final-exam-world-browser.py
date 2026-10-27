@@ -69,7 +69,7 @@ class FinalExamWorldTests(_world.WorldBrowserCase):
 
     def test_default_forty_questions_balance_and_reload_resume_through_haydn(self):
         self.open_exam();self.assertEqual(self.page.get_by_label('Final exam length',exact=True).input_value(),'40')
-        self.assertEqual(self.page.locator('[data-start-lesson]').count(),8)
+        self.assertEqual(self.page.locator('[data-start-lesson]').count(),9)
         self.start_exam();self.assertEqual(self.state()['total'],40);self.assert_balanced(5)
         first_ids=self.state()['questionIds'];self.answer_current();self.answer_current()
         self.assertEqual(self.state()['answered'],2);self.assertEqual(self.xp(),0)

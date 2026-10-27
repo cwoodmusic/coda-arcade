@@ -11,7 +11,9 @@
   {id:'time-signatures',title:'Time signatures'},{id:'major-minor-keys',title:'Major & minor keys'},
   {id:'dynamics',title:'Dynamics'},{id:'tempo',title:'Tempo'}
  ].map(Object.freeze));
- const IDS=CATEGORIES.map(item=>item.id),own=(value,key)=>Object.prototype.hasOwnProperty.call(value,key);
+ const EXAM_IDS=Object.freeze(CATEGORIES.map(item=>item.id)),SUPPLEMENTAL_ID='accidentals-key-signatures';
+ const LESSON_CATEGORIES=Object.freeze([...CATEGORIES,Object.freeze({id:SUPPLEMENTAL_ID,title:'Accidentals & key signatures'})]),LESSON_IDS=Object.freeze(LESSON_CATEGORIES.map(item=>item.id));
+ const IDS=EXAM_IDS,own=(value,key)=>Object.prototype.hasOwnProperty.call(value,key);
  const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
  const copy=value=>JSON.parse(JSON.stringify(value));
  const freeze=value=>{if(value&&typeof value==='object'&&!Object.isFrozen(value)){for(const item of Object.values(value))freeze(item);Object.freeze(value);}return value;};
@@ -22,6 +24,8 @@
  const fail=message=>{throw Error(message);};
  const text=(value,label,max=1200,empty=false)=>{if(typeof value!=='string'||value.length>max||(!empty&&!value.trim()))fail(label+' needs '+(empty?'valid':'nonempty')+' text of at most '+max+' characters.');return value;};
  let sources=null,defaults=null,activeStore=null;
+ function accidentalsModule(){if(root?.CodaAccidentalsLesson)return root.CodaAccidentalsLesson;if(requireModule)try{return requireModule('./classroom-accidentals-lesson.js');}catch{}return null;}
+ function curriculumModule(){if(root?.CodaExamCurriculum)return root.CodaExamCurriculum;if(requireModule)try{return requireModule('./classroom-exam-curriculum.js');}catch{}return null;}
  function getSources(){
   if(!sources){sources=requireModule?{bank:requireModule('./final-exam-bank.js'),quiz:requireModule('./classroom-quiz.js'),tutorials:requireModule('./classroom-tutorials.js'),time:requireModule('./time-signature-lesson.js')}:{bank:root?.CodaFinalExamBank,quiz:root?.CodaClassroomQuiz,tutorials:root?.CodaClassroomTutorials,time:root?.CodaTimeSignatureLesson};}
   if(!sources.bank||!sources.quiz||!sources.tutorials||!sources.time){sources=null;fail('The classroom content is still loading. Please try again.');}return sources;
@@ -39,15 +43,19 @@
     const meta=tutorials.LESSONS.find(item=>item.id===id);
     let steps=tutorials.NOTE_LESSONS[id]||tutorials.EXPRESSION_LESSONS[id]||(id==='major-minor-keys'?tutorials.KEY_STEPS:id==='time-signatures'?time.STEPS:RHYTHM_STEPS);
     steps=copy(steps).map((step,index)=>{const simple=tutorials.SIMPLE_NOTE_COPY[id]?.[index];return {...step,...(simple?{teach:simple[0],example:simple[1],prompt:simple[2],hint:simple[3]}:{}),visual:null};});
-    lessons[id]={title:meta.title,steps};
+    lessons[id]={title:meta.title,steps,study:cleanStudy(id,curriculumModule()?.forLesson?.(id)||[])};
     quizzes[id]={title:quiz.QUIZZES[id].title,questions:copy(quiz.QUIZZES[id].questions).map(question=>{const result={...question,category:id,visual:question.visual||null};if(result.answerNotes===null)delete result.answerNotes;return result;})};
    }
+   const extra=accidentalsModule(),title=extra?.TITLE||'Accidentals & key signatures';
+   lessons[SUPPLEMENTAL_ID]={title,steps:[],study:cleanStudy(SUPPLEMENTAL_ID,extra?.CARDS||[])};
+   const extraQuiz=extra?.QUIZ;quizzes[SUPPLEMENTAL_ID]={title:extraQuiz?.title||title,questions:(extraQuiz?.questions||[]).map(item=>question(item,SUPPLEMENTAL_ID))};
    defaults={version:VERSION,exam:{questions:bank.QUESTIONS.map(question=>({id:question.id,category:question.category,prompt:question.prompt,answers:question.choices.map(choice=>choice.text),correct:question.choices.findIndex(choice=>choice.id===question.answer),explanation:question.explanation||'',visual:copy(question.stimulus||null)}))},quizzes,lessons};
   }return copy(defaults);
  }
  function notationModule(){if(root?.CodaEducationNotation)return root.CodaEducationNotation;if(requireModule)try{return requireModule('./education-notation.js');}catch{}return null;}
  function visual(value){
   if(value===null||value===undefined)return null;if(!object(value))fail('A music picture must be a supported notation object.');
+  if(value.kind==='key-signature'){const module=accidentalsModule(),checked=module?.validateVisual?.(value);if(!checked?.ok)fail(checked?.error||'The key-signature lesson is still loading.');return checked.data;}
   if(value.kind==='notation'){
    const module=notationModule(),checked=module?.validate?.(value.score);if(!checked?.ok)fail(checked?.error||'The notation editor is still loading.');
    return {kind:'notation',score:checked.data};
@@ -57,12 +65,15 @@
    if(!integer(value.position,-20,28)||value.clef!==undefined&&!['treble','bass'].includes(value.clef)||value.grand!==undefined&&typeof value.grand!=='boolean')fail('That staff note is outside the supported range.');
    result.position=value.position;if(value.clef!==undefined)result.clef=value.clef;if(value.grand!==undefined)result.grand=value.grand;if(value.label!==undefined)result.label=text(value.label,'Staff description',400,true);
   }else if(value.kind==='piano'){if(!integer(value.target,0,7))fail('Choose a piano key from 0 to 7.');result.target=value.target;
-  }else if(value.kind==='note'){if(![.25,.5,.75,1,1.5,2,3,4].includes(value.beats))fail('Choose a supported note length.');result.beats=value.beats;
+  }else if(value.kind==='note'){if(![.25,.5,.75,1,1.5,2,3,4].includes(value.beats))fail('Choose a supported note length.');result.beats=value.beats;if(value.rest!==undefined){if(typeof value.rest!=='boolean')fail('A note picture needs a true or false rest setting.');result.rest=value.rest;}
   }else if(value.kind==='middle-c-pair'){}
   else if(value.kind==='meter'){if(!['2/2','2/4','3/4','4/4','6/8','9/8','12/8'].includes(value.meter))fail('Choose a supported time signature.');result.meter=value.meter;
   }else if(value.kind==='rhythm'){
    if(!Array.isArray(value.notes)||value.notes.length>64||value.notes.some(note=>!object(note)||![.25,.5,.75,1,1.5,2,3,4].includes(note.beats)||note.rest!==undefined&&typeof note.rest!=='boolean'))fail('Choose up to 64 supported notes and rests.');
    result.meter=typeof value.meter==='string'?text(value.meter,'Rhythm meter',12):'4/4';result.notes=value.notes.map(note=>({beats:note.beats,rest:note.rest===true}));
+  }else if(value.kind==='tie'){
+   if(!Array.isArray(value.notes)||value.notes.length<2||value.notes.length>8||value.notes.some(note=>!object(note)||Object.keys(note).some(key=>!['beats','rest'].includes(key))||note.rest!==undefined&&note.rest!==false||![.25,.5,.75,1,1.5,2,3,4].includes(note.beats)))fail('A tie picture needs 2 to 8 supported note lengths.');
+   if(value.meter!==undefined&&!['2/2','2/4','3/4','4/4','6/8'].includes(value.meter))fail('Choose a supported tie-picture meter.');result.notes=value.notes.map(note=>({beats:note.beats,...(own(note,'rest')?{rest:false}:{})}));if(value.meter!==undefined)result.meter=value.meter;
   }else if(value.kind==='scale'){
    if(!Array.isArray(value.notes)||value.notes.length>32||value.notes.some(note=>typeof note!=='string'||note.length>24))fail('That scale picture is too long.');result.notes=[...value.notes];
   }else if(value.kind==='dynamic'){if(!['pp','p','mp','mf','f','ff','crescendo','decrescendo'].includes(value.mark))fail('Choose a supported dynamics marking.');result.mark=value.mark;
@@ -71,12 +82,22 @@
   return result;
  }
  function question(value,category){
-  if(!object(value)||!safeId(value.id)||!IDS.includes(category)||value.category!==undefined&&value.category!==category)fail('A question needs a unique ID and one of the eight classroom categories.');
+  if(!object(value)||!safeId(value.id)||!LESSON_IDS.includes(category)||value.category!==undefined&&value.category!==category)fail('A question needs a unique ID and one of the eight classroom categories.');
   if(!Array.isArray(value.answers)||value.answers.length<2||value.answers.length>6||!integer(value.correct,0,value.answers.length-1))fail('A question needs 2 to 6 answers and one correct answer.');
   const answers=value.answers.map(answer=>text(answer,'Answer',400));if(new Set(answers.map(answer=>answer.trim().toLowerCase())).size!==answers.length)fail('Give each answer different text.');
   const result={id:value.id,category,prompt:text(value.prompt,'Question'),answers,correct:value.correct,explanation:text(value.explanation??'','Explanation',2000,true),visual:visual(value.visual)};
   if(value.answerNotes!==undefined&&value.answerNotes!==null){if(!Array.isArray(value.answerNotes)||value.answerNotes.length!==answers.length||value.answerNotes.some(notes=>!Array.isArray(notes)||notes.length>16||notes.some(note=>![.25,.5,.75,1,1.5,2,3,4].includes(note))))fail('Answer-note pictures must match the answer list.');result.answerNotes=copy(value.answerNotes);}
   return result;
+ }
+ function cleanStudy(id,input){
+  if(!Array.isArray(input)||input.length>100)fail('An exam lesson needs at most 100 teaching cards.');
+  const cards=input.map(value=>{
+   if(!object(value)||Object.keys(value).some(key=>!['id','category','title','teach','example','prompt','answers','correct','hint','visual','covers'].includes(key)))fail('Use supported teaching-card fields.');
+   const checked=question(value,id),result={id:checked.id,title:text(value.title,'Card title',120),teach:text(value.teach,'Teaching idea',2000),example:text(value.example??'','Worked example',2000,true),prompt:checked.prompt,answers:checked.answers,correct:checked.correct,hint:text(value.hint??'','Card hint',2000,true),visual:checked.visual};
+   if(own(value,'covers')){if(!Array.isArray(value.covers)||value.covers.length>200||value.covers.some(item=>!safeId(item))||new Set(value.covers).size!==value.covers.length)fail('Use unique exam question IDs for teaching coverage.');result.covers=[...value.covers];}
+   return result;
+  });
+  if(new Set(cards.map(card=>card.id)).size!==cards.length)fail('Teaching-card IDs must be unique in each lesson.');return cards;
  }
  function cleanSteps(id,input,base){
   if(!Array.isArray(input)||input.length!==base.length)fail('Keep the '+base.length+' activities in '+id+'; edit their words, answers, and notation.');
@@ -103,15 +124,15 @@
   try{
    if(!object(input)||input.version!==VERSION||Object.keys(input).some(key=>!['version','exam','quizzes','lessons'].includes(key)))fail('Choose a version 1 Coda classroom content file.');
    if(JSON.stringify(input).length>MAX_BYTES)fail('This classroom content file is too large.');const result=getDefaults();
-   if(input.exam!==undefined){if(!object(input.exam)||Object.keys(input.exam).some(key=>key!=='questions')||!Array.isArray(input.exam.questions)||input.exam.questions.length>2400)fail('The exam needs a list of at most 2,400 questions.');result.exam.questions=input.exam.questions.map(value=>question(value,value.category));if(new Set(result.exam.questions.map(value=>value.id)).size!==result.exam.questions.length)fail('Exam question IDs must be unique.');}
+   if(input.exam!==undefined){if(!object(input.exam)||Object.keys(input.exam).some(key=>key!=='questions')||!Array.isArray(input.exam.questions)||input.exam.questions.length>2400)fail('The exam needs a list of at most 2,400 questions.');result.exam.questions=input.exam.questions.map(value=>{if(!EXAM_IDS.includes(value?.category))fail('Choose one of the eight final-exam categories.');return question(value,value.category);});if(new Set(result.exam.questions.map(value=>value.id)).size!==result.exam.questions.length)fail('Exam question IDs must be unique.');}
    for(const section of ['quizzes','lessons'])if(input[section]!==undefined){
-    if(!object(input[section])||Object.keys(input[section]).some(id=>!IDS.includes(id)))fail('Choose one of the eight classroom topics.');
+    if(!object(input[section])||Object.keys(input[section]).some(id=>!LESSON_IDS.includes(id)))fail('Choose a known classroom topic.');
     for(const [id,value]of Object.entries(input[section])){
      if(!object(value))fail('A classroom topic needs its title and content.');const title=text(value.title, 'Topic title',120);
      if(section==='quizzes'){
       if(Object.keys(value).some(key=>!['title','questions'].includes(key))||!Array.isArray(value.questions)||value.questions.length>200)fail('A quiz needs a list of at most 200 questions.');
       const questions=value.questions.map(item=>question(item,id));if(new Set(questions.map(item=>item.id)).size!==questions.length)fail('Quiz question IDs must be unique.');result.quizzes[id]={title,questions};
-     }else{if(Object.keys(value).some(key=>!['title','steps'].includes(key)))fail('A lesson needs its title and activities.');result.lessons[id]={title,steps:cleanSteps(id,value.steps,result.lessons[id].steps)};}
+     }else{if(Object.keys(value).some(key=>!['title','steps','study'].includes(key)))fail('A lesson needs its title, activities, and exam teaching cards.');result.lessons[id]={title,steps:cleanSteps(id,id===SUPPLEMENTAL_ID?value.steps??[]:value.steps,result.lessons[id].steps),study:own(value,'study')?cleanStudy(id,value.study):result.lessons[id].study};}
     }
    }
    return {ok:true,data:result};
@@ -141,14 +162,17 @@
    const questions=document.exam.questions.map(question=>({id:question.id,category:question.category,prompt:question.prompt,choices:question.answers.map((text,index)=>({id:'choice-'+index,text})),answer:'choice-'+question.correct,explanation:question.explanation,stimulus:copy(question.visual)}));
    const byId=new Map(questions.map(question=>[question.id,question])),pools=Object.fromEntries(IDS.map(id=>[id,freeze(questions.filter(question=>question.category===id))]));return bankCache=freeze({VERSION:1,version:1,custom:true,revision:revision(document.exam),CATEGORIES:copy(CATEGORIES),QUESTIONS:questions,pool:id=>pools[id]||Object.freeze([]),getQuestion:id=>byId.get(id)||null});
   }
-  function getQuiz(id){if(!IDS.includes(id))return null;const value=effective().quizzes[id],cached=quizCache.get(id);if(cached?.source===value)return cached.model;const model=same(value,base.quizzes[id])?getSources().quiz.QUIZZES[id]:freeze({...copy(value),version:1,custom:true,revision:revision(value),passScore:Math.ceil(value.questions.length*.8)});quizCache.set(id,{source:value,model});return model;}
-  const getLesson=id=>IDS.includes(id)?copy(effective().lessons[id]):null;
-  const getLessonSteps=id=>IDS.includes(id)?copy(effective().lessons[id].steps):null;
-  function lessonState(id){if(!IDS.includes(id))return null;const document=effective(),lesson=document.lessons[id],quiz=document.quizzes[id],cached=lessonCache.get(id);if(cached?.lesson===lesson&&cached.quiz===quiz)return cached;const result={lesson,quiz,revision:revision({lesson,quiz}),edited:!same(lesson,base.lessons[id])||getQuiz(id)?.custom===true};lessonCache.set(id,result);return result;}
+  function getQuiz(id){if(!LESSON_IDS.includes(id))return null;const value=effective().quizzes[id],cached=quizCache.get(id);if(cached?.source===value)return cached.model;const model=EXAM_IDS.includes(id)&&same(value,base.quizzes[id])?getSources().quiz.QUIZZES[id]:freeze({...copy(value),version:1,custom:true,revision:revision(value),passScore:Math.ceil(value.questions.length*.8)});quizCache.set(id,{source:value,model});return model;}
+  const getLesson=id=>LESSON_IDS.includes(id)?copy(effective().lessons[id]):null;
+  const getLessonSteps=id=>LESSON_IDS.includes(id)?copy(effective().lessons[id].steps):null;
+  const getStudyCards=id=>LESSON_IDS.includes(id)?copy(effective().lessons[id].study):[];
+  const getStudyRevision=id=>LESSON_IDS.includes(id)?revision({id,study:effective().lessons[id].study}):'';
+  const isStudyEdited=id=>LESSON_IDS.includes(id)&&!same(effective().lessons[id].study,base.lessons[id].study);
+  function lessonState(id){if(!LESSON_IDS.includes(id))return null;const document=effective(),lesson=document.lessons[id],quiz=document.quizzes[id],cached=lessonCache.get(id);if(cached?.lesson===lesson&&cached.quiz===quiz)return cached;const result={lesson,quiz,revision:revision({lesson,quiz}),edited:!same({title:lesson.title,steps:lesson.steps},{title:base.lessons[id].title,steps:base.lessons[id].steps})||getQuiz(id)?.custom===true};lessonCache.set(id,result);return result;}
   const getLessonRevision=id=>lessonState(id)?.revision||'';
   const isLessonEdited=id=>lessonState(id)?.edited===true;
-  return {KEY,getDocument,getDefaults,getState,validate,saveDocument,setDocument:saveDocument,importDocument(input){if(typeof input==='string')try{input=JSON.parse(input);}catch{return {ok:false,error:'Choose a valid JSON classroom content file.'};}return saveDocument(input);},exportDocument:()=>JSON.stringify(getDocument(),null,2),reset,loadPublished,getExamBank,getQuiz,getLesson,getLessonSteps,getLessonRevision,isLessonEdited,categories:()=>copy(CATEGORIES),subscribe(listener){if(typeof listener!=='function')throw TypeError('A classroom content listener is required.');listeners.add(listener);listener(getState());return()=>listeners.delete(listener);},destroy(){destroyed=true;listeners.clear();}};
+  return {KEY,getDocument,getDefaults,getState,validate,saveDocument,setDocument:saveDocument,importDocument(input){if(typeof input==='string')try{input=JSON.parse(input);}catch{return {ok:false,error:'Choose a valid JSON classroom content file.'};}return saveDocument(input);},exportDocument:()=>JSON.stringify(getDocument(),null,2),reset,loadPublished,getExamBank,getQuiz,getLesson,getLessonSteps,getLessonRevision,isLessonEdited,getStudyCards,getStudyRevision,isStudyEdited,categories:(kind='exam')=>copy(kind==='exam'?CATEGORIES:LESSON_CATEGORIES),subscribe(listener){if(typeof listener!=='function')throw TypeError('A classroom content listener is required.');listeners.add(listener);listener(getState());return()=>listeners.delete(listener);},destroy(){destroyed=true;listeners.clear();}};
  }
  function getStore(){if(!activeStore)activeStore=createStore();return activeStore;}
- return Object.freeze({KEY,VERSION,MAX_BYTES,CATEGORIES,getDefaults,validate,createStore,getStore,setStore(store){if(!store||typeof store.getDocument!=='function')throw Error('Choose a classroom content store.');activeStore=store;return store;},getDocument:()=>getStore().getDocument(),getExamBank:()=>getStore().getExamBank(),getQuiz:id=>getStore().getQuiz(id),getLesson:id=>getStore().getLesson(id),getLessonSteps:id=>getStore().getLessonSteps(id),getLessonRevision:id=>getStore().getLessonRevision(id),isLessonEdited:id=>getStore().isLessonEdited(id)});
+ return Object.freeze({KEY,VERSION,MAX_BYTES,CATEGORIES,EXAM_IDS,LESSON_IDS,LESSON_CATEGORIES,SUPPLEMENTAL_ID,getDefaults,validate,createStore,getStore,setStore(store){if(!store||typeof store.getDocument!=='function')throw Error('Choose a classroom content store.');activeStore=store;return store;},getDocument:()=>getStore().getDocument(),getExamBank:()=>getStore().getExamBank(),getQuiz:id=>getStore().getQuiz(id),getLesson:id=>getStore().getLesson(id),getLessonSteps:id=>getStore().getLessonSteps(id),getLessonRevision:id=>getStore().getLessonRevision(id),isLessonEdited:id=>getStore().isLessonEdited(id),getStudyCards:id=>getStore().getStudyCards(id),getStudyRevision:id=>getStore().getStudyRevision(id),isStudyEdited:id=>getStore().isStudyEdited(id)});
 });

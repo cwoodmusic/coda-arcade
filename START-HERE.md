@@ -182,10 +182,27 @@ any zoom. For intentional depth sorting, choose **Actor depth** and set the
 The **Show layers** toggle controls the inspection tint separately from the art.
 
 
-Talk to **Professor Haydn** in the classroom to find eight hands-on lessons,
-including **Dynamics: loud & soft** and **Tempo: fast & slow**. Each new lesson
-uses short listen-and-try steps and ends with a five-question quiz. Passing
-awards 50 XP once per lesson.
+Talk to **Professor Haydn** in the classroom to find the eight exam-topic
+lessons and the separate **Accidentals & key signatures** lesson. Activities
+teach one idea at a time and end with a five-question quiz. Passing awards
+50 XP once per lesson. In Note naming, the full **Every Good Boy Does Fine**
+line reminder and **FACE** space reminder are taught, bottom to top, before
+the first staff-naming question.
+
+The eight exam topics now include **106 short study cards**, with worked
+examples and practice checks covering all **800 built-in exam questions**.
+The normal path is basic activity → study cards → end-of-lesson quiz.
+Choose **Study for the exam** to revisit a topic directly, including already
+completed lessons; the exam introduction also has a **Study** button for each
+topic. Study progress resumes in this browser and follows player isolation.
+The [exam-to-lesson coverage map](docs/exam-lesson-coverage.md) records the exact
+question links and is checked automatically when the bank or lessons change.
+
+The separate accidentals lesson explains sharp, flat, and natural signs;
+whole and half steps; reading a key signature; and temporary accidental changes
+within a bar. It does not add another Final Exam category or change the default
+40-question exam. Walk to the classroom's bottom-center stairs and press **E**,
+or **Interact** on mobile, to return to the arcade.
 
 Haydn’s **Final Exam** draws from 100 questions for each of those eight topics
 (800 questions total). Choose 24, 40, or 80 questions; 40 is the default and
@@ -202,6 +219,10 @@ then a topic. Search and select an item to edit. Questions support 2–6 answers
 select the correct one, then **Save question**. Add, duplicate, delete, undo,
 redo, and restore-default controls are included. Lesson activities keep their
 interactive format while their words, expected answers, and pictures can change.
+**Exam lesson cards** edits the new teaching, worked examples, checks, and
+question links. Exam questions display their linked teaching cards; missing
+links and changed question wording are flagged for teacher review. A link
+alone cannot establish that a substantially rewritten question is taught.
 
 Turn on **Use an editable music staff** to place notes, rests, treble/bass clefs,
 bar lines, and repeat signs. Choose durations, dots, and accidentals; click to
@@ -218,10 +239,17 @@ passing still earns the existing one-time lesson/exam XP without replacing
 the original saved results. Clearing site data removes local drafts and attempts.
 
 **Rhythm Room → Tap Practice** now offers 4/4, 2/2 (cut time), and 6/8.
-The counting guide highlights `1 & 2 &` or `1 e & a` in time with the audio,
-including rests. Auto selects the subdivision for the generated rhythm; in 6/8
-it uses `1 la li 2 la li`. The metronome and tempo follow the selected meter's
-main beat. Counting can be changed or hidden without stopping the loop.
+Counts appear directly under the staff, aligned to the actual rhythm, and
+highlight with the audio. Unused subdivisions are omitted: an eighth plus two
+sixteenths shows `1 & a`; a whole note in 4/4 counts `1 2 3 4` while held.
+In 6/8, three eighths show `1 la li`; quarter–eighth shows `1 li`.
+The metronome and tempo follow the selected meter's main beat, and the counts
+can be hidden without stopping playback.
+
+6/8 has its own rhythm choices: dotted half, dotted quarter, eighth–quarter,
+quarter–eighth, three eighths, and paired-sixteenth patterns in groups of 2, 4,
+or 6. Its rest choices are dotted half, dotted quarter, quarter, and eighth;
+sixteenth rests are excluded. Switching meters keeps each meter's selections.
 
 **Song Machine** has a shared **Volume** slider for Simple and Advanced modes.
 It controls playback and note previews and remembers the device setting.
@@ -239,7 +267,7 @@ examples. Its Simple/Advanced guide switch does not change the game’s rules.
 Meter multipliers are explicitly game powers rather than general music rules.
 
 
-Walk to the **Hall of Fame** and choose **Achievements** to browse all 42 goals.
+Walk to the **Hall of Fame** and choose **Achievements** to browse all 43 goals.
 Earned and locked achievements appear together, with requirements, rewards,
 and progress where the game tracks it. Filter by topic or choose Earned/Locked.
 The **Records** tab still shows game scores. Viewing achievements never claims

@@ -7,6 +7,7 @@ import unittest
 import sys
 sys.dont_write_bytecode=True
 from classroom_quiz_helpers import answer_quiz
+from exam_study_helpers import finish_note_reminders
 from playwright.sync_api import sync_playwright
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -47,6 +48,7 @@ class ClassroomTutorialTests(unittest.TestCase):
         self.page.locator('[data-start-lesson="'+id+'"]').click()
     def state(self):return self.page.evaluate('roomUI.getState().tutorials')
     def try_step(self):
+        finish_note_reminders(self.page)
         button=self.page.locator('[data-lesson-try]')
         if button.is_visible():button.click()
     def answer(self,letter):
@@ -110,6 +112,9 @@ class ClassroomTutorialTests(unittest.TestCase):
         self.open_lesson('note-naming')
         for letter in ['C','F','D','A']:self.answer(letter);self.next()
         self.assertEqual(self.state()['active']['step'],4)
+        self.assertEqual(self.state()['active']['noteReminder'],'lines')
+        self.assertEqual(self.page.locator('[data-note-answer]').count(),0)
+        finish_note_reminders(self.page)
         self.assertTrue(self.page.locator('[data-note-example="staff"] .staff-note').is_visible())
         self.assertEqual(self.page.locator('[data-note-answer]').count(),0)
         self.try_step();self.assertEqual(self.page.locator('.lesson-letter-answers [data-note-answer]').count(),7)
