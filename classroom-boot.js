@@ -70,12 +70,14 @@
    service=win.CodaClassroom.create({window:win,config:settings,storageScope:scope,
      onIdentityChange:event=>{
        options.beforeIdentityChange?.(event);
+       if(event.exitToTitle&&entryView){openRecovery();return;}
        if(event.exitToTitle&&returnToTitle())return;
        if(event.reloadNeeded){reloadIdentity();return;}
        hideGate();options.onState?.(service.getState());
      },
      onLock:event=>{
        options.onLock?.(event);
+       if(event.exitToTitle&&entryView){openRecovery();return;}
        if(event.exitToTitle&&returnToTitle())return;
        if(event.reloadNeeded){try{win.sessionStorage.setItem('codaClassroomNoticeV1',event.reason);}catch{}reloadIdentity();return;}
        openRecovery();

@@ -25,6 +25,18 @@
    try{history.replaceState(history.state,'',location.pathname+location.search);}catch{}
    return value||'';
  }
+ // A hint that this tab has something to verify, never proof of authentication.
+ // A fresh tab can inherit sessionStorage from its opener, so bind both records
+ // to the browsing context before even loading the authentication SDK.
+ function readSavedSession(session,tabId){
+   const empty={teacher:false,profile:false,kind:null};
+   const valid=value=>typeof value==='string'&&/^[A-Za-z0-9_-]{6,128}$/.test(value);
+   if(!valid(tabId))return empty;
+   const read=key=>{try{const value=JSON.parse(session?.getItem?.(key)||'null');return value?.version===1&&value.tabId===tabId?value:null;}catch{return null;}};
+   const administrator=read(ADMIN_KEY),marker=read(ACTIVE_KEY);
+   const teacher=valid(administrator?.uid),profile=valid(marker?.classId)&&valid(marker?.profileId)&&valid(marker?.epoch);
+   return {teacher,profile,kind:profile?(marker.classId===PERSONAL_CLASS?'teacher':'student'):teacher?'teacher':null};
+ }
  async function firebaseSDK(){const modules=await Promise.all([
    import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'),
    import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js'),
@@ -47,7 +59,7 @@
    let sdk,db,auth,adminDb,adminAuth,connecting,studentUid=null,adminUid=null,adminAuthorized=false,adminRoleStop=null,personalAvailable=false;
    let active=null,leaseOwned=false,loaded=false,baseRevision=0,lastSaved='',pending=false,saving=false;
    let loading=false,locked=false,waitingTakeover=false,code='',status='',destroyed=false,generation=0,inFlightSave=null,transitioning=false,retiredPersonalSave=null,signingOut=false;
-   let offset=0,lastActivity=now(),flushTimer=null,leaseTimer=null,idleTimer=null,queuedPass=null,personalRename=null;
+   let offset=0,flushTimer=null,leaseTimer=null,queuedPass=null,personalRename=null;
    const pendingJobs=new Set();
    const state=()=>({configured,configurationReason,enabled,ready:!!sdk,loading,locked,waitingTakeover,pending,
      profile:active?{classId:active.classId,classLabel:active.classLabel||'Classroom',profileId:active.profileId,alias:active.alias,picture:active.picture,...(personalProfile(active)?{kind:'teacher'}:{})}:null,
@@ -141,7 +153,7 @@
      if(retiredPersonalSave)await retiredPersonalSave;
      let closedPersonal=false;
      if(personalProfile(active)){const closed=await leave({silentIdentity:true});if(!closed.ok)return closed;closedPersonal=true;}
-     loading=true;lastActivity=now();notify();try{
+     loading=true;notify();try{
      const provider=new sdk.GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});await sdk.signInWithPopup(adminAuth,provider);
      session.setItem(ADMIN_KEY,JSON.stringify({version:1,tabId,uid:adminAuth.currentUser?.uid}));
      await checkAdmin();watchAdmin();message(adminAuthorized?'School admin ready.':'Your school administrator needs to approve this admin account.',adminAuthorized?'':'admin-not-approved');
@@ -327,6 +339,42 @@
        if(adminAuthorized)try{await refreshPersonal();}catch{}
        return await activate(binding,{reason:'resumed'});
      }catch{lock('connection-unavailable');return fail('connection-unavailable');}finally{loading=false;notify();}
+   }
+   async function inspectSession(){
+     const guest={ok:true,signedIn:false,kind:null,profileAvailable:false,authorized:false};
+     const saved=readSavedSession(session,tabId);
+     if(!saved.teacher&&!saved.profile)return guest;
+     // Status checking must never acquire a workspace or expose another tab's
+     // profile. The game itself restores and claims a player after Continue.
+     const marker=enabled&&saved.profile?sessionMarker():null,teacher=readBound(ADMIN_KEY);
+     if(marker&&storageScope&&!ownsWorkspace())return {...guest,ok:false,code:'workspace-lost'};
+     try{
+       const ready=await connect();if(!ready.ok)return {...guest,...ready};
+       if(destroyed)return {...guest,ok:false,code:'closed'};
+       if(!marker||marker.classId===PERSONAL_CLASS){
+         if(!teacher?.uid||adminUid!==teacher.uid||adminAuth?.currentUser?.uid!==teacher.uid)return {...guest,code:'session-ended'};
+         if(marker&&marker.profileId!==adminUid)return {...guest,ok:false,code:'profile-mismatch'};
+         let alias='',available=false;
+         if(enabled&&adminAuthorized){
+           const snap=await sdk.get(sdk.ref(adminDb,path('teacherPlayers/'+adminUid+'/meta'))),meta=snap.val();
+           available=!!meta;if(typeof meta?.alias==='string')alias=meta.alias.trim().slice(0,40);
+         }
+         if(destroyed||adminUid!==teacher.uid||adminAuth?.currentUser?.uid!==teacher.uid||readBound(ADMIN_KEY)?.uid!==teacher.uid||marker&&!sameProfile(marker,sessionMarker()))return {...guest,ok:false,code:'session-ended'};
+         if(marker&&storageScope&&!ownsWorkspace())return {...guest,ok:false,code:'workspace-lost'};
+         if(!adminAuthorized){alias='';available=false;}
+         personalAvailable=available;
+         return {ok:true,signedIn:true,kind:'teacher',alias,profileAvailable:available,authorized:adminAuthorized};
+       }
+       if(!auth?.currentUser?.uid)return {...guest,code:'session-ended'};
+       const uid=auth.currentUser.uid,binding=(await sdk.get(sdk.ref(db,path('sessions/'+uid)))).val();
+       if(!binding||!sameProfile(marker,binding))return {...guest,ok:false,code:'profile-mismatch'};
+       const meta=(await sdk.get(sdk.ref(db,path('classes/'+marker.classId+'/profiles/'+marker.profileId+'/meta')))).val();
+       if(!meta||meta.passHash!==binding.passHash)return {...guest,ok:false,code:'access-revoked'};
+       // Recheck after the metadata requests: profile state can change in
+       // another tab while the network is still returning these small reads.
+       if(destroyed||auth.currentUser?.uid!==uid||!sameProfile(marker,sessionMarker())||storageScope&&!ownsWorkspace())return {...guest,ok:false,code:'session-ended'};
+       return {ok:true,signedIn:true,kind:'student',alias:typeof meta.alias==='string'?meta.alias.trim().slice(0,40):'',profileAvailable:true,authorized:false};
+     }catch{return {...guest,ok:false,code:'connection-unavailable'};}
    }
    async function takeOver(){if(!active||!waitingTakeover)return fail('no-profile');loading=true;notify();try{return await activate(active,{takeover:true,reason:'device-changed'});}catch{return fail('connection-unavailable');}finally{loading=false;notify();}}
    async function flush(){
@@ -525,16 +573,15 @@
      for(const row of await sessionsForClass(classId))changes['sessions/'+row.uid]=null;
      await sdk.update(sdk.ref(adminDb,namespace),changes);return {ok:true};
    }catch{return fail('class-delete-failed');}}
-   const activity=()=>{lastActivity=now();};
    const pageHidden=()=>{if(!win?.document||win.document.visibilityState==='hidden')keepPending();};
    win?.addEventListener?.('pagehide',keepPending);win?.document?.addEventListener?.('visibilitychange',pageHidden);
-   for(const type of ['pointerdown','keydown','touchstart'])win?.addEventListener?.(type,activity,{passive:true});
    if(storageScope?.subscribe)pendingJobs.add(storageScope.subscribe(()=>{if(active&&!transitioning&&!ownsWorkspace())lock('workspace-lost');}));
    flushTimer=win?.setInterval?.(()=>{if(isWritable())flush();},1500);
    leaseTimer=win?.setInterval?.(async()=>{if(!isWritable())return;try{if(!await lease(false,true))lock('device-changed');}catch{message('Connection paused. Keep this tab open.','connection-unavailable');}},20000);
-   idleTimer=win?.setInterval?.(()=>{if(now()-lastActivity<=Math.max(60000,options.idleMs||600000))return;if(adminUid){const personal=personalProfile(active);adminSignOut();if(personal)return;}if(active&&!locked&&!loading)flush().then(result=>{if(result.ok)leave({discard:true});else lock('idle');});},10000);
-   function destroy(){keepPending();destroyed=true;generation++;stopSubscriptions();for(const stop of authSubscriptions.splice(0))try{stop();}catch{}if(adminRoleStop){adminRoleStop();adminRoleStop=null;}for(const stop of pendingJobs)try{stop();}catch{}for(const timer of [flushTimer,leaseTimer,idleTimer])if(timer!==null)win?.clearInterval?.(timer);for(const type of ['pointerdown','keydown','touchstart'])win?.removeEventListener?.(type,activity);win?.removeEventListener?.('pagehide',keepPending);win?.document?.removeEventListener?.('visibilitychange',pageHidden);listeners.clear();}
-   return {getState:state,subscribe(listener){listeners.add(listener);return()=>listeners.delete(listener);},connect,resume,join,leave,logOut,takeOver,useSavedProgress,adminSignIn,adminSignOut,savePersonalPlayer,renamePersonalPlayer,openPersonalPlayer,listClasses,createClass,listProfiles,createProfile,reissuePass,deleteProfile,deleteClass,flush,isWritable,destroy};
+   // Sessions stay open through inactivity. Explicit logout, revocation, and
+   // another device taking the profile still end access through the guards above.
+   function destroy(){keepPending();destroyed=true;generation++;stopSubscriptions();for(const stop of authSubscriptions.splice(0))try{stop();}catch{}if(adminRoleStop){adminRoleStop();adminRoleStop=null;}for(const stop of pendingJobs)try{stop();}catch{}for(const timer of [flushTimer,leaseTimer])if(timer!==null)win?.clearInterval?.(timer);win?.removeEventListener?.('pagehide',keepPending);win?.document?.removeEventListener?.('visibilitychange',pageHidden);listeners.clear();}
+   return {getState:state,subscribe(listener){listeners.add(listener);return()=>listeners.delete(listener);},connect,resume,inspectSession,join,leave,logOut,takeOver,useSavedProgress,adminSignIn,adminSignOut,savePersonalPlayer,renamePersonalPlayer,openPersonalPlayer,listClasses,createClass,listProfiles,createProfile,reissuePass,deleteProfile,deleteClass,flush,isWritable,destroy};
  }
- return Object.freeze({create,consumeFragment,parsePass:passCode,formatPass,hashPass});
+ return Object.freeze({create,consumeFragment,readSavedSession,parsePass:passCode,formatPass,hashPass});
 });

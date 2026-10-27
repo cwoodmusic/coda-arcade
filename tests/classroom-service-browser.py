@@ -298,13 +298,49 @@ class ClassroomServiceBrowserTests(unittest.TestCase):
         self.assertFalse(self.call(self.admin,'createProfile',self.class_id)['ok'])
         self.assertEqual(self.cloud()['state']['data']['progression']['xp'],0)
 
-    @unittest.skipUnless(os.environ.get('CODA_CLASSROOM_TEST_ADMIN_IDLE')=='1','Optional focused admin idle check')
-    def test_admin_inactivity_signs_out_without_changing_student_progress(self):
+    def test_admin_inactivity_keeps_sign_in_without_changing_student_progress(self):
         self.assertTrue(self.call(self.admin,'getState')['admin']['authorized'])
         self.admin.evaluate('async()=>{window.fixtureNow=Date.now()+601000;for(const timer of fixtureTimers.filter(timer=>timer.delay===10000))await timer.fn();}')
-        self.admin.wait_for_function('!fixtureService.getState().admin.signedIn',timeout=5000)
-        self.assertFalse(self.call(self.admin,'getState')['admin']['authorized'])
+        self.assertTrue(self.call(self.admin,'getState')['admin']['signedIn'])
+        self.assertTrue(self.call(self.admin,'getState')['admin']['authorized'])
+        self.assertEqual(self.admin.evaluate('fixtureTimers.filter(timer=>timer.delay===10000).length'),0)
         self.assertEqual(self.cloud()['state']['data']['progression']['xp'],0)
+
+    def test_status_inspection_verifies_student_without_activating_or_writing_progress(self):
+        student=self.device();self.join(student);student.evaluate('fixtureProgress(30,15)');self.assert_ok(self.call(student,'flush'))
+        before=student.evaluate('fixtureScope.getState().marker')
+        cloud_before=self.cloud()['state']
+        student.reload();student.wait_for_function('window.fixtureReady');self.start(student)
+        local_before=student.evaluate('CodaClassroomProfileData.capture(localStorage).data')
+        inspected=self.call(student,'inspectSession')
+        self.assertTrue(inspected.get('ok'),inspected)
+        self.assertTrue(inspected['signedIn']);self.assertEqual(inspected['kind'],'student')
+        self.assertEqual(inspected['alias'],self.card['alias'])
+        self.assertIsNone(self.call(student,'getState')['profile'],'The title check must not open or claim a player')
+        self.assertEqual(student.evaluate('fixtureScope.getState().marker'),before)
+        self.assertEqual(student.evaluate('CodaClassroomProfileData.capture(localStorage).data'),local_before)
+        self.assertEqual(self.cloud()['state'],cloud_before)
+        self.assert_ok(self.call(student,'resume'))
+        self.assertTrue(self.call(student,'isWritable'))
+
+    def test_students_keep_their_own_profiles_after_inactivity_and_refresh(self):
+        other=self.call(self.admin,'createProfile',self.class_id);self.assert_ok(other)
+        for index,card in enumerate([self.card,other]):
+            with self.subTest(alias=card['alias']):
+                student=self.device();self.join(student,card);student.evaluate('xp=>fixtureProgress(xp,15)',30+index)
+                student.evaluate('''()=>{
+                  window.fixtureNow=Date.now()+601000;
+                  for(const timer of fixtureTimers.filter(timer=>timer.delay===10000))timer.fn();
+                }''')
+                self.assertEqual(student.evaluate('fixtureTimers.filter(timer=>timer.delay===10000).length'),0)
+                self.assertTrue(self.call(student,'isWritable'))
+                self.assertEqual(self.call(student,'getState')['profile']['alias'],card['alias'])
+                self.assert_ok(self.call(student,'flush'))
+                student.reload();student.wait_for_function('window.fixtureReady');self.start(student)
+                self.assert_ok(self.call(student,'resume'))
+                self.assertTrue(self.call(student,'isWritable'))
+                self.assertEqual(self.call(student,'getState')['profile']['alias'],card['alias'])
+                self.assertEqual(student.evaluate('CodaClassroomProfileData.capture(localStorage).data.progression.xp'),30+index)
 
     def test_teacher_reissues_without_reading_old_pass_and_deletion_revokes_new_card(self):
         student=self.device();self.join(student);student.evaluate('fixtureProgress(35,20)');self.assert_ok(self.call(student,'flush'))

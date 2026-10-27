@@ -140,6 +140,22 @@ class ClassroomEntryTests(unittest.TestCase):
         self.assertEqual(self.page.evaluate('fixtureViews'), ['admin'])
         self.assertFalse(self.page.evaluate('CodaClassroomBoot.getState().preparing'))
 
+    def test_expired_saved_signin_keeps_the_requested_login_form_instead_of_bouncing_to_title(self):
+        for callback in ['fixtureIdentityChange', 'fixtureLock']:
+            with self.subTest(callback=callback):
+                self.load('/entry-fixture.html?profile=admin')
+                self.page.evaluate('''callback=>{
+                  window[callback]({reason:'session-ended',reloadNeeded:false,exitToTitle:true});
+                  fixtureFinish({ok:false,code:'session-ended'});
+                }''', callback)
+                self.page.wait_for_function('!fixtureState.loading')
+                self.page.evaluate('()=>new Promise(resolve=>setTimeout(resolve,0))')
+                self.assertEqual(urlsplit(self.page.url).path, '/entry-fixture.html')
+                self.assertEqual(self.page.evaluate('fixtureViews'), ['admin'])
+                self.assertEqual(self.page.evaluate('fixtureSignInCalls'), 0)
+                self.assertTrue(self.page.evaluate('CodaClassroomBoot.getState().recovering'))
+                self.assertFalse(self.page.evaluate('fixtureRuntime.canPlay()'))
+
     def test_profile_loading_is_only_status_and_finishes_without_profile_choices(self):
         self.load('/entry-fixture.html?seed=owner')
         loading = self.page.locator('#classroom-session-notice')

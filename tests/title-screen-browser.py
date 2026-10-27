@@ -93,6 +93,23 @@ class TitleScreenTests(unittest.TestCase):
                     'authDomain':'demo-title-screen.firebaseapp.com'}}
             return route.fulfill(body='window.ARCADE_ACCOUNTS_CONFIG='+json.dumps(config),
                 content_type='text/javascript')
+        if url.path == '/classroom-service.js':
+            source = (ROOT/'classroom-service.js').read_text()
+            stub = r"""
+;(()=>{
+  if(!window.__titleInspectionFixture||!/\/(?:index\.html)?$/.test(location.pathname))return;
+  const original=CodaClassroom;
+  window.CodaClassroom=Object.freeze({...original,create:options=>{
+    window.__titleInspectionCalls=(window.__titleInspectionCalls||0)+1;
+    const snapshot={admin:{signedIn:true,authorized:true},code:''};
+    return {getState:()=>snapshot,subscribe:()=>()=>{},destroy(){},inspectSession:async()=>{
+      if(window.__titleHoldInspection)await new Promise(resolve=>window.__releaseTitleInspection=resolve);
+      return JSON.parse(JSON.stringify(window.__titleInspectionFixture));
+    }};
+  }});
+})();
+"""
+            return route.fulfill(content_type='text/javascript', body=source+stub)
         if url.path == '/world-preview.html' and self.qr_fixture:
             return route.fulfill(content_type='text/html', body='''<!doctype html>
               <title>Card forwarding boundary</title><script src="classroom-service.js"></script>
@@ -115,6 +132,7 @@ class TitleScreenTests(unittest.TestCase):
         self.context.add_init_script('''(()=>{
           const keys=__KEYS__;
           window.__titleNative=localStorage;window.__titleScopedWrites=[];
+          window.__titleInspectionFixture={ok:true,signedIn:true,kind:"student",alias:"Blue Fox 14"};
           if(!sessionStorage.getItem('titleOwnerSeeded')){
             const tabId='title-owner-fixture',marker={version:1,tabId,
               epoch:'title-owner-epoch',classId:'class-title-fixture',profileId:'profile-title-fixture'};
@@ -206,11 +224,13 @@ class TitleScreenTests(unittest.TestCase):
         self.assertNotIn('profile=', self.page.url)
         self.assertFalse(any('firebasejs/' in url for url in self.requests))
 
-    def test_returning_owner_gets_continue_without_rendering_names_or_mutating_saves(self):
+    def test_returning_owner_shows_only_the_verified_alias_without_mutating_saves(self):
         self.seed_owner();self.enabled=True;self.title()
         self.assertEqual(self.page.locator('#startTitle').inner_text(), 'Welcome back.')
-        self.assertEqual(self.page.locator('#titleProfile strong').inner_text(), 'Continue profile')
-        self.assertEqual(self.page.locator('#titleGuest strong').inner_text(), 'Change player')
+        self.page.wait_for_function('document.querySelector("#titleSessionStatus").dataset.sessionState==="signed-in"')
+        self.assertEqual(self.page.locator('#titleProfile strong').inner_text(), 'Continue as Blue Fox 14')
+        self.assertEqual(self.page.locator('#titleSessionStatus').inner_text(), 'Signed in as Blue Fox 14')
+        self.assertEqual(self.page.locator('#titleGuest strong').inner_text(), 'Profile options')
         self.assertNotIn('profile=', self.page.locator('#titleProfile').get_attribute('href'))
         self.assertIn('profile=student', self.page.locator('#titleGuest').get_attribute('href'))
         self.assertNotIn('PRIVATE CHILD', self.page.locator('body').inner_text())
@@ -229,12 +249,79 @@ class TitleScreenTests(unittest.TestCase):
         self.assertEqual(other.locator('#startTitle').inner_text(), 'Let’s play.')
         self.assertEqual(other.locator('#titleProfile strong').inner_text(), 'Open my profile')
         self.assertEqual(other.locator('#titleGuest strong').inner_text(), 'Play as guest')
-        self.assertIn('Another arcade tab', other.locator('#titleProfileHint').inner_text())
+        self.assertIn('other arcade tab', other.locator('#titleProfileHint').inner_text())
+        self.assertEqual(other.locator('#titleSessionStatus').get_attribute('data-session-state'), 'blocked')
+        self.assertEqual(other.evaluate('window.__titleInspectionCalls||0'), 0)
         self.assertNotIn('PRIVATE CHILD', other.locator('body').inner_text())
         self.assertIsNone(other.evaluate('localStorage.getItem("musicArcadeV1")'))
         self.assertEqual(other.evaluate('__titleScopedWrites'), [])
         self.assertEqual(self.page.locator('#startTitle').inner_text(), 'Welcome back.')
         self.assert_quiet_title(other)
+
+    def test_a_saved_profile_waits_for_verification_before_showing_any_alias(self):
+        self.seed_owner()
+        self.context.add_init_script('window.__titleHoldInspection=true')
+        self.enabled=True;self.title()
+        self.page.wait_for_function('Boolean(window.__releaseTitleInspection)')
+        self.assertEqual(self.page.locator('#titleSessionStatus').get_attribute('data-session-state'), 'checking')
+        self.assertEqual(self.page.locator('#titleProfile strong').inner_text(), 'Continue profile')
+        self.assertNotIn('Blue Fox 14',self.page.locator('body').inner_text())
+        self.assertNotIn('PRIVATE CHILD',self.page.locator('body').inner_text())
+        self.page.evaluate('__releaseTitleInspection()')
+        self.page.wait_for_function('document.querySelector("#titleSessionStatus").dataset.sessionState==="signed-in"')
+        self.assertEqual(self.page.locator('#titleProfile strong').inner_text(), 'Continue as Blue Fox 14')
+        self.page.reload(wait_until='load')
+        self.page.wait_for_function('Boolean(window.__releaseTitleInspection)')
+        self.assertEqual(self.page.locator('#titleSessionStatus').get_attribute('data-session-state'), 'checking')
+        self.page.evaluate('__releaseTitleInspection()')
+        self.page.wait_for_function('document.querySelector("#titleSessionStatus").dataset.sessionState==="signed-in"')
+        self.assertEqual(self.page.evaluate('__titleScopedWrites'), [])
+
+    def test_a_delayed_verification_cannot_reveal_the_previous_profile_after_ownership_changes(self):
+        self.seed_owner();self.enabled=True
+        self.context.add_init_script('window.__titleHoldInspection=true')
+        self.title();self.page.wait_for_function('Boolean(window.__releaseTitleInspection)')
+        self.page.evaluate('''()=>{const marker=JSON.parse(localStorage.getItem("codaClassroomWorkspaceV1"));
+          localStorage.setItem("codaClassroomWorkspaceV1",JSON.stringify({...marker,tabId:"another-title-tab"}));}''')
+        self.page.wait_for_function('document.querySelector("#titleSessionStatus").dataset.sessionState==="blocked"')
+        self.page.evaluate('__releaseTitleInspection()')
+        self.page.wait_for_timeout(30)
+        self.assertEqual(self.page.locator('#titleSessionStatus').get_attribute('data-session-state'),'blocked')
+        self.assertNotIn('Blue Fox 14',self.page.locator('body').inner_text())
+        self.assertNotIn('PRIVATE CHILD',self.page.locator('body').inner_text())
+        self.assertEqual(self.page.locator('#titleProfile strong').inner_text(),'Open my profile')
+        self.assertEqual(self.page.evaluate('__titleScopedWrites'), [])
+
+    def test_unavailable_and_expired_signins_never_claim_to_be_signed_in(self):
+        self.seed_owner();self.enabled=True
+        self.context.add_init_script('window.__titleInspectionFixture={ok:false,signedIn:false,code:"connection-unavailable"}')
+        self.title()
+        self.page.wait_for_function('document.querySelector("#titleSessionStatus").dataset.sessionState==="unavailable"')
+        self.assertIn('Sign-in check unavailable',self.page.locator('#titleSessionStatus').inner_text())
+        self.assertNotIn('profile=',self.page.locator('#titleProfile').get_attribute('href'))
+        self.page.evaluate('window.__titleInspectionFixture={ok:true,signedIn:false,code:"session-ended"}')
+        self.page.dispatch_event('body','click')
+        self.page.evaluate('dispatchEvent(new PageTransitionEvent("pageshow",{persisted:true}))')
+        self.page.wait_for_function('document.querySelector("#titleSessionStatus").dataset.sessionState==="signed-out"')
+        self.assertEqual(self.page.locator('#titleSessionStatus').inner_text(),'Sign-in needed')
+        self.assertIn('profile=student',self.page.locator('#titleProfile').get_attribute('href'))
+        self.assertNotIn('PRIVATE CHILD',self.page.locator('body').inner_text())
+        self.assertEqual(self.page.evaluate('__titleScopedWrites'), [])
+
+    def test_guest_avatar_names_do_not_become_signed_in_status_and_long_verified_alias_fits_phone(self):
+        self.enabled=True;self.title()
+        self.page.evaluate('localStorage.setItem("musicArcadeV1",JSON.stringify({name:"OLD GUEST NAME"}))')
+        self.page.reload(wait_until='load')
+        self.assertEqual(self.page.locator('#titleSessionStatus').get_attribute('data-session-state'),'guest')
+        self.assertNotIn('OLD GUEST NAME',self.page.locator('body').inner_text())
+        self.seed_owner()
+        self.context.add_init_script('window.__titleInspectionFixture={ok:true,signedIn:true,kind:"student",alias:"A".repeat(40)}')
+        self.title()
+        self.page.wait_for_function('document.querySelector("#titleSessionStatus").dataset.sessionState==="signed-in"')
+        self.page.set_viewport_size({'width':320,'height':568})
+        self.assertTrue(self.page.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+        self.assertIn('A'*40,self.page.locator('#titleSessionStatus').inner_text())
+        self.assertEqual(self.page.evaluate('__titleScopedWrites'), [])
 
     def test_motion_preference_persists_and_device_reduced_motion_is_respected(self):
         self.title();self.page.locator('#titleMotion').click()

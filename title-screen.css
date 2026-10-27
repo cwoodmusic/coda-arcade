@@ -16,3 +16,15 @@
 @media(max-height:500px) and (min-width:600px){.title-header{padding:4px 22px}.title-stage{grid-template-columns:minmax(0,1fr) minmax(300px,360px);gap:26px;padding:8px 22px;width:min(1000px,100%)}.title-intro{text-align:left}h1{align-items:flex-start}.title-coda{font-size:70px}.title-arcade{font-size:43px;margin-top:9px}.title-the,.title-eyebrow,.title-tagline,.title-adventures,.panel-note,.panel-topline,.panel-bottomline,.start-greeting{display:none}.start-panel{padding:14px 17px 8px}h2{font-size:23px;margin:0 0 12px}.start-actions{gap:10px}.start-button{min-height:62px;padding:10px 13px}.start-button strong{font-size:16px}.start-button small{font-size:11px;margin-top:1px}.start-hint{font-size:11px;line-height:1.4;margin:10px 0 2px}.teacher-link{min-height:44px;margin:0}.title-footer{padding:0 22px;font-size:9px}.arcade-grid{display:none}}
 @media(max-width:360px){.start-button{gap:9px;padding-inline:12px}.start-button .button-icon{flex-basis:22px;font-size:20px}.start-button strong{font-size:16px}.start-button small{font-size:11px}}
 @media(max-height:640px) and (max-width:599px){.title-header{padding:4px 16px}.title-stage{gap:16px;padding:6px 16px 12px}.title-the,.panel-topline,.start-greeting{display:none}.title-coda{font-size:48px}.title-arcade{font-size:30px}.start-panel{padding:14px 16px 0}h2{font-size:25px;margin:0 0 12px}.start-actions{gap:10px}.start-button{min-height:68px}.start-hint{font-size:11px;line-height:1.4;margin:12px 0 5px}.teacher-link{min-height:44px;margin-bottom:8px}.title-footer{padding:0 16px}}
+
+/* A read-only session hint; the arcade verifies the saved sign-in on entry. */
+.title-session-status{display:flex;align-items:center;justify-content:center;gap:9px;min-height:34px;margin:-10px 0 18px;padding:7px 10px;border:1px solid #9da4c65e;border-radius:7px;background:#17243a99;color:#dfd7ef;font:600 12px/1.4 system-ui,sans-serif;text-align:center;overflow-wrap:anywhere}
+.title-session-status::before{content:"";width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:#a6a3bc}
+.title-session-status[data-session-state="signed-in"]{border-color:#91e8ce88;color:#beffea;background:#193c4270}
+.title-session-status[data-session-state="signed-in"]::before{background:#a7ffe0;box-shadow:0 0 8px #80dfca66}
+.title-session-status[data-session-state="blocked"]{color:#ffe1b4;border-color:#e5c48b73}
+@media(max-width:760px){.title-session-status{margin:-8px 0 15px;font-size:12px}}
+@media(max-height:640px) and (max-width:599px){.title-session-status{min-height:30px;margin:0 0 12px;padding:5px 8px;font-size:11px}}
+@media(max-height:500px) and (min-width:600px){.title-session-status{margin:-3px 0 12px;min-height:30px;padding:5px 8px;font-size:11px}}
+
+.start-button strong{overflow-wrap:anywhere}

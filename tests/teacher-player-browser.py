@@ -213,17 +213,23 @@ class TeacherPlayerBrowserTests(unittest.TestCase):
         self.admin.wait_for_timeout(800)
         self.assertEqual(self.personal_cloud()['state'],saved)
 
-    def test_teacher_idle_saves_then_closes_the_personal_player(self):
+    def test_teacher_stays_signed_in_after_inactivity_and_refresh(self):
         self.seed()
         latest=self.local_player(self.admin,900,500)
         self.admin.evaluate('''()=>{
           window.fixtureNow=Date.now()+600001;
           for(const timer of fixtureTimers.filter(timer=>timer.delay===10000))timer.fn();
         }''')
-        self.admin.wait_for_function('!fixtureService.getState().admin.signedIn',timeout=6000)
-        self.assertIsNone(self.call(self.admin,'getState')['profile'])
-        self.assertFalse(self.call(self.admin,'isWritable'))
+        self.assertEqual(self.admin.evaluate('fixtureTimers.filter(timer=>timer.delay===10000).length'),0)
+        self.assertTrue(self.call(self.admin,'getState')['admin']['signedIn'])
+        self.assertTrue(self.call(self.admin,'isWritable'))
+        self.fire_autosave(self.admin)
         self.assertEqual(self.personal_cloud()['state']['data'],latest)
+        self.admin.reload();self.admin.wait_for_function('window.fixtureReady');self.start(self.admin)
+        self.assert_ok(self.call(self.admin,'resume'))
+        self.assertTrue(self.call(self.admin,'getState')['personal']['active'])
+        self.assertTrue(self.call(self.admin,'isWritable'))
+        self.assertEqual(self.current(self.admin),latest)
 
     def test_offline_teacher_recovery_survives_another_students_save(self):
         self.seed()

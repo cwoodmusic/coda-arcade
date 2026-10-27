@@ -48,8 +48,9 @@ Test mode now virtualizes its temporary browsing-context name as well as its
 stores, so reloading a preview cannot invalidate the real administrator's tab
 binding. Real Firebase Auth/Database emulator checks cover preserved teacher
 logins, repeated preview reloads, independent-tab rejection, student leaves,
-expired sessions and the return to the title screen. Session-only sign-in,
-idle limits and unsent-save recovery protections remain in place.
+expired sessions and the return to the title screen. Session-only sign-in and
+unsent-save recovery protections remain in place. Profiles stay signed in during
+inactivity; there is no automatic inactivity logout.
 
 ## Activation verification — 2026-10-25
 
@@ -95,6 +96,11 @@ runs only in a guest workspace; a bound classroom profile is not rewritten
 while its cloud progress is being restored. This prevents repeated identity
 reloads on the “Opening your profile” screen. Check the regression with
 `node tools/test-classroom-service.cjs --profile-open`.
+
+The title screen checks a remembered sign-in before displaying **Signed in**
+and **Continue as** the player nickname. This check reads authentication and
+profile metadata only; it does not load or overwrite progress, claim a workspace,
+or renew a student lease. Fresh guest visits do not load Firebase.
 
 The profile-restoration overlay is loading-only. Profile options are available
 from the game’s Settings and Profile UI. Failed restoration opens those options
@@ -251,9 +257,9 @@ per-device guessing rate limit.
    authorized deployed-site check. Guest play does not require credentials.
 
 Staff authorization belongs to the signed-in tab. Opening or copying another
-tab does not carry over that tab's school-admin authorization. The service signs
-staff out after ten minutes of inactivity; signing in again still requires the
-Google provider and current allowlist entry.
+tab does not carry over that tab's school-admin authorization. Staff and student
+profiles stay signed in during inactivity and page refreshes. An explicit
+teacher sign-in still requires the Google provider and current allowlist entry.
 
 ## Back up and merge rules before deployment
 
