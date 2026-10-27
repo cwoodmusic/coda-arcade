@@ -1,9 +1,9 @@
 /* Short classroom chapters: learn the basics first, then choose the next challenge. */
 (function(root,factory){
  const node=typeof module==='object'&&module.exports;
- const api=factory(node?require('./classroom-exam-curriculum.js'):root?.CodaExamCurriculum,node?require('./classroom-accidentals-lesson.js'):root?.CodaAccidentalsLesson);
+ const api=factory(node?require('./classroom-exam-curriculum.js'):root?.CodaExamCurriculum,node?require('./classroom-accidentals-lesson.js'):root?.CodaAccidentalsLesson,node?require('./final-exam-bank.js'):root?.CodaFinalExamBank,node?require('./classroom-understanding-basics.js'):root?.CodaUnderstandingBasics,node?require('./classroom-understanding-staff.js'):root?.CodaUnderstandingStaff);
  if(node)module.exports=api;if(root)root.CodaClassroomLearningPathsData=api;
-})(typeof window==='undefined'?null:window,function(curriculum,accidentals){
+})(typeof window==='undefined'?null:window,function(curriculum,accidentals,examBank,basicsChecks,staffChecks){
  'use strict';
  const copy=value=>JSON.parse(JSON.stringify(value));
  const freeze=value=>{if(value&&typeof value==='object'&&!Object.isFrozen(value)){Object.values(value).forEach(freeze);Object.freeze(value);}return value;};
@@ -15,14 +15,14 @@
  const EXTRA=freeze({
   'note-naming':[
    newCard('path-treble-clef','Meet the treble clef','A clef is the sign at the start of a staff. It helps us find the note names.','The treble clef curls around the second line from the bottom. That line is G. It is also called the G clef.','What does a clef help us find?',['The note names','The instrument’s colour','How loud to play'],0,'The clef is a guide to the note names.',clef('treble','clef')),
-   newCard('path-treble-lines-reminder','Learn the line reminder','For treble lines, remember Every Good Boy Does Fine. Read E G B D F from bottom to top.','Every is the bottom line E. Good is G. Boy is B. Does is D. Fine is the top line F.','Which way do we read the line reminder?',['Bottom to top','Top to bottom','Right to left'],0,'Start at the lowest line, then move upward.',clef('treble','lines')),
-   newCard('path-treble-spaces-reminder','Learn the space reminder','For treble spaces, remember FACE. Read F A C E from the bottom space to the top.','F is in the bottom space. A is in the next space. Then C. E is in the top space.','Does FACE help us name the lines or the spaces?',['The spaces','The lines','The bar lines'],0,'The gaps between the lines spell FACE from bottom to top.',clef('treble','spaces'))
+   newCard('path-treble-lines-reminder','Learn the line reminder','For treble lines, remember Every Good Boy Does Fine. Number the lines 1–5 from bottom to top: E G B D F.','Line 1: E (Every). Line 2: G (Good). Line 3: B (Boy). Line 4: D (Does). Line 5: F (Fine).','Which way do we read the line reminder?',['Bottom to top','Top to bottom','Right to left'],0,'Start at the lowest line, then move upward.',clef('treble','lines')),
+   newCard('path-treble-spaces-reminder','Learn the space reminder','For treble spaces, remember FACE. Number the spaces 1–4 from bottom to top: F A C E.','Space 1: F. Space 2: A. Space 3: C. Space 4: E.','Does FACE help us name the lines or the spaces?',['The spaces','The lines','The bar lines'],0,'The gaps between the lines spell FACE from bottom to top.',clef('treble','spaces'))
   ],
   'bass-clef':[
    newCard('path-bass-staff','Meet the staff','A staff has five lines and four spaces. We count them from the bottom to the top.','Point to the bottom line. Move upward through all five lines. The four gaps between the lines are called spaces.','How many lines does a staff have?',['5','4','7'],0,'Count the lines from the bottom: 1, 2, 3, 4, 5.',clef('bass','staff')),
    newCard('path-bass-clef','Meet the bass clef','The bass clef helps us read lower notes. Its two dots sit above and below the F line.','Find the sign at the start of this staff. The line between its dots is F. That is why we also call it the F clef.','What is the bass clef also called?',['The F clef','The G clef','The loud clef'],0,'Its two dots help you find F.',clef('bass','clef')),
-   newCard('path-bass-lines-reminder','Learn the bass line reminder','For bass lines, remember Great Big Dreams For America. Read G B D F A from bottom to top.','Great is the bottom line G. Big is B. Dreams is D. For is F. America is the top line A.','Which way do we read this bass line reminder?',['Bottom to top','Top to bottom','Right to left'],0,'Start at the lowest line and move upward.',clef('bass','lines')),
-   newCard('path-bass-spaces-reminder','Learn the bass space reminder','For bass spaces, remember All Cows Eat Grass. Read A C E G from bottom to top.','All is the bottom space A. Cows is C. Eat is E. Grass is the top space G.','Does All Cows Eat Grass name bass lines or bass spaces?',['The spaces','The lines','The bar lines'],0,'This reminder names the spaces between the lines.',clef('bass','spaces'))
+   newCard('path-bass-lines-reminder','Learn the bass line reminder','For bass lines, remember Great Big Dreams For America. Number the lines 1–5 from bottom to top: G B D F A.','Line 1: G (Great). Line 2: B (Big). Line 3: D (Dreams). Line 4: F (For). Line 5: A (America).','Which way do we read this bass line reminder?',['Bottom to top','Top to bottom','Right to left'],0,'Start at the lowest line and move upward.',clef('bass','lines')),
+   newCard('path-bass-spaces-reminder','Learn the bass space reminder','For bass spaces, remember All Cows Eat Grass. Number the spaces 1–4 from bottom to top: A C E G.','Space 1: A (All). Space 2: C (Cows). Space 3: E (Eat). Space 4: G (Grass).','Does All Cows Eat Grass name bass lines or bass spaces?',['The spaces','The lines','The bar lines'],0,'This reminder names the spaces between the lines.',clef('bass','spaces'))
   ],
   'rhythm-tree':[
    newCard('path-note-head','Find the notehead','The notehead is the round part of a note. It can be filled in or hollow.','Point to the round part at the bottom of this note. That is its notehead. It is different from the tall line.','Which part is the notehead?',['The round part','The tall line','The curved flag'],0,'Head means the round part.',parts('head')),
@@ -132,13 +132,25 @@
  const CATEGORIES=freeze(DEFINITIONS.map(({id,title,intro})=>({id,title,intro})));
  const definition=id=>DEFINITIONS.find(value=>value.id===id)||null;
  const MAP_VISUALS=freeze({'treble-all-lines':clef('treble','lines'),'treble-all-spaces':clef('treble','spaces'),'bass-all-lines':clef('bass','lines'),'bass-all-spaces':clef('bass','spaces')});
+ const ORDINALS={first:1,second:2,third:3,fourth:4,fifth:5};
+ function numberedStaffText(value){
+  return String(value).replace(/\b(first|second|third|fourth|fifth)\s+((?:treble|bass|upper|lower)\s+)?(line|space)(?:\s+from\s+the\s+bottom)?/gi,(_,ordinal,clef,kind)=>(clef||'')+(kind.toLowerCase()==='line'?'Line ':'Space ')+ORDINALS[ordinal.toLowerCase()])
+   .replace(/\b(first|second|third|fourth|fifth),?\s+or\s+(?:the\s+)?(?:top|bottom|middle),?\s+(line|space)/gi,(_,ordinal,kind)=>(kind.toLowerCase()==='line'?'Line ':'Space ')+ORDINALS[ordinal.toLowerCase()])
+   .replace(/\b(bottom|middle|top)[ -](treble[ -]|bass[ -])?(line|space)\b/gi,(_,where,clef,kind)=>(clef||'').replace('-',' ')+(kind.toLowerCase()==='line'?'Line ':'Space ')+(where.toLowerCase()==='bottom'?1:where.toLowerCase()==='middle'?3:kind.toLowerCase()==='line'?5:4))
+   .replace(/\b(line|space)\s+([1-5])\s+from\s+the\s+bottom\b/gi,(_,kind,n)=>(kind.toLowerCase()==='line'?'Line ':'Space ')+n);
+ }
+ function numberStaffCard(card,lessonId){
+  if(!['note-naming','bass-clef','grand-staff'].includes(lessonId))return card;
+  for(const key of ['teach','example','prompt','hint'])if(typeof card[key]==='string')card[key]=numberedStaffText(card[key]);
+  card.answers=card.answers.map(numberedStaffText);return card;
+ }
  function defaultPool(id){
   return [...(id===accidentals?.ID?accidentals.CARDS:curriculum?.forLesson?.(id)||[]),...(EXTRA[id]||[])].map(source=>{
    const card=copy(source);if(MAP_VISUALS[card.id])card.visual=copy(MAP_VISUALS[card.id]);
    // These introductory meter examples use only values taught in basic rhythm.
    if(card.id==='time-signatures-two-four')card.example='Count ONE, two | ONE, two. Two quarter notes fill one bar. Four eighth notes fill the same time.';
    if(card.id==='time-signatures-four-four')card.example='Count ONE, two, three, four. Two halves fill one bar: 2 + 2 = 4. Eight eighth notes fill the same time.';
-   return card;
+   return numberStaffCard(card,id);
   });
  }
  function getCards(id){
@@ -146,12 +158,33 @@
   const byId=new Map(defaultPool(id).map(card=>[card.id,card]));
   return model.sections.flatMap(section=>section.ids.flatMap(id=>byId.has(id)?[copy(byId.get(id))]:[]));
  }
+ const questionById=new Map((examBank?.QUESTIONS||[]).map(question=>[question.id,question]));
+ const supplemental={...(basicsChecks?.CHECKS||{}),...(staffChecks?.CHECKS||{})};
+ function getChecks(lessonId,card){
+  const base=copy(card),original=getCards(lessonId).find(value=>value.id===card?.id);
+  // Teacher-written or edited steps keep their own check. Never append material
+  // merely because an authored card reused a built-in identifier.
+  if(!original||['teach','example','prompt','answers','correct','hint','visual'].some(key=>JSON.stringify(base[key]??null)!==JSON.stringify(original[key]??null)))return [base];
+  const candidates=supplemental[base.id]||((base.covers||[]).map(id=>questionById.get(id)).filter(Boolean).map(question=>({prompt:question.prompt,answers:question.choices.map(choice=>choice.text),correct:question.choices.findIndex(choice=>choice.id===question.answer),hint:question.explanation,visual:question.stimulus?copy(question.stimulus):undefined})));
+  const result=[base],seen=new Set();
+  const signature=question=>JSON.stringify([question.prompt.trim().toLowerCase(),question.answers[question.correct].trim().toLowerCase(),/highlighted|shown|this|these/i.test(question.prompt)?question.visual||null:null]);
+  seen.add(signature(base));
+  const basicRhythm=lessonId==='rhythm-tree'&&definition(lessonId).sections.some(section=>section.tier==='basic'&&section.ids.includes(base.id));
+  for(const source of candidates){
+   const check=copy(source);numberStaffCard(check,lessonId);
+   if(basicRhythm&&/sixteenth|16th|dotted|1 e & a/i.test(JSON.stringify(check)))continue;
+   const key=signature(check);if(seen.has(key))continue;seen.add(key);result.push(check);if(result.length===3)break;
+  }
+  return result;
+ }
  function quizFor(category){
   const basicCards=category.sections.filter(section=>section.tier==='basic').flatMap(section=>section.cards);
   // Pick from across the whole basic path, rather than quizzing only its first lesson.
   const count=Math.min(5,basicCards.length),picked=[];
   for(let index=0;index<count;index++){const at=count===1?0:Math.round(index*(basicCards.length-1)/(count-1));picked.push(basicCards[at]);}
-  return {version:1,title:category.title+' — Basics quiz',custom:true,passScore:Math.ceil(count*.8),questions:picked.map(card=>({id:'basics-'+card.id,prompt:card.prompt,answers:copy(card.answers),correct:card.correct,explanation:card.hint,visual:card.visual?copy(card.visual):null}))};
+  const questions=picked.map(card=>({id:'basics-'+card.id,prompt:card.prompt,answers:copy(card.answers),correct:card.correct,explanation:card.hint,visual:card.visual?copy(card.visual):null}));
+  const questionPools=picked.map((card,index)=>getChecks(category.id,card).filter(check=>check.answers.length===questions[index].answers.length).map((check,at)=>({id:at===0?questions[index].id:questions[index].id+'-check-'+(at+1),prompt:check.prompt,answers:copy(check.answers),correct:check.correct,explanation:check.hint,visual:check.visual?copy(check.visual):null})));
+  return {version:1,title:category.title+' — Basics quiz',custom:true,passScore:Math.ceil(count*.8),questions,questionPools};
  }
  function getCategory(id,options={}){
   const model=definition(id);if(!model)return null;
@@ -172,5 +205,5 @@
   }
   return {ok:errors.length===0,errors};
  }
- return Object.freeze({CATEGORIES,DEFINITIONS,EXTRA,getCards,getCategory,basicsQuiz,validate});
+ return Object.freeze({CATEGORIES,DEFINITIONS,EXTRA,getCards,getCategory,getChecks,numberedStaffText,basicsQuiz,validate});
 });

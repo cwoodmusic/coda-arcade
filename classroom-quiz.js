@@ -1,10 +1,12 @@
 /* Short classroom checks. The lesson controller owns completion and XP. */
 (function(root,factory){
  const notation=typeof module==='object'&&module.exports?require('./music-notation.js'):root?.CodaMusicNotation;
- const api=factory(notation);if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaClassroomQuiz=api;
-})(typeof window==='undefined'?null:window,function(notation){
+ const pools=typeof module==='object'&&module.exports?require('./classroom-quiz-pool.js'):root?.CodaClassroomQuizPool;
+ const api=factory(notation,pools);if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaClassroomQuiz=api;
+})(typeof window==='undefined'?null:window,function(notation,poolModule){
  'use strict';
  const KEY='codaClassroomQuizzesV1',CUSTOM_KEY='codaAuthoredQuizzesV1',VERSION=1,PASS_SCORE=4;
+ const ATTEMPT_KEY='codaClassroomQuizAttemptsV1';
  const quiz=(title,questions)=>Object.freeze({version:VERSION,title,passScore:PASS_SCORE,questions:Object.freeze(questions.map(item=>Object.freeze({...item,answers:Object.freeze(item.answers),visual:item.visual?Object.freeze(item.visual):null,answerNotes:item.answerNotes?Object.freeze(item.answerNotes.map(notes=>Object.freeze(notes))):null})))});
  const QUIZZES=Object.freeze({
   'note-naming':quiz('Note names',[
@@ -81,6 +83,7 @@
   return '<svg class="lesson-staff coda-notated-staff lesson-grand-staff" viewBox="0 0 340 290" role="img" aria-label="'+xml(options.label||'Grand staff: treble above bass. Read the purple notehead.')+'"><rect x="1" y="1" width="338" height="288" rx="12" fill="#f9f2df"/><path d="M17 45C4 45 16 115 7 133C3 141 3 149 7 157C16 175 4 245 17 245M22 45V245M320 45V245" fill="none" stroke="#5f526d" stroke-width="2"/>'+inner('treble')+inner('bass')+'</svg>';
  }
  const copy=value=>JSON.parse(JSON.stringify(value));
+ const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
  const scoreFor=(id,answers)=>!QUIZZES[id]||!Array.isArray(answers)?0:QUIZZES[id].questions.reduce((score,item,index)=>score+(answers[index]===item.correct?1:0),0);
  function cleanAnswers(id,answers){
   const questions=QUIZZES[id].questions,result=[];if(!Array.isArray(answers))return result;
@@ -131,7 +134,7 @@
   function restart(){if(!canRecord())return getState();record.index=0;record.answers=[];record.completedAt=0;save();return getState();}
   return {getState,answer,next,restart,save};
  }
- function createSession(api={}){
+ function createLegacySession(api={}){
   const lessonId=api.lessonId,model=authoredModel(api),supplemental=lessonId==='accidentals-key-signatures'&&model?.custom===true;if((!QUIZZES[lessonId]&&!supplemental)||!model)throw Error('Choose a known classroom quiz.');
   const canRecord=contentGuard(api);
   if(model.custom===true||api.custom===true)return createAuthoredSession({...api,canRecord},model);
@@ -151,6 +154,88 @@
   function next(){if(!canRecord()||record.index>=model.questions.length||record.answers.length<=record.index)return false;record.index++;save();return true;}
   function restart(){if(!canRecord())return getState();record.index=0;record.answers=[];record.completedAt=0;save();return getState();}
   return{getState,answer,next,restart,save};
+ }
+ function createSession(api={}){
+  const model=authoredModel(api);
+  if(api.randomize===false||!model?.questions?.length)return createLegacySession(api);
+  const legacy=createLegacySession(api),lessonId=api.lessonId,custom=model.custom===true||api.custom===true;
+  const storage=resolveStorage(api.storage),attemptStorage=resolveStorage(api.attemptStorage===undefined?storage:api.attemptStorage);
+  const canRecord=contentGuard(api),total=model.questions.length,passScore=Math.ceil(total*.8),officialKey=custom?CUSTOM_KEY:KEY;
+  const revision=api.contentRevision||model.revision||'built-in-v1';
+  const pools=poolModule?.poolsFor(lessonId,model)||model.questions.map(question=>[copy(question)]);
+  const hash=value=>{let n=2166136261;for(const char of value)n=Math.imul(n^char.charCodeAt(0),16777619);return(n>>>0).toString(16);};
+  const poolRevision=hash(JSON.stringify([revision,pools])),attemptId=lessonId+':'+poolRevision;
+  let random=api.random||Math.random;
+  if(api.seed!==undefined){let seed=2166136261;for(const char of String(api.seed))seed=Math.imul(seed^char.charCodeAt(0),16777619);random=()=>{seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;return(seed>>>0)/4294967296;};}
+  const roll=()=>{const n=random();return Number.isFinite(n)?Math.max(0,Math.min(.999999999,n)):0;};
+  const shuffled=values=>{const result=values.slice();for(let i=result.length-1;i>0;i--){const j=Math.floor(roll()*(i+1));[result[i],result[j]]=[result[j],result[i]];}return result;};
+  let attempt,expectedAttempt='null',expectedOfficial='null',saved=true,error='',bestScore=legacy.getState().bestScore;
+  function officialJournal(){const raw=storage?.getItem?.(officialKey);if(raw===null||raw===undefined)return{version:1,quizzes:{}};const value=JSON.parse(raw);if(!object(value)||value.version!==1||!object(value.quizzes))throw Error('Your saved quiz could not reopen.');return value;}
+  function localJournal(){const raw=attemptStorage?.getItem?.(ATTEMPT_KEY);if(raw===null||raw===undefined)return{version:1,attempts:{}};const value=JSON.parse(raw);if(!object(value)||value.version!==1||!object(value.attempts))throw Error('Your saved quiz attempt could not reopen.');return value;}
+  const permutation=(values,length)=>Array.isArray(values)&&values.length===length&&new Set(values).size===length&&values.every(value=>Number.isInteger(value)&&value>=0&&value<length);
+  function validAttempt(value){
+   if(!object(value)||value.revision!==poolRevision||!permutation(value.order,total)||!Array.isArray(value.ids)||value.ids.length!==total||!Array.isArray(value.choices)||value.choices.length!==total||!Array.isArray(value.answers)||value.answers.length!==total||!Number.isInteger(value.index)||value.index<0||value.index>total)return false;
+   for(let slot=0;slot<total;slot++){
+    const question=pools[slot].find(item=>item.id===value.ids[slot]);if(!question||!permutation(value.choices[slot],question.answers.length))return false;
+    const answer=value.answers[slot];if(answer!==null&&(!Number.isInteger(answer)||answer<0||answer>=question.answers.length))return false;
+   }
+   for(let i=0;i<total;i++){const answered=value.answers[value.order[i]]!==null;if(i<value.index&&!answered||i>value.index&&answered)return false;}
+   return Number.isSafeInteger(value.completedAt)&&value.completedAt>=0;
+  }
+  function fresh(){return{revision:poolRevision,index:0,order:shuffled(Array.from({length:total},(_,i)=>i)),ids:pools.map(pool=>pool[Math.floor(roll()*pool.length)].id),choices:pools.map(pool=>shuffled(Array.from({length:pool[0].answers.length},(_,i)=>i))),answers:Array(total).fill(null),completedAt:0};}
+  function question(){if(attempt.index>=total)return null;const slot=attempt.order[attempt.index];return copy(pools[slot].find(item=>item.id===attempt.ids[slot]));}
+  function score(){return attempt.answers.reduce((sum,answer,slot)=>sum+(answer!==null&&answer===pools[slot][0].correct?1:0),0);}
+  function getState(){
+   const finished=attempt.answers.every(answer=>answer!==null),slot=attempt.order[attempt.index],answers=[];
+   for(const index of attempt.order){if(attempt.answers[index]===null)break;answers.push(attempt.answers[index]);}
+   return{lessonId,index:attempt.index,total,passScore,answers,score:score(),finished,phase:attempt.index>=total?'result':'question',passed:finished&&score()>=passScore,saved,error,bestScore,bankVersion:model.version,...(custom?{custom:true,contentRevision:revision}:{}),randomized:true,slotIndex:slot??null,question:question(),questionIds:attempt.order.map(index=>attempt.ids[index]),questionOrder:[...attempt.order],answerOrder:slot===undefined?[]:[...attempt.choices[slot]]};
+  }
+  try{
+   expectedOfficial=JSON.stringify(officialJournal().quizzes[lessonId]??null);
+   const entry=localJournal().attempts[attemptId];expectedAttempt=JSON.stringify(entry??null);
+   if(validAttempt(entry))attempt=copy(entry);
+   else{
+    attempt=fresh();const old=legacy.getState();
+    // Historical records have no question IDs. Their original questions are
+    // known, so reopen that exact legacy assessment instead of inventing text.
+    if(old.answers.length){attempt.order=Array.from({length:total},(_,i)=>i);attempt.ids=model.questions.map(item=>item.id);attempt.choices=model.questions.map(item=>item.answers.map((_,i)=>i));attempt.answers=model.questions.map((_,i)=>old.answers[i]??null);attempt.index=old.index;attempt.completedAt=old.finished?Math.max(1,Date.now()):0;}
+   }
+  }catch(failure){attempt=fresh();saved=false;error=failure.message||'Your quiz could not reopen.';}
+  function save(){
+   if(!canRecord()){saved=false;error='Your profile or classroom content changed. Reopen the lesson before continuing.';return false;}
+   try{
+    if(!attemptStorage?.setItem||!storage?.getItem)throw Error('This device cannot save the quiz.');
+    const local=localJournal();if(JSON.stringify(local.attempts[attemptId]??null)!==expectedAttempt)throw Error('Your saved attempt changed. Reopen the lesson.');
+    const official=officialJournal();if(JSON.stringify(official.quizzes[lessonId]??null)!==expectedOfficial)throw Error('Your saved quiz changed. Reopen the lesson.');
+    local.attempts[attemptId]=copy(attempt);const proof=JSON.stringify(local.attempts[attemptId]);attemptStorage.setItem(ATTEMPT_KEY,JSON.stringify(local));expectedAttempt=proof;
+    if(attempt.answers.every(answer=>answer!==null)){
+     if(!canRecord()||JSON.stringify(localJournal().attempts[attemptId]??null)!==expectedAttempt||JSON.stringify(officialJournal().quizzes[lessonId]??null)!==expectedOfficial)throw Error('Your player changed before the quiz saved.');
+     const previous=custom?official.quizzes[lessonId]?.record:official.quizzes[lessonId],previousBest=Array.isArray(previous?.bestAnswers)?previous.bestAnswers:[];
+     const grade=answers=>model.questions.reduce((sum,item,i)=>sum+(answers[i]===item.correct?1:0),0);
+     const best=previousBest.length===total&&grade(previousBest)>score()?previousBest:attempt.answers;
+     const record={bankVersion:model.version,index:total,answers:[...attempt.answers],bestAnswers:[...best],completedAt:attempt.completedAt};
+     official.quizzes[lessonId]=custom?{...official.quizzes[lessonId],revision,record}:record;
+     storage.setItem(officialKey,JSON.stringify(official));expectedOfficial=JSON.stringify(official.quizzes[lessonId]);bestScore=grade(best);
+    }
+    saved=true;error='';return true;
+   }catch(failure){saved=false;error=failure.message||'Your quiz result could not save. Keep it open and try again.';return false;}
+  }
+  function answer(index){
+   const item=question(),slot=attempt.order[attempt.index];if(!canRecord()||!item||attempt.answers[slot]!==null||!Number.isInteger(index)||index<0||index>=item.answers.length)return false;
+   attempt.answers[slot]=index;if(attempt.answers.every(value=>value!==null))attempt.completedAt=Math.max(1,Date.now());save();return true;
+  }
+  function next(){const slot=attempt.order[attempt.index];if(!canRecord()||attempt.index>=total||attempt.answers[slot]===null)return false;attempt.index++;save();return true;}
+  function restart(){
+   if(!canRecord())return getState();const previous=JSON.stringify([attempt.order,attempt.ids,attempt.choices]),previousIds=[...attempt.ids];
+   attempt=fresh();
+   if(attempt.ids.every((id,index)=>id===previousIds[index])){
+    const slot=pools.findIndex(items=>items.length>1);
+    if(slot>=0){const index=pools[slot].findIndex(item=>item.id===attempt.ids[slot]);attempt.ids[slot]=pools[slot][(index+1)%pools[slot].length].id;}
+   }
+   if(JSON.stringify([attempt.order,attempt.ids,attempt.choices])===previous&&total>1)attempt.order.reverse();save();return getState();
+  }
+  if(saved)save();
+  return{getState,question,answer,next,restart,save};
  }
  function create(api={}){
   const host=api.host;if(!host)throw Error('A classroom quiz needs a host.');
@@ -196,12 +281,12 @@
    const topline=element('div','classroom-quiz-topline');topline.append(element('span','','Little quiz'),element('span','',state.phase==='result'?'Finished':(state.index+1)+' / '+state.total));panel.append(topline);
    const progress=element('progress');progress.max=state.total;progress.value=state.answers.length;progress.setAttribute('aria-label','Quiz questions answered');panel.append(progress);
    if(state.phase==='result'){renderResult(panel,state);return;}
-   const question=model.questions[state.index],answered=state.answers.length>state.index;
+   const question=state.question||model.questions[state.index],answered=state.answers.length>state.index;
    const correct=answered&&state.answers[state.index]===question.correct;
    const heading=element('h3','classroom-quiz-question',answered?(correct?'Yes!':'Let’s learn this one.'):question.prompt);heading.tabIndex=-1;panel.append(heading);visual(panel,question.visual);
    if(!answered){
     const answers=element('div','classroom-quiz-answers');answers.setAttribute('role','group');answers.setAttribute('aria-label','Choose one answer');
-    question.answers.forEach((text,index)=>{const choose=button(text,()=>{if(!session.answer(index))return;render();target.querySelector('[data-quiz-next]')?.focus({preventScroll:true});});choose.dataset.quizAnswer=index;if(question.answerNotes?.[index]){choose.setAttribute('aria-label',text);choose.textContent='';const group=element('span','classroom-quiz-choice-notes');group.setAttribute('aria-hidden','true');group.innerHTML=question.answerNotes[index].map(beats=>notation.glyphSVG(beats)).join('');choose.append(group);}answers.append(choose);});panel.append(answers);saveHelp(panel,state);return;
+    (state.answerOrder||question.answers.map((_,i)=>i)).forEach(index=>{const text=question.answers[index],choose=button(text,()=>{if(!session.answer(index))return;render();target.querySelector('[data-quiz-next]')?.focus({preventScroll:true});});choose.dataset.quizAnswer=index;if(question.answerNotes?.[index]){choose.setAttribute('aria-label',text);choose.textContent='';const group=element('span','classroom-quiz-choice-notes');group.setAttribute('aria-hidden','true');group.innerHTML=question.answerNotes[index].map(beats=>notation.glyphSVG(beats)).join('');choose.append(group);}answers.append(choose);});panel.append(answers);saveHelp(panel,state);return;
    }
    const feedback=element('p','classroom-quiz-feedback',correct?question.explanation:question.answers[question.correct]+'. '+question.explanation);feedback.setAttribute('role','status');feedback.setAttribute('aria-live','polite');feedback.dataset.correct=String(correct);panel.append(feedback);saveHelp(panel,state);
    panel.append(button(state.index===state.total-1?'See my stars':'Next',()=>{if(!session.next())return;render();focusQuestion();},'data-quiz-next'));
@@ -209,5 +294,5 @@
   }
   return{render,restart(){reported=false;return session.restart();},getState:session.getState,destroy(){destroyed=true;}};
  }
- return{KEY,CUSTOM_KEY,VERSION,PASS_SCORE,QUIZZES,scoreFor,normalize,staffSVG,createSession,create};
+ return{KEY,CUSTOM_KEY,ATTEMPT_KEY,VERSION,PASS_SCORE,QUIZZES,scoreFor,normalize,staffSVG,createSession,create};
 });

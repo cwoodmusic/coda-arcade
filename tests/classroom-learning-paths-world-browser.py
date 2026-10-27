@@ -70,12 +70,16 @@ class ClassroomLearningPathsWorldTests(_world.WorldBrowserCase):
             self.assertIn(card['example'], panel.inner_text())
             self.assertEqual(self.page.locator('[data-quiz-answer]').count(), 0)
             panel.locator('[data-study-try]').click()
-            if wrong:
-                panel.locator('[data-study-answer="' + str((card['correct'] + 1) % len(card['answers'])) + '"]').click()
-                self.assertEqual(panel.locator('[data-study-next]').count(), 0)
-                self.assertIn(card['hint'], panel.inner_text())
-            panel.locator('[data-study-answer="' + str(card['correct']) + '"]').click()
-            panel.locator('[data-study-next]').click()
+            checks=self.page.evaluate('({lesson,card})=>CodaClassroomLearningPathsData.getChecks(lesson,card)',{'lesson':lesson,'card':card})
+            for index,check in enumerate(checks):
+                if len(checks)>1:
+                    self.assertEqual(panel.locator('[data-study-check]').inner_text(),'Check '+str(index+1)+' of '+str(len(checks)))
+                if wrong:
+                    panel.locator('[data-study-answer="' + str((check['correct'] + 1) % len(check['answers'])) + '"]').click()
+                    self.assertEqual(panel.locator('[data-study-next]').count(), 0)
+                    self.assertIn(check['hint'], panel.inner_text())
+                panel.locator('[data-study-answer="' + str(check['correct']) + '"]').click()
+                panel.locator('[data-study-next]').click()
         self.assertEqual(self.path_state()['phase'], 'menu')
         self.assertTrue(next(item for item in self.path_state()['sections']
                              if item['id'] == section_id)['completed'])
@@ -83,7 +87,9 @@ class ClassroomLearningPathsWorldTests(_world.WorldBrowserCase):
     def finish_basics_quiz(self, lesson):
         self.page.locator('[data-path-quiz="basic"]').click()
         questions = self.category(lesson)['basicsQuiz']['questions']
-        for question in questions:
+        while self.path_state()['quiz']['phase']=='question':
+            state=self.path_state()['quiz']
+            question=state.get('question') or questions[state['index']]
             self.assertEqual(self.page.locator('.classroom-quiz-question').inner_text(), question['prompt'])
             self.page.locator('[data-quiz-answer="' + str(question['correct']) + '"]').click()
             self.page.locator('[data-quiz-next]').click()
@@ -243,7 +249,9 @@ class ClassroomLearningPathsWorldTests(_world.WorldBrowserCase):
         self.assertEqual(self.xp(), 0)
         self.page.locator('[data-path-quiz="full"]').click()
         model = self.page.evaluate('CodaEducationContent.getQuiz("dynamics")')
-        for question in model['questions']:
+        while self.path_state()['quiz']['phase']=='question':
+            state=self.path_state()['quiz']
+            question=state.get('question') or model['questions'][state['index']]
             self.page.locator('[data-quiz-answer="' + str(question['correct']) + '"]').click()
             self.page.locator('[data-quiz-next]').click()
         self.assertEqual(self.xp(), 0, 'A quiz result waits for the child to finish the lesson')

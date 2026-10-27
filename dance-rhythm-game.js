@@ -49,6 +49,7 @@
   }
   function header(title){const top=node('header','dance-rhythm-heading');top.append(node('h2','',title),button('×',()=>close('exit'),'close'));top.querySelector('button').setAttribute('aria-label','Exit dance game');host.append(top);}
   function renderMenu(){
+   host.classList.remove('is-playing');
    phase='menu';state=null;engine?.destroy();engine=null;stopAudio();win.cancelAnimationFrame(frame);host.replaceChildren();header('DJ line dance');
    host.append(node('p','dance-rhythm-help','Press the matching arrow when its note reaches the glowing line. Tap once for each note.'));
    const choices=node('div','dance-rhythm-modes');for(const option of MODES){const choice=button('',()=>start(option.id),'mode',option.id);choice.append(node('strong','',option.title),node('span','',option.help));choices.append(choice);}host.append(choices);
@@ -56,16 +57,19 @@
    changed();host.querySelector('[data-dance-mode]')?.focus({preventScroll:true});position();
   }
   function renderGame(){
+   host.classList.add('is-playing');
    host.replaceChildren();header('DJ line dance');const line=node('div','dance-rhythm-stats');scoreText=node('span','','Score 0');beatText=node('span','','8 bars');line.append(scoreText,beatText);host.append(line);
    const score=node('div','dance-rhythm-score');canvas=node('canvas','dance-rhythm-staff');canvas.width=680;canvas.height=177;canvas.setAttribute('role','img');canvas.setAttribute('aria-label','Rhythm notes and direction arrows scroll left toward the glowing line.');ctx=canvas.getContext('2d');score.append(canvas);countText=node('div','dance-rhythm-count');countText.setAttribute('aria-live','off');score.append(countText);host.append(score);
    const bottom=node('div','dance-rhythm-status');feedbackText=node('p','dance-rhythm-feedback','Get ready…');feedbackText.setAttribute('role','status');progress=node('progress');progress.max=32;progress.value=0;progress.setAttribute('aria-label','Dance progress');bottom.append(feedbackText,progress);host.append(bottom);
    const settings=node('div','dance-rhythm-options'),label=node('label'),toggle=node('input');toggle.type='checkbox';toggle.checked=music;toggle.dataset.danceMusic='';toggle.onchange=()=>{music=toggle.checked;if(master)master.gain.setTargetAtTime(music?.7:0,audio.currentTime,.025);changed();};label.append(toggle,doc.createTextNode('Music & beat'));settings.append(label);host.append(settings);
    const controls=node('div','dance-rhythm-controls');controls.setAttribute('role','group');controls.setAttribute('aria-label','Dance arrows');
-   for(const direction of ['left','down','up','right']){const control=button(ARROWS[direction],null,'arrow',direction);control.setAttribute('aria-label',direction+' dance step');control.addEventListener('pointerdown',event=>{if(event.button!==0)return;event.preventDefault();lastPointer={id:event.pointerId,direction};control.setPointerCapture?.(event.pointerId);control.classList.add('is-pressed');input(direction);});for(const type of ['pointerup','pointercancel','lostpointercapture'])control.addEventListener(type,()=>{control.classList.remove('is-pressed');lastPointer=null;});controls.append(control);}host.append(controls);
+   for(const direction of ['up','left','right','down']){const control=button(ARROWS[direction],null,'arrow',direction);control.setAttribute('aria-label',direction+' dance step');control.addEventListener('pointerdown',event=>{if(event.button!==0)return;event.preventDefault();lastPointer={id:event.pointerId,direction};control.setPointerCapture?.(event.pointerId);control.classList.add('is-pressed');input(direction);});for(const type of ['pointerup','pointercancel','lostpointercapture'])control.addEventListener(type,()=>{control.classList.remove('is-pressed');lastPointer=null;});controls.append(control);}host.append(controls);
    notation?.load?.(doc);position();
   }
   function position(){
    if(!opened)return;host.style.removeProperty('left');host.style.removeProperty('top');host.style.removeProperty('transform');
+   // Keep the play panel stable while the camera fits dancers below it.
+   if(phase!=='menu'){host.style.top='8px';return;}
    const anchor=api.getAnchor?.();if(!anchor||!Number.isFinite(anchor.x)||!Number.isFinite(anchor.y))return;
    const rect=host.getBoundingClientRect(),width=rect.width,height=rect.height,left=clamp(anchor.x-width/2,8,Math.max(8,win.innerWidth-width-8));
    host.style.left=left+'px';host.style.top=clamp(anchor.y-height-14,8,Math.max(8,win.innerHeight-height-8))+'px';host.style.transform='none';
@@ -118,6 +122,7 @@
    scheduleAudio(now);updateStatus();draw();position();frame=win.requestAnimationFrame(tick);
   }
   function finish(){
+   host.classList.remove('is-playing');
    if(finished||!opened)return;finished=true;phase='result';state=engine.getState();win.cancelAnimationFrame(frame);stopAudio();held.clear();win.clearTimeout(feedbackTimer);host.replaceChildren();header('Dance complete!');
    const accuracy=Math.round((state.accuracy||0)*100);host.append(node('p','dance-rhythm-result',state.misses===0?'Perfect dance!':accuracy>=80?'Great dancing!':'Keep practising—you can do it!'));
    host.append(node('p','dance-rhythm-help','Score '+state.score+' · '+state.hits+' steps right · '+accuracy+'% · Best streak '+state.bestStreak));
@@ -144,7 +149,7 @@
   function contextmenu(event){if(opened){event.preventDefault();event.stopPropagation();}}
   function visibility(){if(doc.hidden)blur();}
   doc.addEventListener('keydown',keydown,true);doc.addEventListener('keyup',keyup,true);doc.addEventListener('visibilitychange',visibility);win.addEventListener('blur',blur);win.addEventListener('resize',position);host.addEventListener('contextmenu',contextmenu);host.addEventListener('dragstart',contextmenu);
-  return {open,start,input,close,getState,reposition:position,destroy(){if(destroyed)return;close('destroyed');destroyed=true;doc.removeEventListener('keydown',keydown,true);doc.removeEventListener('keyup',keyup,true);doc.removeEventListener('visibilitychange',visibility);win.removeEventListener('blur',blur);win.removeEventListener('resize',position);host.removeEventListener('contextmenu',contextmenu);host.removeEventListener('dragstart',contextmenu);if(ownHost)host.remove();}};
+  return {open,start,input,close,getState,getBounds:()=>opened?host.getBoundingClientRect():null,reposition:position,destroy(){if(destroyed)return;close('destroyed');destroyed=true;doc.removeEventListener('keydown',keydown,true);doc.removeEventListener('keyup',keyup,true);doc.removeEventListener('visibilitychange',visibility);win.removeEventListener('blur',blur);win.removeEventListener('resize',position);host.removeEventListener('contextmenu',contextmenu);host.removeEventListener('dragstart',contextmenu);if(ownHost)host.remove();}};
  }
  return Object.freeze({ARROWS,DIRECTIONS,MODES,create});
 });

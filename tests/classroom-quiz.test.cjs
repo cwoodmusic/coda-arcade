@@ -15,7 +15,7 @@ function disk(){
  const values=new Map();
  return {values,fail:false,getItem:key=>values.get(key)||null,setItem(key,value){if(this.fail)throw Error('quota');values.set(key,value);}};
 }
-function session(lessonId='note-naming',storage=disk()){return quiz.createSession({lessonId,storage});}
+function session(lessonId='note-naming',storage=disk()){return quiz.createSession({lessonId,storage,randomize:false});}
 function finish(game,answers){for(const answer of answers){game.answer(answer);game.next();}return game.getState();}
 function stored(lessonId,record){return {version:1,quizzes:{[lessonId]:{bankVersion:1,answers:[],index:0,bestAnswers:[],...record}}};}
 

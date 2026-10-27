@@ -82,7 +82,7 @@ test('author drafts round trip separately from all student progress and unchange
 test('an authored quiz grades changed answer text and 2–6 choices without rewriting canonical proof',()=>{
  const storage=disk(),model={custom:true,revision:'custom-quiz',version:1,title:'A new quiz',questions:[{id:'q1',prompt:'First',answers:['A','B'],correct:1},{id:'q2',prompt:'Second',answers:['A','B','C','D','E','F'],correct:5},{id:'q3',prompt:'Third',answers:['C','D'],correct:0}]};
  const canonical='{"version":1,"quizzes":{}}';storage.setItem(quiz.KEY,canonical);
- const session=quiz.createSession({lessonId:'tempo',storage,model});for(const answer of [1,5,0]){assert.equal(session.answer(answer),true);assert.equal(session.next(),true);}
+ const session=quiz.createSession({lessonId:'tempo',storage,model});for(let i=0;i<3;i++){assert.equal(session.answer(session.getState().question.correct),true);assert.equal(session.next(),true);}
  assert.equal(session.getState().passed,true);assert.equal(session.getState().score,3);assert.equal(session.getState().passScore,3);assert.equal(session.getState().custom,true);assert.equal(storage.getItem(quiz.KEY),canonical);
  const reopened=quiz.createSession({lessonId:'tempo',storage,model});assert.equal(reopened.getState().passed,true);assert.equal(reopened.getState().phase,'result');
  const revised=quiz.createSession({lessonId:'tempo',storage,model:{...model,revision:'new-quiz'}});assert.deepEqual(revised.getState().answers,[]);assert.equal(revised.getState().passed,false);
@@ -96,10 +96,10 @@ test('authored quiz attempts freeze for paused profiles and stale student or con
 });
 
 test('an open canonical quiz freezes on its first authored edit but accepts unrelated topic changes',()=>{
- const storage=disk(),store=content.createStore({storage,canEdit:()=>true}),session=quiz.createSession({lessonId:'tempo',storage,content:store,model:store.getQuiz('tempo')});
+ const storage=disk(),store=content.createStore({storage,canEdit:()=>true}),session=quiz.createSession({lessonId:'tempo',storage,content:store,model:store.getQuiz('tempo'),randomize:false});
  const examEdit=store.getDocument();examEdit.exam.questions[0].prompt='An unrelated exam change';assert.equal(store.saveDocument(examEdit).ok,true);assert.equal(session.answer(1),true);
  const before=storage.getItem(quiz.KEY),quizEdit=store.getDocument();quizEdit.quizzes.tempo.questions[0].prompt='A newly edited tempo question';assert.equal(store.saveDocument(quizEdit).ok,true);
  assert.equal(session.next(),false);assert.equal(session.save(),false);assert.equal(storage.getItem(quiz.KEY),before);assert.match(session.getState().error,/content changed/);
  assert.equal(store.saveDocument(examEdit).ok,true);assert.equal(session.next(),false,'An observed stale session stays frozen even if its old content returns');
- const reopened=quiz.createSession({lessonId:'tempo',storage,content:store,model:store.getQuiz('tempo')});assert.equal(reopened.next(),true,'Reopening resolves the current content revision');
+ const reopened=quiz.createSession({lessonId:'tempo',storage,content:store,model:store.getQuiz('tempo'),randomize:false});assert.equal(reopened.next(),true,'Reopening resolves the current content revision');
 });

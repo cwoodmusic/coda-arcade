@@ -6,7 +6,7 @@ import unittest
 from world_navigation_helpers import enter_room
 
 sys.dont_write_bytecode=True
-from classroom_quiz_helpers import QUIZ_ANSWERS,answer_quiz
+from classroom_quiz_helpers import QUIZ_ANSWERS,answer_quiz,quiz_answer
 from exam_study_helpers import finish_exam_study
 _spec=importlib.util.spec_from_file_location('quiz_learning_world',Path(__file__).with_name('learning-world-browser.py'))
 _world=importlib.util.module_from_spec(_spec);_spec.loader.exec_module(_world)
@@ -99,9 +99,9 @@ class ClassroomQuizWorldTests(_world.WorldBrowserCase):
 
     def test_refresh_resumes_answered_question_and_preserves_first_choice_score(self):
         self.ready_quiz('time-signatures')
-        first,second=QUIZ_ANSWERS['time-signatures'][:2]
+        first=quiz_answer(self.page,'time-signatures',0)
         self.page.locator('[data-quiz-answer="'+str(first)+'"]').click();self.page.locator('[data-quiz-next]').click()
-        wrong=(second+1)%3
+        wrong=(quiz_answer(self.page,'time-signatures',1)+1)%3
         self.page.locator('[data-quiz-answer="'+str(wrong)+'"]').click()
         labels=self.page.locator('[data-quiz-answer]').all_inner_texts()
         feedback=self.page.locator('.classroom-quiz-feedback').inner_text()
@@ -113,7 +113,8 @@ class ClassroomQuizWorldTests(_world.WorldBrowserCase):
         self.assertEqual(self.page.locator('.classroom-quiz-feedback').inner_text(),feedback)
         self.assertTrue(all(button.is_disabled() for button in self.page.locator('[data-quiz-answer]').all()))
         self.page.locator('[data-quiz-next]').click()
-        for correct in QUIZ_ANSWERS['time-signatures'][2:]:
+        for index in range(2,5):
+            correct=quiz_answer(self.page,'time-signatures',index)
             self.page.locator('[data-quiz-answer="'+str(correct)+'"]').click();self.page.locator('[data-quiz-next]').click()
         self.assert_score(4);self.assertEqual(self.xp(),0)
         self.page.locator('[data-quiz-finish]').click()
@@ -167,7 +168,7 @@ class ClassroomQuizWorldTests(_world.WorldBrowserCase):
             for button in self.page.locator('[data-quiz-answer]').all():
                 self.assertGreaterEqual(button.bounding_box()['height'],48)
             self.assertLessEqual(self.page.locator('#musicClassroom').evaluate('e=>e.scrollWidth'),size['width'])
-        correct=QUIZ_ANSWERS['rhythm-tree'][0]
+        correct=quiz_answer(self.page,'rhythm-tree',0)
         self.page.locator('[data-quiz-answer="'+str(correct)+'"]').focus();self.page.keyboard.press('Enter')
         self.assertFalse(self.page.locator('[data-quiz-next]').is_disabled())
         self.page.locator('[data-quiz-next]').focus();self.page.keyboard.press('Enter')

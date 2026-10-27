@@ -13,7 +13,7 @@ BASE='https://cwoodmusic.github.io/coda-arcade/'
 HARNESS='''<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="music-notation.css"><link rel="stylesheet" href="education-notation.css"><link rel="stylesheet" href="classroom-exam-study.css"><link rel="stylesheet" href="classroom-quiz.css">
 <style>body{margin:0;padding:20px;background:#18213b}#lesson{max-width:800px;margin:auto;min-width:0}</style>
-<main id="lesson"></main><script src="music-notation.js"></script><script src="education-notation.js"></script><script src="classroom-quiz.js"></script><script src="classroom-exam-study.js"></script><script src="classroom-accidentals-lesson.js"></script><script>
+<main id="lesson"></main><script src="music-notation.js"></script><script src="education-notation.js"></script><script src="classroom-quiz-pool.js"></script><script src="classroom-quiz.js"></script><script src="classroom-exam-study.js"></script><script src="classroom-accidentals-lesson.js"></script><script>
 window.allowRecord=true;window.rewardFail=false;window.rewardCalls=[];
 localStorage.setItem('codaClassroomLessonsV1','original core lessons');localStorage.setItem('codaClassroomQuizzesV1','original core quizzes');localStorage.setItem('codaHaydnFinalExamV1','original exam');
 window.makeLesson=()=>CodaAccidentalsLesson.create({host:document.querySelector('#lesson'),storage:localStorage,canRecord:()=>allowRecord,onComplete:(id,details)=>{rewardCalls.push({id,details});return rewardFail?{ok:false,error:'Please retry your reward.'}:{ok:true,amount:50}},onExit:()=>window.exited=true});
@@ -46,7 +46,7 @@ class AccidentalsBrowserTests(unittest.TestCase):
   self.assertEqual(self.state()['phase'],'quiz')
  def finish_quiz(self,miss_one=False):
   for i in range(5):
-   correct=self.page.evaluate('CodaAccidentalsLesson.QUIZ.questions[lesson.getState().quiz.index].correct')
+   correct=self.page.evaluate('lesson.getState().quiz.question.correct')
    if miss_one and i==0:correct=(correct+1)%3
    self.page.locator('[data-quiz-answer="'+str(correct)+'"]').click();self.page.locator('[data-quiz-next]').click()
   self.assertTrue(self.state()['quiz']['passed']);self.page.locator('[data-quiz-finish]').click()

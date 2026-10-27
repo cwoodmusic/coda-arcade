@@ -249,15 +249,19 @@ class EducationEditorWorldTests(_world.WorldBrowserCase):
                 self.page.locator('[data-note-answer="' + expected['answer'] + '"]').click()
             self.page.locator('[data-tutorial-next]').click()
         finish_exam_study(self.page, 'note-naming')
-        self.assertIn('Our teacher-authored quiz: which answer means C?', tutorial.inner_text())
-        self.assertEqual(tutorial.locator('[data-quiz-answer]').count(), 4)
-        self.assertEqual(tutorial.locator('.education-score').get_attribute('data-score-clef'), 'bass')
         self.assertTrue(self.page.evaluate('CodaArcadeQA.classroom().tutorials.active.quiz.custom'))
+        saw_edited_question=False
         while self.page.locator('[data-quiz-answer]').count():
             quiz = self.page.evaluate('CodaArcadeQA.classroom().tutorials.active.quiz')
-            correct = self.page.evaluate('index=>CodaEducationContent.getQuiz("note-naming").questions[index].correct', quiz['index'])
+            question=quiz['question']
+            if question['prompt']=='Our teacher-authored quiz: which answer means C?':
+                saw_edited_question=True
+                self.assertEqual(tutorial.locator('[data-quiz-answer]').count(), 4)
+                self.assertEqual(tutorial.locator('.education-score').get_attribute('data-score-clef'), 'bass')
+            correct = question['correct']
             self.page.locator('[data-quiz-answer="' + str(correct) + '"]').click()
             self.page.locator('[data-quiz-next]').click()
+        self.assertTrue(saw_edited_question)
         self.page.locator('[data-quiz-finish]').click()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.classroom().tutorials.active.phase'), 'complete')
         self.assertGreater(self.page.evaluate('CodaArcadeQA.progression().xp'), 0)

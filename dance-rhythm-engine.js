@@ -6,7 +6,7 @@
  const DIFFICULTIES=Object.freeze({
   easy:Object.freeze({id:'easy',label:'Easy',bpm:80,window:.19,perfectWindow:.08}),
   normal:Object.freeze({id:'normal',label:'Normal',bpm:92,window:.16,perfectWindow:.08}),
-  hard:Object.freeze({id:'hard',label:'Hard',bpm:100,window:.14,perfectWindow:.07})
+  hard:Object.freeze({id:'hard',label:'Hard',bpm:88,window:.14,perfectWindow:.07})
  });
  // Positive values are sounding quarter-note units; negative values are rests.
  // Every pattern is exactly one 4/4 bar. Sixteenths arrive in pairs or fours.
@@ -21,12 +21,18 @@
  function randomFor(seed){let state=seed||0x6d2b79f5;return ()=>{state^=state<<13;state^=state>>>17;state^=state<<5;return (state>>>0)/4294967296;};}
  function noteShape(duration){return duration===1.5?{baseDuration:1,dots:1,beamLevel:0}:{baseDuration:duration,dots:0,beamLevel:duration===.25?2:duration===.5?1:0};}
  function generateChart(options={}){
-  const difficulty=difficultyFor(options.difficulty),seed=seedOf(options.seed),random=randomFor(seed),events=[];let lastDirection=null;
+  const difficulty=difficultyFor(options.difficulty),seed=seedOf(options.seed),random=randomFor(seed),events=[];let lastDirection=null,lastPattern=null,bag=[];
+  function nextPattern(){
+   if(!bag.length){
+    // Shuffle the whole vocabulary before reusing a bar, including the opening.
+    bag=PATTERNS[difficulty.id].slice();
+    for(let index=bag.length-1;index>0;index--){const other=Math.floor(random()*(index+1));[bag[index],bag[other]]=[bag[other],bag[index]];}
+    if(bag[bag.length-1]===lastPattern){const other=Math.floor(random()*(bag.length-1));[bag[bag.length-1],bag[other]]=[bag[other],bag[bag.length-1]];}
+   }
+   lastPattern=bag.pop();return lastPattern;
+  }
   for(let bar=0;bar<BARS;bar++){
-   let pattern;
-   if(difficulty.id==='easy')pattern=bar===0?PATTERNS.easy[0]:PATTERNS.easy[Math.floor(random()*PATTERNS.easy.length)];
-   else if(difficulty.id==='normal')pattern=bar===0?PATTERNS.normal[0]:PATTERNS.normal[(bar===1?1:Math.floor(random()*PATTERNS.normal.length))];
-   else pattern=bar===0?PATTERNS.normal[0]:bar===1?PATTERNS.hard[0]:bar===2?PATTERNS.hard[2]:bar===3?PATTERNS.hard[3]:PATTERNS.hard[Math.floor(random()*PATTERNS.hard.length)];
+   const pattern=nextPattern();
    let beatInBar=0;
    for(const value of pattern){
     const duration=Math.abs(value),rest=value<0;let direction=null;

@@ -75,6 +75,37 @@ class DanceRhythmGameTests(unittest.TestCase):
         state=self.state()['engine']
         return state['startedAt']+(4+event['beat'])*state['beatSeconds']
 
+    def assert_directional_pad(self):
+        boxes=self.page.locator('[data-dance-arrow]').evaluate_all('''buttons=>Object.fromEntries(buttons.map(button=>{
+          const box=button.getBoundingClientRect();return [button.dataset.danceArrow,
+            {x:box.x,y:box.y,width:box.width,height:box.height,cx:box.x+box.width/2,cy:box.y+box.height/2}];
+        }))''')
+        self.assertEqual(set(boxes),{'up','down','left','right'})
+        up,down,left,right=(boxes[direction] for direction in ['up','down','left','right'])
+        self.assertAlmostEqual(up['cx'],down['cx'],delta=1)
+        self.assertAlmostEqual(left['cy'],right['cy'],delta=1)
+        self.assertLess(left['cx'],up['cx'])
+        self.assertLess(up['cx'],right['cx'])
+        self.assertLessEqual(up['y']+up['height'],left['y']+1)
+        self.assertLessEqual(left['y']+left['height'],down['y']+1)
+        for direction,box in boxes.items():
+            self.assertGreaterEqual(box['width'],44,direction)
+            self.assertGreaterEqual(box['height'],44,direction)
+            self.assertGreaterEqual(box['x'],0,direction)
+            self.assertGreaterEqual(box['y'],0,direction)
+            self.assertLessEqual(box['x']+box['width'],self.page.viewport_size['width']+1,direction)
+            self.assertLessEqual(box['y']+box['height'],self.page.viewport_size['height']+1,direction)
+
+    def test_directional_pad_matches_compass_on_desktop_and_phone_orientations(self):
+        self.start('hard')
+        self.assertEqual(self.state()['engine']['bpm'],88)
+        for width,height in [(1200,900),(390,844),(844,390),(320,568)]:
+            with self.subTest(width=width,height=height):
+                self.page.set_viewport_size({'width':width,'height':height})
+                self.page.wait_for_timeout(40)
+                self.assert_directional_pad()
+                self.assertTrue(self.page.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+
     def test_real_key_timing_repeat_guard_fall_and_end_cleanup(self):
         self.start()
         state=self.state()['engine']

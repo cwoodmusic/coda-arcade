@@ -27,7 +27,7 @@ test('study and custom quiz save only under the supplemental ID without changing
  for(const card of lesson.CARDS){assert.equal(game.tryIt(),true);assert.equal(game.answer(card.correct),true);assert.equal(game.next(),true);}
  assert.equal(game.getState().completed,true);assert.equal(game.getState().saved,true);
  const q=quiz.createSession({lessonId:lesson.ID,model:lesson.QUIZ,custom:true,storage});
- lesson.QUIZ.questions.forEach((question,index)=>{q.answer(index===0?(question.correct+1)%question.answers.length:question.correct);q.next()});
+ lesson.QUIZ.questions.forEach((_,index)=>{const question=q.getState().question;q.answer(index===0?(question.correct+1)%question.answers.length:question.correct);q.next()});
  assert.equal(q.getState().score,4);assert.equal(q.getState().passed,true);assert.equal(q.getState().saved,true);
  assert.equal(storage.getItem(quiz.KEY),'canonical quizzes');assert.equal(storage.getItem('codaClassroomLessonsV1'),'canonical lessons');assert.equal(storage.getItem('codaHaydnFinalExamV1'),'canonical exam');
  assert.ok(JSON.parse(storage.getItem(study.KEY)).lessons[lesson.ID]);assert.ok(JSON.parse(storage.getItem(quiz.CUSTOM_KEY)).quizzes[lesson.ID]);

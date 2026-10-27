@@ -54,6 +54,17 @@ Disco-ball rays and small reflection trails circle using elapsed time, so their
 motion stays visible when rendering slows down. Motion Off keeps them still;
 FX Off disables them.
 
+Press **P** to open **Play notes**, or use **Settings → Play notes**. Jot down
+bugs and future ideas; notes autosave in this browser and can be copied or
+downloaded. The pad also has a **Changelog** tab. Notes stay local to the active
+player and are never included in classroom cloud saves. Developer test notes
+last only for that preview, so download a copy before leaving.
+
+Classroom teaching steps now have three understanding checks. Staff lessons
+label lines **1–5** and spaces **1–4**, counted from bottom to top. End-of-lesson
+quizzes keep five questions but draw fresh questions and answer orders from
+topic pools; an unfinished attempt resumes on the same device.
+
 The shared project includes the main arcade and Piano Lab collision and layer
 edits. A fresh browser loads those defaults without creating local editor saves,
 so later published updates can still arrive. Existing complete-world projects

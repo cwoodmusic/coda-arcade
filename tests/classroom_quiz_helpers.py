@@ -11,11 +11,23 @@ QUIZ_ANSWERS = {
 }
 
 
+def current_quiz(page):
+    return page.evaluate('''()=>window.CodaArcadeQA?.tutorials?.()?.active?.quiz
+      ||window.roomUI?.getState?.()?.tutorials?.active?.quiz
+      ||window.lesson?.getState?.()?.quiz||window.pathUI?.getState?.()?.quiz||null''')
+
+
+def quiz_answer(page, lesson, fallback_index=0):
+    state=current_quiz(page)
+    return state['question']['correct'] if state and state.get('question') else QUIZ_ANSWERS[lesson][fallback_index]
+
+
 def answer_quiz(page, lesson, wrong=(), finish=True):
     """Answer a fresh five-question quiz; callers still assert rewards/state."""
     from exam_study_helpers import finish_exam_study
     finish_exam_study(page, lesson)
-    for index, correct in enumerate(QUIZ_ANSWERS[lesson]):
+    for index in range(5):
+        correct=quiz_answer(page,lesson,index)
         choice = (correct + 1) % 3 if index in wrong else correct
         page.locator('[data-quiz-answer="' + str(choice) + '"]').click()
         page.locator('[data-quiz-next]').click()

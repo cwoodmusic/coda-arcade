@@ -69,7 +69,28 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
                                 projection['overlay']['bottom'] - .5,
                                 'The rhythm panel must leave the colored dance floor visible.')
 
-    def press_at_note(self, note, direction=None):
+    def assert_directional_pad(self):
+        boxes=self.page.locator('[data-dance-arrow]').evaluate_all('''buttons=>Object.fromEntries(buttons.map(button=>{
+          const b=button.getBoundingClientRect();return [button.dataset.danceArrow,
+            {x:b.x,y:b.y,width:b.width,height:b.height,cx:b.x+b.width/2,cy:b.y+b.height/2}];
+        }))''')
+        self.assertEqual(set(boxes),{'up','down','left','right'})
+        up,down,left,right=(boxes[key] for key in ['up','down','left','right'])
+        self.assertAlmostEqual(up['cx'],down['cx'],delta=1)
+        self.assertAlmostEqual(left['cy'],right['cy'],delta=1)
+        self.assertLess(left['cx'],up['cx'])
+        self.assertLess(up['cx'],right['cx'])
+        self.assertLessEqual(up['y']+up['height'],left['y']+1)
+        self.assertLessEqual(left['y']+left['height'],down['y']+1)
+        for box in boxes.values():
+            self.assertGreaterEqual(box['width'],44)
+            self.assertGreaterEqual(box['height'],44)
+            self.assertGreaterEqual(box['x'],0)
+            self.assertGreaterEqual(box['y'],0)
+            self.assertLessEqual(box['x']+box['width'],self.page.viewport_size['width']+1)
+            self.assertLessEqual(box['y']+box['height'],self.page.viewport_size['height']+1)
+
+    def press_at_note(self, note, direction=None, animate=False):
         timing = self.page.evaluate('''beat=>{
           const state=CodaArcadeQA.danceGame().game.engine;
           return {target:state.startedAt+(state.chart.countInBeats+beat)*state.beatSeconds,
@@ -77,12 +98,15 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
         }''', note['beat'])
         delay = timing['target'] - timing['now']
         self.assertGreater(delay, -.08, 'The real keyboard action must reach a live note, not replay a past score.')
-        if delay > .012:
+        if self.page.evaluate('typeof globalThis.__pwClock!=="undefined"'):
+            advance=self.page.clock.run_for if animate else self.page.clock.fast_forward
+            advance(max(0,round(delay*1000)))
+        elif delay > .012:
             self.page.wait_for_timeout((delay - .012) * 1000)
         self.page.keyboard.press(KEYS[direction or note['direction']])
 
     def test_the_physical_dj_offers_three_difficulties_and_stages_three_unique_npcs(self):
-        for mode, bpm in [('easy', 80), ('normal', 92), ('hard', 100)]:
+        for mode, bpm in [('easy', 80), ('normal', 92), ('hard', 88)]:
             with self.subTest(mode=mode):
                 before = self.start(mode)
                 state = self.state()
@@ -116,22 +140,23 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
                                                           person['y']-dancer['base']['y']), 44,
                                                 'A nonparticipant must not stand inside a dancer.')
                 self.assert_floor_fits()
+                self.assert_directional_pad()
                 self.page.keyboard.press('Escape')
                 self.assertFalse(self.state()['active'])
 
     def test_correct_and_wrong_arrow_inputs_make_visible_steps_and_a_recovering_fall(self):
+        self.page.clock.install()
+        self.page.clock.pause_at(self.page.evaluate('Date.now()/1000')+1)
         self.start('normal')
         state = self.state()
         notes = state['game']['engine']['notes']
-        first, second = notes[:2]
-        self.assertEqual(first['beat'], 0)
-        self.assertEqual(second['beat'], 1)
+        first,second = notes[:2]
         staff = self.page.locator('.dance-rhythm-staff')
         self.assertTrue(staff.is_visible())
         self.page.wait_for_function('Number(document.querySelector(".dance-rhythm-staff").dataset.visibleNotes)>0')
         self.press_at_note(first)
         self.assertEqual(self.state()['game']['engine']['hits'], 1)
-        self.page.wait_for_timeout(100)
+        self.page.clock.run_for(100)
         stepped = self.state()['stage']
         self.assertEqual(stepped['poses']['player']['direction'], first['direction'])
         self.assertFalse(stepped['poses']['player']['falling'])
@@ -139,12 +164,12 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
         self.assertGreater(math.hypot(stepped['poses']['player']['x']-stepped['dancers'][0]['base']['x'],
                                       stepped['poses']['player']['y']-stepped['dancers'][0]['base']['y']), .5)
         wrong = next(direction for direction in KEYS if direction != second['direction'])
-        self.press_at_note(second, wrong)
+        self.press_at_note(second, wrong, animate=True)
         failed = self.state()
         self.assertEqual(failed['game']['engine']['wrongInputs'], 1)
         self.assertTrue(failed['stage']['poses']['player']['falling'])
         self.assertEqual(failed['game']['engine']['hits'], 1)
-        self.page.wait_for_timeout(120)
+        self.page.clock.run_for(120)
         falling = self.state()['stage']
         self.assertGreater(abs(falling['poses']['player']['rotation']), .1)
         for dancer in falling['dancers']:
@@ -152,8 +177,16 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
                 continue
             self.assertGreaterEqual(dancer['steps'], 2, 'The other dancers keep the beat when the player misses.')
             self.assertFalse(falling['poses'][dancer['id']]['falling'])
-        self.press_at_note(notes[2])
-        self.page.wait_for_timeout(200)
+        # Randomized charts may have more arrows before the fall ends. Hit
+        # those arrows too so an unrelated missed note cannot restart it.
+        engine=state['game']['engine']
+        recovery_end=engine['startedAt']+(engine['chart']['countInBeats']+second['beat'])*engine['beatSeconds']+.8
+        for note in notes[2:]:
+            target=engine['startedAt']+(engine['chart']['countInBeats']+note['beat'])*engine['beatSeconds']
+            if target>recovery_end:break
+            self.press_at_note(note, animate=True)
+        now=self.page.evaluate('performance.now()/1000')
+        self.page.clock.run_for(max(0,round((recovery_end-now)*1000)))
         self.assertFalse(self.state()['stage']['poses']['player']['falling'])
         # Capture after the timed presses; screenshots can take longer than a beat.
         self.page.screenshot(path='/tmp/coda-dance-desktop.png')
@@ -164,6 +197,7 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
         self.page.wait_for_function('CodaArcadeQA.touch().mobile')
         before = self.start('easy')
         self.assert_floor_fits()
+        self.assert_directional_pad()
         buttons = self.page.locator('[data-dance-arrow]')
         self.assertEqual(buttons.count(), 4)
         for button in buttons.all():
@@ -177,13 +211,19 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
         engine = self.state()['game']['engine']
         first = engine['notes'][0]
         control = self.page.locator('[data-dance-arrow="'+first['direction']+'"]').bounding_box()
-        timing = self.page.evaluate('''()=>{const engine=CodaArcadeQA.danceGame().game.engine;
-          return (engine.startedAt+engine.chart.countInBeats*engine.beatSeconds-performance.now()/1000)*1000;}''')
+        timing = self.page.evaluate('''beat=>{const engine=CodaArcadeQA.danceGame().game.engine;
+          return (engine.startedAt+(engine.chart.countInBeats+beat)*engine.beatSeconds-performance.now()/1000)*1000;}''', first['beat'])
         if timing > 15:
             self.page.wait_for_timeout(timing-15)
         self.page.mouse.click(control['x']+control['width']/2, control['y']+control['height']/2)
         self.assertEqual(self.state()['game']['engine']['hits'], 1)
         self.page.screenshot(path='/tmp/coda-dance-phone.png')
+        for width,height in [(844,390),(320,568)]:
+            with self.subTest(width=width,height=height):
+                self.page.set_viewport_size({'width':width,'height':height})
+                self.page.wait_for_timeout(80)
+                self.assert_floor_fits()
+                self.assert_directional_pad()
         self.page.locator('[data-dance-close]').click()
         self.assertFalse(self.state()['active'])
         self.assertEqual(self.page.evaluate('CodaArcadeQA.position()'), before['position'])

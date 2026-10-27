@@ -1,10 +1,10 @@
 # DJ Coda's Line Dance
 
-Walk to DJ Coda and interact. Choose **Play DJ Coda's Line Dance**, then Easy, Normal, or Hard. A four-beat count-in leads into eight bars of 4/4. Match the arrow under each note as its notehead reaches the glowing line; rests require no press. Use keyboard arrow keys or the game's touch buttons.
+Walk to DJ Coda and interact. Choose **Play DJ Coda's Line Dance**, then Easy, Normal, or Hard. A four-beat count-in leads into eight bars of 4/4. Match the arrow under each note as its notehead reaches the glowing line; rests require no press. Use keyboard arrow keys or the game's touch buttons, arranged as a directional pad: Up above Left and Right, with Down below.
 
 The camera fits the whole dance floor. The player joins a line with up to three randomly selected available NPCs. Correct presses animate larger directional dance steps with a more pronounced bounce. Wrong or missed arrows cause a short stumble, then the player gets back up; the NPCs keep dancing to the chart. Reduced motion uses smaller steps without bouncing or the fall rotation.
 
-Easy uses quarter-note steps at 80 BPM. Normal adds eighth notes at 92 BPM. Hard adds paired sixteenths, dotted notes, and syncopation at 100 BPM. Each group of two or four sixteenth notes uses the same arrow direction; tap that arrow once for each note. All modes have written rests, bar lines, actual Bravura note glyphs, and appropriate beams. Long notes require one press at the beginning. The result shows score, accuracy, best streak, saved XP, and newly earned unlocks.
+Easy uses quarter-note steps at 80 BPM. Normal adds eighth notes at 92 BPM. Hard adds paired sixteenths, dotted notes, and syncopation at a more manageable 88 BPM. Every round shuffles that difficulty's rhythm patterns across all eight bars, including the opening. Patterns do not repeat immediately, and each pattern appears before the pool reshuffles. Each group of two or four sixteenth notes uses the same arrow direction; tap that arrow once for each note. All modes have written rests, bar lines, actual Bravura note glyphs, and appropriate beams. Long notes require one press at the beginning. The result shows score, accuracy, best streak, saved XP, and newly earned unlocks.
 
 Completed eight-bar dances with at least one correct step earn practice XP. The Hall of Fame's **DJ Line Dance** category lists six one-time achievements:
 

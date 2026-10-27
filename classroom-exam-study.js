@@ -1,4 +1,4 @@
-/* One taught idea and one practice check at a time, before the lesson quiz. */
+/* One taught idea and its practice checks, before the lesson quiz. */
 (function(root,factory){
  const node=typeof module==='object'&&module.exports;
  const api=factory(node?require('./music-notation.js'):root?.CodaMusicNotation);
@@ -13,38 +13,53 @@
  function revisionOf(cards){const encoded=JSON.stringify(cards);let hash=2166136261;for(let index=0;index<encoded.length;index++)hash=Math.imul(hash^encoded.charCodeAt(index),16777619);return 'study-'+(hash>>>0).toString(16);}
  function createSession(api={}){
   const lessonId=api.lessonId,cards=copy(api.cards||[]);if(!LESSONS.includes(lessonId)||cards.length>100||cards.some(card=>!validCard(card))||new Set(cards.map(card=>card.id)).size!==cards.length)throw Error('Choose a valid lesson and its study cards.');
+  const checks=cards.map(card=>{
+   const values=typeof api.getChecks==='function'?api.getChecks(copy(card)):[card];
+   if(!Array.isArray(values)||!values.length||values.length>10||values.some(value=>!object(value)||typeof value.prompt!=='string'||!Array.isArray(value.answers)||value.answers.length<2||value.answers.length>6||value.answers.some(answer=>typeof answer!=='string'||!answer.trim())||!Number.isInteger(value.correct)||value.correct<0||value.correct>=value.answers.length||typeof value.hint!=='string'))throw Error('Choose valid practice checks for each study card.');
+   return copy(values);
+  });
   let storage=api.storage;if(storage===undefined)try{storage=window.localStorage;}catch{}
   const revision=typeof api.revision==='string'&&api.revision?api.revision:revisionOf(cards),ids=new Set(cards.map(card=>card.id));
-  let record={revision,index:0,passed:[]},expected='null',stage='look',feedback='',correct=null,saved=true,error='',destroyed=false,stale=false;
+  let record={revision,index:0,passed:[]},expected='null',stage='look',feedback='',correct=null,saved=true,error='',destroyed=false,stale=false,checkIndex=0;
   function read(){const raw=storage?.getItem?.(KEY);if(raw===null||raw===undefined)return {version:VERSION,lessons:{}};const journal=JSON.parse(raw);if(!object(journal)||journal.version!==VERSION||!object(journal.lessons)||Object.keys(journal).some(key=>!['version','lessons'].includes(key))||Object.keys(journal.lessons).some(id=>!LESSONS.includes(id)))throw Error('invalid');return journal;}
-  try{const entry=read().lessons[lessonId];expected=JSON.stringify(entry??null);if(entry?.revision===revision&&Number.isInteger(entry.index)&&entry.index>=0&&entry.index<Math.max(1,cards.length)&&Array.isArray(entry.passed)&&entry.passed.length<=cards.length&&entry.passed.every(id=>ids.has(id))&&new Set(entry.passed).size===entry.passed.length)record=copy(entry);}
+  const validChecks=value=>value===undefined||object(value)&&Object.entries(value).every(([id,count])=>{const index=cards.findIndex(card=>card.id===id);return index>=0&&Number.isInteger(count)&&count>0&&count<checks[index].length;});
+  try{const entry=read().lessons[lessonId];expected=JSON.stringify(entry??null);if(entry?.revision===revision&&Number.isInteger(entry.index)&&entry.index>=0&&entry.index<Math.max(1,cards.length)&&Array.isArray(entry.passed)&&entry.passed.length<=cards.length&&entry.passed.every(id=>ids.has(id))&&new Set(entry.passed).size===entry.passed.length&&validChecks(entry.checks))record=copy(entry);}
   catch{saved=false;error='The saved study cards could not reopen. Keep this lesson open and try again.';}
   function canRecord(){try{if(stale||destroyed||api.canRecord?.()===false)return false;if(api.getRevision&&api.getRevision()!==revision){stale=true;return false;}return true;}catch{return false;}}
-  function getState(){return {...copy(record),lessonId,total:cards.length,completed:cards.length>0&&record.passed.length===cards.length,stage,answered:record.passed.includes(cards[record.index]?.id),feedback,correct,saved,error};}
+  const checkCount=()=>checks[record.index]?.length||0;
+  const checksPassed=()=>record.passed.includes(cards[record.index]?.id)?checkCount():record.checks?.[cards[record.index]?.id]||0;
+  const resumeCheck=()=>{checkIndex=Math.min(checksPassed(),Math.max(0,checkCount()-1));};
+  resumeCheck();
+  function question(){return copy(checks[record.index]?.[checkIndex]||null);}
+  function getState(){return {...copy(record),lessonId,total:cards.length,completed:cards.length>0&&record.passed.length===cards.length,stage,checkIndex,checkTotal:checkCount(),checksPassed:checksPassed(),answered:checksPassed()>checkIndex,feedback,correct,saved,error};}
   function save(){
    if(!canRecord()){saved=false;error='Your profile or lesson changed. Reopen the lesson to continue.';return false;}
-   try{if(!storage?.getItem||!storage?.setItem)throw Error('storage');const journal=read();if(JSON.stringify(journal.lessons[lessonId]??null)!==expected){stale=true;throw Error('changed');}const next={revision,index:record.index,passed:[...record.passed]};journal.lessons[lessonId]=next;storage.setItem(KEY,JSON.stringify(journal));expected=JSON.stringify(next);saved=true;error='';return true;}
+   try{if(!storage?.getItem||!storage?.setItem)throw Error('storage');const journal=read();if(JSON.stringify(journal.lessons[lessonId]??null)!==expected){stale=true;throw Error('changed');}const next={revision,index:record.index,passed:[...record.passed],...(record.checks&&Object.keys(record.checks).length?{checks:copy(record.checks)}:{})};journal.lessons[lessonId]=next;storage.setItem(KEY,JSON.stringify(journal));expected=JSON.stringify(next);saved=true;error='';return true;}
    catch(failure){saved=false;error=failure.message==='changed'?'Your player or saved study changed. Reopen the lesson before continuing.':'Your study progress could not save. Keep this lesson open and try saving again.';return false;}
   }
   function tryIt(){if(!canRecord())return false;stage='try';feedback='';correct=null;return true;}
   function learn(){stage='look';feedback='';correct=null;}
   function answer(index){
-   if(!canRecord()||stage!=='try'||!Number.isInteger(index)||index<0||index>=cards[record.index]?.answers.length)return false;
-   const card=cards[record.index];correct=index===card.correct;if(!correct){feedback='Try again. '+card.hint;return false;}
-   if(!record.passed.includes(card.id))record.passed.push(card.id);feedback='Yes! '+card.hint;stage='feedback';save();return true;
+   const check=checks[record.index]?.[checkIndex];
+   if(!canRecord()||stage!=='try'||!check||!Number.isInteger(index)||index<0||index>=check.answers.length)return false;
+   const card=cards[record.index];correct=index===check.correct;if(!correct){feedback='Try again. '+check.hint;return false;}
+   if(checkIndex===checks[record.index].length-1){if(!record.passed.includes(card.id))record.passed.push(card.id);if(record.checks)delete record.checks[card.id];}
+   else if(!record.passed.includes(card.id)){record.checks||={};record.checks[card.id]=Math.max(record.checks[card.id]||0,checkIndex+1);}
+   feedback='Yes! '+check.hint;stage='feedback';save();return true;
   }
-  function goTo(index){if(!canRecord()||!Number.isInteger(index)||index<0||index>=cards.length)return false;record.index=index;learn();return save();}
+  function goTo(index){if(!canRecord()||!Number.isInteger(index)||index<0||index>=cards.length)return false;record.index=index;resumeCheck();learn();return save();}
   function next(){
    if(!canRecord()||!getState().answered||!saved)return false;
+   if(checkIndex<checkCount()-1){checkIndex++;stage='try';feedback='';correct=null;return true;}
    if(record.index<cards.length-1)return goTo(record.index+1);
    const missing=cards.findIndex(card=>!record.passed.includes(card.id));if(missing>=0)return goTo(missing);return true;
   }
-  function restart(){if(!canRecord())return false;record={revision,index:0,passed:[]};learn();return save();}
-  return {getState,card:()=>copy(cards[record.index]||null),tryIt,learn,answer,goTo,next,restart,save,canRecord,destroy(){destroyed=true;}};
+  function restart(){if(!canRecord())return false;record={revision,index:0,passed:[]};checkIndex=0;learn();return save();}
+  return {getState,card:()=>copy(cards[record.index]||null),question,tryIt,learn,answer,goTo,next,restart,save,canRecord,destroy(){destroyed=true;}};
  }
  function create(api={}){
   const host=api.host;if(!host?.ownerDocument)throw Error('Study cards need a host.');
-  const doc=host.ownerDocument,win=doc.defaultView,session=createSession({...api,storage:api.storage===undefined?win.localStorage:api.storage});let target=host,destroyed=false,ended=false,audio=null,audioTimer=null,voices=[];
+  const doc=host.ownerDocument,win=doc.defaultView,session=createSession({...api,getChecks:api.getChecks||(card=>win?.CodaClassroomLearningPathsData?.getChecks?.(api.lessonId,card)||[card]),storage:api.storage===undefined?win.localStorage:api.storage});let target=host,destroyed=false,ended=false,audio=null,audioTimer=null,voices=[];
   const node=(tag,className,text)=>{const item=doc.createElement(tag);if(className)item.className=className;if(text!==undefined)item.textContent=text;return item;};
   const button=(text,action,name)=>{const item=node('button','',text);item.type='button';if(name)item.setAttribute('data-study-'+name,'');item.onclick=action;return item;};
   function changed(){api.onChange?.(session.getState());}
@@ -99,18 +114,19 @@
   }
   function finish(){if(ended||!session.getState().completed||!session.getState().saved||!session.canRecord())return;ended=true;api.onComplete?.(session.getState());}
   function render(nextTarget){
-   if(destroyed)return;stopAudio();if(nextTarget)target=nextTarget;target.replaceChildren();const state=session.getState(),card=session.card();
+   if(destroyed)return;stopAudio();if(nextTarget)target=nextTarget;target.replaceChildren();const state=session.getState(),card=session.card(),check=session.question();
    const panel=node('section','classroom-exam-study');panel.dataset.studyLesson=api.lessonId;panel.dataset.studyStage=state.stage;panel.setAttribute('aria-label',api.title||'Study for the exam');target.append(panel);
    if(!card){panel.append(node('p','','There are no study cards in this topic yet.'));panel.append(button('Back to lesson',()=>api.onExit?.(),'exit'));return;}
    const top=node('div','exam-study-top');top.append(node('span','',api.title||'Study for the exam'),node('span','','Card '+(state.index+1)+' of '+state.total));panel.append(top);
    const progress=node('progress');progress.max=state.total;progress.value=state.passed.length;progress.setAttribute('aria-label','Exam lesson practice completed');panel.append(progress);
-   const title=node('h3','exam-study-title',state.stage==='look'?card.title:card.prompt);title.tabIndex=-1;title.dataset.studyHeading='';panel.append(title);
+   if(state.stage!=='look'&&state.checkTotal>1){const count=node('p','exam-study-check-count','Check '+(state.checkIndex+1)+' of '+state.checkTotal);count.dataset.studyCheck=state.checkIndex;panel.append(count);}
+   const title=node('h3','exam-study-title',state.stage==='look'?card.title:check.prompt);title.tabIndex=-1;title.dataset.studyHeading='';panel.append(title);
    if(state.stage==='look'){panel.append(node('p','exam-study-teach',card.teach));drawVisual(panel,card.visual);if(card.example){const example=node('p','exam-study-example');example.append(node('strong','','Example: '),doc.createTextNode(card.example));panel.append(example);}panel.append(button('Try it',()=>{session.tryIt();render();focus();},'try'));}
    else{
-    drawVisual(panel,card.visual);
-    if(state.stage==='try'){const answers=node('div','exam-study-answers');answers.setAttribute('role','group');answers.setAttribute('aria-label','Choose an answer');const offset=state.index%card.answers.length;card.answers.map((_,at)=>(at+offset)%card.answers.length).forEach(index=>{const answer=card.answers[index],choose=button(answer,()=>{session.answer(index);render();target.querySelector('[data-study-next]')?.focus({preventScroll:true});});choose.dataset.studyAnswer=index;answers.append(choose);});panel.append(answers);}
+    drawVisual(panel,check.visual);
+    if(state.stage==='try'){const answers=node('div','exam-study-answers');answers.setAttribute('role','group');answers.setAttribute('aria-label','Choose an answer');const offset=(state.index+state.checkIndex)%check.answers.length;check.answers.map((_,at)=>(at+offset)%check.answers.length).forEach(index=>{const answer=check.answers[index],choose=button(answer,()=>{session.answer(index);render();target.querySelector('[data-study-next]')?.focus({preventScroll:true});});choose.dataset.studyAnswer=index;answers.append(choose);});panel.append(answers);}
     if(state.feedback){const feedback=node('p','exam-study-feedback',state.feedback);feedback.setAttribute('role','status');feedback.dataset.correct=String(state.correct);panel.append(feedback);}
-    if(state.answered){const next=button(state.index===state.total-1?'Finish study':'Next',()=>{const before=session.getState();if(!session.next()){render();changed();return;}if(before.index===before.total-1&&session.getState().completed)finish();else{render();focus();}changed();},'next');next.disabled=!state.saved;panel.append(next);}
+    if(state.answered){const next=button(state.checkIndex<state.checkTotal-1?'Next question':state.index===state.total-1?'Finish study':'Next',()=>{const before=session.getState();if(!session.next()){render();changed();return;}if(before.index===before.total-1&&before.checkIndex===before.checkTotal-1&&session.getState().completed)finish();else{render();focus();}changed();},'next');next.disabled=!state.saved;panel.append(next);}
     panel.append(button('Show the example',()=>{session.learn();render();focus();},'learn'));
    }
    const actions=node('div','exam-study-actions');const back=button('← Previous',()=>{session.goTo(state.index-1);render();focus();changed();},'back');back.disabled=state.index===0;actions.append(back);if(api.onExit)actions.append(button('Back to lesson',()=>api.onExit(),'exit'));panel.append(actions);

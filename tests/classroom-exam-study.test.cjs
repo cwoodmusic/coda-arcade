@@ -49,3 +49,39 @@ test('unknown lesson IDs, duplicate cards and malformed answer keys are rejected
  assert.throws(()=>create({cards:[{...cards[0],correct:8}]}),/valid lesson/);
  assert.throws(()=>create({cards:[{...cards[0],answers:['one']}]}),/valid lesson/);
 });
+
+const checksFor=card=>[card,
+ {prompt:'Try a second example.',answers:['Hold','Play again','Stop counting'],correct:0,hint:'A held note keeps sounding.'},
+ {prompt:'Explain the idea.',answers:['The beat stops','Keep the steady beat','Always play louder'],correct:1,hint:'Counting continues through the sound.'}];
+test('three checks must each be correct before a teaching step completes or advances',()=>{
+ const session=create({getChecks:checksFor});session.tryIt();
+ assert.equal(session.getState().checkTotal,3);assert.equal(session.next(),false);
+ assert.equal(session.answer(0),true);assert.deepEqual(session.getState().passed,[]);assert.equal(session.getState().checkIndex,0);
+ assert.equal(session.next(),true);assert.equal(session.getState().index,0);assert.equal(session.getState().checkIndex,1);assert.equal(session.getState().stage,'try');
+ assert.equal(session.answer(1),false);assert.equal(session.next(),false);assert.match(session.getState().feedback,/held note/);
+ assert.equal(session.answer(0),true);assert.deepEqual(session.getState().passed,[]);session.next();
+ assert.equal(session.getState().checkIndex,2);assert.equal(session.answer(1),true);assert.deepEqual(session.getState().passed,['study-card-0']);
+ assert.equal(session.next(),true);assert.equal(session.getState().index,1);assert.equal(session.getState().checkIndex,0);
+});
+
+test('partial checks resume at the next question without storing prompts or correct answers',()=>{
+ const storage=memory(),first=create({storage,getChecks:checksFor});first.tryIt();first.answer(0);first.next();
+ const resumed=create({storage,getChecks:checksFor});assert.equal(resumed.getState().index,0);assert.equal(resumed.getState().checkIndex,1);assert.deepEqual(resumed.getState().passed,[]);
+ resumed.tryIt();resumed.answer(0);resumed.next();resumed.answer(1);
+ const complete=create({storage,getChecks:checksFor});assert.deepEqual(complete.getState().passed,['study-card-0']);
+ const raw=storage.getItem(study.KEY);for(const text of ['Try a second','Keep the steady','held note'])assert.ok(!raw.includes(text));
+});
+
+test('failed check saves prevent progression until retry and profile changes prevent all writes',()=>{
+ const storage=memory();let allowed=true;const session=create({storage,getChecks:checksFor,canRecord:()=>allowed});
+ session.tryIt();storage.fail=true;session.answer(0);assert.equal(session.getState().saved,false);assert.equal(session.next(),false);
+ storage.fail=false;assert.equal(session.save(),true);session.next();const bytes=storage.getItem(study.KEY);
+ allowed=false;assert.equal(session.answer(0),false);assert.equal(session.next(),false);assert.equal(storage.getItem(study.KEY),bytes);
+});
+
+test('old completed cards remain completed when extra local practice checks are introduced',()=>{
+ const storage=memory(),old=create({storage});answer(old);const bytes=storage.getItem(study.KEY);
+ const expanded=create({storage,getChecks:checksFor});assert.deepEqual(expanded.getState().passed,['study-card-0']);assert.equal(storage.getItem(study.KEY),bytes);
+ assert.equal(expanded.getState().checkIndex,2);expanded.tryIt();expanded.next();assert.equal(expanded.getState().index,1);
+ assert.equal(expanded.restart(),true);assert.deepEqual(expanded.getState().passed,[]);assert.equal(expanded.getState().checkIndex,0);
+});

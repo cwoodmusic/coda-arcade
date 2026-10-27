@@ -97,11 +97,13 @@ class DynamicsTempoClassroomTests(unittest.TestCase):
             answer_quiz(self.page,lesson,wrong=(0,1),finish=False)
             self.assertEqual(self.page.locator('[data-quiz-finish]').count(),0)
             self.page.locator('[data-quiz-retry]').click()
-            for choice in ([0,1] if lesson=='dynamics' else [1,0]):
+            for _ in range(2):
+                choice=self.state()['active']['quiz']['question']['correct']
                 self.page.locator('[data-quiz-answer="'+str(choice)+'"]').click();self.page.locator('[data-quiz-next]').click()
             self.load();self.open_lesson(lesson)
             self.assertEqual(self.state()['active']['quiz']['index'],2)
-            for choice in ([2,0,1] if lesson=='dynamics' else [2,1,0]):
+            for _ in range(3):
+                choice=self.state()['active']['quiz']['question']['correct']
                 self.page.locator('[data-quiz-answer="'+str(choice)+'"]').click();self.page.locator('[data-quiz-next]').click()
             self.page.locator('[data-quiz-finish]').click()
             self.assertIn(lesson,self.state()['completed'])

@@ -45,7 +45,20 @@
    },
    isOpen:()=>active,
    update(dt){if(!active)return;if(api.canPlay?.()===false){game.close('profile');cleanup('profile');return;}stage.update(dt);},
-   updateCamera(viewport){if(!active||!stage.getState().active)return false;api.setCamera(fitCamera(viewport));return true;},
+   updateCamera(viewport){
+    if(!active||!stage.getState().active)return false;
+    const panel=game.getBounds?.(),image=api.canvas?.getBoundingClientRect(),floor=win.CodaDanceFloorStage.FLOOR_BOUNDS;
+    if(panel&&image?.height>0&&floor){
+     const top=Math.max(viewport.top,(panel.bottom+8-image.top)*api.height/image.height),height=viewport.top+viewport.height-top;
+     if(height>0){
+      // Include room for heads and labels above the dance tiles, without
+      // putting the directional pad over the dancers on shorter screens.
+      const bounds={x:floor.x-20,y:floor.y-70,width:floor.width+40,height:floor.height+85};
+      api.setCamera(fitCamera({...viewport,top,height},bounds));return true;
+     }
+    }
+    api.setCamera(fitCamera(viewport));return true;
+   },
    pose:id=>active?stage.pose(id):null,
    close(reason='close'){game.close(reason);cleanup(reason);},
    getState:()=>({active,game:game.getState(),stage:stage.getState(),bounds:{...BOUNDS}}),

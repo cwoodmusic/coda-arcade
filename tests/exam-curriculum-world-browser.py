@@ -111,19 +111,26 @@ class ExamCurriculumWorldTests(_world.WorldBrowserCase):
         self.assert_picture(card)
         self.panel().locator('[data-study-try]').click()
         self.assertEqual(self.panel().locator('.exam-study-title').inner_text(), card['prompt'])
-        if wrong:
-            incorrect = (card['correct'] + 1) % len(card['answers'])
-            self.panel().locator('[data-study-answer="' + str(incorrect) + '"]').click()
-            self.assertEqual(self.panel().locator('.exam-study-feedback').get_attribute('data-correct'), 'false')
-            self.assertIn(card['hint'], self.panel().locator('.exam-study-feedback').inner_text())
-            self.assertEqual(self.active()['study']['passed'], state['passed'])
-            self.assertEqual(self.panel().locator('[data-study-next]').count(), 0,
-                             'An incorrect check cannot skip the taught concept')
-        self.panel().locator('[data-study-answer="' + str(card['correct']) + '"]').click()
-        self.assertEqual(self.panel().locator('.exam-study-feedback').get_attribute('data-correct'), 'true')
-        self.assertIn(card['id'], self.active()['study']['passed'])
-        self.assertFalse(self.panel().locator('[data-study-next]').is_disabled())
-        self.panel().locator('[data-study-next]').click()
+        checks=self.page.evaluate('({lesson,card})=>CodaClassroomLearningPathsData.getChecks(lesson,card)',{'lesson':self.active()['id'],'card':card})
+        for index,check in enumerate(checks[state.get('checkIndex',0):],start=state.get('checkIndex',0)):
+            if len(checks)>1:
+                self.assertEqual(self.panel().locator('[data-study-check]').inner_text(),'Check '+str(index+1)+' of '+str(len(checks)))
+            if wrong:
+                incorrect = (check['correct'] + 1) % len(check['answers'])
+                self.panel().locator('[data-study-answer="' + str(incorrect) + '"]').click()
+                self.assertEqual(self.panel().locator('.exam-study-feedback').get_attribute('data-correct'), 'false')
+                self.assertIn(check['hint'], self.panel().locator('.exam-study-feedback').inner_text())
+                self.assertEqual(self.active()['study']['passed'], state['passed'])
+                self.assertEqual(self.panel().locator('[data-study-next]').count(), 0,
+                                 'An incorrect check cannot skip the taught concept')
+            self.panel().locator('[data-study-answer="' + str(check['correct']) + '"]').click()
+            self.assertEqual(self.panel().locator('.exam-study-feedback').get_attribute('data-correct'), 'true')
+            if index==len(checks)-1:
+                self.assertIn(card['id'], self.active()['study']['passed'])
+            elif card['id'] not in state['passed']:
+                self.assertNotIn(card['id'],self.active()['study']['passed'])
+            self.assertFalse(self.panel().locator('[data-study-next]').is_disabled())
+            self.panel().locator('[data-study-next]').click()
 
     def complete_study(self, lesson, wrong=False):
         cards = self.cards(lesson)
@@ -133,6 +140,7 @@ class ExamCurriculumWorldTests(_world.WorldBrowserCase):
 
     def test_all_eight_exam_links_teach_and_check_all_106_cards_without_awarding_xp(self):
         categories = self.page.evaluate('CodaExamCurriculum.IDS')
+        expected=set(self.page.evaluate('CodaExamCurriculum.IDS.flatMap(id=>CodaEducationContent.getStudyCards(id).map(card=>card.id))'))
         visited = set()
         visual_kinds = set()
         initial = self.page.evaluate('''()=>Object.fromEntries(Object.entries(
@@ -159,13 +167,14 @@ class ExamCurriculumWorldTests(_world.WorldBrowserCase):
                 self.assertTrue(self.active()['study']['completed'],
                                 'The same study sequence is reachable from ordinary lesson controls')
                 self.panel().locator('[data-study-exit]').click()
-        self.assertEqual(len(visited), 106)
+        self.assertEqual(visited,expected)
+        self.assertGreaterEqual(len(visited),106)
         self.assertTrue({'staff', 'scale', 'rhythm', 'tie', 'meter', 'dynamic', 'tempo'} <= visual_kinds)
         final = self.page.evaluate('''()=>Object.fromEntries(Object.entries(
           CodaClassroomProfileData.KEYS).map(([slot,key])=>[slot,localStorage.getItem(key)]))''')
         self.assertEqual(final, initial, 'Studying cannot edit exam/quiz proofs, XP, Notes, or the avatar')
         journal = self.page.evaluate('JSON.parse(localStorage.getItem(CodaClassroomExamStudy.KEY))')
-        self.assertEqual(sum(len(item['passed']) for item in journal['lessons'].values()), 106)
+        self.assertEqual(sum(len(item['passed']) for item in journal['lessons'].values()),len(expected))
 
     def test_normal_activity_then_study_then_quiz_awards_the_lesson_once(self):
         self.talk_to_haydn()

@@ -33,8 +33,9 @@
    return journal;
   }
   function validSection(entry,sectionId){
-   const section=sections.get(sectionId);if(!section||!object(entry)||Object.keys(entry).some(key=>!['revision','index','passed'].includes(key)))return false;
-   return entry.revision===studyModule.revisionOf(section.cards)&&Number.isInteger(entry.index)&&entry.index>=0&&entry.index<section.cards.length&&Array.isArray(entry.passed)&&entry.passed.length<=section.cards.length&&new Set(entry.passed).size===entry.passed.length&&entry.passed.every(cardId=>section.cards.some(card=>card.id===cardId));
+   const section=sections.get(sectionId);if(!section||!object(entry)||Object.keys(entry).some(key=>!['revision','index','passed','checks'].includes(key)))return false;
+   const validChecks=entry.checks===undefined||object(entry.checks)&&Object.entries(entry.checks).every(([cardId,count])=>{const card=section.cards.find(card=>card.id===cardId),total=card?(api.getChecks?.(card)||[card]).length:0;return Number.isInteger(count)&&count>0&&count<total;});
+   return validChecks&&entry.revision===studyModule.revisionOf(section.cards)&&Number.isInteger(entry.index)&&entry.index>=0&&entry.index<section.cards.length&&Array.isArray(entry.passed)&&entry.passed.length<=section.cards.length&&new Set(entry.passed).size===entry.passed.length&&entry.passed.every(cardId=>section.cards.some(card=>card.id===cardId));
   }
   function validRecord(entry){return object(entry)&&Object.keys(entry).every(key=>['revision','sections','basicsQuiz','basicsPassedAt','completedAt'].includes(key))&&entry.revision===revision&&object(entry.sections)&&Object.keys(entry.sections).every(key=>validSection(entry.sections[key],key))&&['basicsPassedAt','completedAt'].every(key=>Number.isSafeInteger(entry[key])&&entry[key]>=0)&&(!entry.basicsQuiz||object(entry.basicsQuiz));}
   try{const entry=read().lessons[id];expected=JSON.stringify(entry??null);if(validRecord(entry))record=copy(entry);}
@@ -87,6 +88,16 @@
  }
  function renderVisual(figure,value){
   if(!figure?.ownerDocument||!object(value))return false;const win=figure.ownerDocument.defaultView,tutorial=win?.CodaClassroomTutorials||tutorialModule;
+  if(value.kind==='staff'&&quizModule?.staffSVG){
+   figure.innerHTML=quizModule.staffSVG(value.position,value).replace(/H320/g,'H250');const svg=figure.querySelector('svg'),ns='http://www.w3.org/2000/svg';
+   const label=(text,x,y,kind,index)=>{const item=figure.ownerDocument.createElementNS(ns,'text');item.textContent=text;item.setAttribute('x',x);item.setAttribute('y',y);item.setAttribute('font-family','system-ui,sans-serif');item.setAttribute('font-size',kind?'14':'10');item.setAttribute('fill',kind==='space'?'#21695f':'#49345c');item.setAttribute('text-anchor','middle');if(kind)item.setAttribute('data-staff-'+kind,index);svg.append(item);};
+   for(const offset of value.grand?[0,120]:[0]){
+    label('Line',277,27+offset);label('Space',313,27+offset);
+    for(let index=1;index<=5;index++)label(String(index),277,130-(index-1)*20+offset,'line',index);
+    for(let index=1;index<=4;index++)label(String(index),313,120-(index-1)*20+offset,'space',index);
+   }
+   notation.load?.(figure.ownerDocument);return true;
+  }
   if(value.kind==='clef-intro'&&['treble','bass'].includes(value.clef)&&['staff','clef','lines','spaces'].includes(value.page)&&tutorial?.clefReminderSVG){figure.innerHTML=tutorial.clefReminderSVG(value.clef,value.page);notation.load?.(figure.ownerDocument);return true;}
   if(value.kind==='rhythm-tree'&&Number.isInteger(value.level)&&value.level>=0&&value.level<=3&&tutorial?.treeSVG){figure.innerHTML=tutorial.treeSVG(value.level);const svg=figure.querySelector('svg');svg?.removeAttribute('aria-hidden');svg?.setAttribute('role','img');svg?.setAttribute('aria-label','Rhythm tree: each note divides into two equal shorter notes.');return true;}
   if(value.kind==='key-signature')return win?.CodaAccidentalsLesson?.renderVisual?.(figure,value)===true;
@@ -107,7 +118,8 @@
   if(!fullModel?.questions?.length||!basicModel?.questions?.length)fail('This category could not load its quiz.');
   let storage=api.storage;if(storage===undefined)try{storage=win.localStorage;}catch{}
   const currentRevision=()=>revisionOf(api.category||data.getCategory(id,{content}),content?.getQuiz?.(id)||quizModule.QUIZZES[id]||win.CodaAccidentalsLesson?.QUIZ,content?.getLessonRevision?.(id)||'');
-  const revision=currentRevision(),session=createSession({category,storage,revision,getRevision:currentRevision,canRecord:api.canRecord});
+  const getChecks=card=>data?.getChecks?.(id,card)||[card];
+  const revision=currentRevision(),session=createSession({category,storage,revision,getRevision:currentRevision,canRecord:api.canRecord,getChecks});
   let phase='menu',sectionId=null,study=null,quiz=null,destroyed=false,claiming=false,error='',award=null,canonicalSaved=false;
   const customFull=fullModel.custom===true||content?.isLessonEdited?.(id)===true||id==='accidentals-key-signatures',lessonKey=customFull?'codaAuthoredLessonsV1':'codaClassroomLessonsV1';
   const contentRevision=content?.getLessonRevision?.(id)||revision;
@@ -144,7 +156,7 @@
    if(destroyed||!session.canRecord()||!session.canOpenSection(nextId))return false;
    const section=category.sections.find(section=>section.id===nextId);if(!section)return false;cleanActive();phase='section';sectionId=nextId;
    frame(section.title);const mount=node('div','learning-path-activity');host.append(mount);
-   study=studyModule.create({host:mount,lessonId:id,title:section.title,cards:section.cards,revision:session.sectionRevision(nextId),getRevision:()=>session.sectionRevision(nextId),storage:session.sectionStorage(nextId),canRecord:()=>session.canRecord(),renderVisual,onExit:showMenu,onComplete:()=>{error='';renderMenu();},onChange:changed});study.open();changed();return true;
+   study=studyModule.create({host:mount,lessonId:id,title:section.title,cards:section.cards,getChecks,revision:session.sectionRevision(nextId),getRevision:()=>session.sectionRevision(nextId),storage:session.sectionStorage(nextId),canRecord:()=>session.canRecord(),renderVisual,onExit:showMenu,onComplete:()=>{error='';renderMenu();},onChange:changed});study.open();changed();return true;
   }
   function guardedQuizStorage(){
    const key=customFull?quizModule.CUSTOM_KEY:quizModule.KEY;let expected='null';
@@ -159,7 +171,7 @@
   function openQuiz(kind){
    if(destroyed||!session.canRecord()||kind==='basic'&&!session.basicsReady()||kind==='full'&&(!session.allReady()||!session.getState().basicsPassedAt))return false;
    cleanActive();phase=kind==='basic'?'basics-quiz':'category-quiz';sectionId=null;frame(kind==='basic'?'A little basics quiz':'Full category quiz');const mount=node('div','learning-path-activity');host.append(mount);
-   const basic=kind==='basic';quiz=quizModule.create({host:mount,lessonId:id,model:basic?{...basicModel,custom:true}:fullModel,custom:basic||customFull,contentRevision:basic?revision:contentRevision,content,storage:basic?session.basicsStorage:guardedQuizStorage(),canRecord:()=>session.canRecord()&&(basic?session.basicsReady():session.allReady()),renderVisual,onPassed:()=>{
+   const basic=kind==='basic';quiz=quizModule.create({host:mount,lessonId:id,attemptStorage:storage,model:basic?{...basicModel,custom:true}:fullModel,custom:basic||customFull,contentRevision:basic?revision:contentRevision,content,storage:basic?session.basicsStorage:guardedQuizStorage(),canRecord:()=>session.canRecord()&&(basic?session.basicsReady():session.allReady()),renderVisual,onPassed:()=>{
     if(basic){if(session.markBasicsPassed()){error='';renderMenu();}else{error=session.getState().error;renderResult();}}
     else void claimCompletion();
    }});quiz.render();changed();focus();return true;

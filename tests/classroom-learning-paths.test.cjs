@@ -45,7 +45,7 @@ test('profile changes and edited content stop old practice from writing or award
 
 test('basics quizzes use their own local slot and never replace a canonical end-of-category result',()=>{
  const storage=memory({[quiz.KEY]:'existing canonical proof',[quiz.CUSTOM_KEY]:'existing authored proof'}),session=create({storage}),model=category();finishSection(session,model,'parts');finishSection(session,model,'symbols');
- const q=quiz.createSession({lessonId:model.id,model:{version:1,title:'Basics',custom:true,questions:Array.from({length:5},(_,at)=>({id:'basics-'+at,prompt:'Choose yes.',answers:['Yes','No','Maybe'],correct:0,explanation:'Yes is correct.'}))},custom:true,contentRevision:'basic-v1',storage:session.basicsStorage,canRecord:session.canRecord});
+ const q=quiz.createSession({lessonId:model.id,model:{version:1,title:'Basics',custom:true,questions:Array.from({length:5},(_,at)=>({id:'basics-'+at,prompt:'Choose yes.',answers:['Yes','No','Maybe'],correct:0,explanation:'Yes is correct.'}))},custom:true,contentRevision:'basic-v1',storage:session.basicsStorage,attemptStorage:storage,canRecord:session.canRecord});
  for(let at=0;at<5;at++){q.answer(0);q.next();}assert.equal(q.getState().passed,true);assert.equal(q.getState().saved,true);assert.equal(session.markBasicsPassed(),true);
  assert.equal(storage.getItem(quiz.KEY),'existing canonical proof');assert.equal(storage.getItem(quiz.CUSTOM_KEY),'existing authored proof');assert.ok(JSON.parse(storage.getItem(paths.KEY)).lessons['rhythm-tree'].basicsQuiz);
 });
