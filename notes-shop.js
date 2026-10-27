@@ -75,12 +75,19 @@
   }
   function createWallet(api={}){
     const collection=stockForCatalog(api.catalog),walletStock=new Map(collection.map(item=>[item.id,item]));
+    // Owning an item and selling it are separate. Older saves can contain a
+    // free, earned, or retired cosmetic which is absent from today's shop.
+    const knownOwned=new Set([...walletStock.keys(),...FREE_ITEMS,...ACHIEVEMENT_ITEMS]);
+    const ownershipId=id=>typeof id==='string'&&/^[a-z0-9:_-]{1,80}$/i.test(id);
+    for(const group of Object.values(api.catalog||{}))if(Array.isArray(group))for(const item of group)if(ownershipId(item?.id))knownOwned.add(item.id);
+    if(Array.isArray(api.ownershipIds))for(const id of api.ownershipIds.slice(0,256))if(ownershipId(id))knownOwned.add(id);
+    const preserveLegacy=api.preserveEquipped!==false;
     let storage=api.storage;
     if(storage===undefined)try{storage=window.localStorage;}catch{}
     const listeners=new Set(),initial={version:1,balance:STARTER_NOTES,owned:[],rewards:[],earned:STARTER_NOTES,spent:0};
     if(typeof api.onChange==='function')listeners.add(api.onChange);
     let state=initial,persistent=false,lastError='';
-    const read=()=>{const raw=storage?.getItem(KEY);return raw?clean(JSON.parse(raw),walletStock):null;};
+    const read=()=>{const raw=storage?.getItem(KEY);return raw?clean(JSON.parse(raw),knownOwned):null;};
     function notify(){const value=snapshot();for(const listener of listeners)try{listener(value);}catch{/* UI listeners cannot undo a saved transaction. */}}
     function save(next){
       try{
@@ -93,12 +100,19 @@
       catch{persistent=false;lastError='Browser saving is unavailable. Purchases are paused.';}
       return snapshot();
     }
-    try{state=read()||initial;}catch{state=initial;}
+    let savedWallet=null;
+    try{savedWallet=read();state=savedWallet||initial;}catch{state=initial;}
     // A previously equipped cosmetic remains usable when the shop is introduced.
     // Existing ownership is additive; this never alters the avatar itself.
-    const avatar=api.getAvatar?.()||{};
-    const legacy=collection.filter(item=>avatar[item.slot]===item.id||avatar.accessory===item.id).map(item=>item.id);
-    state={...state,owned:unique([...state.owned,...legacy])};save(state);
+    if(preserveLegacy){
+      const avatar=api.getAvatar?.()||{};
+      const legacy=collection.filter(item=>avatar[item.slot]===item.id||avatar.accessory===item.id).map(item=>item.id);
+      state={...state,owned:unique([...state.owned,...legacy])};save(state);
+    }else{
+      // The profile service owns restoration. Rewriting a valid cloud wallet
+      // during construction makes every resume look like an identity change.
+      persistent=!!savedWallet;
+    }
     function snapshot(){return {...copy(state),persistent,error:lastError,starterNotes:STARTER_NOTES,purse:denominationBreakdown(state.balance)};}
     function buy(id){
       const item=walletStock.get(id);if(!item)return {ok:false,error:'That item is not in the shop.'};
@@ -128,6 +142,7 @@
     }
     function preserveEquipped(profile){
       if(!profile||typeof profile!=='object')return {ok:false,error:'No saved profile was supplied.'};
+      if(!preserveLegacy)return {ok:true,changed:false};
       refresh();
       const existing=collection.filter(item=>profile[item.slot]===item.id||profile.accessory===item.id).map(item=>item.id);
       const owned=unique([...state.owned,...existing]);

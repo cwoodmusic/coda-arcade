@@ -11,7 +11,7 @@ const config=path.join(work,'firebase.json');
 fs.writeFileSync(config,JSON.stringify({database:{rules:path.join(root,'classroom-database.rules.json')},emulators:{auth:{host:'127.0.0.1',port:9098},database:{host:'127.0.0.1',port:9102},hub:{host:'127.0.0.1',port:4408},logging:{host:'127.0.0.1',port:4508},ui:{enabled:false},singleProjectMode:true}},null,2));
 const quote=value=>"'"+value.replace(/'/g,"'\"'\"'")+"'";
 const noProxy=[process.env.NO_PROXY||process.env.no_proxy||'','127.0.0.1','localhost','::1'].filter(Boolean).join(',');
-const selectors={'--world':'tests/classroom-world-browser.py','--teacher-player':'tests/teacher-player-browser.py','--test-mode':'tests/developer-test-mode-auth-browser.py'};
+const selectors={'--profile-open':'tests/profile-open-loop-browser.py','--world':'tests/classroom-world-browser.py','--teacher-player':'tests/teacher-player-browser.py','--test-mode':'tests/developer-test-mode-auth-browser.py'};
 const selected=selectors[process.argv[2]],arguments_=process.argv.slice(selected?3:2);
 const command=['python3',quote(path.join(root,selected||'tests/classroom-service-browser.py')),...arguments_.map(quote)].join(' ');
 const result=spawnSync(process.execPath,['--require',path.join(root,'tools/firebase-emulator-loopback.cjs'),cli,'emulators:exec','--only','auth,database','--project','demo-coda-classroom-e2e','--config',config,'--non-interactive',command],{cwd:work,stdio:'inherit',env:{...process.env,NO_PROXY:noProxy,no_proxy:noProxy,CODA_FIREBASE_LOOPBACK_PROXY:'1',CODA_FIREBASE_TEST_TOOLS:tools,FIREBASE_EMULATORS_PATH:path.join(tools,'emulator-cache'),XDG_CONFIG_HOME:path.join(tools,'cli-config'),PYTHONDONTWRITEBYTECODE:'1'}});

@@ -191,3 +191,48 @@ test('Notes shop lists only priced stock, keeping expensive purchases and exclud
   assert.ok(cards.some(node=>node.attributes['data-shop-item']==='alien'),'A distant Note-saving goal stays visible even when unaffordable');
  }finally{global.document=oldDocument;}
 });
+
+
+test('bound profiles keep earned equipment and canonical ownership unchanged through repeated wallet starts',()=>{
+ const D=require('../classroom-profile-data.js');
+ const ownershipIds=D.SCHEMA.properties.wallet.properties.owned.items.enum;
+ const catalog={accessories:[{id:'watchchain',label:'Pocket watch chain'},{id:'cape',label:'Hero cape'}]};
+ for(const [item,xp,owned]of [['watchchain',80,[]],['cape',720,[]],['halo',0,['halo','cap','short']]]){
+  const remote=D.blank();remote.avatar.accessory=item;remote.wallet.owned=[...owned];
+  remote.progression.events=xp?[{id:'game:profile-reload-fixture',xp}]:[];remote.progression.xp=xp;
+  assert.equal(D.validate(remote).ok,true,item+' is a valid profile');
+  const disk=storage();disk.removeItem=key=>disk.records.delete(key);
+  for(let boot=0;boot<3;boot++){
+   assert.equal(D.apply(disk,remote).ok,true);
+   const before=new Map(disk.records);
+   const wallet=createWallet({storage:disk,catalog,ownershipIds,preserveEquipped:false,getAvatar:()=>JSON.parse(disk.getItem(D.KEYS.avatar))});
+   assert.deepEqual(disk.records,before,'Construction must not rewrite a restored player');
+   assert.equal(wallet.preserveEquipped({accessory:'cape'}).changed,false,'Strict profile wallets cannot grandfather ownership later');
+   wallet.refresh();assert.deepEqual(D.capture(disk).data,remote,'Resuming must converge on the same complete DTO');
+   assert.deepEqual(wallet.snapshot().owned,owned);
+  }
+ }
+});
+
+test('canonical non-stock ownership survives real purchases and rewards without becoming shop stock',()=>{
+ const D=require('../classroom-profile-data.js'),disk=storage();disk.removeItem=key=>disk.records.delete(key);
+ const remote=D.blank();remote.wallet.owned=['halo','cap','short'];assert.equal(D.apply(disk,remote).ok,true);
+ const wallet=createWallet({storage:disk,preserveEquipped:false,ownershipIds:D.SCHEMA.properties.wallet.properties.owned.items.enum});
+ assert.equal(wallet.isStock('halo'),false);assert.equal(wallet.buy('halo').ok,false);
+ assert.equal(wallet.buy('witch').ok,true);assert.equal(wallet.grantReward('game:kept-ownership',16).ok,true);
+ assert.deepEqual(wallet.snapshot().owned,['halo','cap','short','witch']);
+ const reloaded=createWallet({storage:disk,preserveEquipped:false,ownershipIds:D.SCHEMA.properties.wallet.properties.owned.items.enum});
+ assert.deepEqual(reloaded.snapshot().owned,['halo','cap','short','witch']);
+ const saved=D.capture(disk);assert.equal(saved.ok,true);assert.equal(saved.data.wallet.balance,86);
+ assert.equal(saved.data.wallet.earned,166);assert.equal(saved.data.wallet.spent,80);
+});
+
+test('ownership allowlists do not make unknown items purchasable or bypass private DTO validation',()=>{
+ const D=require('../classroom-profile-data.js'),disk=storage();
+ disk.setItem(KEY,JSON.stringify({version:1,balance:150,earned:150,spent:0,rewards:[],owned:['unknown-item','<private name>','a'.repeat(81),'halo']}));
+ const wallet=createWallet({storage:disk,preserveEquipped:false,ownershipIds:['unknown-item','<private name>','a'.repeat(81),null,{},123]});
+ assert.deepEqual(wallet.snapshot().owned,['unknown-item','halo']);
+ assert.equal(wallet.buy('unknown-item').ok,false);assert.equal(wallet.isStock('unknown-item'),false);
+ assert.equal(wallet.buy('witch').ok,true);
+ const raw=D.blank();raw.wallet.owned=wallet.snapshot().owned;assert.equal(D.validate(raw).ok,false,'Cloud ownership remains the closed canonical enum');
+});

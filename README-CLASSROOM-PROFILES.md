@@ -89,6 +89,13 @@ The `classroomV1` Realtime Database namespace contains:
 | `passes/{sha256Pass}` | Exact pass lookup to class/profile IDs | Exact current lookup by an anonymously signed-in student; parent listing is denied |
 | `sessions/{anonymousUid}` | Current device's class/profile/hash binding | Only that matching current device session; school admins can query by class for cleanup |
 
+Profile startup preserves earned outfits and saved ownership, including items
+which are not currently sold in the Notes shop. The guest wardrobe migration
+runs only in a guest workspace; a bound classroom profile is not rewritten
+while its cloud progress is being restored. This prevents repeated identity
+reloads on the “Opening your profile” screen. Check the regression with
+`node tools/test-classroom-service.cjs --profile-open`.
+
 The progress DTO uses fixed fields and rejects extra fields. It excludes the
 avatar's name, school roster data, song titles, compositions/drafts, text answers,
 editor projects, and shared leaderboards. [classroom-profile-data.js](classroom-profile-data.js) defines the
