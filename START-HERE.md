@@ -14,6 +14,10 @@ player shown. This first save is explicit; an older device is never adopted
 automatically. Later sign-ins open that saved player across devices. If a student
 profile is selected, it stays selected until you choose **Open my player**;
 student progress is never turned into a teacher's personal save.
+To rename an active teacher player, open **Classroom profile → My player →
+Change nickname**, or use **For teachers → Your arcade player → Change
+nickname**. Save a nickname of 1–40 characters. Only the teacher-owned nickname
+metadata changes; game progress and student picture-card aliases stay intact.
 
 When this tab already has a classroom profile, the title screen offers
 **Continue profile** and **Change player**. Changing players opens the existing

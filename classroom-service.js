@@ -47,7 +47,7 @@
    let sdk,db,auth,adminDb,adminAuth,connecting,studentUid=null,adminUid=null,adminAuthorized=false,adminRoleStop=null,personalAvailable=false;
    let active=null,leaseOwned=false,loaded=false,baseRevision=0,lastSaved='',pending=false,saving=false;
    let loading=false,locked=false,waitingTakeover=false,code='',status='',destroyed=false,generation=0,inFlightSave=null,transitioning=false,retiredPersonalSave=null,signingOut=false;
-   let offset=0,lastActivity=now(),flushTimer=null,leaseTimer=null,idleTimer=null,queuedPass=null;
+   let offset=0,lastActivity=now(),flushTimer=null,leaseTimer=null,idleTimer=null,queuedPass=null,personalRename=null;
    const pendingJobs=new Set();
    const state=()=>({configured,configurationReason,enabled,ready:!!sdk,loading,locked,waitingTakeover,pending,
      profile:active?{classId:active.classId,classLabel:active.classLabel||'Classroom',profileId:active.profileId,alias:active.alias,picture:active.picture,...(personalProfile(active)?{kind:'teacher'}:{})}:null,
@@ -213,7 +213,13 @@
      const owner=generation,p=active;
      const invalid=()=>{if(owner===generation)lock('access-revoked');};
      if(personalProfile(p)){
-       subscriptions.push(sdk.onValue(sdk.ref(adminDb,profilePath(p)+'/meta'),snap=>{if(owner!==generation)return;const value=snap.val();if(!value||typeof value.alias!=='string'||!value.alias.trim())invalid();},invalid));
+       subscriptions.push(sdk.onValue(sdk.ref(adminDb,profilePath(p)+'/meta'),snap=>{
+         if(owner!==generation)return;const value=snap.val();if(!value||typeof value.alias!=='string'||!value.alias.trim()){invalid();return;}
+         // Firebase echoes local writes before the server accepts them. Wait
+         // for our own rename to finish before exposing its new nickname.
+         const ownRename=personalRename?.owner===owner&&personalRename.uid===p.profileId;
+         if(!ownRename&&value.alias.length<=40&&!/[\u0000-\u001f\u007f-\u009f]/.test(value.alias)&&active?.alias!==value.alias){active={...active,alias:value.alias};notify();}
+       },invalid));
        return;
      }
      subscriptions.push(sdk.onValue(sdk.ref(db,profilePath(p)+'/meta'),snap=>{if(owner!==generation)return;const value=snap.val();if(!value||value.passHash!==p.passHash)invalid();},invalid));
@@ -364,6 +370,26 @@
        return await activate({kind:'teacher',classId:PERSONAL_CLASS,profileId:uid,classLabel:'My player'},{reason:'personal-created'});
      }catch{message('Your player has not been saved yet. Keep this tab open and try again.','personal-save-failed');return fail('personal-save-failed');}finally{loading=false;notify();}
    }
+   async function renamePersonalPlayer(value){
+     if(loading||transitioning)return fail('busy');
+     if(!personalProfile(active)||!isWritable()||active.profileId!==adminUid||adminAuth?.currentUser?.uid!==adminUid)return fail('personal-player-unavailable');
+     const alias=typeof value==='string'?value.trim():'';
+     if(!alias||alias.length>40||/[\u0000-\u001f\u007f-\u009f]/.test(value)){
+       message('Choose a nickname from 1 to 40 characters, without control characters.','invalid-nickname');return fail('invalid-nickname');
+     }
+     const uid=adminUid,owner=generation,operation={uid,owner};let stopConnection=null;personalRename=operation;loading=true;notify();
+     const current=()=>owner===generation&&!destroyed&&personalProfile(active)&&active.profileId===uid&&adminUid===uid&&adminAuth?.currentUser?.uid===uid&&maySave();
+     try{
+       const connected=await new Promise((resolve,reject)=>{stopConnection=sdk.onValue(sdk.ref(adminDb,'.info/connected'),snap=>resolve(snap.val()===true),reject);});
+       stopConnection?.();stopConnection=null;
+       if(!current())return fail('closed');if(!connected)throw Error('offline');
+       const allowed=await staff();if(!allowed.ok)return allowed;if(!current())return fail('closed');
+       await sdk.set(sdk.ref(adminDb,path('teacherPlayers/'+uid+'/meta/alias')),alias);
+       if(!current())return fail('closed');active={...active,alias};message('Your nickname is saved.');return {ok:true,alias};
+     }catch{
+       if(!current())return fail('closed');message('Your nickname could not save. Check your connection and try again.','personal-rename-failed');return fail('personal-rename-failed');
+     }finally{stopConnection?.();if(personalRename===operation)personalRename=null;loading=false;notify();}
+   }
    async function openPersonalPlayer(){
      if(loading||transitioning)return fail('busy');
      loading=true;notify();let owner=generation;
@@ -433,7 +459,7 @@
    leaseTimer=win?.setInterval?.(async()=>{if(!isWritable())return;try{if(!await lease(false,true))lock('device-changed');}catch{message('Connection paused. Keep this tab open.','connection-unavailable');}},20000);
    idleTimer=win?.setInterval?.(()=>{if(now()-lastActivity<=Math.max(60000,options.idleMs||600000))return;if(adminUid){const personal=personalProfile(active);adminSignOut();if(personal)return;}if(active&&!locked&&!loading)flush().then(result=>{if(result.ok)leave({discard:true});else lock('idle');});},10000);
    function destroy(){keepPending();destroyed=true;generation++;stopSubscriptions();if(adminRoleStop){adminRoleStop();adminRoleStop=null;}for(const stop of pendingJobs)try{stop();}catch{}for(const timer of [flushTimer,leaseTimer,idleTimer])if(timer!==null)win?.clearInterval?.(timer);for(const type of ['pointerdown','keydown','touchstart'])win?.removeEventListener?.(type,activity);win?.removeEventListener?.('pagehide',keepPending);win?.document?.removeEventListener?.('visibilitychange',pageHidden);listeners.clear();}
-   return {getState:state,subscribe(listener){listeners.add(listener);return()=>listeners.delete(listener);},connect,resume,join,leave,takeOver,useSavedProgress,adminSignIn,adminSignOut,savePersonalPlayer,openPersonalPlayer,listClasses,createClass,listProfiles,createProfile,reissuePass,deleteProfile,deleteClass,flush,isWritable,destroy};
+   return {getState:state,subscribe(listener){listeners.add(listener);return()=>listeners.delete(listener);},connect,resume,join,leave,takeOver,useSavedProgress,adminSignIn,adminSignOut,savePersonalPlayer,renamePersonalPlayer,openPersonalPlayer,listClasses,createClass,listProfiles,createProfile,reissuePass,deleteProfile,deleteClass,flush,isWritable,destroy};
  }
  return Object.freeze({create,consumeFragment,parsePass:passCode,formatPass,hashPass});
 });

@@ -243,6 +243,111 @@ class TeacherPlayerBrowserTests(unittest.TestCase):
         self.assertEqual(self.personal_cloud()['state']['data'],unsent)
         self.assertEqual(self.cloud()['state'],student_saved)
 
+    def guest_named_teacher(self):
+        expected=self.local_player(self.admin,480,220)
+        self.admin.evaluate('''()=>{const avatar=JSON.parse(localStorage.musicArcadeV1);avatar.name='Guest';localStorage.musicArcadeV1=JSON.stringify(avatar);}''')
+        self.assert_ok(self.call(self.admin,'savePersonalPlayer'))
+        self.assertEqual(self.call(self.admin,'getState')['profile']['alias'],'Guest')
+        return expected
+
+    def test_nickname_changes_guest_name_without_touching_progress_and_survives_reload(self):
+        expected=self.guest_named_teacher();before=self.personal_cloud()
+        result=self.call(self.admin,'renamePersonalPlayer','  Maestro Wood  ')
+        self.assertEqual(result,{'ok':True,'alias':'Maestro Wood'})
+        after=self.personal_cloud();self.assertEqual(after['state'],before['state'])
+        self.assertEqual(after['meta'],{**before['meta'],'alias':'Maestro Wood'})
+        self.assertEqual(self.current(self.admin),expected)
+        self.assertEqual(self.call(self.admin,'getState')['profile']['alias'],'Maestro Wood')
+        self.admin.reload();self.admin.wait_for_function('window.fixtureReady');self.start(self.admin)
+        self.assert_ok(self.call(self.admin,'resume'))
+        self.assertEqual(self.call(self.admin,'getState')['profile']['alias'],'Maestro Wood')
+        self.assertEqual(self.current(self.admin),expected);self.assertEqual(self.personal_cloud()['state'],before['state'])
+
+    def test_nickname_rejects_empty_overlong_control_and_nontext_values(self):
+        self.guest_named_teacher();before=self.personal_cloud()
+        for value in ['', '   ', 'A'*41, 'Nick\nName', '\nNickname', 'Nick\x00Name', 'Nick\x7fName', 'Nick\x85Name', None, 12, {'alias':'No'}]:
+            with self.subTest(value=repr(value)):
+                result=self.call(self.admin,'renamePersonalPlayer',value)
+                self.assertEqual(result,{'ok':False,'code':'invalid-nickname'})
+                self.assertEqual(self.call(self.admin,'getState')['profile']['alias'],'Guest')
+        self.assertEqual(self.personal_cloud(),before)
+        self.assert_ok(self.call(self.admin,'renamePersonalPlayer','A'*40))
+        self.assertEqual(self.personal_cloud()['state'],before['state'])
+
+    def test_nickname_is_unavailable_to_students_guests_other_identity_and_lost_workspace(self):
+        self.guest_named_teacher();before=self.personal_cloud()
+        student=self.device();self.join(student);student_saved=self.cloud()
+        for page in [student,self.device()]:
+            self.assertEqual(self.call(page,'renamePersonalPlayer','Changed'),{'ok':False,'code':'personal-player-unavailable'})
+        self.assertEqual(self.cloud(),student_saved)
+        self.admin.evaluate('''()=>{const auth=fixtureSDK.getAuth(fixtureSDK.getApps().find(app=>app.name==='coda-classroom-admin'));window.fixtureOldUID=auth.currentUser.uid;auth.currentUser.uid='another_teacher_uid';}''')
+        self.assertEqual(self.call(self.admin,'renamePersonalPlayer','Changed'),{'ok':False,'code':'personal-player-unavailable'})
+        self.admin.evaluate("fixtureSDK.getAuth(fixtureSDK.getApps().find(app=>app.name==='coda-classroom-admin')).currentUser.uid=fixtureOldUID")
+        self.admin.evaluate('fixtureScope.release()')
+        self.assertEqual(self.call(self.admin,'renamePersonalPlayer','Changed'),{'ok':False,'code':'personal-player-unavailable'})
+        self.assertEqual(self.personal_cloud(),before)
+
+    def test_nickname_offline_attempt_keeps_the_previous_name_without_queueing_a_write(self):
+        self.guest_named_teacher();before=self.personal_cloud()
+        self.admin.evaluate('''()=>{window.fixtureNicknameWrites=[];const write=fixtureSDK.set;fixtureSDK.set=(ref,value)=>{fixtureNicknameWrites.push(ref.toString());return write(ref,value);};}''')
+        self.admin.evaluate("window.fixtureStaffDB=fixtureSDK.getDatabase(fixtureSDK.getApps().find(app=>app.name==='coda-classroom-admin'));fixtureSDK.goOffline(fixtureStaffDB)")
+        self.assertEqual(self.call(self.admin,'renamePersonalPlayer','Offline name'),{'ok':False,'code':'personal-rename-failed'})
+        self.assertEqual(self.call(self.admin,'getState')['profile']['alias'],'Guest')
+        self.assertEqual(self.personal_cloud(),before)
+        self.assertEqual(self.admin.evaluate('fixtureNicknameWrites'),[])
+
+    def test_nickname_rejected_write_keeps_the_previous_name_and_progress(self):
+        self.guest_named_teacher();before=self.personal_cloud()
+        self.admin.evaluate('''()=>{window.fixtureOriginalSet=fixtureSDK.set;fixtureSDK.set=(ref,value)=>ref.toString().endsWith('/meta/alias')?Promise.reject(Error('simulated network failure')):fixtureOriginalSet(ref,value);}''')
+        self.assertEqual(self.call(self.admin,'renamePersonalPlayer','Rejected name'),{'ok':False,'code':'personal-rename-failed'})
+        self.assertEqual(self.call(self.admin,'getState')['profile']['alias'],'Guest')
+        self.assertEqual(self.personal_cloud(),before)
+
+    def test_nickname_waits_for_server_ack_instead_of_echoing_a_pending_local_write(self):
+        self.guest_named_teacher();before=self.personal_cloud()
+        self.admin.evaluate('''()=>{
+          const database=fixtureSDK.getDatabase(fixtureSDK.getApps().find(app=>app.name==='coda-classroom-admin')),write=fixtureSDK.set;
+          fixtureSDK.set=(ref,value)=>{
+            if(!ref.toString().endsWith('/meta/alias'))return write(ref,value);
+            fixtureSDK.goOffline(database);const pending=write(ref,value);
+            window.fixtureNicknameQueued=true;window.fixtureFinishNickname=()=>fixtureSDK.goOnline(database);return pending;
+          };
+          window.fixtureNicknameStates=[];fixtureService.subscribe(state=>fixtureNicknameStates.push(state.profile?.alias));
+          fixtureService.renamePersonalPlayer('Confirmed name').then(result=>window.fixtureNicknameResult=result);
+        }''')
+        self.admin.wait_for_function('window.fixtureNicknameQueued')
+        self.admin.wait_for_timeout(150)
+        self.assertEqual(self.call(self.admin,'getState')['profile']['alias'],'Guest')
+        self.assertNotIn('Confirmed name',self.admin.evaluate('fixtureNicknameStates'))
+        self.assertEqual(self.personal_cloud(),before)
+        self.admin.evaluate('fixtureFinishNickname()');self.admin.wait_for_function('window.fixtureNicknameResult')
+        self.assertEqual(self.admin.evaluate('fixtureNicknameResult'),{'ok':True,'alias':'Confirmed name'})
+        self.assertEqual(self.call(self.admin,'getState')['profile']['alias'],'Confirmed name')
+        self.assertEqual(self.personal_cloud()['state'],before['state'])
+
+    def test_nickname_stale_completion_cannot_rename_a_newly_selected_student(self):
+        self.guest_named_teacher();before=self.personal_cloud()
+        self.admin.evaluate('''()=>{
+          const write=fixtureSDK.set;fixtureSDK.set=(ref,value)=>{
+            if(!ref.toString().endsWith('/meta/alias'))return write(ref,value);
+            window.fixtureNicknameHeld=true;return new Promise((resolve,reject)=>window.fixtureFinishNickname=()=>write(ref,value).then(resolve,reject));
+          };
+          fixtureService.renamePersonalPlayer('Old teacher name').then(result=>window.fixtureNicknameResult=result);
+        }''')
+        self.admin.wait_for_function('window.fixtureNicknameHeld')
+        self.assert_ok(self.call(self.admin,'leave',{'internal':True,'skipFlush':True,'discard':True}))
+        self.join(self.admin);student=self.call(self.admin,'getState')['profile'];student_saved=self.cloud()
+        self.admin.evaluate('fixtureFinishNickname()');self.admin.wait_for_function('window.fixtureNicknameResult')
+        self.assertEqual(self.admin.evaluate('fixtureNicknameResult'),{'ok':False,'code':'closed'})
+        self.assertEqual(self.call(self.admin,'getState')['profile'],student)
+        self.assertEqual(self.cloud(),student_saved);self.assertEqual(self.personal_cloud()['state'],before['state'])
+
+    def test_nickname_metadata_changes_from_another_device_update_the_active_teacher(self):
+        self.guest_named_teacher();before=self.personal_cloud()
+        fixture.database('classroomV1/teacherPlayers/'+self.teacher_uid+'/meta/alias','Another device name','PUT')
+        self.admin.wait_for_function("fixtureService.getState().profile?.alias==='Another device name'")
+        self.assertEqual(self.personal_cloud()['state'],before['state'])
+
 
 if __name__=='__main__':
     unittest.main(verbosity=2)

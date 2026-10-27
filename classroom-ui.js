@@ -30,7 +30,9 @@
   'personal-player-exists':'This Google account already has a saved player. Choose Open my player to continue.',
   'personal-player-student-active':'Leave the student profile before saving your own player.',
   'personal-save-failed':'Your player could not save. Check your connection and try again on this device.',
-  'personal-open-failed':'Your player could not open. Check your connection and try again.'
+  'personal-open-failed':'Your player could not open. Check your connection and try again.',
+  'invalid-nickname':'Choose an arcade nickname with 1–40 characters on one line.',
+  'personal-rename-failed':'Your nickname could not save. Your previous nickname is still in use. Check your connection and try again.'
  });
  const errorCode=value=>typeof value?.code==='string'?value.code.replace(/^(?:auth|functions)\//,''):typeof value==='string'?value:'';
  const friendlyError=value=>ERRORS[errorCode(value)]||'We could not finish that. Please try again.';
@@ -60,6 +62,7 @@
   const doc=body.ownerDocument,win=doc.defaultView||root;
   let opened=false,disposed=false,view='student',section=null,busy='',message='',messageKind='status',confirmation=null,card=null,printSheet=null,printTimer=null;
   let classes=[],profiles=[],selectedClass='',classDraft='',joinDraft='',profileSearch='',profilePage=0,generation=0,lastAuthorized=false;
+  let nicknameEditing=false,nicknameDraft='',nicknameOwner='';
   const snapshot=()=>{try{return service.getState?.()||{};}catch{return {};}};
   const authorized=()=>snapshot().admin?.authorized===true;
   const canManage=()=>authorized()&&snapshot().enabled!==false;
@@ -80,7 +83,7 @@
   function current(token){return opened&&!disposed&&token===generation;}
   function cleanupPrint(){if(printTimer)win.clearTimeout(printTimer);printTimer=null;printSheet?.remove();printSheet=null;doc.documentElement.classList.remove('coda-classroom-printing');win.removeEventListener('afterprint',cleanupPrint);}
   function clearCard(){if(card){card.pass='';card.link='';}card=null;section?.querySelectorAll('.classpass-card').forEach(node=>node.remove());cleanupPrint();}
-  function close(){opened=false;generation++;busy='';confirmation=null;joinDraft='';classDraft='';resetBrowser();clearCard();section?.remove();section=null;api.closePanel?.();}
+  function close(){opened=false;generation++;busy='';confirmation=null;joinDraft='';classDraft='';clearNickname();resetBrowser();clearCard();section?.remove();section=null;api.closePanel?.();}
   function receipt(result){
    if(!canManage()||!result||typeof result.pass!=='string'||typeof result.link!=='string'||!result.pass.length||result.pass.length>512)return false;
    let parsed;try{parsed=new URL(result.link,win.location.href);}catch{return false;}
@@ -121,6 +124,35 @@
   function savePersonalPlayer(){
    const state=snapshot();if(!canManage()||!state.personal||state.personal.available||studentSelected(state)||typeof service.savePersonalPlayer!=='function')return;
    requestConfirmation({kind:'save-personal',alias:localPlayerName()});
+  }
+  function teacherNicknameOwner(state){
+   const profile=state.profile,admin=state.admin;
+   return state.enabled===true&&admin?.authorized===true&&profile?.kind==='teacher'&&profile.profileId&&profile.profileId===admin.uid&&!state.locked&&!state.waitingTakeover
+    ?JSON.stringify([profile.classId||'',profile.profileId,admin.uid]):'';
+  }
+  function canRenamePersonal(state){return !!teacherNicknameOwner(state)&&!state.readOnly&&!state.loading&&typeof service.renamePersonalPlayer==='function';}
+  function clearNickname(){nicknameEditing=false;nicknameDraft='';nicknameOwner='';}
+  function beginNickname(){
+   const state=snapshot();if(busy||!canRenamePersonal(state))return;
+   nicknameEditing=true;nicknameOwner=teacherNicknameOwner(state);nicknameDraft=text(state.profile.alias);setMessage('');render();section?.querySelector('#classpassNicknameInput')?.focus({preventScroll:true});
+  }
+  function saveNickname(event){
+   event.preventDefault();const state=snapshot();
+   if(busy||!nicknameEditing||!canRenamePersonal(state)||nicknameOwner!==teacherNicknameOwner(state))return;
+   const alias=nicknameDraft.trim();
+   if(!alias||alias.length>40||/[\x00-\x1f\x7f-\x9f]/.test(nicknameDraft)){showError({code:'invalid-nickname'});render();return;}
+   return act('Saving nickname',()=>service.renamePersonalPlayer(alias),()=>{clearNickname();setMessage('Nickname saved.');});
+  }
+  function renderNicknameControls(host,state){
+   const owner=teacherNicknameOwner(state);if(!owner||typeof service.renamePersonalPlayer!=='function')return;
+   if(!nicknameEditing){if(canRenamePersonal(state))host.append(button('Change nickname',beginNickname,'classpassPersonalRename'));return;}
+   if(nicknameOwner!==owner)return;
+   const form=element('form','classpass-nickname-form');form.id='classpassNicknameForm';form.noValidate=true;
+   const label=element('label','','Arcade nickname');label.htmlFor='classpassNicknameInput';
+   const input=element('input');input.id='classpassNicknameInput';input.type='text';input.maxLength=40;input.required=true;input.autocomplete='off';input.value=nicknameDraft;input.disabled=!!busy||state.loading===true||state.readOnly===true;input.oninput=()=>{nicknameDraft=input.value;};
+   const save=button('Save nickname',()=>{},'classpassNicknameSave','is-primary');save.type='submit';save.disabled=save.disabled||state.readOnly===true;
+   const cancel=button('Cancel',()=>{if(busy)return;clearNickname();setMessage('');render();section?.querySelector('#classpassPersonalRename')?.focus({preventScroll:true});},'classpassNicknameCancel');
+   const actions=element('div','classpass-actions');actions.append(save,cancel);form.append(label,input,actions);form.onsubmit=saveNickname;host.append(form);
   }
   function leave(discard=false){const teacher=snapshot().profile?.kind==='teacher';return act('Leaving',()=>service.leave(discard?{discard:true}:undefined),()=>{confirmation=null;joinDraft='';setMessage(teacher?'Your player is closed on this device. It stays saved with your Google account.':'You have left this device. Use your card to return.');api.onProfile?.(null);});}
   function confirmAction(){
@@ -209,6 +241,7 @@
    if(state.profile&&!state.locked){
     const identity=element('div','classpass-identity');identity.append(pictureNode(doc,state.profile.picture,state.profile.profileId),element('h3','',text(state.profile.alias,'Music friend')));section.append(identity);
     section.append(element('p','classpass-lead',personal?'Your player is ready.':'Your profile is ready.'),element('p','classpass-save-status',state.pending?'Saving your progress…':personal?'Saved with your Google account. Sign in on another device to keep playing.':'Use your card on another device to keep playing.'));
+    if(personal)renderNicknameControls(section,state);
     section.append(button(personal?'Close my player here':'Leave this device',()=>requestConfirmation({kind:'leave',personal}),'classpassLeave'));return;
    }
    if(personal){section.append(element('p','classpass-notice','Your player is closed on this device. It stays saved with your Google account.'));if(canManage()&&state.personal?.available)section.append(button('Open my player',openPersonalPlayer,'classpassPersonalOpen','is-primary'));return;}
@@ -260,7 +293,7 @@
    if(state.profile?.kind==='teacher'&&(state.locked||state.waitingTakeover)){
     box.append(element('p','classpass-help','Your player needs a check before you keep playing.'),button('Check saved progress',()=>{view='student';setMessage('');render();},'classpassPersonalCheck','is-primary'));
    }
-   else if(state.personal.active){const active=button('Your player is open',()=>{},'classpassPersonalOpen');active.disabled=true;box.append(element('p','classpass-help','Your avatar, level, Notes and outfits save with your Google account.'),active);}
+   else if(state.personal.active){const active=button('Your player is open',()=>{},'classpassPersonalOpen');active.disabled=true;box.append(element('p','classpass-help','Your avatar, level, Notes and outfits save with your Google account.'),active);if(state.profile?.kind==='teacher')box.append(element('p','classpass-help','Nickname: '+text(state.profile.alias,'Music friend')));renderNicknameControls(box,state);}
    else if(state.personal.available){box.append(element('p','classpass-help','Open your Google-saved player on this device.'),button('Open my player',openPersonalPlayer,'classpassPersonalOpen','is-primary'));}
    else{
     box.append(element('p','classpass-help','On the device with your latest progress, save this player to your Google account. Then sign in on other devices.'));
@@ -307,11 +340,12 @@
    if(focusId){const restored=doc.getElementById(focusId);if(restored&&section.contains(restored)&&!restored.disabled){restored.focus({preventScroll:true});if(selection&&restored.setSelectionRange)try{restored.setSelectionRange(selection.start,selection.end);}catch{}}}
   }
   function open(next='student'){
-   if(disposed)return;generation++;busy='';clearCard();confirmation=null;message='';joinDraft='';classDraft='';view=next==='admin'?'admin':'student';opened=true;
+   if(disposed)return;generation++;busy='';clearCard();clearNickname();confirmation=null;message='';joinDraft='';classDraft='';view=next==='admin'?'admin':'student';opened=true;
    api.openPanel?.(view==='admin'?'Teacher class passes':snapshot().profile?.kind==='teacher'?'Your player':'Your Profile Pass');section=element('section','classroom-profile-ui');section.setAttribute('aria-label','Private classroom profiles');body.append(section);render();
    if(view==='admin'&&canManage())refreshClasses();else section.querySelector('#classpassJoinInput')?.focus({preventScroll:true});
   }
   const unsubscribe=service.subscribe?.(()=>{
+   const state=snapshot();if(nicknameEditing&&(nicknameOwner!==teacherNicknameOwner(state)||(state.readOnly&&!state.loading))){clearNickname();if(busy==='Saving nickname'){generation++;busy='';}}
    const allowed=canManage();if(!allowed){clearCard();classes=[];profiles=[];selectClass('');resetBrowser();classDraft='';if(confirmation&&['reissue','delete-profile','delete-class'].includes(confirmation.kind))confirmation=null;if(lastAuthorized){generation++;busy='';}}
    if(confirmation?.kind==='save-personal'&&(!allowed||studentSelected(snapshot())||snapshot().personal?.available))confirmation=null;
    if(opened){render();if(view==='admin'&&allowed&&!lastAuthorized&&!busy)refreshClasses();}
@@ -319,10 +353,10 @@
   });
   const observer=typeof win.MutationObserver==='function'?new win.MutationObserver(()=>{
    const wrapper=body.parentElement,hidden=wrapper&&(wrapper.hidden||win.getComputedStyle(wrapper).display==='none');
-   if(opened&&(!section?.isConnected||hidden)){opened=false;generation++;busy='';joinDraft='';confirmation=null;resetBrowser();clearCard();}
+   if(opened&&(!section?.isConnected||hidden)){opened=false;generation++;busy='';joinDraft='';confirmation=null;clearNickname();resetBrowser();clearCard();}
   }):null;
   observer?.observe(body.parentElement||body,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden','style','class']});
-  return {open,close,handleEscape(){if(!opened)return false;if(confirmation){confirmation=null;render();}else close();return true;},getState:()=>({open:opened,view,busy:!!busy,cardVisible:!!card,classId:selectedClass,confirmation:confirmation?.kind||null}),destroy(){disposed=true;opened=false;generation++;clearCard();joinDraft='';confirmation=null;section?.remove();observer?.disconnect();if(typeof unsubscribe==='function')unsubscribe();}};
+  return {open,close,handleEscape(){if(!opened)return false;if(confirmation){confirmation=null;render();}else close();return true;},getState:()=>({open:opened,view,busy:!!busy,cardVisible:!!card,classId:selectedClass,confirmation:confirmation?.kind||null}),destroy(){disposed=true;opened=false;generation++;clearCard();clearNickname();joinDraft='';confirmation=null;section?.remove();observer?.disconnect();if(typeof unsubscribe==='function')unsubscribe();}};
  }
  return Object.freeze({create,friendlyError,pictureNode});
 });

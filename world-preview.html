@@ -2,11 +2,11 @@
 <script src="arcade-host.js?v=domains-77"></script>
 <script src="classroom-profile-data.js?v=classroom-54"></script>
 <script src="classroom-storage.js?v=classroom-54"></script>
-<script src="classroom-service.js?v=signin-77"></script>
+<script src="classroom-service.js?v=nickname-79"></script>
 <script src="vendor/qrcode-generator.js?v=classroom-54"></script>
 <script src="classroom-pass-qr.js?v=classroom-54"></script>
 <link rel="stylesheet" href="classroom-ui.css?v=roster-58">
-<script src="classroom-ui.js?v=signin-78"></script>
+<script src="classroom-ui.js?v=nickname-79"></script>
 <script src="classroom-boot.js?v=player-72"></script><title>The Coda Arcade</title><style>
 *{box-sizing:border-box}body{margin:0;background:#10101e;color:#e9def9;font:15px system-ui}header{padding:12px 20px;display:flex;align-items:center;gap:18px;justify-content:space-between;background:#211a37}a{color:#a6eff4}button{background:#392f58;color:white;border:1px solid #ba8fdf;border-radius:6px;padding:9px 12px;cursor:pointer}button:hover{background:#514073}#view{display:block;width:min(100vw,calc((100dvh - 110px) * 1672 / 941));height:auto;aspect-ratio:1672/941;margin:0 auto;image-rendering:pixelated;background:#10101e;touch-action:none}footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 16px;min-height:44px;background:#211a37;font-size:12px}#dialog{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);width:min(490px,90vw);padding:20px;background:#261d40;border:2px solid #d8a6f1;box-shadow:0 8px 50px #000b;display:none}#dialog strong{color:#f4c8fa}#dialog p{line-height:1.6}#dialog button{float:right}@media(max-width:650px){header{font-size:12px;padding:8px}#view{width:min(100vw,calc((100dvh - 110px) * 1672 / 941));height:auto}}
 #gameoverlay{position:fixed;inset:0;z-index:100;background:#121327;display:flex;flex-direction:column}#gameoverlay[hidden]{display:none}.gamebar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#231a3c;border-bottom:2px solid #b583dc}.gamebar strong{color:#f0d7ff}#gameiframe{border:0;width:100%;flex:1;min-height:0;background:#111628}body.game-open{overflow:hidden}@media(max-width:650px){.gamebar{gap:6px}.gamebar strong{font-size:12px}}
@@ -1131,7 +1131,7 @@ async function loadAssetStudio(){let found=null;
 window.CodaAssetStudioQA={get:()=>({active:assetStudio.active,count:assetStudio.assets.length,selected:assetStudio.selected,assets:assetStudio.assets.map(a=>({id:a.id,name:a.name,kind:a.kind,x:a.x,y:a.y,w:a.w,h:a.h,layer:a.layer,anim:a.anim,frames:a.frames}))}),open:()=>toggleAssetStudio(true),close:()=>toggleAssetStudio(false),preset:()=>assetUI('assetPreset').click(),export:downloadAssetJSON,save:persistAssets};
 // --- END ASSET STUDIO ------------------------------------------------------
 
-window.CODA_BUILD="77.0-domain-signin";
+window.CODA_BUILD="79.0-teacher-nicknames";
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -1958,7 +1958,7 @@ function installMobileWorld(){
  const legacy=document.createElement('div');legacy.id='worldLegacyShortcuts';legacy.hidden=true;legacy.inert=true;document.body.append(legacy);
  for(const id of ['hallFameBtn','notesBtn','pianoLabBtn','classroomBtn','fishingBtn','jukeboxBtn','assetToggle','editorToggle','avatarBtn','musiciansBtn']){const node=document.getElementById(id);if(node)legacy.append(node);}
  const oldArcadeLink=menu.querySelector('a[href="classic-arcade.html"]');if(oldArcadeLink)legacy.append(oldArcadeLink);
- const titleLink=document.createElement('a');titleLink.id='worldTitleScreenLink';titleLink.href='index.html?v=world-77';titleLink.textContent='← Title screen';menu.append(titleLink);
+ const titleLink=document.createElement('a');titleLink.id='worldTitleScreenLink';titleLink.href='index.html?v=world-79';titleLink.textContent='← Title screen';menu.append(titleLink);
  const quick=document.createElement('div');quick.className='world-quick-actions';
  const developer=document.createElement('button');developer.id='worldDeveloperBtn';developer.type='button';developer.textContent='Developer';developer.title='Developer console (F2)';developer.onclick=()=>{closeMenu();window.CodaDeveloperConsole.open('objects');};
  quick.append(document.querySelector('#levelBtn'),developer,document.querySelector('#musicBtn'));header.insertBefore(quick,menu);

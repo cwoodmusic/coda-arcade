@@ -23,6 +23,13 @@ PERSONAL_FIXTURE = r'''()=>{
  };
  __service.savePersonalPlayer=async()=>{__record('savePersonalPlayer');return open();};
  __service.openPersonalPlayer=async()=>{__record('openPersonalPlayer');return open();};
+ __service.renamePersonalPlayer=async alias=>{
+  __record('renamePersonalPlayer',alias);const owner=__state.profile?.profileId;
+  __emit({loading:true,readOnly:true});
+  const result=window.__holdRename?await new Promise(resolve=>window.__releaseRename=resolve):(window.__renameFailure||{ok:true,alias});
+  if(result.ok&&__state.profile?.profileId===owner)__emit({profile:{...__state.profile,alias:result.alias||alias}});
+  __emit({loading:false,readOnly:false});return result;
+ };
  const leave=__service.leave;
  __service.leave=async options=>{const result=await leave(options);if(result.ok)__emit({personal:{available:true,active:false}});return result;};
  __emit({personal:{available:false,active:false}});
@@ -40,6 +47,125 @@ class TeacherPlayerUITests(unittest.TestCase):
     def setUp(self):
         fixture.ClassroomProfileUITests.setUp(self)
         self.page.evaluate(PERSONAL_FIXTURE)
+
+    def teacher(self, view='admin'):
+        self.admin()
+        self.page.evaluate('''__emit({personal:{available:true,active:true},
+         profile:{kind:'teacher',classId:'teacher_personal',profileId:'teacherSetupUID_123456',alias:'Guest',picture:'owl'},
+         readOnly:false,locked:false,waitingTakeover:false})''')
+        if view == 'student':
+            self.page.locator('#classpassTab-student').click()
+
+    def test_teacher_can_replace_guest_nickname_from_both_player_pages(self):
+        self.teacher()
+        self.assertIn('Nickname: Guest', self.page.locator('.classpass-personal-player').inner_text())
+        self.page.get_by_role('button', name='Change nickname', exact=True).click()
+        nickname=self.page.get_by_label('Arcade nickname', exact=True)
+        self.assertEqual(nickname.input_value(), 'Guest')
+        self.assertEqual(nickname.get_attribute('maxlength'), '40')
+        nickname.fill('  Mr Wooooood  ')
+        self.page.get_by_role('button', name='Save nickname', exact=True).click(); self.idle()
+        self.assertEqual(self.calls('renamePersonalPlayer')[0]['args'], ['Mr Wooooood'])
+        self.assertEqual(self.page.evaluate('__state.profile.alias'), 'Mr Wooooood')
+        self.assertIn('Nickname: Mr Wooooood', self.page.locator('.classpass-personal-player').inner_text())
+        self.assertEqual(self.page.locator('#classpassNicknameForm').count(), 0)
+        self.page.locator('#classpassTab-student').click()
+        self.assertEqual(self.page.locator('.classpass-identity h3').inner_text(), 'Mr Wooooood')
+        self.page.get_by_role('button', name='Change nickname', exact=True).click()
+        self.page.get_by_label('Arcade nickname', exact=True).fill('Mr <arcade>')
+        self.page.get_by_role('button', name='Save nickname', exact=True).click(); self.idle()
+        self.assertEqual(self.page.locator('.classpass-identity h3').inner_text(), 'Mr <arcade>')
+        self.assertEqual(self.page.locator('arcade').count(), 0)
+
+    def test_pending_rename_keeps_draft_and_prevents_a_second_submission(self):
+        self.teacher('student')
+        self.page.locator('#classpassPersonalRename').click()
+        self.page.locator('#classpassNicknameInput').fill('Captain Coda')
+        self.page.evaluate('__holdRename=true')
+        self.page.locator('#classpassNicknameSave').click()
+        self.assertTrue(self.page.locator('#classpassNicknameSave').is_disabled())
+        self.assertTrue(self.page.locator('#classpassNicknameCancel').is_disabled())
+        self.assertEqual(self.page.locator('#classpassNicknameInput').input_value(), 'Captain Coda')
+        self.assertEqual(self.page.evaluate('__state.profile.alias'), 'Guest')
+        self.page.evaluate('__emit({status:"Still saving"});document.querySelector("#classpassNicknameForm").requestSubmit()')
+        self.assertEqual(len(self.calls('renamePersonalPlayer')), 1)
+        self.page.evaluate('__releaseRename({ok:true,alias:"Captain Coda"})'); self.idle()
+        self.assertEqual(self.page.locator('.classpass-identity h3').inner_text(), 'Captain Coda')
+
+    def test_failed_rename_keeps_the_previous_nickname_and_editable_draft(self):
+        self.teacher('student')
+        self.page.locator('#classpassPersonalRename').click()
+        self.page.locator('#classpassNicknameInput').fill('Maestro Wood')
+        self.page.evaluate('__renameFailure={ok:false,code:"personal-rename-failed"}')
+        self.page.locator('#classpassNicknameSave').click(); self.idle()
+        self.assertEqual(self.page.locator('.classpass-identity h3').inner_text(), 'Guest')
+        self.assertEqual(self.page.locator('#classpassNicknameInput').input_value(), 'Maestro Wood')
+        self.assertTrue(self.page.locator('#classpassNicknameInput').is_enabled())
+        self.assertIn('previous nickname is still in use', self.page.locator('#classpassStatus').inner_text())
+        self.page.evaluate('__renameFailure=null')
+        self.page.locator('#classpassNicknameSave').click(); self.idle()
+        self.assertEqual(self.page.locator('.classpass-identity h3').inner_text(), 'Maestro Wood')
+
+    def test_empty_long_or_control_character_nicknames_do_not_call_the_service(self):
+        self.teacher('student')
+        self.page.locator('#classpassPersonalRename').click()
+        for value in ['', '   ', 'x'*41, 'Captain\x01Coda', '\x85Captain', 'Captain\x85']:
+            with self.subTest(value=repr(value)):
+                self.page.locator('#classpassNicknameInput').evaluate('''(node,value)=>{
+                 node.value=value;node.dispatchEvent(new Event('input',{bubbles:true}));
+                }''', value)
+                self.page.locator('#classpassNicknameSave').click(); self.idle()
+                self.assertEqual(self.calls('renamePersonalPlayer'), [])
+                self.assertEqual(self.page.evaluate('__state.profile.alias'), 'Guest')
+                self.assertIn('1–40 characters', self.page.locator('#classpassStatus').inner_text())
+
+    def test_only_the_writable_owned_teacher_profile_exposes_nickname_controls(self):
+        self.teacher('student')
+        self.assertTrue(self.page.locator('#classpassPersonalRename').is_visible())
+        cases=[{'readOnly':True}, {'locked':True}, {'waitingTakeover':True}, {'enabled':False},
+               {'admin':{'signedIn':True,'authorized':False,'uid':'teacherSetupUID_123456'}},
+               {'profile':{'kind':'teacher','classId':'teacher_personal','profileId':'other_teacher','alias':'Other teacher'}},
+               {'profile':{'classId':'class-blue','profileId':'profile-one','alias':'Amber Fox 14','picture':'fox'}}]
+        baseline=self.page.evaluate('JSON.parse(JSON.stringify(__state))')
+        for patch in cases:
+            with self.subTest(patch=patch):
+                self.page.evaluate('([baseline,patch])=>__emit({...baseline,...patch})', [baseline,patch])
+                self.assertEqual(self.page.locator('#classpassPersonalRename,#classpassNicknameForm').count(), 0)
+        self.assertEqual(self.calls('renamePersonalPlayer'), [])
+
+    def test_cancel_close_and_identity_changes_clear_the_draft_and_late_status(self):
+        self.teacher('student')
+        self.page.locator('#classpassPersonalRename').click()
+        self.page.locator('#classpassNicknameInput').fill('Discard me')
+        self.page.locator('#classpassNicknameCancel').click()
+        self.page.locator('#classpassPersonalRename').click()
+        self.assertEqual(self.page.locator('#classpassNicknameInput').input_value(), 'Guest')
+        self.page.locator('#classpassNicknameInput').fill('Discard on close')
+        self.page.evaluate('__ui.close();__ui.open("student")')
+        self.assertEqual(self.page.locator('#classpassNicknameForm').count(), 0)
+        self.page.locator('#classpassPersonalRename').click()
+        self.assertEqual(self.page.locator('#classpassNicknameInput').input_value(), 'Guest')
+        self.page.locator('#classpassNicknameInput').fill('Old teacher draft')
+        self.page.evaluate('__holdRename=true')
+        self.page.locator('#classpassNicknameSave').click()
+        self.page.evaluate('''__emit({personal:{available:false,active:false},
+         profile:{classId:'class-blue',profileId:'profile-one',alias:'Amber Fox 14',picture:'fox'}});
+         __releaseRename({ok:true,alias:'Old teacher draft'});''')
+        self.idle()
+        self.assertEqual(self.page.locator('#classpassNicknameForm,#classpassPersonalRename').count(), 0)
+        self.assertEqual(self.page.locator('.classpass-identity h3').inner_text(), 'Amber Fox 14')
+        self.assertNotIn('Old teacher draft', self.page.locator('body').inner_text())
+        self.assertNotIn('Nickname saved', self.page.locator('#classpassStatus').inner_text())
+
+    def test_logout_drops_nickname_draft_before_the_next_teacher_signin(self):
+        self.teacher()
+        self.page.locator('#classpassPersonalRename').click()
+        self.page.locator('#classpassNicknameInput').fill('Private draft')
+        self.page.locator('#classpassAdminSignOut').click(); self.idle()
+        self.assertEqual(self.page.locator('#classpassNicknameForm').count(), 0)
+        self.assertNotIn('Private draft', self.page.locator('body').inner_text())
+        self.page.locator('#classpassAdminSignIn').click(); self.idle()
+        self.assertEqual(self.page.locator('#classpassNicknameForm').count(), 0)
 
     def test_first_save_is_explicit_names_current_player_and_defaults_to_cancel(self):
         self.admin()
