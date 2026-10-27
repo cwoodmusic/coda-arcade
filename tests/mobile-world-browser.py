@@ -136,31 +136,40 @@ class MobileWorldTests(unittest.TestCase):
                 with self.subTest(viewport=viewport,point=point):
                     self.place(point['x'],point['y']);self.assert_avatar_visible()
 
-    def test_large_controls_overlay_the_full_height_world_in_portrait_and_landscape(self):
+    def test_compact_translucent_controls_leave_the_full_height_world_playable(self):
         for viewport in [{'width':390,'height':844},{'width':360,'height':780},{'width':320,'height':740},{'width':844,'height':390},{'width':667,'height':375}]:
             self.page.set_viewport_size(viewport);self.page.wait_for_timeout(100)
             metric=self.page.evaluate('''()=>{
               const host=document.querySelector('#codaTouchControls'),dpad=host.querySelector('.coda-joystick').getBoundingClientRect(),actions=host.querySelector('.coda-touch-actions').getBoundingClientRect(),stage=worldStage.getBoundingClientRect();
               return {stageBottom:stage.bottom,scrollWidth:document.documentElement.scrollWidth,
                 reserve:getComputedStyle(document.body).getPropertyValue('--coda-world-pad-height').trim(),
-                dpad:dpad.toJSON(),thumb:host.querySelector('.coda-joystick-thumb').getBoundingClientRect().toJSON(),actions:actions.toJSON(),
+                dpad:dpad.toJSON(),thumb:host.querySelector('.coda-joystick-thumb').getBoundingClientRect().toJSON(),actions:actions.toJSON(),host:host.getBoundingClientRect().toJSON(),joystickOpacity:Number(getComputedStyle(host.querySelector('.coda-joystick')).opacity),
                 center:document.elementFromPoint((dpad.right+actions.left)/2,innerHeight-45)?.id,
-                buttons:[...host.querySelectorAll('button')].filter(button=>!button.hidden).map(button=>{const b=button.getBoundingClientRect();return {width:b.width,height:b.height,direction:!!button.closest('.coda-joystick'),emote:button.classList.contains('coda-touch-emote')};})};
+                buttons:[...host.querySelectorAll('button')].filter(button=>!button.hidden).map(button=>{const b=button.getBoundingClientRect();return {width:b.width,height:b.height,top:b.top,bottom:b.bottom,opacity:Number(getComputedStyle(button).opacity),direction:!!button.closest('.coda-joystick'),emote:button.classList.contains('coda-touch-emote')};})};
             }''')
             self.assertEqual(metric['reserve'],'0px');self.assertAlmostEqual(metric['stageBottom'],viewport['height'],delta=1)
             self.assertLessEqual(metric['scrollWidth'],viewport['width']+1)
             self.assertGreaterEqual(metric['dpad']['left'],0);self.assertLess(metric['dpad']['right'],metric['actions']['left']);self.assertLessEqual(metric['actions']['right'],viewport['width'])
             landscape=viewport['width']>viewport['height']
-            self.assertGreaterEqual(metric['dpad']['width'],200 if landscape else 216,metric)
+            self.assertGreaterEqual(metric['dpad']['width'],120,metric)
+            self.assertLessEqual(metric['dpad']['width'],160 if landscape else 170,metric)
+            self.assertLessEqual(metric['host']['height'],190 if landscape else 230,metric)
+            self.assertLessEqual(metric['joystickOpacity'],.8,metric)
+            self.assertGreaterEqual(metric['joystickOpacity'],.5,metric)
             self.assertAlmostEqual(metric['dpad']['height'],metric['dpad']['width'],delta=1)
-            self.assertGreaterEqual(metric['thumb']['width'],88,metric)
+            self.assertGreaterEqual(metric['thumb']['width'],44,metric)
+            self.assertLessEqual(metric['thumb']['width'],64,metric)
             self.assertEqual(self.page.locator('#codaTouchControls .coda-joystick button').count(),0,
                 'Directional movement should use the joystick, without hidden replacement buttons')
             for button in metric['buttons']:
                 if not button['direction']:
-                    self.assertGreaterEqual(button['width'],112 if landscape else 80,metric)
-                    self.assertGreaterEqual(button['height'],96 if button['emote'] and landscape else
-                                            88 if button['emote'] else 112 if landscape else 104,metric)
+                    self.assertGreaterEqual(button['width'],44,metric)
+                    self.assertGreaterEqual(button['height'],44,metric)
+                    self.assertLessEqual(button['height'],80,metric)
+                    if not button['emote'] or not landscape:self.assertLessEqual(button['width'],96,metric)
+                    self.assertGreaterEqual(button['top'],0,metric);self.assertLessEqual(button['bottom'],viewport['height'],metric)
+                    self.assertLessEqual(button['opacity'],.85,metric)
+                    self.assertGreaterEqual(button['opacity'],.5,metric)
             self.assertEqual(metric['center'],'view','The space between the thumb controls must remain a playable map')
 
     def test_landscape_npc_dialogue_stays_between_the_large_thumb_controls(self):
@@ -364,7 +373,9 @@ class MobileWorldTests(unittest.TestCase):
         self.page.locator('#pianoMenuClose').tap();self.page.locator('#closepiano').tap();self.page.wait_for_function('CodaArcadeQA.touch().context==="world"')
         self.menu('classroom');self.page.wait_for_function('CodaArcadeQA.touch().context==="classroom"&&CodaArcadeQA.touch().visible')
         self.assertTrue(self.page.locator('#codaTouchControls [data-action="jump"]').is_hidden())
-        self.page.locator('[data-classroom-view="books"]').tap();self.page.wait_for_function('!CodaArcadeQA.touch().visible')
+        self.page.locator('#classroomCanvas').focus();self.page.keyboard.down('w');self.page.wait_for_timeout(900);self.page.keyboard.up('w')
+        self.page.keyboard.press('e');self.page.wait_for_function('!CodaArcadeQA.touch().visible')
+        self.page.locator('#classroomBrowseBooks').tap()
         self.page.locator('#classroomSearch').fill('interval');self.page.locator('[data-topic="intervals"]').tap()
         self.assertIn('Intervals',self.page.locator('#classroomBookTitle').inner_text())
         self.page.locator('#classroomClose').tap();self.page.wait_for_function('CodaArcadeQA.touch().context==="world"')

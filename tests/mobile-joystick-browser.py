@@ -156,7 +156,9 @@ class MobileJoystickTests(unittest.TestCase):
         self.down(joystick_point(self.page,.9,-.3));self.page.clock.run_for(140)
         after=self.page.evaluate('CodaArcadeQA.classroom().player')
         self.assertGreater(after['x'],before['x']+10);self.assertLess(after['y'],before['y']-2)
-        self.activate_panel('[data-classroom-view="books"]')
+        # The classroom library opens through Haydn rather than a room-tab shortcut.
+        self.drag(joystick_point(self.page,0,-1));self.page.clock.run_for(900)
+        self.page.locator('#classroomCanvas').focus();self.page.keyboard.press('e');self.page.clock.run_for(160)
         self.assertFalse(self.touch()['visible']);self.assert_neutral()
         stopped=self.page.evaluate('CodaArcadeQA.classroom().player');self.page.clock.run_for(160)
         self.assertEqual(self.page.evaluate('CodaArcadeQA.classroom().player'),stopped)
