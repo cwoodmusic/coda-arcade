@@ -46,6 +46,26 @@ test('lesson pictures reuse engraved clefs and join two staffs with one question
  assert.match(grand,/data-staff-position="10"/);assert.match(grand,/class="staff-ledger"/);assert.match(grand,/translate\(0 120\)/);
 });
 
+test('both clefs explain the staff and their landmarks before either mnemonic map',()=>{
+ const {CLEF_REMINDERS,clefReminderSVG}=require('../classroom-tutorials.js'),notation=require('../music-notation.js');
+ for(const clef of ['treble','bass']){
+  const cards=CLEF_REMINDERS[clef];assert.deepEqual(cards.map(card=>card.id),['staff','clef','lines','spaces']);
+  assert.match(cards[0].teach,/five lines and four spaces/);assert.match(cards[1].teach,/clef tells us which note letters/);
+  assert.match(cards[2].teach,/BOTTOM to the TOP/);assert.match(cards[3].teach,/BOTTOM to the TOP/);
+  assert.ok(Object.isFrozen(cards)&&cards.every(Object.isFrozen));
+  for(const card of cards)assert.doesNotMatch(card.teach+' '+card.example,/\b[A-G][0-8]\b/);
+  const picture=clefReminderSVG(clef,'clef');assert.ok(picture.includes(notation.glyph(clef==='bass'?'fClef':'gClef')));
+  assert.match(picture,new RegExp((clef==='bass'?'F':'G')+' line'));
+ }
+ assert.match(CLEF_REMINDERS.treble[1].example,/curls around the G line/);
+ assert.match(CLEF_REMINDERS.bass[1].example,/two dots point to the F line/);
+ assert.deepEqual(CLEF_REMINDERS.treble[2].letters,['E','G','B','D','F']);
+ assert.deepEqual(CLEF_REMINDERS.treble[3].letters,['F','A','C','E']);
+ assert.deepEqual(CLEF_REMINDERS.bass[2].letters,['G','B','D','F','A']);
+ assert.deepEqual(CLEF_REMINDERS.bass[3].letters,['A','C','E','G']);
+ assert.deepEqual(LESSONS.filter(lesson=>['note-naming','bass-clef'].includes(lesson.id)).map(lesson=>lesson.total),[10,9],'Teaching introductions do not rewrite canonical saved checkpoints');
+});
+
 test('little learner pages keep one short instruction and preserve every saved exercise',()=>{
  const {SIMPLE_NOTE_COPY,NOTE_LESSONS}=require('../classroom-tutorials.js');
  for(const [id,steps]of Object.entries(NOTE_LESSONS)){

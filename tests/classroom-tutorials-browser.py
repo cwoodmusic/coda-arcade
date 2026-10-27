@@ -112,7 +112,7 @@ class ClassroomTutorialTests(unittest.TestCase):
         self.open_lesson('note-naming')
         for letter in ['C','F','D','A']:self.answer(letter);self.next()
         self.assertEqual(self.state()['active']['step'],4)
-        self.assertEqual(self.state()['active']['noteReminder'],'lines')
+        self.assertEqual(self.state()['active']['noteReminder'],'staff')
         self.assertEqual(self.page.locator('[data-note-answer]').count(),0)
         finish_note_reminders(self.page)
         self.assertTrue(self.page.locator('[data-note-example="staff"] .staff-note').is_visible())
@@ -124,6 +124,8 @@ class ClassroomTutorialTests(unittest.TestCase):
 
     def test_bass_clef_teaches_lines_spaces_and_requires_a_saved_end_quiz(self):
         self.open_lesson('bass-clef')
+        self.assertEqual(self.state()['active']['noteReminder'],'staff')
+        finish_note_reminders(self.page)
         self.assertEqual(self.page.locator('[data-note-example="staff"] [data-staff-clef="bass"]').count(),1)
         self.try_step();self.answer('E');self.assertTrue(self.page.locator('[data-tutorial-next]').is_disabled())
         self.page.locator('[data-note-hint]').click();self.assertTrue(self.page.locator('.tutorial-feedback').inner_text())

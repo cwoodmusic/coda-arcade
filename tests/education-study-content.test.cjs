@@ -70,10 +70,10 @@ test('rest and tie teaching pictures keep written silence and tied durations in 
 });
 
 test('the actual curriculum survives an untouched save without becoming a private authored course',()=>{
- const content=require('../education-content.js'),curriculum=require('../classroom-exam-curriculum.js'),store=content.createStore({storage:disk(),canEdit:()=>true});
+ const content=require('../education-content.js'),curriculum=require('../classroom-exam-curriculum.js'),paths=require('../classroom-learning-paths-data.js'),store=content.createStore({storage:disk(),canEdit:()=>true});
  const before=Object.fromEntries(content.CATEGORIES.map(({id})=>[id,store.getStudyRevision(id)]));
  assert.equal(store.saveDocument(store.getDocument()).ok,true);
- for(const {id}of content.CATEGORIES){assert.ok(curriculum.forLesson(id).length>0);assert.equal(store.getStudyCards(id).length,curriculum.forLesson(id).length);assert.equal(store.isStudyEdited(id),false);assert.equal(store.isLessonEdited(id),false);assert.equal(store.getStudyRevision(id),before[id]);}
+ for(const {id}of content.CATEGORIES){assert.ok(curriculum.forLesson(id).length>0);assert.deepEqual(store.getStudyCards(id).map(card=>card.id),paths.getCards(id).map(card=>card.id));assert.equal(store.isStudyEdited(id),false);assert.equal(store.isLessonEdited(id),false);assert.equal(store.getStudyRevision(id),before[id]);}
 });
 
 test('a supplemental lesson has editable cards and a custom quiz without adding an exam category',()=>{

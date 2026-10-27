@@ -121,3 +121,6 @@
 }
 
 .classroom-tutorial .lesson-note-reminder-picture{width:min(100%,650px);margin:0;text-align:center}.classroom-tutorial .lesson-note-reminder-picture svg{display:block;width:100%;height:auto;max-height:42dvh}.classroom-tutorial [data-note-reminder-next]{background:#247767;border-color:#b4f5d2;min-width:180px}.classroom-tutorial [data-note-reminders]{font-size:18px;padding:9px 14px;background:#263d55}
+.classroom-tutorial [data-note-reminder]>.lesson-read-direction{max-width:34em;font-size:22px;line-height:1.45}
+.classroom-tutorial [data-note-reminder] .lesson-model-label{max-width:32em;margin:12px auto 0;font-size:21px;line-height:1.4}
+@media(max-width:600px){.classroom-tutorial [data-note-reminder]>.lesson-read-direction{font-size:20px}.classroom-tutorial [data-note-reminder] .lesson-model-label{font-size:20px}}

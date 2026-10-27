@@ -24,10 +24,10 @@ def finish_exam_study(page, lesson):
 
 
 def finish_note_reminders(page):
-    """Read both actual reminder screens before attempting a staff question."""
-    for _ in range(3):
+    """Read the staff, clef, line and space screens before a staff question."""
+    for _ in range(5):
         advance = page.locator('[data-note-reminder-next]')
         if advance.count() == 0 or not advance.is_visible():
             return
         advance.click()
-    raise AssertionError('The line and space reminders did not reach the note example')
+    raise AssertionError('The clef, line and space reminders did not reach the note example')

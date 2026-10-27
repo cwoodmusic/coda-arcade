@@ -4,7 +4,7 @@
  const api=factory(root,node?require:null);if(node)module.exports=api;if(root)root.CodaEducationContent=api;
 })(typeof window==='undefined'?null:window,function(root,requireModule){
  'use strict';
- const KEY='codaEducationContentDraftV1',VERSION=1,MAX_BYTES=2000000;
+ const KEY='codaEducationContentDraftV1',VERSION=1,LEARNING_PATHS_VERSION=1,MAX_BYTES=2000000;
  const CATEGORIES=Object.freeze([
   {id:'note-naming',title:'Treble & note names'},{id:'bass-clef',title:'Bass clef'},
   {id:'grand-staff',title:'Grand staff & Middle C'},{id:'rhythm-tree',title:'Note lengths & rhythm'},
@@ -26,6 +26,8 @@
  let sources=null,defaults=null,activeStore=null;
  function accidentalsModule(){if(root?.CodaAccidentalsLesson)return root.CodaAccidentalsLesson;if(requireModule)try{return requireModule('./classroom-accidentals-lesson.js');}catch{}return null;}
  function curriculumModule(){if(root?.CodaExamCurriculum)return root.CodaExamCurriculum;if(requireModule)try{return requireModule('./classroom-exam-curriculum.js');}catch{}return null;}
+ function pathsModule(){if(root?.CodaClassroomLearningPathsData)return root.CodaClassroomLearningPathsData;if(requireModule)try{return requireModule('./classroom-learning-paths-data.js');}catch{}return null;}
+ function defaultStudy(id,fallback){const cards=pathsModule()?.getCards?.(id);return Array.isArray(cards)?cards:fallback;}
  function getSources(){
   if(!sources){sources=requireModule?{bank:requireModule('./final-exam-bank.js'),quiz:requireModule('./classroom-quiz.js'),tutorials:requireModule('./classroom-tutorials.js'),time:requireModule('./time-signature-lesson.js')}:{bank:root?.CodaFinalExamBank,quiz:root?.CodaClassroomQuiz,tutorials:root?.CodaClassroomTutorials,time:root?.CodaTimeSignatureLesson};}
   if(!sources.bank||!sources.quiz||!sources.tutorials||!sources.time){sources=null;fail('The classroom content is still loading. Please try again.');}return sources;
@@ -43,13 +45,13 @@
     const meta=tutorials.LESSONS.find(item=>item.id===id);
     let steps=tutorials.NOTE_LESSONS[id]||tutorials.EXPRESSION_LESSONS[id]||(id==='major-minor-keys'?tutorials.KEY_STEPS:id==='time-signatures'?time.STEPS:RHYTHM_STEPS);
     steps=copy(steps).map((step,index)=>{const simple=tutorials.SIMPLE_NOTE_COPY[id]?.[index];return {...step,...(simple?{teach:simple[0],example:simple[1],prompt:simple[2],hint:simple[3]}:{}),visual:null};});
-    lessons[id]={title:meta.title,steps,study:cleanStudy(id,curriculumModule()?.forLesson?.(id)||[])};
+    lessons[id]={title:meta.title,steps,study:cleanStudy(id,defaultStudy(id,curriculumModule()?.forLesson?.(id)||[]))};
     quizzes[id]={title:quiz.QUIZZES[id].title,questions:copy(quiz.QUIZZES[id].questions).map(question=>{const result={...question,category:id,visual:question.visual||null};if(result.answerNotes===null)delete result.answerNotes;return result;})};
    }
    const extra=accidentalsModule(),title=extra?.TITLE||'Accidentals & key signatures';
-   lessons[SUPPLEMENTAL_ID]={title,steps:[],study:cleanStudy(SUPPLEMENTAL_ID,extra?.CARDS||[])};
+   lessons[SUPPLEMENTAL_ID]={title,steps:[],study:cleanStudy(SUPPLEMENTAL_ID,defaultStudy(SUPPLEMENTAL_ID,extra?.CARDS||[]))};
    const extraQuiz=extra?.QUIZ;quizzes[SUPPLEMENTAL_ID]={title:extraQuiz?.title||title,questions:(extraQuiz?.questions||[]).map(item=>question(item,SUPPLEMENTAL_ID))};
-   defaults={version:VERSION,exam:{questions:bank.QUESTIONS.map(question=>({id:question.id,category:question.category,prompt:question.prompt,answers:question.choices.map(choice=>choice.text),correct:question.choices.findIndex(choice=>choice.id===question.answer),explanation:question.explanation||'',visual:copy(question.stimulus||null)}))},quizzes,lessons};
+   defaults={version:VERSION,learningPathsVersion:LEARNING_PATHS_VERSION,exam:{questions:bank.QUESTIONS.map(question=>({id:question.id,category:question.category,prompt:question.prompt,answers:question.choices.map(choice=>choice.text),correct:question.choices.findIndex(choice=>choice.id===question.answer),explanation:question.explanation||'',visual:copy(question.stimulus||null)}))},quizzes,lessons};
   }return copy(defaults);
  }
  function notationModule(){if(root?.CodaEducationNotation)return root.CodaEducationNotation;if(requireModule)try{return requireModule('./education-notation.js');}catch{}return null;}
@@ -59,6 +61,18 @@
   if(value.kind==='notation'){
    const module=notationModule(),checked=module?.validate?.(value.score);if(!checked?.ok)fail(checked?.error||'The notation editor is still loading.');
    return {kind:'notation',score:checked.data};
+  }
+  if(value.kind==='clef-intro'){
+   if(Object.keys(value).some(key=>!['kind','clef','page'].includes(key))||!['treble','bass'].includes(value.clef)||!['staff','clef','lines','spaces'].includes(value.page))fail('Choose a supported clef and introduction picture.');
+   return {kind:'clef-intro',clef:value.clef,page:value.page};
+  }
+  if(value.kind==='note-parts'){
+   if(Object.keys(value).some(key=>!['kind','focus','beats'].includes(key))||!['head','stem','flag','all'].includes(value.focus)||![.5,1,2,4].includes(value.beats))fail('Choose a supported note part and basic note length.');
+   return {kind:'note-parts',focus:value.focus,beats:value.beats};
+  }
+  if(value.kind==='rhythm-tree'){
+   if(Object.keys(value).some(key=>!['kind','level'].includes(key))||!integer(value.level,0,3))fail('Choose a basic rhythm-tree level from whole through eighth notes.');
+   return {kind:'rhythm-tree',level:value.level};
   }
   const result={kind:value.kind};
   if(value.kind==='staff'){
@@ -99,6 +113,18 @@
   });
   if(new Set(cards.map(card=>card.id)).size!==cards.length)fail('Teaching-card IDs must be unique in each lesson.');return cards;
  }
+ function migrateStudy(id,cards,base){
+  const extras=pathsModule()?.EXTRA?.[id];if(!Array.isArray(extras)||!extras.length)return cards;
+  const newIds=new Set(extras.map(card=>card.id)),result=copy(cards),present=new Set(result.map(card=>card.id));
+  // An old export could not deliberately delete a card introduced later. Add
+  // only those new foundations; never revive a deleted original teaching card.
+  for(let index=0;index<base.length;index++){
+   const card=base[index];if(!newIds.has(card.id)||present.has(card.id))continue;
+   const after=new Set(base.slice(index+1).map(item=>item.id)),position=result.findIndex(item=>after.has(item.id));
+   result.splice(position<0?result.length:position,0,copy(card));present.add(card.id);
+  }
+  return result;
+ }
  function cleanSteps(id,input,base){
   if(!Array.isArray(input)||input.length!==base.length)fail('Keep the '+base.length+' activities in '+id+'; edit their words, answers, and notation.');
   return input.map((step,index)=>{
@@ -122,7 +148,7 @@
  }
  function validate(input){
   try{
-   if(!object(input)||input.version!==VERSION||Object.keys(input).some(key=>!['version','exam','quizzes','lessons'].includes(key)))fail('Choose a version 1 Coda classroom content file.');
+   if(!object(input)||input.version!==VERSION||Object.keys(input).some(key=>!['version','learningPathsVersion','exam','quizzes','lessons'].includes(key))||own(input,'learningPathsVersion')&&input.learningPathsVersion!==LEARNING_PATHS_VERSION)fail('Choose a version 1 Coda classroom content file.');
    if(JSON.stringify(input).length>MAX_BYTES)fail('This classroom content file is too large.');const result=getDefaults();
    if(input.exam!==undefined){if(!object(input.exam)||Object.keys(input.exam).some(key=>key!=='questions')||!Array.isArray(input.exam.questions)||input.exam.questions.length>2400)fail('The exam needs a list of at most 2,400 questions.');result.exam.questions=input.exam.questions.map(value=>{if(!EXAM_IDS.includes(value?.category))fail('Choose one of the eight final-exam categories.');return question(value,value.category);});if(new Set(result.exam.questions.map(value=>value.id)).size!==result.exam.questions.length)fail('Exam question IDs must be unique.');}
    for(const section of ['quizzes','lessons'])if(input[section]!==undefined){
@@ -132,7 +158,7 @@
      if(section==='quizzes'){
       if(Object.keys(value).some(key=>!['title','questions'].includes(key))||!Array.isArray(value.questions)||value.questions.length>200)fail('A quiz needs a list of at most 200 questions.');
       const questions=value.questions.map(item=>question(item,id));if(new Set(questions.map(item=>item.id)).size!==questions.length)fail('Quiz question IDs must be unique.');result.quizzes[id]={title,questions};
-     }else{if(Object.keys(value).some(key=>!['title','steps','study'].includes(key)))fail('A lesson needs its title, activities, and exam teaching cards.');result.lessons[id]={title,steps:cleanSteps(id,id===SUPPLEMENTAL_ID?value.steps??[]:value.steps,result.lessons[id].steps),study:own(value,'study')?cleanStudy(id,value.study):result.lessons[id].study};}
+     }else{if(Object.keys(value).some(key=>!['title','steps','study'].includes(key)))fail('A lesson needs its title, activities, and exam teaching cards.');const baseStudy=result.lessons[id].study;let study=own(value,'study')?cleanStudy(id,value.study):baseStudy;if(!own(input,'learningPathsVersion')&&own(value,'study'))study=migrateStudy(id,study,baseStudy);result.lessons[id]={title,steps:cleanSteps(id,id===SUPPLEMENTAL_ID?value.steps??[]:value.steps,result.lessons[id].steps),study};}
     }
    }
    return {ok:true,data:result};
@@ -174,5 +200,5 @@
   return {KEY,getDocument,getDefaults,getState,validate,saveDocument,setDocument:saveDocument,importDocument(input){if(typeof input==='string')try{input=JSON.parse(input);}catch{return {ok:false,error:'Choose a valid JSON classroom content file.'};}return saveDocument(input);},exportDocument:()=>JSON.stringify(getDocument(),null,2),reset,loadPublished,getExamBank,getQuiz,getLesson,getLessonSteps,getLessonRevision,isLessonEdited,getStudyCards,getStudyRevision,isStudyEdited,categories:(kind='exam')=>copy(kind==='exam'?CATEGORIES:LESSON_CATEGORIES),subscribe(listener){if(typeof listener!=='function')throw TypeError('A classroom content listener is required.');listeners.add(listener);listener(getState());return()=>listeners.delete(listener);},destroy(){destroyed=true;listeners.clear();}};
  }
  function getStore(){if(!activeStore)activeStore=createStore();return activeStore;}
- return Object.freeze({KEY,VERSION,MAX_BYTES,CATEGORIES,EXAM_IDS,LESSON_IDS,LESSON_CATEGORIES,SUPPLEMENTAL_ID,getDefaults,validate,createStore,getStore,setStore(store){if(!store||typeof store.getDocument!=='function')throw Error('Choose a classroom content store.');activeStore=store;return store;},getDocument:()=>getStore().getDocument(),getExamBank:()=>getStore().getExamBank(),getQuiz:id=>getStore().getQuiz(id),getLesson:id=>getStore().getLesson(id),getLessonSteps:id=>getStore().getLessonSteps(id),getLessonRevision:id=>getStore().getLessonRevision(id),isLessonEdited:id=>getStore().isLessonEdited(id),getStudyCards:id=>getStore().getStudyCards(id),getStudyRevision:id=>getStore().getStudyRevision(id),isStudyEdited:id=>getStore().isStudyEdited(id)});
+ return Object.freeze({KEY,VERSION,LEARNING_PATHS_VERSION,MAX_BYTES,CATEGORIES,EXAM_IDS,LESSON_IDS,LESSON_CATEGORIES,SUPPLEMENTAL_ID,getDefaults,validate,createStore,getStore,setStore(store){if(!store||typeof store.getDocument!=='function')throw Error('Choose a classroom content store.');activeStore=store;return store;},getDocument:()=>getStore().getDocument(),getExamBank:()=>getStore().getExamBank(),getQuiz:id=>getStore().getQuiz(id),getLesson:id=>getStore().getLesson(id),getLessonSteps:id=>getStore().getLessonSteps(id),getLessonRevision:id=>getStore().getLessonRevision(id),isLessonEdited:id=>getStore().isLessonEdited(id),getStudyCards:id=>getStore().getStudyCards(id),getStudyRevision:id=>getStore().getStudyRevision(id),isStudyEdited:id=>getStore().isStudyEdited(id)});
 });

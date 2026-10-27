@@ -67,7 +67,7 @@
    }catch{stopAudio();status.textContent='Sound could not start. You can still use the picture.';}
   }
   function drawVisual(parent,visual){
-   if(!visual)return;const figure=node('figure','exam-study-visual');if(api.renderVisual?.(figure,visual)===true){parent.append(figure);notation?.load?.(doc);return;}const renderer=win.CodaEducationNotation,quiz=win.CodaClassroomQuiz;
+   if(!visual)return;const figure=node('figure','exam-study-visual');if((api.renderVisual||win.CodaClassroomLearningPaths?.renderVisual)?.(figure,visual)===true){parent.append(figure);notation?.load?.(doc);return;}const renderer=win.CodaEducationNotation,quiz=win.CodaClassroomQuiz;
    if(visual.kind==='notation'&&renderer){const checked=renderer.validate(visual.score);if(!checked.ok)return;figure.innerHTML=renderer.toSVG(checked.data);}
    else if(visual.kind==='staff'&&quiz)figure.innerHTML=quiz.staffSVG(visual.position,visual);
    else if(visual.kind==='note'&&notation)figure.innerHTML=notation.glyphSVG(visual.beats,{rest:visual.rest===true});

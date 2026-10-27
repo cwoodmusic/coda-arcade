@@ -8,6 +8,7 @@ sys.dont_write_bytecode=True
 _spec=importlib.util.spec_from_file_location('basics_fixture',Path(__file__).with_name('classroom-tutorials-browser.py'))
 fixture=importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(fixture)
+from exam_study_helpers import finish_note_reminders
 
 
 class ClassroomBasicsSequenceTests(unittest.TestCase):
@@ -27,9 +28,17 @@ class ClassroomBasicsSequenceTests(unittest.TestCase):
             self.page.locator('[data-note-answer="'+letter+'"]').click()
             self.page.locator('[data-tutorial-next]').click()
         self.assertEqual(self.state()['active']['step'],4)
-        self.assertEqual(self.state()['active']['noteReminder'],'lines')
+        self.assertEqual(self.state()['active']['noteReminder'],'staff')
         self.assertEqual(self.page.locator('[data-note-answer]').count(),0)
         self.assertEqual(self.page.locator('[data-lesson-try]').count(),0)
+        self.assertIn('five lines and four spaces',self.page.locator('[data-note-reminder="staff"]').inner_text())
+        self.page.locator('[data-note-reminder-next]').click()
+        self.assertEqual(self.state()['active']['noteReminder'],'clef')
+        self.assertIn('Meet the treble clef',self.page.locator('[data-note-reminder="clef"]').inner_text())
+        self.assertIn('G line',self.page.locator('[data-note-reminder="clef"]').inner_text())
+        self.assertEqual(self.page.locator('[data-note-answer]').count(),0)
+        self.page.locator('[data-note-reminder-next]').click()
+        self.assertEqual(self.state()['active']['noteReminder'],'lines')
         lines=self.page.locator('[data-note-reminder="lines"]')
         self.assertIn('Every Good Boy Does Fine',lines.inner_text())
         self.assertIn('BOTTOM to the TOP',lines.inner_text())
@@ -59,8 +68,7 @@ class ClassroomBasicsSequenceTests(unittest.TestCase):
         self.page.locator('[data-tutorial-next]').click()
         before=self.state()['active']
         self.page.locator('[data-note-reminders]').click()
-        self.page.locator('[data-note-reminder-next]').click()
-        self.page.locator('[data-note-reminder-next]').click()
+        finish_note_reminders(self.page)
         after=self.state()['active']
         for field in ['step','learningStage','answered']:
             self.assertEqual(after[field],before[field],'Review must preserve the active note question')
@@ -76,8 +84,56 @@ class ClassroomBasicsSequenceTests(unittest.TestCase):
         self.load()
         self.open_lesson('note-naming')
         self.assertEqual(self.state()['active']['step'],4)
-        self.assertEqual(self.state()['active']['noteReminder'],'lines')
+        self.assertEqual(self.state()['active']['noteReminder'],'staff')
         self.assertEqual(self.page.locator('[data-note-answer]').count(),0)
+
+    def test_bass_staff_clef_and_both_reminders_come_before_the_first_practice_note(self):
+        self.page.set_viewport_size({'width':390,'height':844})
+        self.open_lesson('bass-clef')
+        for stage,text in [('staff','five lines and four spaces'),('clef','two dots point to the F line'),('lines','Great Big Dreams For America'),('spaces','All Cows Eat Grass')]:
+            panel=self.page.locator('[data-note-reminder="'+stage+'"]')
+            self.assertTrue(panel.is_visible())
+            self.assertIn(text,panel.inner_text())
+            self.assertEqual(panel.locator('svg').get_attribute('data-clef'),'bass')
+            self.assertEqual(self.page.locator('[data-note-answer]').count(),0)
+            self.assertEqual(self.page.locator('[data-lesson-try]').count(),0)
+            self.assertEqual(self.page.locator('[data-tutorial-study]').count(),0)
+            self.assertFalse(self.page.locator('#room').evaluate('host=>host.scrollWidth>innerWidth'))
+            if stage in ('lines','spaces'):
+                self.assertIn('BOTTOM to the TOP',panel.inner_text())
+                self.assertEqual(panel.locator('svg ellipse').count(),5 if stage=='lines' else 4)
+            if stage=='clef':panel.screenshot(path='/tmp/bass-clef-intro-phone.png')
+            self.page.locator('[data-note-reminder-next]').click()
+        self.assertIsNone(self.state()['active']['noteReminder'])
+        self.assertTrue(self.page.locator('[data-lesson-try]').is_visible())
+        self.assertEqual(self.page.evaluate('rewards'),[])
+        self.assertEqual(self.page.evaluate('localStorage.getItem(CodaClassroomTutorials.KEY)'),None,'Reading the intro does not complete a saved question')
+
+    def test_direct_study_and_resumed_quiz_cannot_skip_the_clef_explanation(self):
+        self.page.evaluate('''()=>{
+          roomUI.close();
+          const host=document.createElement('section');document.body.append(host);
+          window.directLesson=CodaClassroomTutorials.create({host,requireExamCurriculum:true});
+          directLesson.open('note-naming',{study:true});
+        }''')
+        self.assertEqual(self.page.evaluate('directLesson.getState().active.noteReminder'),'staff')
+        self.assertEqual(self.page.locator('[data-study-answer],[data-quiz-answer]').count(),0)
+        finish_note_reminders(self.page)
+        self.assertEqual(self.page.evaluate('directLesson.getState().active.phase'),'study')
+        self.page.evaluate('''()=>{
+          directLesson.destroy();
+          const host=document.createElement('section');document.body.append(host);
+          localStorage.setItem(CodaClassroomTutorials.KEY,JSON.stringify({version:1,lessons:{'bass-clef':{step:9,completed:false,completedAt:0}}}));
+          localStorage.setItem(CodaClassroomQuiz.KEY,JSON.stringify({version:1,quizzes:{'bass-clef':{bankVersion:1,index:1,answers:[0],bestAnswers:[],completedAt:0}}}));
+          window.resumedLesson=CodaClassroomTutorials.create({host});resumedLesson.open('bass-clef');
+        }''')
+        for stage in ['staff','clef','lines','spaces']:
+            self.assertEqual(self.page.evaluate('resumedLesson.getState().active.noteReminder'),stage)
+            self.assertEqual(self.page.locator('[data-quiz-answer]').count(),0)
+            self.page.locator('[data-note-reminder-next]').click()
+        self.assertEqual(self.page.evaluate('resumedLesson.getState().active.phase'),'quiz')
+        self.assertEqual(self.page.evaluate('resumedLesson.getState().active.quiz.index'),1)
+        self.assertTrue(self.page.locator('[data-quiz-answer]').first.is_visible())
 
     def test_walking_to_the_bottom_door_then_e_returns_to_the_arcade(self):
         self.assertTrue(self.page.evaluate('roomUI.getState().open'))
@@ -114,6 +170,8 @@ class ClassroomBasicsSequenceTests(unittest.TestCase):
           localStorage.setItem(CodaClassroomTutorials.KEY,JSON.stringify({version:1,lessons:{'note-naming':{step:10,completed:false,completedAt:0}}}));
           window.strictLesson=CodaClassroomTutorials.create({host,requireExamCurriculum:true});strictLesson.open('note-naming');
         }''')
+        self.assertEqual(self.page.evaluate('strictLesson.getState().active.noteReminder'),'staff')
+        finish_note_reminders(self.page)
         self.assertEqual(self.page.evaluate('strictLesson.getState().active.phase'),'study')
         self.assertTrue(self.page.locator('[data-study-retry-load]').is_visible())
         self.assertEqual(self.page.locator('[data-quiz-answer]').count(),0)

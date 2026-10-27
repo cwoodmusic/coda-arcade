@@ -19,7 +19,7 @@
   const expandButton=button('Full screen',()=>setExpanded(!expanded),'expand'),exitButton=button('Exit editor',exit,'exit');heading.append(headingCopy,expandButton,exitButton);root.append(heading);
   const note=node('p','education-editor-note','Save applies edits in this browser for developer preview. Export a content JSON backup to share or publish your changes. Edited assessments use a separate attempt record, preserving the existing saved results.');root.append(note);
   const toolbar=node('div','education-editor-toolbar'),modeLabel=node('label','','Editing'),mode=node('select');mode.dataset.educationField='mode';mode.setAttribute('aria-label','Content type');
-  for(const [value,text]of [['exam','Final exam questions'],['quiz','Lesson quiz questions'],['lesson','Lesson instructions'],['study','Exam lesson cards']]){const option=node('option','',text);option.value=value;mode.append(option);}modeLabel.append(mode);
+  for(const [value,text]of [['exam','Final exam questions'],['quiz','Lesson quiz questions'],['lesson','Lesson instructions'],['study','Lesson cards']]){const option=node('option','',text);option.value=value;mode.append(option);}modeLabel.append(mode);
   const categoryLabel=node('label','','Topic'),categorySelect=node('select');categorySelect.dataset.educationField='category';categorySelect.setAttribute('aria-label','Lesson or exam category');
   function syncCategories(preferred=category){const topics=Object.entries(CATEGORY_TITLES).filter(([id])=>!['exam','lesson'].includes(kind)||id!=='accidentals-key-signatures');categorySelect.replaceChildren();for(const [value,text]of topics){const option=node('option','',text);option.value=value;categorySelect.append(option);}category=topics.some(([id])=>id===preferred)?preferred:topics[0][0];categorySelect.value=category;}
   syncCategories();categoryLabel.append(categorySelect);
@@ -97,10 +97,31 @@
   }
   function renderStudy(){
    form.append(node('p','education-editor-step-help','Teach one idea, show an example, then let the student try. Removing a covered card can leave exam material untaught.'));
+   const path=win.CodaClassroomLearningPathsData?.getCategory?.(category,{content:{getStudyCards:id=>copy(data.lessons?.[id]?.study||[])}}),section=path?.sections?.find(item=>item.cards.some(card=>card.id===draft.id));
+   if(section){const location=node('p','education-editor-note',(section.tier==='advanced'?'Advanced':'Basics')+' · '+section.title);location.dataset.educationLessonSection=section.id;form.append(location);}
    for(const [name,label]of [['title','Card title'],['teach','Teaching idea'],['example','Worked example'],['prompt','Practice question']])form.append(field(label,draft[name],value=>draft[name]=value,{multiline:name!=='title',name,maxLength:name==='title'?120:2000}));
    renderAnswers();form.append(field('Hint after a mistake',draft.hint,value=>draft.hint=value,{multiline:true,name:'hint'}));
    form.append(field('Exam question IDs taught by this card',Array.isArray(draft.covers)?draft.covers.join(', '):'',value=>draft.covers=value.split(/[\s,]+/).filter(Boolean),{multiline:true,name:'covers',maxLength:25000}));
    if(draft.covers?.length)form.append(node('p','education-editor-note','This card teaches material used by '+draft.covers.length+' built-in exam question'+(draft.covers.length===1?'':'s')+'. Check coverage after changing or deleting its teaching.'));
+  }
+  function renderLessonDiagram(){
+   const supported=['clef-intro','note-parts','rhythm-tree'],current=draft.visual?.kind;
+   if(kind!=='study'&&!supported.includes(current))return;
+   const group=node('fieldset','education-editor-answers');group.dataset.educationLessonDiagram='';group.append(node('legend','','Lesson diagram'));
+   function select(label,name,value,choices,apply){const wrapper=node('label','education-editor-field',label),input=node('select');input.dataset.educationField=name;input.disabled=!canEdit();for(const [id,text]of choices){const option=node('option','',text);option.value=id;input.append(option);}input.value=String(value);input.onchange=()=>{if(!canEdit())return;apply(input.value);markDirty();renderForm();};wrapper.append(input);group.append(wrapper);}
+   select('Picture type','lesson-diagram',supported.includes(current)?current:'existing',[['existing',draft.visual?'Keep current picture':'No picture'],['clef-intro','Staff and clef introduction'],['note-parts','Parts of a note'],['rhythm-tree','Basic rhythm tree']],value=>{
+    if(value==='clef-intro')draft.visual={kind:value,clef:category==='bass-clef'?'bass':'treble',page:'staff'};
+    else if(value==='note-parts')draft.visual={kind:value,focus:'all',beats:.5};
+    else if(value==='rhythm-tree')draft.visual={kind:value,level:3};
+   });
+   if(current==='clef-intro'){
+    select('Clef','diagram-clef',draft.visual.clef,[['treble','Treble clef'],['bass','Bass clef']],value=>draft.visual.clef=value);
+    select('Teaching picture','diagram-clef-page',draft.visual.page,[['staff','Five lines and four spaces'],['clef','Clef landmark'],['lines','Line-name reminder'],['spaces','Space-name reminder']],value=>draft.visual.page=value);
+   }else if(current==='note-parts'){
+    select('Highlight','diagram-note-part',draft.visual.focus,[['head','Notehead'],['stem','Stem'],['flag','Flag'],['all','All note parts']],value=>draft.visual.focus=value);
+    select('Note symbol','diagram-note-beats',draft.visual.beats,[['4','Whole note'],['2','Half note'],['1','Quarter note'],['0.5','Eighth note']],value=>draft.visual.beats=Number(value));
+   }else if(current==='rhythm-tree')select('Show tree through','diagram-tree-level',draft.visual.level,[['0','Whole note'],['1','Half notes'],['2','Quarter notes'],['3','Eighth notes']],value=>draft.visual.level=Number(value));
+   form.append(group);
   }
   function renderSignature(){
    const model=draft.visual,group=node('fieldset','education-editor-answers');group.dataset.educationSignature='';group.append(node('legend','','Key-signature diagram'));
@@ -115,7 +136,7 @@
    const tools=node('div','education-editor-actions');for(const [type,label]of [['note','Add note'],['bar','Add bar line']]){const add=button(label,()=>{if(!canEdit()||model.items.length>=16)return;model.items.push(type==='note'?{type:'note',position:0,accidental:'none'}:{type:'bar'});markDirty();renderForm();},'signature-add-'+type);add.disabled=!canEdit()||model.items.length>=16;tools.append(add);}group.append(tools);form.append(group);
   }
   function renderNotation(){
-   const component=win.CodaEducationNotation,hasNotation=draft.visual?.kind==='notation',hasSignature=draft.visual?.kind==='key-signature';if(hasSignature)renderSignature();
+   renderLessonDiagram();const component=win.CodaEducationNotation,hasNotation=draft.visual?.kind==='notation',hasSignature=draft.visual?.kind==='key-signature';if(hasSignature)renderSignature();
    const label=node('label','education-editor-check'),toggle=node('input');toggle.type='checkbox';toggle.checked=hasNotation;toggle.disabled=!canEdit()||!component;toggle.dataset.educationField='notation';label.append(toggle,doc.createTextNode(hasSignature?'Replace diagram with a general music staff':'Use an editable music staff'));form.append(label);
    if(!component){form.append(node('p','education-editor-note','The notation tools could not load. Reload to try again.'));return;}
    toggle.onchange=()=>{if(!canEdit())return;if(toggle.checked){draft.visual={kind:'notation',score:component.fromVisual(draft.visual||((draft.kind==='staff')?{kind:'staff',position:draft.position,clef:draft.clef,grand:draft.grand}:null))};}else draft.visual=null;markDirty();renderForm();};
@@ -126,7 +147,8 @@
    const preview=form.querySelector('[data-education-preview]');if(!preview||!draft)return;preview.replaceChildren();preview.append(node('h4','','Preview'),node('p','education-editor-preview-prompt',draft.prompt||draft.guide||draft.teach||''));
    if(kind==='lesson'||kind==='study')for(const key of ['teach','guide','example','caption','hint','success'])if(draft[key])preview.append(node('p','education-editor-preview-caption',key[0].toUpperCase()+key.slice(1)+': '+draft[key]));
    const visual=draft.visual||(kind==='lesson'&&draft.kind==='staff'?{kind:'staff',position:draft.position,clef:draft.clef,grand:draft.grand}:null);
-   if(visual?.kind==='key-signature'&&win.CodaAccidentalsLesson){const checked=win.CodaAccidentalsLesson.validateVisual(visual);if(checked.ok){const figure=node('div','education-editor-preview-staff');figure.innerHTML=win.CodaAccidentalsLesson.signatureSVG(checked.data);preview.append(figure);}}
+   if(visual&&['clef-intro','note-parts','rhythm-tree'].includes(visual.kind)&&win.CodaClassroomLearningPaths?.renderVisual){const figure=node('div','education-editor-preview-staff');if(win.CodaClassroomLearningPaths.renderVisual(figure,visual))preview.append(figure);}
+   else if(visual?.kind==='key-signature'&&win.CodaAccidentalsLesson){const checked=win.CodaAccidentalsLesson.validateVisual(visual);if(checked.ok){const figure=node('div','education-editor-preview-staff');figure.innerHTML=win.CodaAccidentalsLesson.signatureSVG(checked.data);preview.append(figure);}}
    else if(visual?.kind==='notation'&&win.CodaEducationNotation){const figure=node('div','education-editor-preview-staff');figure.innerHTML=win.CodaEducationNotation.toSVG(visual.score);preview.append(figure);}
    else if(visual?.kind==='staff'&&win.CodaClassroomQuiz){const figure=node('div','education-editor-preview-staff');figure.innerHTML=win.CodaClassroomQuiz.staffSVG(visual.position,visual);preview.append(figure);}
    else if(visual)preview.append(node('p','education-editor-preview-caption','Existing '+String(visual.kind||'lesson')+' picture will appear with this question.'));
