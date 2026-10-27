@@ -340,3 +340,20 @@ test('new exam and browser-only Song Machine drafts cannot cross profiles and ol
  const extra=clone(old);extra.values.email='private';assert.equal(D.restore(store,extra).ok,false);
  for(const key of [D.KEYS.finalExam,'codaSongMachineDraftV1']){const failing=storage(Object.fromEntries(D.SCOPED_KEYS.map(key=>[key,'original '+key]))),prior=dump(failing);failing.failNext(key,key==='codaSongMachineDraftV1'?'remove':'set');assert.equal(D.apply(failing,D.blank()).ok,false);assert.deepEqual(dump(failing),prior);}
 });
+
+test('authored assessment attempts follow player isolation while teaching configuration stays on the device',()=>{
+ const keys=['codaAuthoredExamSessionV1','codaAuthoredQuizzesV1','codaAuthoredLessonsV1'];
+ const authorKey='codaEducationContentDraftV1',original=Object.fromEntries(keys.map(key=>[key,'guest attempt '+key]));
+ original[authorKey]='teacher content';const store=storage(original),saved=D.backup(store);
+ for(const key of keys){assert.ok(D.LOCAL_ONLY_KEYS.includes(key));assert.ok(D.SCOPED_KEYS.includes(key));assert.ok(!Object.values(D.KEYS).includes(key));}
+ assert.ok(!D.SCOPED_KEYS.includes(authorKey));
+ assert.equal(D.apply(store,D.blank()).ok,true);
+ for(const key of keys)assert.equal(store.getItem(key),null);
+ assert.equal(store.getItem(authorKey),'teacher content');
+ for(const key of keys)store.setItem(key,'student-private attempt');
+ const captured=D.capture(store);assert.equal(captured.ok,true);assert.ok(!JSON.stringify(captured.data).includes('student-private'));
+ assert.equal(D.restore(store,saved).ok,true);for(const key of keys)assert.equal(store.getItem(key),original[key]);
+ const older=clone(saved);for(const key of keys)delete older.values[key];
+ assert.equal(D.restore(store,older).ok,true);for(const key of keys)assert.equal(store.getItem(key),null);
+ for(const key of keys){const failing=storage(Object.fromEntries(D.SCOPED_KEYS.map(slot=>[slot,'previous '+slot]))),prior=dump(failing);failing.failNext(key,'remove');assert.equal(D.apply(failing,D.blank()).ok,false);assert.deepEqual(dump(failing),prior);}
+});

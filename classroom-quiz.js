@@ -4,7 +4,7 @@
  const api=factory(notation);if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaClassroomQuiz=api;
 })(typeof window==='undefined'?null:window,function(notation){
  'use strict';
- const KEY='codaClassroomQuizzesV1',VERSION=1,PASS_SCORE=4;
+ const KEY='codaClassroomQuizzesV1',CUSTOM_KEY='codaAuthoredQuizzesV1',VERSION=1,PASS_SCORE=4;
  const quiz=(title,questions)=>Object.freeze({version:VERSION,title,passScore:PASS_SCORE,questions:Object.freeze(questions.map(item=>Object.freeze({...item,answers:Object.freeze(item.answers),visual:item.visual?Object.freeze(item.visual):null,answerNotes:item.answerNotes?Object.freeze(item.answerNotes.map(notes=>Object.freeze(notes))):null})))});
  const QUIZZES=Object.freeze({
   'note-naming':quiz('Note names',[
@@ -106,35 +106,64 @@
  }
  function resolveStorage(storage,win){if(storage!==undefined)return storage;try{return win?.localStorage??(typeof localStorage==='undefined'?null:localStorage);}catch{return null;}}
  function readJournal(storage){let raw=null;try{raw=JSON.parse(storage?.getItem(KEY)||'null');}catch{}return normalize(raw);}
+ function authoredModel(api={}){return api.model||(typeof window!=='undefined'?window.CodaEducationContent?.getQuiz?.(api.lessonId):null)||QUIZZES[api.lessonId];}
+ function contentGuard(api){
+  const content=api.content||(typeof window!=='undefined'?window.CodaEducationContent:null),revision=content?.getLessonRevision?.(api.lessonId);let changed=false;
+  return ()=>{try{if(changed)return false;if(revision&&content.getLessonRevision(api.lessonId)!==revision){changed=true;return false;}return api.canRecord?.()!==false;}catch{return false;}};
+ }
+ function createAuthoredSession(api,model){
+  const lessonId=api.lessonId,storage=resolveStorage(api.storage),revision=api.contentRevision||model.revision||'edited-lesson';
+  let record=blank(),expected=null,saved=!!storage,error='';
+  const clean=answers=>{const values=[];if(!Array.isArray(answers))return values;for(let index=0;index<Math.min(answers.length,model.questions.length);index++){const answer=answers[index];if(!Number.isInteger(answer)||answer<0||answer>=model.questions[index].answers.length)break;values.push(answer);}return values;};
+  const score=answers=>model.questions.reduce((total,question,index)=>total+(answers[index]===question.correct?1:0),0);
+  const load=()=>{let value=null;try{value=JSON.parse(storage?.getItem(CUSTOM_KEY)||'null');}catch{}return value?.version===1&&value.quizzes&&typeof value.quizzes==='object'&&!Array.isArray(value.quizzes)?value:{version:1,quizzes:{}};};
+  const entry=load().quizzes[lessonId];expected=JSON.stringify(entry??null);
+  if(entry?.revision===revision&&entry.record?.bankVersion===1){const value=entry.record;record.answers=clean(value.answers);record.bestAnswers=clean(value.bestAnswers);if(record.bestAnswers.length!==model.questions.length)record.bestAnswers=[];record.index=Math.max(0,Math.min(record.answers.length,Number.isInteger(value.index)?value.index:record.answers.length));if(record.answers.length===model.questions.length&&score(record.answers)>=score(record.bestAnswers))record.bestAnswers=[...record.answers];if(Number.isSafeInteger(value.completedAt)&&value.completedAt>0&&record.answers.length===model.questions.length)record.completedAt=value.completedAt;}
+  function canRecord(){try{return api.canRecord?.()!==false;}catch{return false;}}
+  function getState(){const total=model.questions.length,finished=total>0&&record.answers.length===total,passScore=Math.ceil(total*.8);return {lessonId,index:record.index,total,passScore,answers:[...record.answers],score:score(record.answers),finished,phase:record.index>=total?'result':'question',passed:finished&&score(record.answers)>=passScore,saved,error,bestScore:score(record.bestAnswers),bankVersion:model.version,custom:true,contentRevision:revision};}
+  function save(){
+   if(!canRecord()){saved=false;error='Your profile or classroom content changed. Reopen the lesson before continuing.';return false;}
+   try{if(!storage?.getItem||!storage?.setItem)throw Error('storage');const journal=load();if(JSON.stringify(journal.quizzes[lessonId]??null)!==expected)throw Error('changed');const next={revision,record:copy(record)};journal.quizzes[lessonId]=next;storage.setItem(CUSTOM_KEY,JSON.stringify(journal));expected=JSON.stringify(next);saved=true;error='';return true;}
+   catch(failure){saved=false;error=failure.message==='changed'?'Your player or edited quiz changed. Reopen the lesson before continuing.':'Your quiz result could not be saved. Keep it open and try saving again.';return false;}
+  }
+  function answer(index){if(!canRecord()||record.index>=model.questions.length||record.answers.length>record.index||!Number.isInteger(index)||index<0||index>=model.questions[record.index].answers.length)return false;record.answers.push(index);if(record.answers.length===model.questions.length){record.completedAt=Date.now();if(score(record.answers)>=score(record.bestAnswers))record.bestAnswers=[...record.answers];}save();return true;}
+  function next(){if(!canRecord()||record.index>=model.questions.length||record.answers.length<=record.index)return false;record.index++;save();return true;}
+  function restart(){if(!canRecord())return getState();record.index=0;record.answers=[];record.completedAt=0;save();return getState();}
+  return {getState,answer,next,restart,save};
+ }
  function createSession(api={}){
-  const lessonId=api.lessonId,model=QUIZZES[lessonId];if(!model)throw Error('Choose a known classroom quiz.');
+  const lessonId=api.lessonId,model=authoredModel(api);if(!QUIZZES[lessonId]||!model)throw Error('Choose a known classroom quiz.');
+  const canRecord=contentGuard(api);
+  if(model.custom===true||api.custom===true)return createAuthoredSession({...api,canRecord},model);
   const storage=resolveStorage(api.storage),record=copy(readJournal(storage).quizzes[lessonId]);let saved=!!storage,error='';
   function getState(){const total=model.questions.length,finished=record.answers.length===total,score=scoreFor(lessonId,record.answers);return{lessonId,index:record.index,total,passScore:model.passScore,answers:[...record.answers],score,finished,phase:record.index>=total?'result':'question',passed:finished&&score>=model.passScore,saved,error,bestScore:scoreFor(lessonId,record.bestAnswers),bankVersion:model.version};}
   function save(){
+   if(!canRecord()){saved=false;error='Your profile or classroom content changed. Reopen the lesson before continuing.';return false;}
    try{if(!storage||typeof storage.setItem!=='function')throw Error('storage');const journal=readJournal(storage);journal.quizzes[lessonId]=copy(record);storage.setItem(KEY,JSON.stringify(journal));saved=true;error='';return true;}
    catch{saved=false;error='Your quiz result could not be saved. You can keep going, then try saving again.';return false;}
   }
   function answer(index){
-   if(record.index>=model.questions.length||record.answers.length>record.index||!Number.isInteger(index)||index<0||index>=model.questions[record.index].answers.length)return false;
+   if(!canRecord()||record.index>=model.questions.length||record.answers.length>record.index||!Number.isInteger(index)||index<0||index>=model.questions[record.index].answers.length)return false;
    record.answers.push(index);
    if(record.answers.length===model.questions.length){record.completedAt=Date.now();if(scoreFor(lessonId,record.answers)>=scoreFor(lessonId,record.bestAnswers))record.bestAnswers=[...record.answers];}
    save();return true;
   }
-  function next(){if(record.index>=model.questions.length||record.answers.length<=record.index)return false;record.index++;save();return true;}
-  function restart(){record.index=0;record.answers=[];record.completedAt=0;save();return getState();}
+  function next(){if(!canRecord()||record.index>=model.questions.length||record.answers.length<=record.index)return false;record.index++;save();return true;}
+  function restart(){if(!canRecord())return getState();record.index=0;record.answers=[];record.completedAt=0;save();return getState();}
   return{getState,answer,next,restart,save};
  }
  function create(api={}){
   const host=api.host;if(!host)throw Error('A classroom quiz needs a host.');
-  const doc=host.ownerDocument,win=doc.defaultView,lessonId=api.lessonId,model=QUIZZES[lessonId];if(!model)throw Error('Choose a known classroom quiz.');
-  const session=createSession({lessonId,storage:resolveStorage(api.storage,win)});let target=host,destroyed=false,reported=false;
+  const doc=host.ownerDocument,win=doc.defaultView,lessonId=api.lessonId,model=api.model||win?.CodaEducationContent?.getQuiz?.(lessonId)||QUIZZES[lessonId];if(!model)throw Error('Choose a known classroom quiz.');
+  const session=createSession({...api,model,lessonId,storage:resolveStorage(api.storage,win)});let target=host,destroyed=false,reported=false;
   const element=(tag,className,text)=>{const node=doc.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
   const button=(text,fn,attr)=>{const node=element('button','',text);node.type='button';if(attr)node.setAttribute(attr,'');node.onclick=fn;return node;};
   function focusQuestion(){const heading=target.querySelector('.classroom-quiz-question,.classroom-quiz-result-title');heading?.focus({preventScroll:true});target.querySelector('.classroom-quiz')?.scrollIntoView({block:'start',behavior:'auto'});}
   function visual(parent,value){
    if(!value||!notation)return;
    const figure=element('div','classroom-quiz-visual');
-   if(value.kind==='middle-c-pair'){figure.classList.add('classroom-quiz-middle-pair');figure.innerHTML=staffSVG(-2,{clef:'treble',label:'Middle C below treble'})+staffSVG(10,{clef:'bass',label:'Middle C above bass'});}
+   if(value.kind==='notation'&&win?.CodaEducationNotation){const checked=win.CodaEducationNotation.validate(value.score);if(checked.ok)figure.innerHTML=win.CodaEducationNotation.toSVG(checked.data);}
+   else if(value.kind==='middle-c-pair'){figure.classList.add('classroom-quiz-middle-pair');figure.innerHTML=staffSVG(-2,{clef:'treble',label:'Middle C below treble'})+staffSVG(10,{clef:'bass',label:'Middle C above bass'});}
    else if(value.kind==='staff')figure.innerHTML=staffSVG(value.position,value);
    else if(value.kind==='note'){figure.setAttribute('role','img');figure.setAttribute('aria-label','The note shown in the question');figure.innerHTML=notation.glyphSVG(value.beats,{colour:'#fff0cf'});}
    else if(value.kind==='piano'){
@@ -154,8 +183,8 @@
   }
   function renderResult(parent,state){
    const title=element('h3','classroom-quiz-result-title',state.passed?'You did it!':'Let’s try again.');title.tabIndex=-1;
-   const stars=element('p','classroom-quiz-score','★'.repeat(state.score)+'☆'.repeat(state.total-state.score));stars.setAttribute('aria-label',state.score+' of '+state.total+' correct');parent.append(title,stars);
-   parent.append(element('p','classroom-quiz-result-copy',state.passed?'Your lesson is ready to finish.':'Four right answers finish the lesson.'));
+   const stars=element('p','classroom-quiz-score',state.total<=12?'★'.repeat(state.score)+'☆'.repeat(state.total-state.score):state.score+' / '+state.total);stars.setAttribute('aria-label',state.score+' of '+state.total+' correct');parent.append(title,stars);
+   parent.append(element('p','classroom-quiz-result-copy',state.passed?'Your lesson is ready to finish.':state.custom?(state.total?'Get '+state.passScore+' of '+state.total+' answers right to finish.':'This quiz has no questions yet. Ask your teacher to add some.'):'Four right answers finish the lesson.'));
    saveHelp(parent,state);
    if(state.passed)parent.append(button('Finish lesson',finish,'data-quiz-finish'));
    parent.append(button('Try again',()=>{session.restart();reported=false;render();focusQuestion();},'data-quiz-retry'));
@@ -179,5 +208,5 @@
   }
   return{render,restart(){reported=false;return session.restart();},getState:session.getState,destroy(){destroyed=true;}};
  }
- return{KEY,VERSION,PASS_SCORE,QUIZZES,scoreFor,normalize,staffSVG,createSession,create};
+ return{KEY,CUSTOM_KEY,VERSION,PASS_SCORE,QUIZZES,scoreFor,normalize,staffSVG,createSession,create};
 });

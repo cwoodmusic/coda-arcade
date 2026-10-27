@@ -1,12 +1,12 @@
 /* Haydn's balanced, resumable final exam. Stores bounded answers, never names. */
 (function(root,factory){
  const node=typeof module==='object'&&module.exports;
- let bank=root?.CodaFinalExamBank,notation=root?.CodaMusicNotation,quiz=root?.CodaClassroomQuiz;
- if(node){try{bank=require('./final-exam-bank.js');}catch{}notation=require('./music-notation.js');quiz=require('./classroom-quiz.js');}
- const library=factory(bank,notation,quiz);if(node)module.exports=library;if(root)root.CodaFinalExam=library;
-})(typeof window==='undefined'?null:window,function(defaultBank,notation,quiz){
+ let bank=root?.CodaFinalExamBank,notation=root?.CodaMusicNotation,quiz=root?.CodaClassroomQuiz,editorNotation=root?.CodaEducationNotation;
+ if(node){try{bank=require('./final-exam-bank.js');}catch{}notation=require('./music-notation.js');quiz=require('./classroom-quiz.js');try{editorNotation=require('./education-notation.js');}catch{}}
+ const library=factory(bank,notation,quiz,()=>root?.CodaEducationContent?.getExamBank?.(),()=>root?.CodaEducationNotation||editorNotation);if(node)module.exports=library;if(root)root.CodaFinalExam=library;
+})(typeof window==='undefined'?null:window,function(defaultBank,notation,quiz,authoredBank,editedNotation){
  'use strict';
- const KEY='codaHaydnFinalExamV1',VERSION=1,PASS_PERCENT=80;
+ const KEY='codaHaydnFinalExamV1',CUSTOM_KEY='codaAuthoredExamSessionV1',VERSION=1,PASS_PERCENT=80;
  const SIZES=Object.freeze([24,40,80]);
  const CATEGORY_IDS=Object.freeze(['note-naming','bass-clef','grand-staff','rhythm-tree','time-signatures','major-minor-keys','dynamics','tempo']);
  const TITLES=Object.freeze({'note-naming':'Treble & note names','bass-clef':'Bass clef','grand-staff':'Grand staff & Middle C','rhythm-tree':'Note lengths & rhythm','time-signatures':'Time signatures','major-minor-keys':'Major & minor keys',dynamics:'Dynamics',tempo:'Tempo'});
@@ -15,17 +15,17 @@
  const integer=(value,min,max)=>Number.isSafeInteger(value)&&value>=min&&value<=max;
  const emptyCategories=()=>Object.fromEntries(CATEGORY_IDS.map(id=>[id,{correct:0,total:0}]));
  function getDefaults(){return {version:1,bankVersion:1,size:40,questionIds:[],orders:[],answers:[],index:0,submitted:false,attempts:0,bestPercent:0,bestScore:0,bestTotal:0,bestByCategory:emptyCategories(),completedAt:0};}
- function categories(bank=defaultBank){return CATEGORY_IDS.map(id=>({id,title:bank?.CATEGORIES?.find(item=>item.id===id)?.title||TITLES[id]}));}
+ function categories(bank=defaultBank){return CATEGORY_IDS.map(id=>({id,title:bank?.CATEGORIES?.find(item=>item.id===id)?.title||TITLES[id],poolSize:bank?.pool?.(id)?.length||0}));}
  function questionFor(bank,id){if(typeof bank?.getQuestion==='function')return bank.getQuestion(id);return bank?.QUESTIONS?.find?.(item=>item.id===id)||CATEGORY_IDS.flatMap(category=>bank?.pool?.(category)||[]).find(item=>item.id===id);}
- function validQuestion(question){return !!question&&typeof question.id==='string'&&CATEGORY_IDS.includes(question.category)&&typeof question.prompt==='string'&&Array.isArray(question.choices)&&question.choices.length===3&&question.choices.every(choice=>choice&&typeof choice.id==='string'&&typeof choice.text==='string')&&new Set(question.choices.map(choice=>choice.id)).size===3&&question.choices.some(choice=>choice.id===question.answer);}
+ function validQuestion(question,custom=false){return !!question&&typeof question.id==='string'&&(!custom||/^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,127}$/.test(question.id))&&CATEGORY_IDS.includes(question.category)&&typeof question.prompt==='string'&&Array.isArray(question.choices)&&(custom?integer(question.choices.length,2,6):question.choices.length===3)&&question.choices.every(choice=>choice&&typeof choice.id==='string'&&typeof choice.text==='string')&&new Set(question.choices.map(choice=>choice.id)).size===question.choices.length&&question.choices.some(choice=>choice.id===question.answer);}
  function scoreRecord(record,bank=defaultBank){
   const byCategory=emptyCategories();let score=0;
-  record.questionIds.forEach((id,index)=>{const question=questionFor(bank,id);if(!validQuestion(question))return;const group=byCategory[question.category];group.total++;if(question.choices[record.answers[index]]?.id===question.answer){group.correct++;score++;}});
+  record.questionIds.forEach((id,index)=>{const question=questionFor(bank,id);if(!validQuestion(question,bank?.custom===true))return;const group=byCategory[question.category];group.total++;if(question.choices[record.answers[index]]?.id===question.answer){group.correct++;score++;}});
   const total=record.questionIds.length,percent=total?Math.round(score/total*100):0;
   return {score,total,percent,passed:total>0&&score*100>=total*PASS_PERCENT,byCategory};
  }
  function validateState(raw,bank=defaultBank){
-  const fail=error=>({ok:false,error});
+  const fail=error=>({ok:false,error}),custom=bank?.custom===true;
   if(!raw||typeof raw!=='object'||Array.isArray(raw))return fail('An exam record is required.');
   const fields=Object.keys(getDefaults());if(Object.keys(raw).some(key=>!fields.includes(key))||fields.some(key=>!(key in raw)))return fail('The exam record contains unsupported fields.');
   if(raw.version!==1||raw.bankVersion!==1||!SIZES.includes(raw.size)||typeof raw.submitted!=='boolean')return fail('The saved exam version is unavailable.');
@@ -41,7 +41,10 @@
    if(raw.questionIds.length!==raw.size||new Set(raw.questionIds).size!==raw.size||raw.index>raw.size)return fail('The saved exam must contain one complete, nonrepeating set.');
    const counts=Object.fromEntries(CATEGORY_IDS.map(id=>[id,0]));
    for(let index=0;index<raw.size;index++){
-    const id=raw.questionIds[index],question=questionFor(bank,id);if(typeof id!=='string'||!/^(.+)-(?:00[1-9]|0[1-9][0-9]|100)$/.test(id)||!CATEGORY_IDS.includes(id.replace(/-[0-9]{3}$/, ''))||!validQuestion(question)||question.id!==id||!id.startsWith(question.category+'-')||!integer(raw.orders[index],0,5)||!integer(raw.answers[index],-1,2))return fail('A saved exam question or answer is unavailable.');counts[question.category]++;
+    const id=raw.questionIds[index],question=questionFor(bank,id),order=raw.orders[index];
+    const validId=custom?typeof id==='string'&&/^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,127}$/.test(id):typeof id==='string'&&/^(.+)-(?:00[1-9]|0[1-9][0-9]|100)$/.test(id)&&CATEGORY_IDS.includes(id.replace(/-[0-9]{3}$/, ''));
+    const validOrder=custom?Array.isArray(order)&&order.length===question?.choices?.length&&new Set(order).size===order.length&&order.every(value=>integer(value,0,order.length-1)):integer(order,0,5);
+    if(!validId||!validQuestion(question,custom)||question.id!==id||!custom&&!id.startsWith(question.category+'-')||!validOrder||!integer(raw.answers[index],-1,custom?question.choices.length-1:2))return fail('A saved exam question or answer is unavailable.');counts[question.category]++;
    }
    if(Object.values(counts).some(count=>count!==raw.size/8))return fail('The exam must include every category equally.');
    if(raw.submitted&&(raw.index!==raw.size||raw.answers.some(answer=>answer<0)))return fail('Every question needs an answer before submission.');
@@ -54,50 +57,65 @@
  function shuffle(values,random){const list=[...values];for(let index=list.length-1;index>0;index--){const other=Math.floor(randomNumber(random)*(index+1));[list[index],list[other]]=[list[other],list[index]];}return list;}
  function sampleExam(bank,size=40,random=Math.random,attempt=0){
   if(!SIZES.includes(size))throw Error('Choose 24, 40, or 80 questions.');
-  const questions=[];
-  for(const id of CATEGORY_IDS){const pool=bank?.pool?.(id);if(!Array.isArray(pool)||pool.length!==100||pool.some(question=>!validQuestion(question)||question.category!==id)||new Set(pool.map(question=>question.id)).size!==100)throw Error('Each category needs its 100-question pool.');const mixed=shuffle(pool,random),offset=(attempt*(size/8))%100;questions.push(...Array.from({length:size/8},(_,index)=>mixed[(offset+index)%100]));}
-  return shuffle(questions,random).map(question=>({id:question.id,order:Math.floor(randomNumber(random)*6)}));
+  const questions=[],custom=bank?.custom===true;
+  for(const id of CATEGORY_IDS){const pool=bank?.pool?.(id);if(!Array.isArray(pool)||(custom?pool.length<size/8:pool.length!==100)||pool.some(question=>!validQuestion(question,custom)||question.category!==id)||new Set(pool.map(question=>question.id)).size!==pool.length)throw Error(custom?(TITLES[id]+' needs at least '+size/8+' different questions for this exam length.'):'Each category needs its 100-question pool.');const mixed=shuffle(pool,random),offset=(attempt*(size/8))%pool.length;questions.push(...Array.from({length:size/8},(_,index)=>mixed[(offset+index)%pool.length]));}
+  if(new Set(questions.map(question=>question.id)).size!==questions.length)throw Error('Every exam question needs its own ID.');
+  return shuffle(questions,random).map(question=>({id:question.id,order:custom?shuffle(question.choices.map((_,index)=>index),random):Math.floor(randomNumber(random)*6)}));
  }
  function createSession(api={}){
-  const bank=api.bank||defaultBank||(typeof window!=='undefined'?window.CodaFinalExamBank:null);
+  const fallback=()=>defaultBank||(typeof window!=='undefined'?window.CodaFinalExamBank:null);
+  const getBank=typeof api.getBank==='function'?api.getBank:!api.bank?()=>authoredBank?.()||fallback():null;
+  const bank=api.bank||getBank?.()||fallback(),custom=bank?.custom===true,key=custom?CUSTOM_KEY:KEY,revision=String(bank?.revision||'');
   let storage=api.storage;if(storage===undefined)try{storage=window.localStorage;}catch{}
   const now=()=>Math.max(1,Math.floor(api.now?.()||Date.now())),random=typeof api.random==='function'?api.random:Math.random;
-  let raw=null,record=getDefaults(),saved=true,error='',claiming=false,destroyed=false;
-  try{raw=storage?.getItem(KEY)??null;if(raw!==null){const checked=validateState(JSON.parse(raw),bank);if(!checked.ok)throw Error(checked.error);record=checked.data;}}catch{saved=false;error='This exam could not be reopened safely. Start a new exam to try again.';}
-  const canRecord=()=>{try{return !destroyed&&api.canRecord?.()!==false;}catch{return false;}};
+  let raw=null,record=getDefaults(),saved=true,error='',claiming=false,destroyed=false,contentChanged=false;
+  function decode(text){const parsed=JSON.parse(text||'null');if(!custom)return validateState(parsed,bank);if(!parsed||parsed.version!==1||typeof parsed.revision!=='string'||!parsed.state||Object.keys(parsed).some(field=>!['version','revision','state'].includes(field)))return {ok:false,error:'The edited exam record is unavailable.'};if(parsed.revision!==revision)return {ok:false,changed:true,error:'The edited questions changed. Start a fresh exam.'};return validateState(parsed.state,bank);}
+  try{raw=storage?.getItem(key)??null;if(raw!==null){const checked=decode(raw);if(!checked.ok){if(checked.changed){error=checked.error;}else throw Error(checked.error);}else record=checked.data;}}catch{saved=false;error='This exam could not be reopened safely. Start a new exam to try again.';}
+  const canRecord=()=>{
+   if(destroyed)return false;
+   try{if(api.canRecord?.()===false)return false;}catch{return false;}
+   try{
+    if(getBank&&!contentChanged){const current=getBank()||fallback();contentChanged=(current?.custom===true)!==custom||custom&&String(current?.revision||'')!==revision;}
+    if(contentChanged){error='These questions changed. Close and reopen the exam before continuing.';return false;}
+    return true;
+   }catch{contentChanged=true;error='These questions could not be checked. Close and reopen the exam before continuing.';return false;}
+  };
   const changed=()=>{try{api.onChange?.(getState());}catch{}return getState();};
   function getState(){
    const current=scoreRecord(record,bank),answered=record.answers.filter(answer=>answer>=0).length;
-   return {...copy(record),phase:record.questionIds.length===0?'intro':record.submitted?'result':'question',answered,total:record.questionIds.length,score:record.submitted?current.score:null,percent:record.submitted?current.percent:null,passed:record.submitted&&current.passed,byCategory:record.submitted?current.byCategory:null,saved,error,claiming,categories:categories(bank),rewardPending:record.bestTotal>0&&record.bestScore*100>=record.bestTotal*PASS_PERCENT&&!record.completedAt};
+   return {...copy(record),phase:record.questionIds.length===0?'intro':record.submitted?'result':'question',answered,total:record.questionIds.length,score:record.submitted?current.score:null,percent:record.submitted?current.percent:null,passed:record.submitted&&current.passed,byCategory:record.submitted?current.byCategory:null,saved,error,claiming,categories:categories(bank),custom,contentRevision:custom?revision:null,contentChanged,rewardPending:record.bestTotal>0&&record.bestScore*100>=record.bestTotal*PASS_PERCENT&&!record.completedAt};
   }
   function save(next=record){
-   if(!canRecord()){saved=false;error='Your profile is resting. Reopen it before changing this exam.';changed();return false;}
+   if(!canRecord()){if(!contentChanged){saved=false;error='Your profile is resting. Reopen it before changing this exam.';}changed();return false;}
    const checked=validateState(next,bank);if(!checked.ok){saved=false;error=checked.error;return false;}
    try{
-    if(!storage?.setItem||!storage?.getItem)throw Error('storage');const latest=storage.getItem(KEY);
-    if(latest!==raw){const checked=validateState(JSON.parse(latest||'null'),bank);if(!checked.ok||JSON.stringify(checked.data)!==JSON.stringify(record))throw Error('player-changed');}
-    const encoded=JSON.stringify(checked.data);storage.setItem(KEY,encoded);raw=encoded;record=checked.data;saved=true;error='';return true;
+    if(!storage?.setItem||!storage?.getItem)throw Error('storage');const latest=storage.getItem(key);
+    if(latest!==raw){const checked=decode(latest);if(!checked.ok||JSON.stringify(checked.data)!==JSON.stringify(record))throw Error('player-changed');}
+    const encoded=JSON.stringify(custom?{version:1,revision,state:checked.data}:checked.data);storage.setItem(key,encoded);raw=encoded;record=checked.data;saved=true;error='';return true;
    }catch(failure){saved=false;if(failure.message!=='player-changed')record=checked.data;error=failure.message==='player-changed'?'Your player or saved exam changed. Close and reopen the exam before continuing.':'This exam could not save. Keep it open and try saving again.';return false;}
   }
-  function start(size=40){if(!canRecord())return false;let sampled;try{sampled=sampleExam(bank,size,random,record.attempts);}catch(failure){error=failure.message;saved=false;changed();return false;}const next={...record,size,questionIds:sampled.map(item=>item.id),orders:sampled.map(item=>item.order),answers:sampled.map(()=>-1),index:0,submitted:false};if(!save(next)){changed();return false;}changed();return true;}
-  function answer(displayIndex){if(!canRecord()||record.submitted||!integer(displayIndex,0,2)||!record.questionIds.length)return false;const next=copy(record);next.answers[next.index]=ORDERS[next.orders[next.index]][displayIndex];if(!save(next)){changed();return false;}changed();return true;}
-  function goTo(index){if(!canRecord()||record.submitted||!integer(index,0,record.questionIds.length-1))return false;const next={...record,index};if(!save(next)){changed();return false;}changed();return true;}
+  function start(size=40){if(!canRecord()){changed();return false;}let sampled;try{sampled=sampleExam(bank,size,random,record.attempts);}catch(failure){error=failure.message;saved=false;changed();return false;}const next={...record,size,questionIds:sampled.map(item=>item.id),orders:sampled.map(item=>item.order),answers:sampled.map(()=>-1),index:0,submitted:false};if(!save(next)){changed();return false;}changed();return true;}
+  const answerOrder=index=>custom?record.orders[index]:ORDERS[record.orders[index]];
+  function answer(displayIndex){if(!canRecord()){changed();return false;}if(record.submitted||!record.questionIds.length||!integer(displayIndex,0,(answerOrder(record.index)?.length||0)-1))return false;const next=copy(record);next.answers[next.index]=answerOrder(next.index)[displayIndex];if(!save(next)){changed();return false;}changed();return true;}
+  function goTo(index){if(!canRecord()){changed();return false;}if(record.submitted||!integer(index,0,record.questionIds.length-1))return false;const next={...record,index};if(!save(next)){changed();return false;}changed();return true;}
   async function claimCompletion(){
-   if(claiming||!canRecord()||!saved||record.completedAt||record.bestTotal===0||record.bestScore*100<record.bestTotal*PASS_PERCENT)return false;
+   if(!canRecord()){changed();return false;}
+   if(claiming||!saved||record.completedAt||record.bestTotal===0||record.bestScore*100<record.bestTotal*PASS_PERCENT)return false;
    claiming=true;changed();try{
     const result=await api.onComplete?.('haydn-final-exam',{score:record.bestScore,total:record.bestTotal,percent:record.bestPercent,byCategory:copy(record.bestByCategory),passed:true});
     if(result?.ok===false)throw Error(result.error||'Your completion reward could not save yet.');
-    if(!canRecord())throw Error('Your profile is resting. Reopen it to finish saving.');
+    if(!canRecord())throw Error(contentChanged?error:'Your profile is resting. Reopen it to finish saving.');
     if(!save({...record,completedAt:now()}))throw Error(error);return true;
    }catch(failure){error=failure.message||'Your completion could not save yet. Try again.';return false;}finally{claiming=false;changed();}
   }
   function submit(){
-   if(!canRecord()||record.submitted||record.questionIds.length!==record.size||record.answers.some(answer=>answer<0))return false;
+   if(!canRecord()){changed();return false;}
+   if(record.submitted||record.questionIds.length!==record.size||record.answers.some(answer=>answer<0))return false;
    const result=scoreRecord(record,bank),next={...copy(record),submitted:true,index:record.size,attempts:Math.min(100000,record.attempts+1)};
    if(!next.bestTotal||result.score*next.bestTotal>=next.bestScore*result.total){next.bestScore=result.score;next.bestTotal=result.total;next.bestPercent=result.percent;next.bestByCategory=result.byCategory;}
    if(!save(next)){changed();return false;}changed();if(result.passed)void claimCompletion();return true;
   }
-  function question(){if(!record.questionIds.length||record.index>=record.questionIds.length)return null;const value=questionFor(bank,record.questionIds[record.index]);if(!value)return null;const order=ORDERS[record.orders[record.index]];return {...copy(value),displayChoices:order.map((index,displayIndex)=>({...value.choices[index],displayIndex,selected:record.answers[record.index]===index}))};}
+  function question(){if(!record.questionIds.length||record.index>=record.questionIds.length)return null;const value=questionFor(bank,record.questionIds[record.index]);if(!value)return null;const order=answerOrder(record.index);return {...copy(value),displayChoices:order.map((index,displayIndex)=>({...value.choices[index],displayIndex,selected:record.answers[record.index]===index}))};}
   return {getState,snapshot:()=>copy(record),question,start,answer,goTo,submit,claimCompletion,save(){const ok=save();changed();if(ok&&record.bestTotal&&!record.completedAt)void claimCompletion();return ok;},getQuestion:id=>questionFor(bank,id),destroy(){destroyed=true;}};
  }
  function create(api={}){
@@ -105,12 +123,13 @@
   const doc=host.ownerDocument,win=doc.defaultView;let opened=false,destroyed=false,review=false,intro=false,priorFocus=null,session;
   const node=(tag,className,text)=>{const item=doc.createElement(tag);if(className)item.className=className;if(text!==undefined)item.textContent=text;return item;};
   const button=(text,action,attribute)=>{const item=node('button','',text);item.type='button';item.onclick=action;if(attribute)item.setAttribute(attribute,'');return item;};
-  session=createSession({...api,bank:api.bank||win?.CodaFinalExamBank,onChange:()=>{if(opened)render();api.onChange?.(session.getState());}});
+  session=createSession({...api,getBank:api.getBank||(!api.bank?()=>win?.CodaEducationContent?.getExamBank?.()||win?.CodaFinalExamBank:undefined),onChange:()=>{if(opened)render();api.onChange?.(session.getState());}});
   function focusHeading(){const heading=host.querySelector('[data-exam-heading]');heading?.focus({preventScroll:true});host.scrollIntoView?.({block:'start',behavior:'auto'});}
   function showQuestion(index){review=false;intro=false;if(session.goTo(index)){render();focusHeading();}}
   function visual(parent,stimulus){
    if(!stimulus)return;const figure=node('div','final-exam-visual');figure.setAttribute('role','img');
-   if(stimulus.kind==='staff'&&quiz?.staffSVG){figure.innerHTML=quiz.staffSVG(stimulus.position,{clef:stimulus.clef,grand:stimulus.grand,label:stimulus.label||'Read the highlighted note.'});}
+   if(stimulus.kind==='notation'&&editedNotation?.()){const renderer=editedNotation(),checked=renderer.validate(stimulus.score);if(!checked.ok)return;figure.innerHTML=renderer.toSVG(checked.data,{color:'#fff0cf'});}
+   else if(stimulus.kind==='staff'&&quiz?.staffSVG){figure.innerHTML=quiz.staffSVG(stimulus.position,{clef:stimulus.clef,grand:stimulus.grand,label:stimulus.label||'Read the highlighted note.'});}
    else if(stimulus.kind==='rhythm'&&notation){figure.setAttribute('aria-label','The notes and rests in this question.');for(const note of stimulus.notes||[]){const mark=node('span');mark.innerHTML=notation.glyphSVG(note.beats,{rest:note.rest===true,color:'#fff0cf'});figure.append(mark);}}
    else if(stimulus.kind==='meter'){const parts=String(stimulus.meter).split('/');figure.classList.add('final-exam-meter');figure.setAttribute('aria-label',stimulus.meter+' time signature');figure.append(node('span','',parts[0]),node('span','',parts[1]));}
    else if(stimulus.kind==='scale'){figure.setAttribute('aria-label','Shown notes: '+(stimulus.notes||[]).map(letter=>letter==='?'?'missing note':letter.replaceAll('-flat',' flat').replaceAll('-sharp',' sharp')).join(', ')+'.');figure.classList.add('final-exam-note-ladder');for(const letter of stimulus.notes||[])figure.append(node('span','',letter.replaceAll('-flat','♭').replaceAll('-sharp','♯')));}
@@ -118,10 +137,10 @@
    else if(stimulus.kind==='tempo'){figure.setAttribute('aria-label','Tempo marking shown in the question.');figure.append(node('strong','',stimulus.text));if(stimulus.bpm)figure.append(node('span','',stimulus.bpm+' BPM'));}
    else return;parent.append(figure);notation?.load?.(doc);
   }
-  function saveStatus(panel,state){if(!state.error)return;const box=node('div','final-exam-save-help');box.setAttribute('role','status');box.append(node('p','',state.error),button('Try saving again',()=>session.save(),'data-exam-save'));panel.append(box);}
+  function saveStatus(panel,state){if(!state.error)return;const box=node('div','final-exam-save-help');box.setAttribute('role','status');box.append(node('p','',state.error));if(!state.contentChanged)box.append(button('Try saving again',()=>session.save(),'data-exam-save'));panel.append(box);}
   function introduction(panel,state){
    const heading=node('h2','','Haydn’s Final Exam');heading.tabIndex=-1;heading.setAttribute('data-exam-heading','');panel.append(heading,node('p','final-exam-lead','A little from every lesson. No timer. You can check your choices before you finish.'));
-   const list=node('ul','final-exam-categories');for(const category of state.categories)list.append(node('li','',category.title+' · 100 questions in the pool'));panel.append(list);
+   const list=node('ul','final-exam-categories');for(const category of state.categories)list.append(node('li','',category.title+' · '+category.poolSize+' questions in the pool'));panel.append(list);
    const label=node('label','final-exam-length','Exam length'),select=node('select');select.setAttribute('aria-label','Final exam length');for(const size of SIZES){const option=node('option','',size+' questions · '+size/8+' from each topic');option.value=size;option.selected=size===state.size;select.append(option);}label.append(select);panel.append(label,node('p','final-exam-help','Answer at least 80% correctly to pass. A new exam mixes the topics, questions and answer choices.'));
    if(state.bestTotal)panel.append(node('p','final-exam-best','Your best: '+state.bestPercent+'% · '+state.bestScore+' / '+state.bestTotal));
    const actions=node('div','final-exam-actions');if(state.questionIds.length&&!state.submitted)actions.append(button('Continue your exam',()=>{intro=false;render();focusHeading();},'data-exam-continue'));
@@ -153,7 +172,7 @@
   }
   function render(){
    if(!opened||destroyed)return;const active=host.contains(doc.activeElement)?doc.activeElement:null,focusAttribute=active?.getAttributeNames?.().find(name=>name.startsWith('data-exam-')),focusValue=focusAttribute?active.getAttribute(focusAttribute):null;host.replaceChildren();host.hidden=false;host.classList.add('haydn-final-exam');const state=session.getState(),panel=node('section','final-exam-panel');panel.setAttribute('aria-label','Haydn’s Final Exam');host.append(panel);
-   const toolbar=node('div','final-exam-toolbar');toolbar.append(node('span','','HAYDN’S FINAL EXAM'),button('Save & return',()=>{const current=session.getState();if(!current.saved&&current.questionIds.length&&!session.save())return;close();api.onExit?.();},'data-exam-exit'));panel.append(toolbar);
+   const toolbar=node('div','final-exam-toolbar');toolbar.append(node('span','',state.custom?'HAYDN’S FINAL EXAM · EDITED QUESTIONS':'HAYDN’S FINAL EXAM'),button(state.contentChanged?'Return to classroom':'Save & return',()=>{const current=session.getState();if(!current.contentChanged&&!current.saved&&current.questionIds.length&&!session.save())return;close();api.onExit?.();},'data-exam-exit'));panel.append(toolbar);
    if(intro||state.phase==='intro')introduction(panel,state);else if(state.phase==='result')renderResult(panel,state);else if(review)renderReview(panel,state);else renderQuestion(panel,state);
    if(focusAttribute){const replacement=Array.from(host.querySelectorAll('['+focusAttribute+']')).find(item=>item.getAttribute(focusAttribute)===focusValue);if(replacement&&!replacement.disabled)replacement.focus({preventScroll:true});}
   }
@@ -161,5 +180,5 @@
   function close(){if(!opened)return;opened=false;host.hidden=true;if(priorFocus?.isConnected)priorFocus.focus?.({preventScroll:true});}
   return {open,close,render,getState:()=>({...session.getState(),open:opened,review}),snapshot:session.snapshot,stopAudio(){},destroy(){close();destroyed=true;session.destroy();host.replaceChildren();}};
  }
- return Object.freeze({KEY,VERSION,PASS_PERCENT,SIZES,CATEGORY_IDS,ORDERS,getDefaults,normalize,validateState,scoreRecord,sampleExam,createSession,create});
+ return Object.freeze({KEY,CUSTOM_KEY,VERSION,PASS_PERCENT,SIZES,CATEGORY_IDS,ORDERS,getDefaults,normalize,validateState,scoreRecord,sampleExam,createSession,create});
 });

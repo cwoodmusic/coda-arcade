@@ -1,7 +1,7 @@
 /* Hands-on music lessons. Numeric pitches stay inside the audio engine. */
 (function(root,factory){const node=typeof module==='object'&&module.exports,notation=node?require('./music-notation.js'):root?.CodaMusicNotation,timeLesson=node?require('./time-signature-lesson.js'):root?.CodaTimeSignatureLesson;const quizModule=node?require('./classroom-quiz.js'):root?.CodaClassroomQuiz;const api=factory(notation,timeLesson,quizModule);if(node)module.exports=api;if(root)root.CodaClassroomTutorials=api;})(typeof window!=='undefined'?window:null,function(notation,timeLesson,quizModule){
  'use strict';
- const KEY='codaClassroomLessonsV1';
+ const KEY='codaClassroomLessonsV1',CUSTOM_KEY='codaAuthoredLessonsV1';
  const VALUES=Object.freeze([
   {units:16,name:'whole',label:'Whole note',beats:'4 beats',count:1},
   {units:8,name:'half',label:'Half note',beats:'2 beats',count:2},
@@ -227,9 +227,18 @@
  function create(api={}){
   const host=api.host;if(!host)throw Error('A tutorial needs a host element.');const doc=host.ownerDocument,win=doc.defaultView,storage=storageFor(api.storage);
   let id=null,step=0,learningStage='look',answered=false,complete=false,message='',correct=null,level=0,explored=new Set([0]),bar=[],names=false,hintShown=false,quizzing=false,quiz=null,freshQuiz=false,award=null,error='',destroyed=false,audio=null,voices=[],timers=[];
-  const signatureLesson=timeLesson?.create({host,notation,onCorrect:()=>{if(complete||answered)return;answered=true;persist(step+1);const progress=host.querySelector('progress');if(progress)progress.value=step+1;},onNext:next});
+  let authored=false,contentRevision='',lessonSteps=null,expectedLesson='null',contentChanged=false;
+  const content=api.content||win?.CodaEducationContent;
+  function canRecord(){try{if(contentChanged)return false;if(contentRevision&&content?.getLessonRevision?.(id)!==contentRevision){contentChanged=true;return false;}return !destroyed&&api.canRecord?.()!==false;}catch{return false;}}
+  function authoredJournal(){let value=null;try{value=JSON.parse(storage?.getItem(CUSTOM_KEY)||'null');}catch{}return value?.version===1&&value.lessons&&typeof value.lessons==='object'&&!Array.isArray(value.lessons)?value:{version:1,lessons:{}};}
+  function progress(){
+   if(!authored)return readProgress(storage);const result=readProgress(storage),entry=authoredJournal().lessons[id],total=LESSONS.find(lesson=>lesson.id===id)?.total||0;
+   const saved=entry?.revision===contentRevision&&Number.isInteger(entry.step)&&entry.step>=0&&entry.step<=total?{step:entry.step,completed:entry.completed===true&&entry.step===total,completedAt:Number.isSafeInteger(entry.completedAt)&&entry.completedAt>0?entry.completedAt:0}:{step:0,completed:false,completedAt:0};
+   result.lessons=result.lessons.map(lesson=>lesson.id===id?{...lesson,...saved,title:content?.getLesson?.(id)?.title||lesson.title,custom:true}:lesson);result.completed=result.lessons.filter(lesson=>lesson.completed).map(lesson=>lesson.id);result.completedCount=result.completed.length;return result;
+  }
+  const signatureLesson=timeLesson?.create({host,notation,getSteps:()=>authored&&id==='time-signatures'?lessonSteps:null,canRecord,onCorrect:()=>{if(complete||answered)return;answered=true;persist(step+1);const progress=host.querySelector('progress');if(progress)progress.value=step+1;},onNext:next});
   const element=(tag,className,text)=>{const node=doc.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
-  function button(text,action,attributes={}){const node=element('button','',text);node.type='button';for(const [key,value]of Object.entries(attributes))node.setAttribute(key,value);node.onclick=action;return node;}
+  function button(text,action,attributes={}){const node=element('button','',text);node.type='button';for(const [key,value]of Object.entries(attributes))node.setAttribute(key,value);node.onclick=event=>{if(!canRecord()){feedback('Your profile or lesson changed. Reopen the lesson before continuing.',false);return;}action(event);};return node;}
   function stopAudio(){signatureLesson?.stopAudio();for(const timer of timers)win.clearTimeout(timer);timers=[];for(const voice of voices)try{voice.stop();}catch{}voices=[];if(audio){audio.close().catch(()=>{});audio=null;}for(const node of host.querySelectorAll('.is-playing'))node.classList.remove('is-playing');}
   function play(notes,{rhythm=false,treeLevel=null}={}){
    stopAudio();const Constructor=api.AudioContext||win.AudioContext||win.webkitAudioContext;if(!Constructor){feedback('You can still try every question without sound.',null);return;}
@@ -248,9 +257,12 @@
    }catch{stopAudio();feedback('Sound could not start. You can still try the lesson.',null);}
   }
   function feedback(text,isCorrect){message=text;correct=isCorrect;const status=host.querySelector('.tutorial-feedback');if(status){status.textContent=text;status.dataset.correct=String(isCorrect);}}
-  function persist(nextStep,finished=false){let data;try{data=normalize(JSON.parse(storage?.getItem(KEY)||'null'));const old=data.lessons[id];data.lessons[id]={step:Math.max(old.step,nextStep),completed:old.completed||finished,completedAt:old.completedAt||(finished?Date.now():0)};if(!storage||typeof storage.setItem!=='function')throw Error('storage');storage.setItem(KEY,JSON.stringify(data));error='';return true;}catch{error='Your progress could not be saved. You can keep practicing and try saving again.';return false;}}
+  function persist(nextStep,finished=false){let data;try{
+   if(authored){if(!canRecord())throw Error('changed');data=authoredJournal();if(JSON.stringify(data.lessons[id]??null)!==expectedLesson)throw Error('changed');const total=LESSONS.find(lesson=>lesson.id===id).total,old=data.lessons[id]?.revision===contentRevision?data.lessons[id]:{step:0,completed:false,completedAt:0};data.lessons[id]={revision:contentRevision,step:Math.max(old.step,Math.min(total,nextStep)),completed:old.completed||finished,completedAt:old.completedAt||(finished?Date.now():0)};if(!storage?.setItem)throw Error('storage');storage.setItem(CUSTOM_KEY,JSON.stringify(data));expectedLesson=JSON.stringify(data.lessons[id]);}
+   else{data=normalize(JSON.parse(storage?.getItem(KEY)||'null'));const old=data.lessons[id];data.lessons[id]={step:Math.max(old.step,nextStep),completed:old.completed||finished,completedAt:old.completedAt||(finished?Date.now():0)};if(!storage||typeof storage.setItem!=='function')throw Error('storage');storage.setItem(KEY,JSON.stringify(data));}
+   error='';return true;}catch(failure){error=failure.message==='changed'?'Your player or lesson changed. Reopen the lesson before continuing.':'Your progress could not be saved. You can keep practicing and try saving again.';return false;}}
   function ensureQuiz(){
-   if(!quiz&&win.CodaClassroomQuiz)quiz=win.CodaClassroomQuiz.create({host,lessonId:id,storage,onPassed:()=>finish()});
+   if(!quiz&&win.CodaClassroomQuiz)quiz=win.CodaClassroomQuiz.create({host,lessonId:id,storage,custom:authored,contentRevision,canRecord,onPassed:()=>finish()});
    return quiz;
   }
   function beginQuiz(restart=false){
@@ -262,13 +274,13 @@
    stopAudio();quizzing=false;complete=true;answered=true;if(!persist(LESSONS.find(lesson=>lesson.id===id).total,true)){award={ok:false,error};render();return;}
    notifyCompletion();render();
   }
-  function notifyCompletion(){const lesson=LESSONS.find(lesson=>lesson.id===id);try{const result=api.onComplete?.(id,{title:lesson.title,correct:lesson.total,total:lesson.total});if(result&&typeof result.then==='function')result.then(value=>{award=value;render();}).catch(()=>{award={ok:false};render();});else award=result||null;}catch{award={ok:false};}}
-  const namingSteps=()=>NOTE_LESSONS[id]||NOTE_STEPS;
-  const noteCopy=()=>SIMPLE_NOTE_COPY[id]?.[step]||['Look at this note.','','Name the purple note.','Look at the line or space.'];
+  function notifyCompletion(){if(!canRecord()){award={ok:false,error:'Your profile or lesson changed. Reopen the lesson to save its reward.'};return;}const lesson=LESSONS.find(lesson=>lesson.id===id);try{const result=api.onComplete?.(id,{title:lesson.title,correct:lesson.total,total:lesson.total});if(result&&typeof result.then==='function')result.then(value=>{award=value;render();}).catch(()=>{award={ok:false};render();});else award=result||null;}catch{award={ok:false};}}
+  const namingSteps=()=>authored&&NOTE_LESSONS[id]?lessonSteps:NOTE_LESSONS[id]||NOTE_STEPS;
+  const noteCopy=()=>authored&&NOTE_LESSONS[id]?[lessonSteps[step].teach,lessonSteps[step].example,lessonSteps[step].prompt,lessonSteps[step].hint]:SIMPLE_NOTE_COPY[id]?.[step]||['Look at this note.','','Name the purple note.','Look at the line or space.'];
   function startTry(){learningStage='try';hintShown=false;message='';correct=null;render();host.querySelector('h3')?.focus({preventScroll:true});}
   function tryButton(section){section.append(button('Try it',startTry,{'data-lesson-try':''}));}
   function answerNote(letter,pitch){
-   if(complete||answered||learningStage!=='try')return;play([pitch||60]);const expected=namingSteps()[step];
+   if(complete||answered||learningStage!=='try')return;play([pitch??60]);const expected=namingSteps()[step];
    if(letter!==expected.answer){feedback('Not yet. Try again.',false);return;}
    answered=true;persist(step+1);message='Yes!';correct=true;render();host.querySelector('[data-tutorial-next]')?.focus({preventScroll:true});
   }
@@ -281,7 +293,7 @@
   function next(){if(!answered||complete)return;stopAudio();step++;learningStage='look';answered=false;hintShown=false;message='';correct=null;if(step>=LESSONS.find(lesson=>lesson.id===id).total)beginQuiz();else{persist(step);render();}}
   function answerRhythm(value){
    if(complete||answered||learningStage!=='try')return;
-   if(value!==2){feedback('Not yet. Try again.',false);return;}
+   const question=authored?lessonSteps[step]:null,expected=question?.answers?question.answer:2;if(value!==expected){feedback('Not yet. Try again.',false);return;}
    answered=true;persist(step+1);message='Yes! Two notes.';correct=true;render();host.querySelector('[data-tutorial-next]')?.focus({preventScroll:true});
   }
   function redrawBar(){const viewport=host.closest('.classroom-books'),scroll=viewport?.scrollTop;render();if(viewport&&Number.isFinite(scroll))viewport.scrollTop=scroll;}
@@ -294,9 +306,9 @@
   function actionCue(section,text){const cue=element('div','lesson-action-cue'),heading=element('h3','lesson-instruction',text);heading.tabIndex=-1;cue.append(heading);section.append(cue);return heading;}
   function buildKeyboard(section){
    const wrapper=element('div','lesson-keyboard-scroll'),keyboard=element('div','lesson-keyboard');keyboard.setAttribute('role','group');keyboard.setAttribute('aria-label','Piano white keys');
-   const high=['F','A'].includes(namingSteps()[step].answer),whites=(high?[['F',65],['G',67],['A',69],['B',71],['C',72]]:[['C',60],['D',62],['E',64],['F',65]]),keyWidth=100/whites.length;
+   const high=['F','A'].includes(namingSteps()[step].answer),whites=authored?[['C',60],['D',62],['E',64],['F',65],['G',67],['A',69],['B',71]]:(high?[['F',65],['G',67],['A',69],['B',71],['C',72]]:[['C',60],['D',62],['E',64],['F',65]]),keyWidth=100/whites.length;
    whites.forEach(([letter,pitch],index)=>{const key=button('',()=>answerNote(letter,pitch),{'aria-label':letter+' key','data-note-answer':letter,'data-pitch':pitch});key.className='lesson-white-key';if((hintShown||answered)&&letter===namingSteps()[step].answer)key.classList.add('is-hint');key.style.left=index*keyWidth+'%';key.style.width=keyWidth+'%';const label=element('span','lesson-key-name',letter);label.hidden=!names&&!(answered&&letter===namingSteps()[step].answer);key.append(label);key.disabled=answered;keyboard.append(key);});
-   for(const boundary of high?[1,2,3]:[1,2]){const black=element('span','lesson-black-key');black.style.left=(boundary*keyWidth-keyWidth*.31)+'%';black.style.width=keyWidth*.62+'%';black.setAttribute('aria-hidden','true');keyboard.append(black);}wrapper.append(keyboard);section.append(wrapper);
+   for(const boundary of authored?[1,2,4,5,6]:high?[1,2,3]:[1,2]){const black=element('span','lesson-black-key');black.style.left=(boundary*keyWidth-keyWidth*.31)+'%';black.style.width=keyWidth*.62+'%';black.setAttribute('aria-hidden','true');keyboard.append(black);}wrapper.append(keyboard);section.append(wrapper);
    const label=element('label','lesson-name-toggle'),toggle=element('input');toggle.type='checkbox';toggle.checked=names;toggle.onchange=()=>{names=toggle.checked;for(const name of host.querySelectorAll('.lesson-key-name'))name.hidden=!names;};label.append(toggle,doc.createTextNode('Show letters'));if(!answered)section.append(label);
   }
   function namingExample(question){
@@ -307,7 +319,7 @@
     let keys='';for(let index=0;index<8;index++){const fill=index===target?'#a9f2da':index===anchor?'#f5dda7':'#f9f4e6';keys+='<rect x="'+(index*50+1)+'" y="12" width="48" height="89" rx="3" fill="'+fill+'" stroke="#514861"/>';}
     for(const boundary of [1,2,4,5,6])keys+='<rect x="'+(boundary*50-14)+'" y="12" width="28" height="48" rx="2" fill="'+(group.includes(boundary)?'#8056ad':'#25213b')+'"/>';
     for(const index of new Set([target,anchor]))keys+='<text x="'+(index*50+25)+'" y="91" text-anchor="middle" fill="#263849" font-size="24" font-family="system-ui" font-weight="700">'+letters[index]+'</text>';
-    example.innerHTML='<svg class="lesson-example-keyboard" viewBox="0 0 400 106" role="img" aria-label="Example: '+noteCopy()[0]+'">'+keys+'</svg>';
+    example.innerHTML='<svg class="lesson-example-keyboard" viewBox="0 0 400 106" role="img">'+keys+'</svg>';example.querySelector('svg').setAttribute('aria-label','Example: '+noteCopy()[0]);
    }
    example.append(element('figcaption','lesson-model-label',noteCopy()[1]));return example;
   }
@@ -333,7 +345,7 @@
   function renderTree(section){
    learningStage='explore';host.dataset.learningStage=learningStage;section.dataset.kind='tree';
    const guides=['One whole note lasts four counts.','Split the whole note into two halves.','Split each half into two quarters.','Split each quarter into two eighths.','Split each eighth into two sixteenths.'];
-   actionCue(section,guides[level]);section.append(splitPicture());
+   actionCue(section,authored&&level===0?lessonSteps[0].guide:guides[level]);section.append(splitPicture());
    const value=VALUES[level],example=splitExample(level),shownCount=example.notes.length,totalCounts=example.counts,countWords=totalCounts===.5?'half a count':totalCounts+' '+(totalCounts===1?'count':'counts'),caption=element('p','lesson-tree-caption',shownCount+' '+value.name+(shownCount===1?' note':' notes')+' = '+countWords);caption.setAttribute('aria-live','polite');section.append(caption);
    const actions=element('div','lesson-actions');actions.append(button('Listen',()=>play(example.notes,{rhythm:true,treeLevel:level})));
    if(level<4){const split=button('Split it',()=>{level++;explored.add(level);stopAudio();message='';render();},{'data-tree-split':''});split.className='lesson-primary';actions.append(split);}else actions.append(button('Try a puzzle',()=>{answered=true;next();},{'data-tutorial-next':''}));section.append(actions);
@@ -344,14 +356,15 @@
    section.dataset.kind='rhythm';if(step===0){renderTree(section);return;}
    if(step===1||step===2){
     const half=step===1,example=element('div','lesson-rhythm-example');
-    if(learningStage==='look'){actionCue(section,half?'One half note lasts two counts.':'Two eighth notes share one count.');example.innerHTML=glyph(half?8:4)+'<span>=</span>'+glyph(half?4:2)+glyph(half?4:2);section.append(example);tryButton(section);return;}
-    actionCue(section,answered?'Yes. Two notes!':half?'How many quarter notes match this?':'How many eighth notes match this?');example.innerHTML=glyph(half?8:4);section.append(example);
-    if(!answered){const answers=element('div','lesson-number-answers');for(const value of [2,3,4])answers.append(button(String(value),()=>answerRhythm(value),{'data-rhythm-answer':value}));section.append(answers,button('Hint',()=>rhythmHint(half?'Each quarter lasts one count.':'Split the quarter in two.')));}
+    const question=authored?lessonSteps[step]:null;
+    if(learningStage==='look'){actionCue(section,question?.guide||(half?'One half note lasts two counts.':'Two eighth notes share one count.'));example.innerHTML=glyph(half?8:4)+'<span>=</span>'+glyph(half?4:2)+glyph(half?4:2);section.append(example);tryButton(section);return;}
+    actionCue(section,answered?'Yes!':question?.prompt||(half?'How many quarter notes match this?':'How many eighth notes match this?'));example.innerHTML=glyph(half?8:4);section.append(example);
+    if(!answered){const answers=element('div','lesson-number-answers');(question?.answers||[2,3,4]).forEach((value,index)=>answers.append(button(String(value),()=>answerRhythm(authored?index:Number(value)),{'data-rhythm-answer':authored?index:value})));section.append(answers,button('Hint',()=>rhythmHint(question?.hint||(half?'Each quarter lasts one count.':'Split the quarter in two.'))));}
     appendFeedback(section);nextButton(section);return;
    }
-   if(learningStage==='look'){actionCue(section,'Make four beats.');const example=element('div','lesson-rhythm-example lesson-recipe-example');example.setAttribute('aria-label','Four quarter notes, one beat each');example.innerHTML=[4,4,4,4].map(units=>glyph(units)).join('');section.append(example,element('p','lesson-model-label','1 + 1 + 1 + 1 = 4 beats'));tryButton(section);return;}
+   if(learningStage==='look'){actionCue(section,authored?lessonSteps[step].guide:'Make four beats.');const example=element('div','lesson-rhythm-example lesson-recipe-example');example.setAttribute('aria-label','Four quarter notes, one beat each');example.innerHTML=[4,4,4,4].map(units=>glyph(units)).join('');section.append(example,element('p','lesson-model-label',authored?lessonSteps[step].caption:'1 + 1 + 1 + 1 = 4 beats'));tryButton(section);return;}
    section.classList.add('lesson-bar-builder');const total=bar.reduce((sum,value)=>sum+value,0);
-   actionCue(section,answered?'Four beats. You did it!':'Make four beats.');
+   actionCue(section,answered?'Four beats. You did it!':authored?lessonSteps[step].prompt:'Make four beats.');
    const drawing=element('div','lesson-bar-drawing'),pattern=element('div','lesson-pattern');pattern.setAttribute('aria-label','Your four-beat bar');
    bar.forEach((units,index)=>{const cell=element('div','lesson-pattern-note');cell.dataset.patternIndex=index;cell.setAttribute('aria-label',VALUES.find(value=>value.units===units).label);cell.innerHTML=glyph(units);pattern.append(cell);});
    if(!bar.length)pattern.append(element('div','lesson-pattern-space','Your notes go here'));
@@ -365,7 +378,7 @@
    appendFeedback(section);if(answered)nextButton(section,'Start quiz');
   }
   function renderKeys(section){
-   section.dataset.kind='keys';const question=KEY_STEPS[step];
+   section.dataset.kind='keys';const question=authored?lessonSteps[step]:KEY_STEPS[step];
    actionCue(section,learningStage==='look'?question.guide:answered?'Yes!':question.prompt);
    const picture=element('figure','lesson-keys-picture');
    function noteRow(notes,home,label){
@@ -386,7 +399,7 @@
    appendFeedback(section);nextButton(section,step===KEY_STEPS.length-1?'Start quiz':'Next');
   }
   function renderExpression(section){
-   section.dataset.kind='expression';const steps=EXPRESSION_LESSONS[id],question=steps[step];
+   section.dataset.kind='expression';const steps=authored?lessonSteps:EXPRESSION_LESSONS[id],question=steps[step];
    actionCue(section,learningStage==='look'?question.guide:answered?'Yes!':question.prompt);
    const picture=element('figure','lesson-expression-picture'),symbols=element('div','lesson-expression-symbols');
    if(question.marks)for(const mark of question.marks){const value=DYNAMIC_LEVELS.find(item=>item.mark===mark),symbol=element('span','lesson-dynamic-symbol',String.fromCodePoint(value.code));symbol.setAttribute('role','img');symbol.setAttribute('aria-label',mark+': '+value.name+', '+value.meaning);symbol.dataset.dynamic=mark;symbols.append(symbol);}
@@ -403,10 +416,16 @@
    appendFeedback(section);nextButton(section,step===steps.length-1?'Start quiz':'Next');
   }
   function appendFeedback(section){const feedbackNode=element('p','tutorial-feedback',message);feedbackNode.setAttribute('role','status');feedbackNode.setAttribute('aria-live','polite');feedbackNode.dataset.correct=String(correct);section.append(feedbackNode);}
+  function renderAuthoredPicture(section){
+   const value=authored&&!complete&&!quizzing?lessonSteps?.[step]?.visual:null,module=win.CodaEducationNotation;
+   if(value?.kind!=='notation'||!module)return;const checked=module.validate(value.score);if(!checked.ok)return;
+   const picture=element('figure','lesson-authored-notation');picture.innerHTML=module.toSVG(checked.data);const original=section.querySelector('.lesson-naming-example,.lesson-staff-wrap,.lesson-rhythm-example,.lesson-split-picture,.lesson-keys-picture,.lesson-expression-picture');
+   if(original)original.replaceWith(picture);else section.querySelector('.lesson-action-cue')?.after(picture);notation.load?.(doc);
+  }
   function renderComplete(section){
    actionCue(section,'You did it!');
    let reward='Keep practising whenever you like.';if(award?.ok===false)reward=award.error||'Let’s save your reward again.';else if(award?.alreadyAwarded)reward='You already earned this reward.';else if(award?.amount>0)reward='+'+award.amount+' XP';
-   const status=element('p','tutorial-feedback',reward);status.setAttribute('role','status');section.append(status);if(award?.ok===false)section.append(button('Save again',()=>{if(readProgress(storage).completed.includes(id)){notifyCompletion();render();}else finish();}));
+   const status=element('p','tutorial-feedback',reward);status.setAttribute('role','status');section.append(status);if(award?.ok===false)section.append(button('Save again',()=>{if(progress().completed.includes(id)){notifyCompletion();render();}else finish();}));
    section.append(button('Quiz again',()=>beginQuiz(true),{'data-tutorial-quiz':''}),button('Practice again',()=>reset(false),{'data-tutorial-replay':''}));
   }
   function render(){
@@ -414,13 +433,14 @@
    if(!quizzing){const progress=element('progress');progress.max=lesson.total;progress.value=complete?lesson.total:step+(answered?1:0);progress.setAttribute('aria-label',lesson.title+' progress');host.append(progress);}
    const section=element('section','lesson-content');section.setAttribute('aria-label',lesson.title+(quizzing?' quiz':' activity'));host.append(section);
    if(complete)renderComplete(section);else if(quizzing){if(ensureQuiz())quiz.render(section);else section.append(element('p','lesson-teach','The quiz could not load. Reload the page to try again.'));}else if(NOTE_LESSONS[id])renderNaming(section);else if(id==='major-minor-keys')renderKeys(section);else if(EXPRESSION_LESSONS[id])renderExpression(section);else if(id==='time-signatures'){if(signatureLesson)signatureLesson.render(section,{step,answered});else section.append(element('p','','The time-signature lesson could not load. Reload the page to try again.'));}else renderRhythm(section);const bookViewport=host.closest('.classroom-books');if(bookViewport)bookViewport.scrollTop=0;if(oldFocus&&!quizzing){let target=restore?host.querySelector(restore):null;if(!target||target.disabled)target=host.querySelector('h3');if(target){if(target.tagName==='H3')target.tabIndex=-1;target.focus({preventScroll:true});}}
+   renderAuthoredPicture(section);
   }
   function reset(resume=true){
-   stopAudio();quiz?.destroy();quiz=null;signatureLesson?.reset();const saved=readProgress(storage).lessons.find(lesson=>lesson.id===id),total=LESSONS.find(lesson=>lesson.id===id).total;step=resume?saved.step:0;complete=resume&&saved.completed;quizzing=resume&&!complete&&step>=total;freshQuiz=!resume;learningStage='look';answered=false;message='';correct=null;hintShown=false;level=0;explored=new Set([0]);bar=[];award=null;
+   stopAudio();quiz?.destroy();quiz=null;signatureLesson?.reset();const saved=progress().lessons.find(lesson=>lesson.id===id),total=LESSONS.find(lesson=>lesson.id===id).total;step=resume?saved.step:0;complete=resume&&saved.completed;quizzing=resume&&!complete&&step>=total;freshQuiz=!resume;learningStage='look';answered=false;message='';correct=null;hintShown=false;level=0;explored=new Set([0]);bar=[];award=null;
    if(complete){ensureQuiz();notifyCompletion();}else if(quizzing)ensureQuiz();render();
   }
-  function open(lessonId){if(!LESSONS.some(lesson=>lesson.id===lessonId))return false;id=lessonId;reset();return true;}
-  return {open,stopAudio,destroy(){stopAudio();quiz?.destroy();signatureLesson?.destroy();destroyed=true;host.replaceChildren();},getState:()=>({...readProgress(storage),active:id?{id,step,learningStage:id==='time-signatures'?signatureLesson?.getState().stage||'look':learningStage,answered,complete,phase:complete?'complete':quizzing?'quiz':'lesson',quiz:quiz?.getState()||null,treeLevel:level,explored:[...explored],bar:[...bar],timeSignatures:id==='time-signatures'?signatureLesson?.getState():null,audioPlaying:!!audio||signatureLesson?.getState().audioPlaying===true,error}:null})};
+  function open(lessonId){if(!LESSONS.some(lesson=>lesson.id===lessonId))return false;id=lessonId;contentChanged=false;authored=content?.isLessonEdited?.(id)===true;contentRevision=content?.getLessonRevision?.(id)||'';lessonSteps=authored?content.getLessonSteps(id):null;expectedLesson=JSON.stringify(authoredJournal().lessons[id]??null);reset();return true;}
+  return {open,stopAudio,destroy(){stopAudio();quiz?.destroy();signatureLesson?.destroy();destroyed=true;host.replaceChildren();},getState:()=>({...progress(),active:id?{id,step,custom:authored,contentRevision,learningStage:id==='time-signatures'?signatureLesson?.getState().stage||'look':learningStage,answered,complete,phase:complete?'complete':quizzing?'quiz':'lesson',quiz:quiz?.getState()||null,treeLevel:level,explored:[...explored],bar:[...bar],timeSignatures:id==='time-signatures'?signatureLesson?.getState():null,audioPlaying:!!audio||signatureLesson?.getState().audioPlaying===true,error}:null})};
  }
- return {KEY,LESSONS,VALUES,NOTE_STEPS,BASS_STEPS,GRAND_STEPS,KEY_STEPS,NOTE_LESSONS,DYNAMIC_LEVELS,DYNAMICS_STEPS,TEMPO_STEPS,EXPRESSION_LESSONS,EXPRESSION_NOTES,SIMPLE_NOTE_COPY,splitExample,validBar,normalize,readProgress,glyph,staffSVG,treeSVG,create};
+ return {KEY,CUSTOM_KEY,LESSONS,VALUES,NOTE_STEPS,BASS_STEPS,GRAND_STEPS,KEY_STEPS,NOTE_LESSONS,DYNAMIC_LEVELS,DYNAMICS_STEPS,TEMPO_STEPS,EXPRESSION_LESSONS,EXPRESSION_NOTES,SIMPLE_NOTE_COPY,splitExample,validBar,normalize,readProgress,glyph,staffSVG,treeSVG,create};
 });

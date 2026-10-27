@@ -372,6 +372,7 @@
     const host=api.host;if(!host)throw new Error('Music classroom needs a host element.');
     const doc=host.ownerDocument,win=doc.defaultView||root,renderer=api.renderer;
     let tutorial=null,finalExam=null;
+    let educationReady=!api.educationContentReady,contentSelection=0;const educationContentReady=Promise.resolve(api.educationContentReady).then(()=>{educationReady=true;},()=>{educationReady=true;});
     let opened=false,destroyed=false,priorFocus=null,selected='welcome',frame=0,last=0,clock=0,walking=false,near=null,destination=null,audio=null,voices=[],audioTimers=[];
     let mobileView='room',settingsOpen=false,roomCamera=null,fullscreen=null;const touchHeld=new Set(),mobileLayout=()=>win.matchMedia?.('(max-width:760px), (pointer:coarse)').matches===true;
     const joystick={x:0,y:0};
@@ -406,14 +407,16 @@
       if(!matches.length){const p=doc.createElement('p');p.className='classroom-no-results';p.textContent='No matching books. Try another word.';list.append(p);}
     }
     function selectTopic(id,focus=false){
-      const topic=topicFor(id);selected=topic.id;host.dataset.topic=topic.id;el('classroomAllLessons').hidden=mobileView==='room'||topic.id==='welcome';host.dataset.lessonActive=String(!!topic.tutorial||!!topic.exam);host.dataset.referenceOpen='false';stopAudio();tutorial?.destroy();tutorial=null;finalExam?.destroy();finalExam=null;el('classroomStart').hidden=topic.id!=='welcome';
+      const topic=topicFor(id),selection=++contentSelection;selected=topic.id;host.dataset.topic=topic.id;el('classroomAllLessons').hidden=mobileView==='room'||topic.id==='welcome';host.dataset.lessonActive=String(!!topic.tutorial||!!topic.exam);host.dataset.referenceOpen='false';stopAudio();tutorial?.destroy();tutorial=null;finalExam?.destroy();finalExam=null;el('classroomStart').hidden=topic.id!=='welcome';
       const article=el('classroomBook');article.hidden=topic.id==='welcome';article.innerHTML='<h2 id="classroomBookTitle"'+(topic.tutorial||topic.exam?' class="classroom-lesson-context"':'')+'></h2>'+(topic.tutorial||topic.exam?'':'<p class="classroom-book-kicker"></p>'+topic.html);
       const kicker=article.querySelector('.classroom-book-kicker');if(kicker)kicker.textContent=topic.shelf.toUpperCase();el('classroomBookTitle').textContent=topic.title;
       if(topic.id==='welcome'){listTopics();status('Haydn: “Start with Note names. We’ll take one small step at a time.”');if(focus){setMobileView('books');el('classroomStart').focus({preventScroll:true});el('classroomStart').scrollIntoView({behavior:'auto',block:'start'});}return;}
+      if((topic.tutorial||topic.exam)&&!educationReady){const waiting=doc.createElement('p');waiting.setAttribute('role','status');waiting.textContent=topic.exam?'Loading exam…':'Loading lesson…';article.append(waiting);listTopics();if(focus)setMobileView('books');educationContentReady.then(()=>{if(!destroyed&&opened&&selected===topic.id&&contentSelection===selection)selectTopic(topic.id,focus);});return;}
+      if(topic.tutorial)el('classroomBookTitle').textContent=win.CodaEducationContent?.getLesson?.(topic.tutorial)?.title||topic.title;
       if(topic.id==='staff'&&win.CodaMusicNotation){const figure=doc.createElement('figure');figure.className='classroom-staff-example';figure.innerHTML=win.CodaMusicNotation.staffSVG(0,{label:'An E on the bottom line of a treble staff'});const caption=doc.createElement('figcaption');caption.textContent='E sits on the bottom treble line. Move up one line or space at a time to F, G, A, B, C, D, E, F.';figure.append(caption);article.append(figure);win.CodaMusicNotation.load(doc);}
       if(topic.tutorial){
         const mount=doc.createElement('div');article.append(mount);
-        if(win.CodaClassroomTutorials){tutorial=win.CodaClassroomTutorials.create({host:mount,storage:api.storage,onComplete:(id,details)=>api.onTutorialComplete?.(id,details)});tutorial.open(topic.tutorial);}
+        if(win.CodaClassroomTutorials){tutorial=win.CodaClassroomTutorials.create({host:mount,storage:api.storage,canRecord:api.canRecord,onComplete:(id,details)=>api.onTutorialComplete?.(id,details)});tutorial.open(topic.tutorial);}
         else mount.textContent='This lesson is still loading. Reopen the classroom in a moment.';
         listTopics();status('Haydn: “Let’s try '+topic.title.toLowerCase()+' together.”');
         if(focus){setMobileView('books');article.focus({preventScroll:true});article.scrollIntoView({behavior:'auto',block:'start'});}return;

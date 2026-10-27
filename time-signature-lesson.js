@@ -18,7 +18,7 @@
   {id:'cut-time',meter:'2/2',kind:'choice',prompt:'Which note gets one BIG beat here?',teach:'Cut time has two big beats. Each is a half note.',noteExample:2,noteLabel:'Half note',answers:['Quarter note','Half note','Eighth note'],correct:1,hint:'The picture shows a half note.',success:'Yes! A half note.'},
   {id:'build-cut',meter:'2/2',kind:'build',prompt:'Add 2 half notes.',teach:'One half note for ONE. One for TWO.',recipe:[2,2],hint:'Tap Add note twice.',success:'Yes! Your bar is full.'}
  ].map(step=>Object.freeze({...step,answers:step.answers?Object.freeze(step.answers):undefined,recipe:step.recipe?Object.freeze(step.recipe):undefined})));
- function validBar(values,step){const item=typeof step==='number'?STEPS[step]:STEPS.find(value=>value.id===step);return !!item?.recipe&&Array.isArray(values)&&values.length===item.recipe.length&&values.every((value,index)=>Number.isFinite(value)&&Math.abs(value-item.recipe[index])<1e-8);}
+ function validBar(values,step,steps=STEPS){const item=typeof step==='number'?steps[step]:steps.find(value=>value.id===step);return !!item?.recipe&&Array.isArray(values)&&values.length===item.recipe.length&&values.every((value,index)=>Number.isFinite(value)&&Math.abs(value-item.recipe[index])<1e-8);}
  function pulseSchedule(meter,{bpm=80,bars=2}={}){
   const value=METERS[meter];if(!value)return [];bpm=Number.isFinite(bpm)?Math.max(40,Math.min(160,bpm)):80;bars=Math.max(1,Math.min(4,Math.floor(bars)||1));
   const secondsPerQuarter=60/bpm/value.pulseBeats,perBar=value.barBeats/value.subdivisionBeats,result=[];
@@ -27,27 +27,30 @@
  }
  function create(api={}){
   const host=api.host;if(!host)throw Error('A time-signature lesson needs a host.');const doc=host.ownerDocument,win=doc.defaultView,notes=api.notation||notation;
+  const steps=()=>api.getSteps?.()||STEPS;
   let section=null,step=0,answered=false,bar=[],message='',correct=null,audio=null,voices=[],timers=[],lastSchedule=[],tapCount=0,destroyed=false,stage='look',hintOpen=false;
   const node=(tag,className,text)=>{const value=doc.createElement(tag);if(className)value.className=className;if(text!==undefined)value.textContent=text;return value;};
-  const button=(label,fn,attributes={})=>{const value=node('button','',label);value.type='button';for(const [key,text]of Object.entries(attributes))value.setAttribute(key,text);value.onclick=fn;return value;};
+  const button=(label,fn,attributes={})=>{const value=node('button','',label);value.type='button';for(const [key,text]of Object.entries(attributes))value.setAttribute(key,text);value.onclick=event=>{if(api.canRecord?.()===false){feedback('Your profile or lesson changed. Reopen the lesson before continuing.',false);return;}fn(event);};return value;};
   function feedback(text,ok){message=text;correct=ok;const value=section?.querySelector('.signature-feedback');if(value){value.textContent=text;value.dataset.correct=String(ok);}}
   function stopAudio(){for(const timer of timers)win.clearTimeout(timer);timers=[];for(const voice of voices)try{voice.stop();}catch{}voices=[];if(audio){audio.close().catch(()=>{});audio=null;}section?.querySelectorAll('.is-pulse').forEach(value=>value.classList.remove('is-pulse'));const live=section?.querySelector('.signature-count-live');if(live)live.textContent='';}
   function play(){
-   stopAudio();lastSchedule=pulseSchedule(STEPS[step].meter);tapCount=0;const Constructor=api.AudioContext||win.AudioContext||win.webkitAudioContext;
+   stopAudio();lastSchedule=pulseSchedule(steps()[step].meter);tapCount=0;const Constructor=api.AudioContext||win.AudioContext||win.webkitAudioContext;
    if(!Constructor){feedback('Sound is unavailable. Look at the count boxes.',null);return;}
    try{audio=new Constructor();audio.resume().catch(()=>{});const context=audio,start=context.currentTime+.08;
     for(const event of lastSchedule){const at=start+event.time,voice=context.createOscillator(),gain=context.createGain();voice.type='triangle';voice.frequency.value=event.accent?1050:event.primary?840:500;gain.gain.setValueAtTime(.0001,at);gain.gain.exponentialRampToValueAtTime(event.primary ? .15 : .045,at+.006);gain.gain.exponentialRampToValueAtTime(.0001,at+.07);voice.connect(gain).connect(context.destination);voice.start(at);voice.stop(at+.08);voices.push(voice);
      timers.push(win.setTimeout(()=>{section?.querySelectorAll('.is-pulse').forEach(value=>value.classList.remove('is-pulse'));section?.querySelector('[data-signature-pulse="'+event.index+'"]')?.classList.add('is-pulse');const live=section?.querySelector('.signature-count-live');if(live)live.textContent=event.label;},(at-context.currentTime)*1000));}
-    const value=METERS[STEPS[step].meter],duration=value.pulses*60/80*2;timers.push(win.setTimeout(()=>{stopAudio();const live=section?.querySelector('.signature-count-live');if(live)live.textContent='';},(duration+.25)*1000));
+    const value=METERS[steps()[step].meter],duration=value.pulses*60/80*2;timers.push(win.setTimeout(()=>{stopAudio();const live=section?.querySelector('.signature-count-live');if(live)live.textContent='';},(duration+.25)*1000));
    }catch{stopAudio();feedback('Sound could not start. Look at the count boxes.',null);}
   }
   function signature(parent,meter){const canvas=node('canvas','signature-symbol');canvas.width=100;canvas.height=116;canvas.setAttribute('role','img');canvas.setAttribute('aria-label',meter==='2/2'?'Cut time sign: two-two':meter+' time signature');const draw=()=>{if(destroyed)return;const g=canvas.getContext('2d');g.clearRect(0,0,100,116);notes.drawTimeSignature(g,{x:50,y:58,meter,fontSize:76,color:'#f6efcf'});};draw();notes.load?.(doc)?.then?.(draw);parent.append(canvas);}
   function markCorrect(){if(answered)return;answered=true;stage='done';message='';correct=true;stopAudio();render(section,{step,answered:true});api.onCorrect?.();section?.querySelector('[data-tutorial-next]')?.focus({preventScroll:true});}
-  function answer(index){if(answered)return;const value=STEPS[step];if(index!==value.correct){feedback('Try again. You can use a hint.',false);return;}markCorrect();}
-  function add(beats){if(answered)return;const value=STEPS[step];if(bar.reduce((sum,n)=>sum+n,0)+beats>METERS[value.meter].barBeats+1e-8)return;bar.push(beats);message='';correct=null;render(section,{step,answered});}
-  function check(){if(!validBar(bar,step)){feedback('Keep filling the empty spaces.',false);return;}markCorrect();}
+  function answer(index){if(answered)return;const value=steps()[step];if(index!==value.correct){feedback('Try again. You can use a hint.',false);return;}markCorrect();}
+  function add(beats){if(answered)return;const value=steps()[step];if(bar.reduce((sum,n)=>sum+n,0)+beats>METERS[value.meter].barBeats+1e-8)return;bar.push(beats);message='';correct=null;render(section,{step,answered});}
+  function check(){if(!validBar(bar,step,steps())){feedback('Keep filling the empty spaces.',false);return;}markCorrect();}
   function picture(parent,value){
-   const visual=node('div','signature-visual');visual.dataset.signatureMeter=value.meter;signature(visual,value.meter);
+   const visual=node('div','signature-visual');visual.dataset.signatureMeter=value.meter;
+   if(value.visual?.kind==='notation'&&win.CodaEducationNotation){visual.innerHTML=win.CodaEducationNotation.toSVG(value.visual.score);parent.append(visual);return;}
+   signature(visual,value.meter);
    if(value.noteExample&&value.id!=='six-eighths'){
     const shown=node('div','signature-note-example');shown.innerHTML=notes.glyphSVG(value.noteExample);shown.append(node('span','',value.noteLabel));visual.append(shown);
    }else{
@@ -60,9 +63,9 @@
   function resetLearningScroll(){const viewport=section?.closest('.classroom-books');if(viewport)viewport.scrollTop=0;}
   function render(target,state={}){
    if(destroyed)return;
-   const requested=Math.max(0,Math.min(STEPS.length-1,state.step||0)),focus=section?.contains(doc.activeElement)?doc.activeElement:null,focusAdd=focus?.getAttribute('data-signature-add'),focusUndo=focus?.hasAttribute('data-signature-undo');
+   const requested=Math.max(0,Math.min(steps().length-1,state.step||0)),focus=section?.contains(doc.activeElement)?doc.activeElement:null,focusAdd=focus?.getAttribute('data-signature-add'),focusUndo=focus?.hasAttribute('data-signature-undo');
    if(step!==requested){stopAudio();bar=[];message='';correct=null;tapCount=0;stage='look';hintOpen=false;}
-   step=requested;answered=state.answered===true;if(answered)stage='done';section=target;section.replaceChildren();section.classList.add('time-signature-activity');section.dataset.signatureStage=stage;const value=STEPS[step],meta=METERS[value.meter];
+   step=requested;answered=state.answered===true;if(answered)stage='done';section=target;section.replaceChildren();section.classList.add('time-signature-activity');section.dataset.signatureStage=stage;const value=steps()[step],meta=METERS[value.meter];
    const prompt=node('h3','signature-main-prompt',stage==='look'?value.teach:stage==='done'?value.success:value.prompt);prompt.tabIndex=-1;section.append(prompt);
    if(stage!=='look'&&value.kind==='build'){
     const pattern=node('div','signature-bar');pattern.setAttribute('aria-label','Fill '+value.recipe.length+' note spaces');
@@ -72,7 +75,7 @@
     const actions=node('div','signature-look-actions');actions.append(button('Listen',play,{'data-signature-listen':value.meter}),button('Your turn',()=>{stopAudio();stage='try';hintOpen=false;message='';render(section,{step,answered:false});section.querySelector('.signature-main-prompt')?.focus({preventScroll:true});},{'data-signature-try':''}));section.append(actions,node('p','signature-count-live',''));resetLearningScroll();return;
    }
    if(stage==='done'){
-    const next=button(step===STEPS.length-1?'Try the quiz':'Next',()=>api.onNext?.(),{'data-tutorial-next':''});section.append(next);resetLearningScroll();return;
+    const next=button(step===steps().length-1?'Try the quiz':'Next',()=>api.onNext?.(),{'data-tutorial-next':''});section.append(next);resetLearningScroll();return;
    }
    if(value.kind==='choice'){
     const answers=node('div','signature-answers');value.answers.forEach((text,index)=>answers.append(button(text,()=>answer(index),{'data-signature-answer':index})));section.append(answers);

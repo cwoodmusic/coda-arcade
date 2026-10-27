@@ -201,9 +201,19 @@ class WorldEditorTests(unittest.TestCase):
         self.assertEqual(self.project(),published,'Reset must restore the shared published layout')
         self.import_project(exported)
         self.page.wait_for_function('window.CodaDeveloperConsole.getProject().strokes.length===1')
-        self.assertEqual(self.project(), expected)
+        # Legacy world-only exports predate room editing. Their missing rooms
+        # field must not erase newer Piano Lab / cave edits on this device.
+        restored = {**expected, **({'rooms': published['rooms']} if published.get('rooms') else {})}
+        self.assertEqual(self.project(), restored, 'A world-only import preserves room edits')
         self.page.locator('#devUndo').click()
         self.assertEqual(self.project(),published,'One undo must revert the entire import')
+        # An explicit empty rooms object is the current format's request to
+        # replace those room edits too, and remains a single undo step.
+        self.import_project({**exported, 'rooms': {}})
+        self.page.wait_for_function('window.CodaDeveloperConsole.getProject().strokes.length===1')
+        self.assertEqual(self.project(), expected, 'Explicit empty room data clears room overrides')
+        self.page.locator('#devUndo').click()
+        self.assertEqual(self.project(), published)
 
     def test_delete_restore_typing_shortcuts_playtest_and_zoom(self):
         original = self.lift()

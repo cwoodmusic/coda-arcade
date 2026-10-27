@@ -195,6 +195,34 @@ each topic’s score and links back to its lesson. A first pass earns 200 XP onc
 The current attempt and best result save with a classroom profile. Retakes
 select fresh questions and keep the previous best.
 
+For teaching edits, press **F2 → Lessons & exams** in the arcade, Piano Lab,
+or Fishing Cave. The editor opens full screen with **Exit editor** at the top.
+Choose Final exam questions, Lesson quiz questions, or Lesson instructions,
+then a topic. Search and select an item to edit. Questions support 2–6 answers;
+select the correct one, then **Save question**. Add, duplicate, delete, undo,
+redo, and restore-default controls are included. Lesson activities keep their
+interactive format while their words, expected answers, and pictures can change.
+
+Turn on **Use an editable music staff** to place notes, rests, treble/bass clefs,
+bar lines, and repeat signs. Choose durations, dots, and accidentals; click to
+place symbols, drag notes vertically, or use the arrow keys. Grand staff is
+available, and long scores scroll while keeping symbols readable.
+
+Saved content edits apply to developer preview in this browser. **Export
+content JSON** makes a separate teaching-content backup; import it on another
+device, or provide it for publication as `education-content.json` to make it the
+shared classroom default. These files are separate from world-layout exports.
+Student profiles use published content and cannot apply a device's private
+developer draft. Edited assessments keep separate browser-only attempts;
+passing still earns the existing one-time lesson/exam XP without replacing
+the original saved results. Clearing site data removes local drafts and attempts.
+
+**Rhythm Room → Tap Practice** now offers 4/4, 2/2 (cut time), and 6/8.
+The counting guide highlights `1 & 2 &` or `1 e & a` in time with the audio,
+including rests. Auto selects the subdivision for the generated rhythm; in 6/8
+it uses `1 la li 2 la li`. The metronome and tempo follow the selected meter's
+main beat. Counting can be changed or hidden without stopping the loop.
+
 **Song Machine** has a shared **Volume** slider for Simple and Advanced modes.
 It controls playback and note previews and remembers the device setting.
 Edits automatically save a working draft in this browser, including sounds,

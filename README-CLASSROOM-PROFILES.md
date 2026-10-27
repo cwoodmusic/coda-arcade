@@ -112,6 +112,14 @@ allowed appearance values, progress records, collection limits, and number
 ranges. Song Machine’s working draft stays in a browser-only scoped key; profile
 changes clear it, and leaving the classroom restores the guest’s original draft.
 Drafts and master-volume settings are not added to the cloud progress record.
+Teacher-authored content is device configuration, stored separately from player
+progress and shared through `education-content.json` publication/import/export.
+Students use published content, never an unrelated local developer draft.
+Edited exam, quiz, and lesson attempts use three additional browser-only scoped
+keys; profile changes clear them and restore the guest's original attempts on
+exit. Older guest backups remain restorable. These attempts and authoring text
+are excluded from the cloud DTO; existing one-time XP rewards still sync through
+the normal achievement journal.
 An additional 8 MiB UTF-8 limit applies in the client; Realtime Database
 rules enforce the typed field and collection bounds, not that overall byte
 limit.

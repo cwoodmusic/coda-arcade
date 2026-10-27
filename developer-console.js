@@ -14,10 +14,10 @@ window.createCodaDeveloperConsole = function (api) {
   let tab = 'objects', playtest = false, loading = true, strokeBefore = null, saveTimer;
   let pickSample = false, baseCache = null, baseKey = '', cleanupCache = null, loadFailed = false, pan = null;
   let publishedProject = null, publishedError = null, loadError = null, projectSource = 'base';
-  let dialogue={}, sprites={}, artwork={}, dialogueEditor=null, pixelEditor=null, artworkEditor=null, artworkTools=null;
+  let dialogue={}, sprites={}, artwork={}, dialogueEditor=null, pixelEditor=null, artworkEditor=null, artworkTools=null,educationEditor=null;
   let panTool=false, spaceHeld=false,collisionOverlay=false,layerOverlay=false,layerMaskSource=null,layerMaskTint=null,layerMaskKey='';
   const dialogueDefaults=api.dialogueDefaults||window.CodaNPCDialogueDefaults||{};
-  const TABS=['objects','collision','layers','artwork','dialogue','pixels','project'];
+  const TABS=['objects','collision','layers','artwork','dialogue','pixels','education','project'];
   const pictures = new Map();
   const maskedLayers = new WeakMap();
   const panel = $('assetStudio');
@@ -34,7 +34,7 @@ window.createCodaDeveloperConsole = function (api) {
   head.insertBefore(dock,$('assetClose'));
   dock.onclick=()=>{const right=panel.style.right!=='12px';panel.style.left=right?'auto':'12px';panel.style.right=right?'12px':'auto';};
   const nav = document.createElement('div'); nav.className = 'dev-tabs'; nav.setAttribute('role','tablist'); nav.setAttribute('aria-label','Developer tools');
-  nav.innerHTML = TABS.map(name => `<button type="button" role="tab" id="devTab-${name}" aria-controls="dev-${name}">${name==='pixels'?'Sprites':name==='artwork'?'Pixel editor':name[0].toUpperCase()+name.slice(1)}</button>`).join('');
+  nav.innerHTML = TABS.map(name => `<button type="button" role="tab" id="devTab-${name}" aria-controls="dev-${name}">${name==='education'?'Lessons & exams':name==='pixels'?'Sprites':name==='artwork'?'Pixel editor':name[0].toUpperCase()+name.slice(1)}</button>`).join('');
   head.after(nav);
   const cameraTools=document.createElement('div');cameraTools.className='dev-camera';
   cameraTools.setAttribute('role','group');cameraTools.setAttribute('aria-label','Editor camera');
@@ -97,6 +97,12 @@ window.createCodaDeveloperConsole = function (api) {
     onApply:(id,entry)=>{const before=snapshot();dialogue[id]=clone(entry);changed(before);message('Applied musician dialogue. Save or export the project to keep a backup.');return true;},
     onReset:id=>{const before=snapshot();delete dialogue[id];changed(before);message('Restored default musician dialogue.');return true;}});
   else dialoguePane.textContent='Dialogue tools could not load. Reload the page to try again.';
+  const educationPane=pane('education','');
+  function mountEducation(){
+    if(educationEditor||!studio.active||playtest||tab!=='education')return;
+    if(!window.CodaEducationEditor||!window.CodaEducationContent?.getStore?.()){educationPane.textContent='Lesson editing tools could not load. Reload the page to try again.';return;}
+    educationPane.replaceChildren();educationEditor=window.CodaEducationEditor.mount({host:educationPane,canEdit:canEditArtwork,onExit:()=>{setTab('objects');c.focus({preventScroll:true});}});
+  }
   const pixelPane=pane('pixels','');
   if(window.CodaPixelEditor&&api.renderer)pixelEditor=window.CodaPixelEditor.mount({host:pixelPane,renderer:api.renderer,getData:()=>sprites,getProfile:api.getPixelProfile,getTargets:api.getPixelTargets,canEdit:canEditArtwork,openArtwork:id=>{open('artwork');artworkEditor?.selectTarget(id);},
     onChange:next=>{if(!window.CodaPixelEditor.validate(next))return false;const before=snapshot();sprites=clone(next);api.renderer.setPixelEdits(sprites);changed(before);message('Applied pixel edits. Save or export the project to keep a backup.');return true;}});
@@ -204,6 +210,7 @@ window.createCodaDeveloperConsole = function (api) {
   }
   function setTab(name) {
     name=name==='sprites'?'pixels':TABS.includes(name)?name:'objects';
+    if(name!=='education'||!studio.active||playtest)educationEditor?.setActive(false);
     finishGesture();if(name!==tab){if(tab==='pixels')pixelEditor?.cancelGesture();artworkEditor?.cancelPaste?.(false);artworkEditor?.setExpanded(false);} tab=name; pickSample=false; studio.capturing=null;
     if(name==='collision')collisionOverlay=true;if(name==='layers')layerOverlay=true;
     for(const name of TABS) { $('dev-'+name).hidden=name!==tab; $('devTab-'+name).setAttribute('aria-selected',String(name===tab)); }
@@ -212,8 +219,9 @@ window.createCodaDeveloperConsole = function (api) {
     studio.showGuides=tab==='objects'&&!playtest&&$('assetGuides').checked;
     c.classList.toggle('layer-editing',layer.active);panel.scrollTop=0; refreshCamera();refresh();
     if(tab==='artwork'&&studio.active&&!playtest)artworkEditor?.setExpanded(true);
+    if(tab==='education'&&studio.active&&!playtest){mountEducation();educationEditor?.setActive(true);educationEditor?.setExpanded(true);}
   }
-  function open(name='objects') { api.toggle(true); setTab(name); if(!artworkEditor?.getState().expanded)c.focus({preventScroll:true}); }
+  function open(name='objects') { api.toggle(true); setTab(name); if(!artworkEditor?.getState().expanded&&!educationEditor?.getState().expanded)c.focus({preventScroll:true}); }
   function onToggle() {
     if(!studio.active) { pixelEditor?.cancelGesture();artworkEditor?.cancelPaste?.(false);artworkEditor?.setExpanded(false); spaceHeld=false; playtest=false; panel.classList.remove('dev-playtest'); $('devPlaytest').textContent='▶ Playtest'; $('devPlaytest').setAttribute('aria-pressed','false'); }
     setTab(tab); if(studio.active)message(loadFailed&&loadError?loadError:'Developer console active. Changes save locally; export a project backup.'+(publishedError?' '+publishedError:''));
@@ -512,6 +520,7 @@ window.createCodaDeveloperConsole = function (api) {
   }
   function refresh() {
     dialogueEditor?.refresh();pixelEditor?.refresh();if(tab==='artwork')artworkEditor?.refresh();
+    if(tab==='education'&&studio.active&&!playtest)educationEditor?.refresh();
     for(const [id,shown,label]of [['devShowCollision',collisionOverlay,'collision'],['devShowLayers',layerOverlay,'layers']]){$(id).setAttribute('aria-pressed',String(shown));$(id).textContent=(shown?'Hide ':'Show ')+label;$(id).disabled=playtest;}
     $('devOverlayLegend').hidden=playtest||!collisionOverlay&&!layerOverlay;$('devMasks').checked=layerOverlay;layer.maskView=layerOverlay;$('devMasks').disabled=playtest;
     const a=api.selected(); $('devUndo').disabled=!studio.undo.length;$('devRedo').disabled=!studio.redo.length;
@@ -603,6 +612,7 @@ window.createCodaDeveloperConsole = function (api) {
   };
   $('editorToggle').onclick=()=>open('layers');
   window.addEventListener('keydown',e=>{
+    if(e.target?.closest?.('[data-education-editor]')&&e.key!=='F2')return;
     if(e.target?.closest?.('[data-artwork-editor]')&&e.key!=='F2')return;
     if(e.target?.closest?.('.pixel-editor')&&e.key!=='F2'&&(!(e.ctrlKey||e.metaKey)||!['z','y'].includes(e.key.toLowerCase())))return;
     const typing=['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)||e.target?.isContentEditable;
@@ -643,5 +653,5 @@ window.createCodaDeveloperConsole = function (api) {
     // Data-only inspection supports repeatable browser integration checks.
     floorGrid:()=>arcadeFloor?.snapshot()||null,
     getProject:()=>clone(documentData()),getPublishedProject:()=>publishedProject?clone(publishedProject):null,getProjectSource:()=>projectSource,
-    getDialogue:id=>id===undefined?clone(dialogue):dialogue[id]?clone(dialogue[id]):null,getSprites:()=>clone(sprites),getState:()=>({artwork:artworkEditor?.getState()||null,open:studio.active,editing:studio.active&&!playtest,playtest,tab,overlays:{collision:collisionOverlay,layers:layerOverlay,visible:studio.active&&!playtest}})};
+    getDialogue:id=>id===undefined?clone(dialogue):dialogue[id]?clone(dialogue[id]):null,getSprites:()=>clone(sprites),getEducationEditor:()=>educationEditor,getState:()=>({artwork:artworkEditor?.getState()||null,education:educationEditor?.getState()||null,open:studio.active,editing:studio.active&&!playtest,playtest,tab,overlays:{collision:collisionOverlay,layers:layerOverlay,visible:studio.active&&!playtest}})};
 };
