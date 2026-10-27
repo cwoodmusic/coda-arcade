@@ -277,10 +277,10 @@ window.createCodaDeveloperConsole = function (api) {
     return a;
   }
   function suppressOriginal(name) { return studio.assets.some(a=>a.origin?.name===name); }
-  function drawUnliftedPixels(g, image, x, y) {
+  function unliftedPicture(image, x, y) {
     image=artworkTools?.fragment(image,x,y)||image;
     const originals=studio.assets.filter(a=>a.origin&&!catalog.find(part=>part.name===a.origin.name)?.procedural&&a.origin.bounds[0]<x+image.width&&a.origin.bounds[0]+a.origin.bounds[2]>x&&a.origin.bounds[1]<y+image.height&&a.origin.bounds[1]+a.origin.bounds[3]>y);
-    if(!originals.length){g.drawImage(image,x,y);return;}
+    if(!originals.length)return image;
     const key=JSON.stringify(originals.map(a=>[a.origin.name,a.origin.bounds]));
     let cached=maskedLayers.get(image);
     if(!cached||cached.key!==key){
@@ -289,8 +289,9 @@ window.createCodaDeveloperConsole = function (api) {
       for(const a of originals){const img=sourcePicture(a.origin);if(img)ctx.drawImage(img,a.origin.bounds[0]-x,a.origin.bounds[1]-y);else complete=false;}
       cached={key,canvas};if(complete)maskedLayers.set(image,cached);
     }
-    g.drawImage(cached.canvas,x,y);
+    return cached.canvas;
   }
+  function drawUnliftedPixels(g, image, x, y) {g.drawImage(unliftedPicture(image,x,y),x,y);}
   function cabinetDisplaced(a) {
     const [x,y,w,h]=a.origin.bounds;
     return !a.visible||a.opacity<100||a.anim!=='none'||a.x!==x+w/2||a.y!==y+h/2||a.w!==w||a.h!==h||a.rotation!==0;
@@ -638,7 +639,7 @@ window.createCodaDeveloperConsole = function (api) {
   c.addEventListener('contextmenu',e=>{if(studio.active&&!playtest)e.preventDefault();});
   panel.addEventListener('click',e=>{if(loading){e.preventDefault();e.stopImmediatePropagation();message('Wait for project restoration to finish.');}},true);
   setTab('objects');load();
-  return {snapshot,recordChange,recordRoomChange,setSprites,undoRedo,save,refresh,refreshCamera,onToggle,open,renderBase,renderCleanup,suppressOriginal,drawUnliftedPixels,originalPicture:a=>a.origin?picture(a.origin):null,assetArtwork:(a,raw)=>artworkTools?.assetImage(a,raw)||raw,backgroundArtwork:(id,source)=>artworkTools?.compose(id,source)||source,objectArtwork:(name,source)=>artworkTools?.objectImage(name,source)||source,getArtworkEditor:()=>artworkEditor,objectEffectClip:name=>artworkTools?.effectClip(name)||null,validateAssetExtension,walkableOverride,pointerDown,pointerMove,pointerEnd,drawOverlay,liftedRegion,finishGesture,isPlaytest:()=>playtest,isEditing:()=>studio.active&&!playtest,exportProject,loadReady:()=>!loading&&(!arcadeFloor?.isReady||arcadeFloor.isReady()),validate,
+  return {snapshot,recordChange,recordRoomChange,setSprites,undoRedo,save,refresh,refreshCamera,onToggle,open,renderBase,renderCleanup,suppressOriginal,drawUnliftedPixels,unliftedPicture,originalPicture:a=>a.origin?picture(a.origin):null,assetArtwork:(a,raw)=>artworkTools?.assetImage(a,raw)||raw,backgroundArtwork:(id,source)=>artworkTools?.compose(id,source)||source,objectArtwork:(name,source)=>artworkTools?.objectImage(name,source)||source,getArtworkEditor:()=>artworkEditor,objectEffectClip:name=>artworkTools?.effectClip(name)||null,validateAssetExtension,walkableOverride,pointerDown,pointerMove,pointerEnd,drawOverlay,liftedRegion,finishGesture,isPlaytest:()=>playtest,isEditing:()=>studio.active&&!playtest,exportProject,loadReady:()=>!loading&&(!arcadeFloor?.isReady||arcadeFloor.isReady()),validate,
     // Data-only inspection supports repeatable browser integration checks.
     floorGrid:()=>arcadeFloor?.snapshot()||null,
     getProject:()=>clone(documentData()),getPublishedProject:()=>publishedProject?clone(publishedProject):null,getProjectSource:()=>projectSource,

@@ -132,6 +132,9 @@ different Halloween costumes, with purple mist, cobwebs and glowing pumpkins.
 Switching vibes restores their original outfits. Aurora adds soft, flowing
 curtains and stars; Festival adds stronger colourful ribbons and sparkles.
 Broad effects use a cached smaller canvas while characters stay sharp.
+Foreground plants, sofas, moved objects and painted foreground use the same
+colour grade as the background, including translucent edges. Their depth and
+pixel edits remain intact; luminous glowsticks and live light effects stay bright.
 
 To try unlockables, open **Developer → Test all unlocks** in the arcade, or the
 room's Developer project tools. Test mode opens a temporary Level 50 player with

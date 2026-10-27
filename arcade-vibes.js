@@ -7,7 +7,8 @@
  if(root)root.CodaArcadeVibes=api;
 })(typeof window==='undefined'?null:window,function(){
  'use strict';
- const KEY='codaArcadeVibeV1',TAU=Math.PI*2;
+ const KEY='codaArcadeVibeV1',TAU=Math.PI*2,SCENERY_MAX_PIXELS=8*1024*1024,SCENERY_MAX_ENTRIES=256;
+ const GRADES=Object.freeze({glowstick:'rgba(0,3,31,.82)',spooky:'rgba(37,0,52,.76)',aurora:'rgba(0,36,54,.57)',festival:'rgba(45,2,62,.48)'});
  const DEFINITIONS=Object.freeze([
   {id:'classic',label:'Classic arcade',minLevel:1,description:'The familiar arcade lights.'},
   {id:'glowstick',label:'Glowstick Vibe',minLevel:20,description:'Blue lights and a glowstick for everybody.'},
@@ -42,6 +43,10 @@
   let storage=api.storage;if(storage===undefined)try{storage=win?.localStorage;}catch{}
   let selected='classic',active='classic',level=1,persistent=true,destroyed=false,signature='',lastApplied=null;
   const originalBodyVibe=body?.dataset?.arcadeVibe,controls=new Set(),textures=new Map();
+  const scenery=new Map(),scenerySourceIDs=new WeakMap();
+  let sceneryVibe='classic',sceneryPixels=0,sceneryNextID=1,sceneryBuilds=0,sceneryHits=0,sceneryAllocations=0,sceneryEvictions=0;
+  function releaseScenery(entry){entry.canvas.width=0;entry.canvas.height=0;}
+  function clearScenery(){for(const entry of scenery.values())releaseScenery(entry);scenery.clear();sceneryPixels=0;}
   try{const saved=storage?.getItem?.(KEY);if(saved){const parsed=JSON.parse(saved);if(parsed?.version===1&&byId.has(parsed.selected))selected=parsed.selected;}}
   catch{persistent=false;}
   function playerLevel(){try{const value=api.getLevel?.();return clamp(Math.floor(finite(typeof value==='object'?value?.level:value,1)),1,1000000);}catch{return 1;}}
@@ -51,6 +56,7 @@
   function refresh(){
    if(destroyed)return state();
    level=playerLevel();active=level>=byId.get(selected).minLevel?selected:'classic';
+   if(active!==sceneryVibe){clearScenery();sceneryVibe=active;}
    const next=selected+'|'+active+'|'+level+'|'+persistent;
    if(next!==signature){
     signature=next;
@@ -96,6 +102,50 @@
   function makeCanvas(width,height){
    const canvas=api.makeCanvas?.(width,height)||doc?.createElement?.('canvas');if(!canvas?.getContext)return null;
    canvas.width=width;canvas.height=height;return canvas;
+  }
+  function getGradeFill(){
+   if(destroyed)return null;
+   // Hundreds of foreground brush fragments can share one source in a frame.
+   // Recheck the ownership/level gate without rebuilding menu state each time.
+   const nextLevel=playerLevel(),nextActive=nextLevel>=byId.get(selected).minLevel?selected:'classic';
+   if(nextLevel!==level||nextActive!==active)refresh();
+   return GRADES[active]||null;
+  }
+  function getSceneryCacheState(){return {entries:scenery.size,pixels:sceneryPixels,maxPixels:SCENERY_MAX_PIXELS,maxEntries:SCENERY_MAX_ENTRIES,builds:sceneryBuilds,hits:sceneryHits,allocations:sceneryAllocations,evictions:sceneryEvictions};}
+  // Grade an isolated sprite before it is depth-sorted over the world. Keeping
+  // its alpha makes the affine colour wash identical across silhouette edges:
+  // t*(a*source+(1-a)*background)+wash, with t = 1 - wash alpha.
+  function gradeImage(source,options={}){
+   const fill=getGradeFill();if(!fill||!source||(typeof source!=='object'&&typeof source!=='function'))return null;
+   if(!options||typeof options!=='object'||Array.isArray(options))return null;
+   if(source.complete!==undefined&&(!source.complete||!source.naturalWidth))return null;
+   const sourceWidth=source.naturalWidth||source.width,sourceHeight=source.naturalHeight||source.height;
+   if(![sourceWidth,sourceHeight].every(value=>Number.isFinite(value)&&value>0&&value<=65536))return null;
+   const crop=options.crop===undefined?[0,0,sourceWidth,sourceHeight]:options.crop;
+   if(!Array.isArray(crop)||crop.length!==4||!crop.every(Number.isFinite))return null;
+   const [sx,sy,sw,sh]=crop;
+   if(sx<0||sy<0||sw<=0||sh<=0||sx+sw>sourceWidth+.000001||sy+sh>sourceHeight+.000001)return null;
+   const revision=options.revision??null;
+   if(!['string','number','boolean'].includes(typeof revision)&&revision!==null||typeof revision==='number'&&!Number.isFinite(revision))return null;
+   let sourceID=scenerySourceIDs.get(source);if(!sourceID){sourceID=sceneryNextID++;scenerySourceIDs.set(source,sourceID);}
+   const key=sourceID+':'+crop.join(','),scale=Math.min(1,Math.sqrt(SCENERY_MAX_PIXELS/(Math.ceil(sw)*Math.ceil(sh))),8192/Math.ceil(sw),8192/Math.ceil(sh));
+   const width=Math.max(1,Math.floor(Math.ceil(sw)*scale)),height=Math.max(1,Math.floor(Math.ceil(sh)*scale)),pixels=width*height;
+   let entry=scenery.get(key);
+   if(entry&&entry.revision===revision&&entry.width===width&&entry.height===height){scenery.delete(key);scenery.set(key,entry);sceneryHits++;return entry.canvas;}
+   if(entry){scenery.delete(key);sceneryPixels-=entry.pixels;}
+   while(scenery.size&&(sceneryPixels+pixels>SCENERY_MAX_PIXELS||scenery.size>=SCENERY_MAX_ENTRIES)){
+    const first=scenery.keys().next().value,discard=scenery.get(first);scenery.delete(first);sceneryPixels-=discard.pixels;releaseScenery(discard);sceneryEvictions++;
+   }
+   let canvas=entry?.canvas;try{if(!canvas)canvas=makeCanvas(width,height);}catch{return null;}if(!canvas)return null;
+   if(!entry)sceneryAllocations++;
+   try{
+    if(canvas.width!==width)canvas.width=width;if(canvas.height!==height)canvas.height=height;
+    const g=canvas.getContext('2d');if(!g)throw Error('Canvas is unavailable.');
+    g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,width,height);g.globalAlpha=1;g.globalCompositeOperation='source-over';g.filter='none';g.shadowBlur=0;g.imageSmoothingEnabled=false;
+    g.drawImage(source,sx,sy,sw,sh,0,0,width,height);
+    g.globalCompositeOperation='source-atop';g.fillStyle=fill;g.fillRect(0,0,width,height);g.globalCompositeOperation='source-over';
+    entry={canvas,revision,width,height,pixels};scenery.set(key,entry);sceneryPixels+=pixels;sceneryBuilds++;return canvas;
+   }catch{releaseScenery({canvas});return null;}
   }
   function glow(color){
    if(textures.has(color))return textures.get(color);
@@ -162,8 +212,7 @@
    g.save();try{
     g.globalCompositeOperation='source-over';g.globalAlpha=1;g.shadowBlur=0;
     if(phase!=='effects'){
-     const fill=active==='glowstick'?'rgba(0,3,31,.82)':active==='spooky'?'rgba(37,0,52,.76)':active==='aurora'?'rgba(0,36,54,.57)':'rgba(45,2,62,.48)';
-     g.fillStyle=fill;g.fillRect(0,0,width,height);
+     g.fillStyle=GRADES[active];g.fillRect(0,0,width,height);
     }
     if(phase==='grade')return true;
     // A screen-blended colour wash also tints foreground fixtures without
@@ -251,11 +300,11 @@
    return true;
   }
   function destroy(){
-   if(destroyed)return;destroyed=true;for(const view of controls)view.root.remove();controls.clear();textures.clear();
+   if(destroyed)return;destroyed=true;for(const view of controls)view.root.remove();controls.clear();textures.clear();clearScenery();
    if(body?.dataset?.arcadeVibe===lastApplied){if(originalBodyVibe===undefined)delete body.dataset.arcadeVibe;else body.dataset.arcadeVibe=originalBodyVibe;}
   }
   refresh();
-  return {setVibe,getState:()=>refresh(),refresh,drawAtmosphere,drawCharacterGlow,characterAppearance,drawCharacterCostume,mountControls,destroy};
+  return {setVibe,getState:()=>refresh(),refresh,drawAtmosphere,drawCharacterGlow,characterAppearance,drawCharacterCostume,getGradeFill,gradeImage,getSceneryCacheState,mountControls,destroy};
  }
- return Object.freeze({KEY,DEFINITIONS,create});
+ return Object.freeze({KEY,DEFINITIONS,GRADES,SCENERY_MAX_PIXELS,create});
 });
