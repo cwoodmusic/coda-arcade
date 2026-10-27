@@ -46,6 +46,75 @@ test('a full avatar, currency, progression, missions, catches, lessons, and chec
  assert.equal(JSON.parse(store.getItem(D.KEYS.progression)).events[0].reason,'Arcade activity');assert.equal(captured.data.progression.events[0].reason,undefined);
 });
 
+test('every authored mission keeps its exact bounded target in the private cloud schema',()=>{
+ const {DEFINITIONS}=require('../musician-missions.js');
+ const schema=D.SCHEMA.properties.missions.properties.missions;
+ const targets=Object.fromEntries(Object.entries(schema.properties).map(([id,value])=>[id,value.properties.progress.maximum]));
+ assert.deepEqual(targets,Object.fromEntries(DEFINITIONS.map(mission=>[mission.id,mission.target])));
+ assert.deepEqual(schema.required,[],'New mission fields are optional for existing profiles');
+ assert.equal(Object.keys(targets).length,29);
+ for(const value of Object.values(schema.properties))assert.deepEqual(Object.keys(value.properties),['acceptedAt','progress','completedAt','rewardedAt']);
+});
+
+test('new quest journals round trip without inventing entries in legacy saves',()=>{
+ const legacy=profile(),before=clone(legacy),store=storage();
+ assert.equal(D.validate(legacy).ok,true);assert.equal(D.apply(store,legacy).ok,true);assert.deepEqual(D.capture(store).data,before);
+ const targets=D.SCHEMA.properties.missions.properties.missions.properties;
+ const data=D.blank();
+ for(const [id,value]of Object.entries(targets))data.missions.missions[id]={acceptedAt:100,progress:value.properties.progress.maximum,completedAt:200,rewardedAt:0};
+ data.missions.seen=['fishing:catch-fixture','piano:melody-fixture','triad:match-fixture'];
+ assert.equal(D.validate(data).ok,true);assert.equal(D.apply(store,data).ok,true);assert.deepEqual(D.capture(store).data,data);
+ assert.deepEqual(D.blank().missions.missions,{},'New quest catalog entries are never silently accepted for a player');
+ const bad=clone(data);bad.missions.missions['ella-fish-five'].progress=6;assert.equal(D.validate(bad).ok,false,'Each quest still uses its own bounded target');
+ bad.missions.missions['ella-fish-five'].progress=5;bad.missions.missions['miles-fish-legendary'].privateName='Child';assert.equal(D.validate(bad).ok,false,'Mission journals remain closed records');
+});
+
+test('new mission rewards retain Notes and experience replay protection across profile restore',()=>{
+ const data=D.blank(),id='miles-fish-legendary',paid='npc-mission:'+id,xp='quest:'+id;
+ data.missions.missions[id]={acceptedAt:100,progress:1,completedAt:200,rewardedAt:300};
+ assert.equal(D.validate(data).ok,false,'A collected quest cannot omit its reward journals');
+ data.wallet.rewards=[paid];data.wallet.balance=650;data.wallet.earned=650;assert.equal(D.validate(data).ok,false,'Notes alone cannot invent a new quest XP award');
+ data.progression.events=[{id:xp,xp:100}];data.progression.xp=100;
+ const store=storage();assert.equal(D.apply(store,data).ok,true);assert.deepEqual(D.capture(store).data,data);
+ const wallet=Shop.createWallet({storage:store,getAvatar:()=>JSON.parse(store.getItem(D.KEYS.avatar))}),progress=Progress.create({storage:store});
+ assert.equal(wallet.grantReward(paid,500).alreadyClaimed,true);assert.equal(progress.recordQuest(id).alreadyAwarded,true);
+ assert.equal(wallet.snapshot().balance,650);assert.equal(progress.getState().xp,100);
+});
+
+function levelProfile(xp){
+ const data=D.blank();data.progression.xp=xp;
+ for(let remaining=xp,index=0;remaining>0;index++){const amount=Math.min(1000,remaining);data.progression.events.push({id:'game:earned-level-fixture:'+index,xp:amount});remaining-=amount;}
+ return data;
+}
+
+test('every level Notes prize requires its exact earned threshold without awarding extra experience',()=>{
+ assert.equal(Progress.THRESHOLDS.length,50);assert.equal(Progress.LEVEL_NOTES.length,39);
+ const ids=new Set();
+ for(const prize of Progress.LEVEL_NOTES){
+  assert.equal(prize.id,'level-prize:'+prize.level);assert.equal(ids.has(prize.id),false);ids.add(prize.id);
+  const threshold=Progress.THRESHOLDS[prize.level-1],data=levelProfile(threshold);
+  data.wallet.rewards=[prize.id];data.wallet.earned=150+prize.amount;data.wallet.balance=150+prize.amount;
+  const valid=D.validate(data);assert.equal(valid.ok,true,prize.id+': '+valid.error);assert.deepEqual(valid.data,data);
+  const locked=levelProfile(threshold-1);locked.wallet=clone(data.wallet);assert.equal(D.validate(locked).ok,false,prize.id+' cannot be claimed one XP early');
+  const short=clone(data);short.wallet.earned=prize.amount-1;assert.equal(D.validate(short).ok,false,prize.id+' retains its exact fixed Notes amount');
+  const store=storage();assert.equal(D.apply(store,data).ok,true);assert.deepEqual(D.capture(store).data,data);
+  assert.equal(data.progression.events.some(event=>event.id.includes('level-prize:')),false,'Currency prizes never create experience events');
+ }
+ for(const level of [10,...Array.from({length:38},(_,index)=>index+13)])assert.equal(ids.has('level-prize:'+level),true,'Every intended payout is checked');
+});
+
+test('level prize journals reject invented IDs and underfunded combined payouts while preserving old saves',()=>{
+ const existing=profile();assert.equal(D.validate(existing).ok,true,'No level prize is silently added to a legacy profile');
+ for(const id of ['level-prize:','level-prize:1','level-prize:9','level-prize:11','level-prize:12','level-prize:51','level-prize:010','level-prize:20:again']){
+  const data=levelProfile(Progress.THRESHOLDS.at(-1));data.wallet.rewards=[id];data.wallet.earned=100000;
+  assert.equal(D.validate(data).ok,false,id+' is not an authored payout');
+ }
+ const data=levelProfile(Progress.THRESHOLDS.at(-1)),sum=Progress.LEVEL_NOTES.reduce((total,prize)=>total+prize.amount,0);
+ data.wallet.rewards=Progress.LEVEL_NOTES.map(prize=>prize.id);data.wallet.earned=sum;data.wallet.spent=sum;data.wallet.balance=0;
+ assert.equal(D.validate(data).ok,true,'Previously valid wallets need not prove an assumed starting balance');
+ data.wallet.earned=sum-1;assert.equal(D.validate(data).ok,false,'The same earned Notes cannot fund multiple fixed prizes twice');
+});
+
 test('sanitization strips personal prose, developer state, and recordings at every level',()=>{
  const raw=profile();Object.assign(raw,{name:'A Child',email:'child@example.test',songs:{title:'My private song'},dialogue:{secret:'class notes'},worldProject:{assets:[]},hallOfFame:{score:99999}});
  Object.assign(raw.avatar,{name:'A Child',nickname:'Little One',email:'child@example.test',birthdate:'2016-01-01',dialogue:'my address',editor:{layers:[]}});

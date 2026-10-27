@@ -48,6 +48,37 @@ test('lesson rewards are awarded once per persistent ID and reject malformed val
   for(const [id,amount] of [['',60],['<script>',60],['valid',-1],['valid',NaN],['valid',2.5],['valid',1001]])assert.equal(loaded.grantReward(id,amount).ok,false);
   assert.equal(loaded.snapshot().balance,210);
 });
+
+function levelProof(disk,xp){
+ const events=[];let remaining=xp;
+ while(remaining){const amount=Math.min(remaining,1000);events.push({id:'quest:wallet-level-'+events.length,xp:amount});remaining-=amount;}
+ disk.setItem('codaPlayerProgressV1',JSON.stringify({version:1,xp,events,bestPitchLevel:0}));
+}
+test('large level prizes require the exact catalog amount and reached saved XP threshold',()=>{
+ const disk=storage(),wallet=createWallet({storage:disk});
+ for(const [id,amount]of [['level-prize:50',6000],['level-prize:10',1000],['level-prize:2',100],['level-prize:050',6000],['ordinary-reward',6000]])assert.equal(wallet.grantReward(id,amount).ok,false);
+ assert.equal(wallet.snapshot().balance,150);
+ levelProof(disk,60949);assert.equal(wallet.grantReward('level-prize:50',6000).ok,false);
+ levelProof(disk,60950);
+ assert.equal(wallet.grantReward('level-prize:50',6001).ok,false);assert.equal(wallet.grantReward('level-prize:50',1000).ok,false);
+ assert.deepEqual(wallet.grantReward('level-prize:50',6000),{ok:true,alreadyClaimed:false,amount:6000,balance:6150});
+ assert.equal(createWallet({storage:disk}).grantReward('level-prize:50',6000).alreadyClaimed,true);
+ assert.equal(wallet.grantReward('ordinary-reward',1001).ok,false);assert.equal(wallet.grantReward('ordinary-reward',1000).ok,true);
+});
+test('claimed level rewards cannot rely on a forged XP total without its earned event journal',()=>{
+ const disk=storage(),wallet=createWallet({storage:disk});
+ disk.setItem('codaPlayerProgressV1',JSON.stringify({version:1,xp:60950,events:[]}));
+ assert.equal(wallet.grantReward('level-prize:50',6000).ok,false);assert.equal(wallet.snapshot().balance,150);
+ levelProof(disk,60950);const corrupted=JSON.parse(disk.getItem('codaPlayerProgressV1'));corrupted.xp++;
+ disk.setItem('codaPlayerProgressV1',JSON.stringify(corrupted));assert.equal(wallet.grantReward('level-prize:50',6000).ok,false);
+});
+test('a browser wallet looks up progression when granting rather than requiring script load order',()=>{
+ const sandbox={window:{}};vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../notes-shop.js'),'utf8'),sandbox);
+ const disk=storage(),wallet=sandbox.window.CodaNotesShop.createWallet({storage:disk});levelProof(disk,60950);
+ assert.equal(wallet.grantReward('level-prize:50',6000).ok,false);
+ vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../player-progression.js'),'utf8'),sandbox);
+ assert.equal(wallet.grantReward('level-prize:50',6000).ok,true);assert.equal(wallet.snapshot().balance,6150);
+});
 test('already equipped cosmetics are grandfathered without changing the profile or balance',()=>{
   const disk=storage(),profile={name:'Collector',headwear:'wizard',eyewear:'cybervisor',accessory:'wand',shoes:'rollerskates',emote:'moonwalk',walked:900};
   const before=JSON.stringify(profile),wallet=createWallet({storage:disk,getAvatar:()=>profile});

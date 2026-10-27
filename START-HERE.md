@@ -109,6 +109,33 @@ export. Existing object placement, collision, layers, and old project exports
 remain supported. Export your project to share or publish your edits; editing
 in the console does not change the live site's files by itself.
 
+Player progression now reaches **Level 50**. The original level rewards remain;
+levels 13–50 add Notes prizes, with larger milestones at 10, 20, 30, 40 and 50.
+The milestone Notes prizes are 1,000, 1,500, 2,500, 4,000 and 6,000 respectively.
+Earned level prizes arrive automatically once per player and save with progress.
+
+There are **29 musician quests**. More become available at levels 3, 5, 10, 15
+and 20, including Piano Lab melodies and scales, fishing in 6/8, epic and
+legendary catches, grand-staff reading and harder Music Triad matches. Accept
+a quest before playing; practice fishing does not count. Return to the musician
+who gave you the quest to collect its Notes and XP. Your Profile shows active
+quests and a preview of the next quest tier.
+
+Open **Settings → Arcade vibe** to choose an earned atmosphere. Level 20 unlocks
+**Glowstick**, level 30 **Spooky**, level 40 **Aurora**, and level 50 **Festival**.
+The atmosphere also follows you into the Piano Lab, classroom and Fishing Cave.
+Your vibe choice stays on this browser, and each player's level controls which
+choices are available. The existing effects and reduced-motion settings apply.
+
+To try unlockables, open **Developer → Test all unlocks** in the arcade, or the
+room's Developer project tools. Test mode opens a temporary Level 50 player with
+all customizations, sounds and vibes available, plus test Notes. A visible
+**Exit test mode** button returns you to normal play. Test-mode player progress,
+purchases and world edits stay in memory and disappear when you leave or reload;
+the real player's browser data, editor files and cloud saves are not changed.
+Online multiplayer is disabled in this mode. Export any test artwork or world
+project you want to keep before exiting.
+
 In **Developer → Layers**, **Paint foreground** puts the visible artwork above
 characters, including moved/imported assets and pixel edits. **Send to background**
 lowers the brushed pixels. Brushes and straight lines use exact world pixels at

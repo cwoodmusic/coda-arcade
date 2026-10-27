@@ -3,7 +3,20 @@
 (function(root,factory){const value=factory();if(typeof module==='object'&&module.exports)module.exports=value;if(root)root.CodaPlayerProgression=value;})(typeof window!=='undefined'?window:null,function(){
  'use strict';
  const KEY='codaPlayerProgressV1',MAX_EVENTS=20000;
- const THRESHOLDS=Object.freeze([0,80,180,320,500,720,980,1280,1630,2030,2480,2980]);
+ const levels=[0,80,180,320,500,720,980,1280,1630,2030,2480,2980,3600];
+ for(let level=14;level<=50;level++)levels.push(levels.at(-1)+650+(level-14)*50);
+ const THRESHOLDS=Object.freeze(levels);
+ const milestoneNotes=Object.freeze({10:1000,20:1500,30:2500,40:4000,50:6000});
+ const LEVEL_NOTES=Object.freeze([10,...Array.from({length:38},(_,index)=>index+13)].map(level=>{
+  const amount=milestoneNotes[level]??Math.min(500,150+(level-13)*10);
+  return Object.freeze({id:'level-prize:'+level,kind:'notes',label:amount+' Notes',level,amount});
+ }));
+ const VIBES=Object.freeze([
+  {id:'glowstick',label:'Glowstick Vibe',level:20},
+  {id:'spooky',label:'Spooky Vibe',level:30},
+  {id:'aurora',label:'Aurora Vibe',level:40},
+  {id:'festival',label:'Festival Vibe',level:50}
+ ].map(item=>Object.freeze({...item,kind:'vibe'})));
  const COSMETICS=Object.freeze([
   {id:'watchchain',label:'Pocket watch chain',level:2},
   {id:'beret',label:'Artist beret',level:3},
@@ -42,6 +55,13 @@
   {id:14,label:'Velvet Pad',level:6},{id:15,label:'Starlight Lead',level:8},
   {id:16,label:'FM Electric Piano',level:10},{id:17,label:'Music Box',level:12}
  ].map(Object.freeze));
+ function prizesForLevel(level){
+  if(!Number.isSafeInteger(level)||level<1||level>THRESHOLDS.length)return [];
+  return [...COSMETICS.filter(item=>item.level===level).map(item=>({...item,kind:'cosmetic'})),
+   ...SOUNDS.filter(item=>item.level===level).map(item=>({...item,kind:'sound'})),
+   ...LEVEL_NOTES.filter(item=>item.level===level).map(item=>({...item})),
+   ...VIBES.filter(item=>item.level===level).map(item=>({...item}))];
+ }
  const integer=(n,max=1000000)=>Number.isSafeInteger(n)&&n>=0&&n<=max;
  function validClefStats(result){
   if(!['treble','bass','grand'].includes(result.staff)||!result.clefStats)return false;
@@ -63,7 +83,7 @@
   const xp=state.xp,level=levelForXP(xp),base=THRESHOLDS[level-1],next=THRESHOLDS[level]??null;
   return {version:1,xp,level,bestPitchLevel:state.bestPitchLevel||0,achievementRewards:achievementRewards.map(item=>({...item})),levelXP:xp-base,nextLevelXP:next,progress:next===null?1:(xp-base)/(next-base),
    unlockedCosmetics:[...COSMETICS.filter(item=>item.level<=level).map(item=>item.id),...achievementRewards.map(item=>item.id)],
-   unlockedSounds:SOUNDS.filter(item=>item.level<=level).map(item=>item.id),
+   unlockedSounds:SOUNDS.filter(item=>item.level<=level).map(item=>item.id),unlockedVibes:VIBES.filter(item=>item.level<=level).map(item=>item.id),
    eventCount:state.events.length,recent:state.events.slice(-8).reverse().map(item=>({...item}))};
  }
  function readState(storage){try{return describe(clean(JSON.parse(storage?.getItem(KEY)||'null'))||{version:1,xp:0,events:[]});}catch{return describe({version:1,xp:0,events:[]});}}
@@ -75,7 +95,7 @@
  }
  function create(api={}){
   let storage=api.storage;if(storage===undefined)try{storage=window.localStorage;}catch{}
-  let state={version:1,xp:0,events:[]},persistent=false,error='';const listeners=new Set();
+  let state={version:1,xp:0,events:[]},persistent=false,error='',claimingLevelPrizes=false;const listeners=new Set();
   if(api.onChange)listeners.add(api.onChange);
   function refresh(){try{const saved=clean(JSON.parse(storage?.getItem(KEY)||'null'));if(saved){state=saved;persistent=true;}}catch{}return getState();}
   function getState(){return {...describe(state),persistent,error};}
@@ -126,7 +146,33 @@
    const complete=PIANO_MEMORIES.every(melody=>state.events.some(event=>event.id==='quest:piano-memory:'+melody));
    return complete?recordAchievement('piano-memory-master'):{...quest,complete:false};
   }
-  function unlocked(id){const reward=COSMETICS.find(item=>item.id===id),achievement=ACHIEVEMENT_REWARDS.find(item=>item.id===id);return !!reward&&levelForXP(state.xp)>=reward.level||!!achievement&&state.events.some(event=>event.id==='achievement:'+achievement.achievement);}
+  function unlocked(id){const reward=COSMETICS.find(item=>item.id===id)||VIBES.find(item=>item.id===id),achievement=ACHIEVEMENT_REWARDS.find(item=>item.id===id);return !!reward&&levelForXP(state.xp)>=reward.level||!!achievement&&state.events.some(event=>event.id==='achievement:'+achievement.achievement);}
+  function claimLevelPrizes(wallet){
+   const claimed=[];let amount=0;
+   const result=(ok,extra={})=>({ok,amount,claimed,alreadyClaimed:ok&&claimed.length===0,...extra});
+   const canRecord=()=>{try{return api.canRecord?.()!==false;}catch{return false;}};
+   if(claimingLevelPrizes)return result(true,{busy:true});
+   if(!canRecord())return result(false,{error:'Progress rewards are paused.'});
+   if(typeof wallet?.grantReward!=='function')return result(false,{error:'A Notes wallet is required.'});
+   let proof,saved,raw;
+   try{proof=storage?.getItem(KEY);raw=JSON.parse(proof||'null');saved=clean(raw);}catch{}
+   // Never use this engine's cached high level after a profile has been
+   // cleared or replaced. The current saved XP journal is the reward proof.
+   if(!saved||raw.xp!==saved.xp||raw.events.length!==saved.events.length)return result(false,{error:'Saved progress is required to claim level prizes.'});
+   const reached=levelForXP(saved.xp);
+   claimingLevelPrizes=true;
+   try{
+    for(const prize of LEVEL_NOTES){
+     if(prize.level>reached)continue;
+     if(!canRecord()||storage?.getItem(KEY)!==proof)return result(false,{error:'Your player changed before all level prizes were saved.'});
+     const award=wallet.grantReward(prize.id,prize.amount);
+     if(!award?.ok)return result(false,{error:award?.error||'A level prize could not save. Try again.'});
+     if(!award.alreadyClaimed){const paid=integer(award.amount)&&award.amount<=prize.amount?award.amount:0;amount+=paid;claimed.push({...prize,amount:paid});}
+    }
+    return result(true);
+   }catch{return result(false,{error:'A level prize could not save. Try again.'});}
+   finally{claimingLevelPrizes=false;}
+  }
 
   function open(){
    refresh();if(!api.openPanel||!api.panelBody)return getState();api.openPanel('Your musician level');const doc=api.panelBody.ownerDocument,value=getState();
@@ -138,7 +184,7 @@
    const list=doc.createElement('div');list.className='progression-rewards';
    for(let level=2;level<=THRESHOLDS.length;level++){
     const row=doc.createElement('article');row.className='progression-reward'+(value.level>=level?' is-unlocked':'');const heading=doc.createElement('strong');heading.textContent=(value.level>=level?'✓ ':'🔒 ')+'Level '+level;row.append(heading);
-    const details=doc.createElement('p'),names=[...COSMETICS.filter(item=>item.level===level).map(item=>item.label),...SOUNDS.filter(item=>item.level===level).map(item=>item.label+' · Song Machine sound')];details.textContent=names.length?names.join(' · '):'Your next musician milestone';row.append(details);list.append(row);
+    const details=doc.createElement('p'),names=prizesForLevel(level).map(item=>item.label+(item.kind==='sound'?' · Song Machine sound':''));details.textContent=names.length?names.join(' · '):'Your next musician milestone';row.append(details);list.append(row);
    }
    section.append(list);
    const masteryTitle=doc.createElement('h3');masteryTitle.textContent='Long-term mastery rewards';section.append(masteryTitle);
@@ -149,7 +195,7 @@
   }
   const onStorage=event=>{if(event.key===KEY){refresh();changed();}};
   if(typeof window!=='undefined')window.addEventListener('storage',onStorage);
-  return {awardXP,recordGameEvent,recordAchievement,recordQuest,recordRhythmStreak,recordPianoMemory,requirement,getState,snapshot:getState,refresh,unlocked,open,dispose(){if(typeof window!=='undefined')window.removeEventListener('storage',onStorage);listeners.clear();},subscribe(listener){listeners.add(listener);return ()=>listeners.delete(listener);}};
+  return {awardXP,recordGameEvent,recordAchievement,recordQuest,recordRhythmStreak,recordPianoMemory,claimLevelPrizes,prizesForLevel,requirement,getState,snapshot:getState,refresh,unlocked,open,dispose(){if(typeof window!=='undefined')window.removeEventListener('storage',onStorage);listeners.clear();},subscribe(listener){listeners.add(listener);return ()=>listeners.delete(listener);}};
  }
- return Object.freeze({KEY,THRESHOLDS,COSMETICS,SOUNDS,ACHIEVEMENT_REWARDS,PIANO_MEMORIES,requirement,levelForXP,soundRequiredLevel,readState,validResult,create});
+ return Object.freeze({KEY,THRESHOLDS,COSMETICS,SOUNDS,LEVEL_NOTES,VIBES,prizesForLevel,ACHIEVEMENT_REWARDS,PIANO_MEMORIES,requirement,levelForXP,soundRequiredLevel,readState,validResult,create});
 });

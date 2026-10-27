@@ -357,3 +357,37 @@ test('teacher player deletion remains unavailable and allowlist revocation immed
  await env.withSecurityRulesDisabled(context=>write(context.database(),`${ROOT}/admins/school_admin`,true));
  await assertSucceeds(read(owner,TEACHER_PATH));
 });
+
+test('new quest journals save for both student and teacher owners without broadening access',async()=>{
+ const data=DTO.blank(),schema=DTO.SCHEMA.properties.missions.properties.missions.properties;
+ for(const [id,entry]of Object.entries(schema))data.missions.missions[id]={acceptedAt:100,progress:entry.properties.progress.maximum,completedAt:200,rewardedAt:0};
+ data.missions.seen=['fishing:catch-fixture','piano:melody-fixture'];
+ assert.equal(DTO.validate(data).ok,true);
+ const student=anonymous('student_one'),owner=staff();
+ await assertSucceeds(write(student,`${PROFILE_PATH}/state`,state(2,data)));
+ await assertSucceeds(write(owner,TEACHER_PATH,teacherRecord(1,data)));
+ for(const [database,location]of [[student,`${PROFILE_PATH}/state`],[owner,`${TEACHER_PATH}/state`]]){
+  const restored=DTO.validate((await assertSucceeds(read(database,location))).val().data);
+  assert.equal(restored.ok,true,restored.error);assert.deepEqual(restored.data,data);
+ }
+ await assertFails(read(anonymous('student_two'),`${PROFILE_PATH}/state`));
+ await assertFails(write(google('other_admin'),`${TEACHER_PATH}/state`,state(2,data)));
+ await assertFails(write(student,`${TEACHER_PATH}/state`,state(2,data)));
+});
+
+test('new quest progress remains target-bounded and rejects unknown and private fields for both owners',async()=>{
+ const student=anonymous('student_one'),owner=staff();await assertSucceeds(write(owner,TEACHER_PATH,teacherRecord()));
+ const invalid=[],entry={acceptedAt:100,progress:1,completedAt:200,rewardedAt:0};
+ const mutate=fn=>{const data=DTO.blank();data.missions.missions['miles-fish-legendary']={...entry};fn(data);invalid.push(data);};
+ mutate(data=>{data.missions.missions['miles-fish-legendary'].progress=2;});
+ mutate(data=>{data.missions.missions['miles-fish-legendary'].childName='Private name';});
+ mutate(data=>{data.missions.missions['ella-fish-five']={...entry,progress:6};});
+ mutate(data=>{data.missions.missions['joplin-rhythm-hundred']={...entry,progress:101};});
+ mutate(data=>{data.missions.missions['unlisted-new-quest']={...entry};});
+ for(const data of invalid){
+  await assertFails(write(student,`${PROFILE_PATH}/state`,state(2,data)));
+  await assertFails(write(owner,`${TEACHER_PATH}/state`,state(2,data)));
+ }
+ await assertSucceeds(write(student,`${PROFILE_PATH}/state`,state(2)));
+ await assertSucceeds(write(owner,`${TEACHER_PATH}/state`,state(2)));
+});

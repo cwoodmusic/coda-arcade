@@ -110,7 +110,15 @@
       return {ok:true,alreadyOwned:false,item,balance:state.balance};
     }
     function grantReward(id,amount){
-      if(typeof id!=='string'||!/^[a-z0-9:_-]{1,100}$/i.test(id)||!Number.isSafeInteger(amount)||amount<1||amount>1000)return {ok:false,error:'Invalid Notes reward.'};
+      if(typeof id!=='string'||!/^[a-z0-9:_-]{1,100}$/i.test(id)||!Number.isSafeInteger(amount)||amount<1)return {ok:false,error:'Invalid Notes reward.'};
+      if(id.startsWith('level-prize:')){
+        // Progression may load after this module. Only a real, reached prize
+        // can exceed the ordinary 1,000-Note reward limit.
+        let progression;try{progression=typeof window!=='undefined'&&window.CodaPlayerProgression||(typeof require==='function'?require('./player-progression.js'):null);}catch{}
+        const prize=progression?.LEVEL_NOTES?.find(item=>item.id===id);let proof,raw;
+        try{proof=progression?.readState(storage);raw=JSON.parse(storage?.getItem(progression?.KEY)||'null');}catch{}
+        if(!prize||prize.amount!==amount||!raw||raw.xp!==proof?.xp||raw.events?.length!==proof?.eventCount||proof.xp<progression.THRESHOLDS[prize.level-1])return {ok:false,error:'Invalid Notes reward.'};
+      }else if(amount>1000)return {ok:false,error:'Invalid Notes reward.'};
       refresh();
       if(state.rewards.includes(id))return {ok:true,alreadyClaimed:true,amount:0,balance:state.balance};
       if(state.rewards.length>=4096)return {ok:false,error:'The Notes reward ledger is full.'};

@@ -33,9 +33,9 @@ class Handler(SimpleHTTPRequestHandler):
 <button id="enter">Enter the cave</button><section id="fishing" hidden></section>
 <script src="/character-renderer.js"></script><script src="/finger-follow.js"></script>
 <script src="/music-notation.js"></script>
-<script src="/rhythm-fishing-engine.js"></script><script src="/fishing-cave-layout.js"></script><script src="/fishing-cave-effects.js"></script><script src="/fish-shadow-motion.js"></script><script src="/rhythm-beaming.js"></script><script src="/cave-camera.js"></script><script src="/fishing-battle.js"></script><script src="/fishing-music.js"></script><script src="/fishing-boat.js"></script><script src="/fishing-rhythm-input.js"></script><script src="/rhythm-fishing.js"></script>
+<script src="/rhythm-fishing-engine.js"></script><script src="/fishing-cave-layout.js"></script><script src="/fishing-cave-effects.js"></script><script src="/fish-shadow-motion.js"></script><script src="/rhythm-beaming.js"></script><script src="/cave-camera.js"></script><script src="/fishing-battle.js"></script><script src="/fishing-music.js"></script><script src="/fishing-boat.js"></script><script src="/fishing-rhythm-input.js"></script><script src="/fishing-practice.js"></script><script src="/rhythm-fishing.js"></script>
 <script>
-window.rewards=[];window.rewardCalls=[];window.exits=0;window.failReward=false;
+window.rewards=[];window.rewardCalls=[];window.challengeStarts=[];window.exits=0;window.failReward=false;
 window.failStorage=false;
 window.fishingInk=[];
 const originalFillText=CanvasRenderingContext2D.prototype.fillText;
@@ -49,11 +49,12 @@ CanvasRenderingContext2D.prototype.fillText=function(value,x,y,...rest){
  return originalFillText.call(this,value,x,y,...rest);
 };
 window.lab=createCodaRhythmFishing({host:document.querySelector('#fishing'),
- renderer:createCodaCharacterRenderer(),getAvatar:()=>({}),random:()=>0.01,
+ renderer:createCodaCharacterRenderer(),getAvatar:()=>({}),getVibe:()=>window.fixtureVibe||null,random:()=>0.01,
  backgroundSrc:'/assets/world/rhythm-fishing-cave.png',
  storage:{getItem:key=>localStorage.getItem(key),setItem:(key,value)=>{
   if(failStorage)throw Error('Storage unavailable for this check');localStorage.setItem(key,value);
  }},
+ onChallengeStart:event=>challengeStarts.push(event),
  onClose:()=>exits++,onCatch:(fish,result)=>{
   rewardCalls.push({fish:fish.id,result});
   if(failReward)return {ok:false,error:'Reward saving is temporarily unavailable.'};
@@ -171,7 +172,7 @@ class RhythmFishingTests(unittest.TestCase):
         self.walk_to(pier['x'],pier['y'])
         self.assertFalse(self.page.locator('#fishingBoatBoard').is_disabled(),
                          'Walking to the pier should make the boat reachable')
-        self.page.locator('#fishingBoatBoard').click()
+        self.page.locator('#fishingLakeCanvas').focus();self.page.keyboard.press('e')
         self.page.clock.run_for(40)
 
     def approach_shadow(self):
@@ -193,12 +194,42 @@ class RhythmFishingTests(unittest.TestCase):
         if self.state()['phase'] == 'shore':
             self.board()
         self.approach_shadow()
-        self.page.locator('#fishingCast').click()
+        self.page.locator('#fishingLakeCanvas').focus();self.page.keyboard.press('e')
         self.page.clock.run_for(2400)
         state = self.state()
         self.assertIsNotNone(state.get('challenge'), state)
         self.page.locator('#fishingRhythmCanvas').focus()
         return state
+
+    def test_optional_vibe_covers_the_cave_and_tracks_shore_and_boat_rider_scales(self):
+        self.page.evaluate('''()=>{window.vibeCalls=[];window.fixtureVibe={
+          drawAtmosphere:(g,frame)=>{vibeCalls.push({kind:'atmosphere',...frame});return false;},
+          drawCharacterGlow:(g,actor)=>{vibeCalls.push({kind:'glow',...actor,transform:{a:g.getTransform().a,e:g.getTransform().e,f:g.getTransform().f}});return false;}
+        };}''')
+        self.page.clock.run_for(32)
+        calls=self.page.evaluate('vibeCalls')
+        self.assertEqual((calls[0]['width'],calls[0]['height'],calls[0]['lights']),(1000,620,[]))
+        self.assertGreaterEqual(len([call for call in calls if call['kind']=='glow' and call['scale']==1]),2)
+        self.board();self.page.clock.run_for(32)
+        rider=self.page.evaluate('vibeCalls.findLast(call=>call.kind==="glow"&&call.scale===.72)')
+        self.assertIsNotNone(rider);self.assertEqual((rider['x'],rider['y']),(0,3))
+        self.page.evaluate('window.fixtureVibe=null');before=len(self.page.evaluate('vibeCalls'));self.page.clock.run_for(32)
+        self.assertEqual(len(self.page.evaluate('vibeCalls')),before)
+        self.page.evaluate("()=>{const host=document.createElement('section');document.body.append(host);const bare=createCodaRhythmFishing({host,getAvatar:()=>({})});bare.open();bare.destroy();host.remove();}")
+
+    def test_challenge_start_fires_once_for_real_bites_and_never_for_practice(self):
+        self.assertEqual(self.page.evaluate('challengeStarts'),[])
+        self.page.locator('#fishingMenuButton').click();self.page.locator('#fishingPractice').click()
+        self.page.locator('#fishingPracticeStart').click(force=True);self.page.clock.run_for(64)
+        self.assertTrue(self.state()['practice']);self.assertEqual(self.page.evaluate('challengeStarts'),[])
+        self.page.locator('#fishingCancel').click(force=True);self.page.clock.run_for(32)
+        state=self.cast();events=self.page.evaluate('challengeStarts')
+        self.assertEqual(len(events),1)
+        self.assertEqual(events[0]['runId'],state['challenge']['id'])
+        self.assertEqual(events[0]['fishId'],state['challenge']['fish']['id'])
+        self.assertEqual(events[0]['meter'],state['challenge']['meter'])
+        self.assertFalse(events[0]['practice'])
+        self.page.clock.run_for(1000);self.assertEqual(len(self.page.evaluate('challengeStarts')),1)
 
     def advance_to(self, target):
         clock = self.state()['clock']
@@ -208,6 +239,11 @@ class RhythmFishingTests(unittest.TestCase):
 
     def play_note(self, note):
         self.advance_to(note['time'])
+        # Four perfect bars can finish during the RAF advance before the next
+        # published note. Do not send that new press to the result screen's
+        # focused Return to lake button.
+        if self.state()['phase'] != 'rhythm':
+            return
         self.page.keyboard.down('Space')
         if note.get('requiresHold', note.get('duration', 0)>=2):
             self.advance_to(note.get('holdEndTime',note['time']+note['durationSeconds']))
@@ -262,11 +298,14 @@ class RhythmFishingTests(unittest.TestCase):
         self.cast()
         state = self.finish_with_hits()
         self.assertEqual(state['challenge']['phase'], 'caught')
+        self.assertTrue(state['result']['perfect'])
+        self.assertEqual(state['challenge']['completedBars'], 4)
         self.assertEqual(len(self.page.evaluate('rewards')), 1)
         self.assertGreater(self.page.evaluate('rewards[0].amount'), 0)
         self.page.evaluate('lab.control(" ",true);lab.control(" ",false)')
         self.assertEqual(len(self.page.evaluate('rewards')), 1)
         self.page.locator('#fishingReturnLake').click()
+        self.page.locator('#fishingMenuButton').click()
         self.page.locator('#fishingCollection').click()
         self.assertEqual(self.page.locator('[data-fish-id]').count(), 30)
         self.assertIn('1', self.page.locator('#fishing').inner_text())
@@ -275,6 +314,7 @@ class RhythmFishingTests(unittest.TestCase):
         self.page.locator('#enter').click()
         self.assertEqual(self.page.evaluate('rewardCalls.length'), 0,
                          'Opening a saved collection must not replay a reward')
+        self.page.locator('#fishingMenuButton').click()
         self.page.locator('#fishingCollection').click()
         self.assertEqual(self.page.locator('[data-fish-id]').count(), 30)
 

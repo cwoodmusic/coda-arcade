@@ -87,3 +87,23 @@ test('teacher players are closed exact-owner Google records using the same canon
  assert.match(owner.state['.validate'],/data\.child\("revision"\)\.val\(\) \+ 1/);
  assert.match(owner.state['.validate'],/newData\.child\("revision"\)\.val\(\) === 1/);
 });
+
+test('additional quest targets change only the student and teacher mission validation subtrees',()=>{
+ const legacyIds=['bach-triad-win','mozart-triad-capture','beethoven-pitch-win','clara-pitch-streak','joplin-rhythm-streak','ellington-rhythm-streak','ella-rhythm-perfect','nina-pitch-notes','miles-triad-comeback'];
+ const legacySchema=JSON.parse(JSON.stringify(SCHEMA)),mission=legacySchema.properties.missions.properties.missions;
+ mission.properties=Object.fromEntries(legacyIds.map(id=>[id,mission.properties[id]]));
+ const before=buildClassroomRules(legacySchema),after=buildClassroomRules(SCHEMA);
+ function takeMissions(rules){
+  const space=rules.rules.classroomV1,teacher=space.teacherPlayers.$uid.state.data.missions,student=space.classes.$classId.profiles.$profileId.state.data.missions;
+  const values=[teacher.missions,student.missions];delete teacher.missions;delete student.missions;return values;
+ }
+ const previous=takeMissions(before),expanded=takeMissions(after);
+ assert.deepEqual(after,before,'All roles, profile boundaries, revision checks, leases, and unrelated data fields stay unchanged');
+ assert.deepEqual(expanded[0],expanded[1],'Both identities validate the same exact quest data');
+ for(const rules of expanded){
+  const keys=Object.keys(rules).filter(key=>!key.startsWith('.')&&!key.startsWith('$'));
+  assert.equal(keys.length,29);assert.equal(keys.length-legacyIds.length,20);
+  assert.deepEqual(rules.$other,{'.validate':false});
+  for(const id of legacyIds)assert.deepEqual(rules[id],previous[0][id],id+' retains its original contract');
+ }
+});

@@ -108,7 +108,7 @@ class MusicRewardsWorldTests(_world.WorldBrowserCase):
         self.page.get_by_role('button',name='View my profile',exact=True).click()
         self.assertFalse(self.page.evaluate('CodaArcadeQA.menu().gameOpen'))
         self.assertEqual(self.page.locator('.profile-level').inner_text(),'Level 2')
-        self.assertEqual(self.page.locator('.profile-prize strong').all_inner_texts(),['Artist beret','Neon Marimba'])
+        self.assertEqual(self.page.locator('.profile-prize strong').all_inner_texts(),['Artist beret','Neon Marimba','4 new quests at Level 3'])
         saved=self.page.evaluate('CodaArcadeQA.progression().xp')
         self.load()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),saved)

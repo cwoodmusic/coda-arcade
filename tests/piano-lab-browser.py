@@ -31,10 +31,11 @@ class PianoLabTests(unittest.TestCase):
         self.page.add_script_tag(path=str(ROOT/'piano-wall-notation.js'))
         self.page.add_script_tag(path=str(ROOT/'piano-lab.js'))
         self.page.evaluate('''()=>{
-          window.entries=new Map();window.rewards=[];window.rewardCalls=[];window.rewardLedger=new Set();window.rewardMode='success';window.exits=0;
+          window.entries=new Map();window.challengeStarts=[];window.challengeCompletions=[];window.rewards=[];window.rewardCalls=[];window.rewardLedger=new Set();window.rewardMode='success';window.exits=0;
           window.makeLab=()=>{window.lab=createCodaPianoLab({host:document.querySelector('#pianoroom'),
-           renderer:createCodaCharacterRenderer(),getAvatar:()=>({}),
+           renderer:createCodaCharacterRenderer(),getAvatar:()=>({}),getVibe:()=>window.fixtureVibe||null,
            storage:{getItem:key=>entries.get(key)||null,setItem:(key,value)=>entries.set(key,value)},
+           onChallengeStart:event=>challengeStarts.push(event),onChallengeComplete:event=>challengeCompletions.push(event),
            onClose:()=>exits++,onReward:(id,amount)=>{rewardCalls.push({id,amount});if(rewardMode==='throw')throw new Error('Test reward unavailable');if(rewardMode==='fail')return {ok:false,amount};if(rewardLedger.has(id))return {ok:true,alreadyClaimed:true,amount:0};rewardLedger.add(id);rewards.push({id,amount});return {ok:true,amount};}});};
           makeLab();document.querySelector('#returnFocus').focus();lab.open();
         }''')
@@ -75,6 +76,85 @@ class PianoLabTests(unittest.TestCase):
     def begin_memory(self):
         self.menu('games');self.page.locator('#pianoMemoryStart').click()
         self.page.locator('[data-piano-dialogue-action="play"]').click()
+
+    def play_sequence(self,midis):
+        self.menu('keyboard')
+        self.page.evaluate('''midis=>{for(const midi of midis){
+          const button=document.querySelector('.piano-key[data-midi="'+midi+'"]');
+          button.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
+          button.dispatchEvent(new KeyboardEvent('keyup',{key:'Enter',bubbles:true}));
+        }}''',midis)
+
+    def test_optional_vibe_paints_native_room_then_glows_in_each_actors_scaled_context(self):
+        self.page.evaluate('''()=>{window.vibeCalls=[];window.fixtureVibe={
+          drawAtmosphere:(g,frame)=>{vibeCalls.push({kind:'atmosphere',...frame,transform:{a:g.getTransform().a,e:g.getTransform().e,f:g.getTransform().f}});return false;},
+          drawCharacterGlow:(g,actor)=>{vibeCalls.push({kind:'glow',...actor,transform:{a:g.getTransform().a,e:g.getTransform().e,f:g.getTransform().f}});return false;}
+        };}''')
+        self.page.wait_for_function('vibeCalls.filter(call=>call.kind==="glow").length>=2')
+        calls=self.page.evaluate('vibeCalls');atmosphere=next(call for call in calls if call['kind']=='atmosphere')
+        self.assertEqual((atmosphere['width'],atmosphere['height'],atmosphere['lights']),(1000,620,[]))
+        glows=[call for call in calls if call['kind']=='glow']
+        self.assertGreaterEqual(len(glows),2)
+        self.assertTrue(all(call['scale']==1 and call['x']==0 and call['transform']['a']==1.5 for call in glows))
+        self.assertEqual(calls[0]['kind'],'atmosphere')
+        self.page.evaluate("()=>{window.fixtureVibe=null;const host=document.createElement('section');document.body.append(host);const bare=createCodaPianoLab({host,getAvatar:()=>({})});bare.open();bare.destroy();host.remove();}")
+
+    def test_challenge_events_count_completed_replays_independently_of_one_time_rewards(self):
+        self.assertEqual(self.page.evaluate('challengeStarts'),[])
+        self.choose_melody('mary');first=self.state()['challengeRun']['runId']
+        self.play_sequence([60+offset for offset in MARY])
+        self.assertEqual(len(self.page.evaluate('challengeCompletions')),1)
+        self.assertEqual(len(self.page.evaluate('rewards')),1)
+        self.choose_melody('mary');second=self.state()['challengeRun']['runId']
+        self.assertNotEqual(first,second)
+        self.play_sequence([60+offset for offset in MARY])
+        events=self.page.evaluate('challengeCompletions')
+        self.assertEqual(len(events),2);self.assertEqual(len(self.page.evaluate('rewards')),1)
+        for event in events:
+            self.assertEqual((event['kind'],event['mode'],event['mistakes'],event['melodyId']),('melody','guided',0,'mary'))
+            self.assertRegex(event['runId'],r'^[a-z0-9:_-]{1,128}$')
+        self.page.locator('[data-piano-dialogue-action="close"]').click()
+        self.play_sequence([60,62,64])
+        self.assertEqual(len(self.page.evaluate('challengeCompletions')),2,'Further notes cannot duplicate a finished attempt')
+
+    def test_memory_wrong_notes_keep_the_same_attempt_and_its_mistakes(self):
+        self.choose_melody('mary');self.play_sequence([60+offset for offset in MARY])
+        self.begin_memory();run=self.state()['challengeRun']['runId']
+        self.play_sequence([65])
+        self.assertEqual(self.state()['lessonStep'],0)
+        self.assertEqual(self.state()['challengeRun']['runId'],run)
+        self.assertEqual(self.state()['challengeRun']['mistakes'],1)
+        self.play_sequence([60+offset for offset in MARY])
+        event=self.page.evaluate('challengeCompletions.at(-1)')
+        self.assertEqual((event['runId'],event['mode'],event['mistakes']),(run,'memory',1))
+        self.begin_memory();self.assertNotEqual(self.state()['challengeRun']['runId'],run)
+        self.assertEqual(self.state()['challengeRun']['mistakes'],0)
+
+    def test_demonstration_freeplay_and_cancel_do_not_create_completed_challenge_events(self):
+        self.play_sequence([60,64,67]);self.assertEqual(self.page.evaluate('challengeStarts'),[])
+        self.page.clock.install();self.page.clock.pause_at(self.page.evaluate('Date.now()/1000')+5)
+        self.menu('games');self.page.locator('#pianoLesson').select_option('hot-cross-buns')
+        run=self.state()['challengeRun']['runId'];self.page.locator('[data-piano-dialogue-action="listen"]').click()
+        demo_ms=self.page.evaluate('''()=>{const state=lab.getState(),tune=CodaPianoMelodies.lessonFor(state.lesson);return Math.ceil(Math.max(...state.lessonScore.map(event=>event.onset+event.beats))*60000/(tune.quarterBpm||100))+200;}''')
+        self.page.clock.run_for(demo_ms)
+        self.assertEqual(len(self.page.evaluate('challengeStarts')),1,'Hearing a demonstration must not create another attempt')
+        self.assertEqual(self.state()['challengeRun']['runId'],run)
+        self.assertEqual(self.page.evaluate('challengeCompletions'),[])
+        self.page.evaluate('lab.close();lab.open()')
+        self.assertIsNone(self.state()['challengeRun'])
+        self.play_sequence(self.state()['lessonPitches'])
+        self.assertEqual(self.page.evaluate('challengeCompletions'),[],'A canceled attempt cannot complete after returning')
+
+    def test_scale_and_interval_events_include_the_challenge_type_and_mistakes(self):
+        for scale,kind,offsets in [('c-major','major',[0,2,4,5,7,9,11,12]),('a-minor','minor',[9,11,12,14,16,17,19,21])]:
+            self.menu('games');self.page.locator('#pianoScale').select_option(scale);self.page.locator('#pianoStartScale').click()
+            self.page.locator('[data-piano-dialogue-action="play"]').click();self.play_sequence([60+offset for offset in offsets])
+            event=self.page.evaluate('challengeCompletions.at(-1)')
+            self.assertEqual((event['kind'],event['scaleType'],event['lessonId'],event['mistakes']),('scale',kind,scale,0))
+        self.menu('games');self.page.locator('#pianoInterval').select_option('up-4');self.page.locator('#pianoStartInterval').click()
+        self.page.locator('[data-piano-dialogue-action="play"]').click();self.play_sequence([61,60,64])
+        event=self.page.evaluate('challengeCompletions.at(-1)')
+        self.assertEqual((event['kind'],event['lessonId'],event['mistakes']),('interval','up-4',1))
 
     def test_main_room_is_uncluttered_and_chopin_offers_several_melodies_in_dialogue(self):
         self.assertFalse(self.state()['menuOpen']);self.assertFalse(self.state()['dialogueOpen'])

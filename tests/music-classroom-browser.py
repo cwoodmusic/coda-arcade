@@ -13,7 +13,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path!='/classroom-harness':
             return super().do_GET()
-        html='''<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="/music-classroom.css"><link rel="stylesheet" href="/classroom-tutorials.css"><button id="entrance">Enter classroom</button><section id="room" hidden></section><script src="/character-renderer.js"></script><link rel="stylesheet" href="/music-notation.css"><script src="/music-notation.js"></script><link rel="stylesheet" href="/time-signature-lesson.css"><script src="/time-signature-lesson.js"></script><script src="/classroom-tutorials.js"></script><script src="/room-fullscreen.js"></script><script src="/music-classroom.js"></script><script>window.roomUI=createCodaMusicClassroom({host:document.querySelector('#room'),backgroundSrc:'/assets/world/music-classroom-room.png',renderer:createCodaCharacterRenderer(),getAvatar:()=>({})});entrance.onclick=()=>roomUI.open();</script>'''
+        html='''<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="/music-classroom.css"><link rel="stylesheet" href="/classroom-tutorials.css"><button id="entrance">Enter classroom</button><section id="room" hidden></section><script src="/character-renderer.js"></script><link rel="stylesheet" href="/music-notation.css"><script src="/music-notation.js"></script><link rel="stylesheet" href="/time-signature-lesson.css"><script src="/time-signature-lesson.js"></script><script src="/classroom-tutorials.js"></script><script src="/room-fullscreen.js"></script><script src="/music-classroom.js"></script><script>window.roomUI=createCodaMusicClassroom({host:document.querySelector('#room'),backgroundSrc:'/assets/world/music-classroom-room.png',renderer:createCodaCharacterRenderer(),getAvatar:()=>({}),getVibe:()=>window.fixtureVibe||null});entrance.onclick=()=>roomUI.open();</script>'''
         self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.end_headers();self.wfile.write(html.encode())
 
 class ClassroomTests(unittest.TestCase):
@@ -49,6 +49,21 @@ class ClassroomTests(unittest.TestCase):
     def tearDown(self):
         self.assertEqual(self.errors,[])
         self.context.close()
+
+    def test_optional_vibe_keeps_native_classroom_dimensions_and_professor_desk_depth(self):
+        self.page.evaluate('''()=>{window.vibeCalls=[];window.fixtureVibe={
+          drawAtmosphere:(g,frame)=>{vibeCalls.push({kind:'atmosphere',...frame});return false;},
+          drawCharacterGlow:(g,actor)=>{vibeCalls.push({kind:'glow',...actor});return false;}
+        };}''')
+        self.page.wait_for_function('vibeCalls.filter(call=>call.kind==="glow").length>=2')
+        calls=self.page.evaluate('vibeCalls');state=self.page.evaluate('roomUI.getState()')
+        self.assertEqual((calls[0]['width'],calls[0]['height'],calls[0]['lights']),(1000,600,[]))
+        glows=[call for call in calls if call['kind']=='glow']
+        self.assertTrue(any(call['x']==state['professor']['x'] and call['y']==state['professor']['y'] for call in glows))
+        self.assertTrue(any(call['x']==state['player']['x'] and call['y']==state['player']['y'] for call in glows))
+        self.assertTrue(all(call['scale']==1 for call in glows))
+        self.assertEqual([call['kind'] for call in calls[:4]],['atmosphere','glow','atmosphere','glow'])
+        self.page.evaluate("()=>{window.fixtureVibe=null;const host=document.createElement('section');document.body.append(host);const bare=createCodaMusicClassroom({host,getAvatar:()=>({})});bare.open();bare.destroy();host.remove();}")
 
     def test_room_moves_and_professor_interaction_opens_a_real_book(self):
         self.assertTrue(self.page.evaluate('roomUI.getState().open'))

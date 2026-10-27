@@ -418,6 +418,366 @@
                       ".validate": false
                     }
                   },
+                  "ella-fish-five": {
+                    ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                    "acceptedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                    },
+                    "progress": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 5)"
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "rewardedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
+                  "nina-piano-melody": {
+                    ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                    "acceptedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                    },
+                    "progress": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "rewardedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
+                  "mozart-pitch-thirty": {
+                    ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                    "acceptedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                    },
+                    "progress": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 30)"
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "rewardedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
+                  "joplin-rhythm-perfect-three": {
+                    ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                    "acceptedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                    },
+                    "progress": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 3)"
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "rewardedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
+                  "clara-fish-compound": {
+                    ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                    "acceptedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                    },
+                    "progress": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "rewardedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
+                  "bach-piano-major": {
+                    ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                    "acceptedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                    },
+                    "progress": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "rewardedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
+                  "ellington-triad-three": {
+                    ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                    "acceptedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                    },
+                    "progress": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 3)"
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "rewardedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
+                  "miles-pitch-bass-ten": {
+                    ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                    "acceptedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                    },
+                    "progress": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 10)"
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "rewardedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
+                  "beethoven-fish-epic": {
+                    ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                    "acceptedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                    },
+                    "progress": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "rewardedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
+                  "nina-piano-minor": {
+                    ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                    "acceptedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                    },
+                    "progress": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "rewardedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
+                  "mozart-triad-advanced": {
+                    ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                    "acceptedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                    },
+                    "progress": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "rewardedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
+                  "ella-rhythm-seventy-five": {
+                    ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                    "acceptedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                    },
+                    "progress": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 75)"
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "rewardedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
+                  "joplin-fish-perfect-rare": {
+                    ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                    "acceptedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                    },
+                    "progress": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "rewardedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
+                  "clara-piano-memory": {
+                    ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                    "acceptedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                    },
+                    "progress": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "rewardedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
+                  "bach-pitch-grand-twenty": {
+                    ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                    "acceptedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                    },
+                    "progress": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 20)"
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "rewardedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
+                  "ellington-triad-hard": {
+                    ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                    "acceptedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                    },
+                    "progress": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "rewardedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
+                  "miles-fish-legendary": {
+                    ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                    "acceptedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                    },
+                    "progress": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "rewardedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
+                  "beethoven-pitch-level-thirty": {
+                    ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                    "acceptedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                    },
+                    "progress": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 30)"
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "rewardedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
+                  "joplin-rhythm-hundred": {
+                    ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                    "acceptedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                    },
+                    "progress": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 100)"
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "rewardedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
+                  "bach-triad-hard-advanced": {
+                    ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                    "acceptedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                    },
+                    "progress": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "rewardedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
                   "$other": {
                     ".validate": false
                   }
@@ -1287,6 +1647,366 @@
                         }
                       },
                       "miles-triad-comeback": {
+                        ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                        "acceptedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                        },
+                        "progress": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "rewardedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
+                      "ella-fish-five": {
+                        ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                        "acceptedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                        },
+                        "progress": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 5)"
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "rewardedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
+                      "nina-piano-melody": {
+                        ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                        "acceptedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                        },
+                        "progress": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "rewardedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
+                      "mozart-pitch-thirty": {
+                        ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                        "acceptedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                        },
+                        "progress": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 30)"
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "rewardedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
+                      "joplin-rhythm-perfect-three": {
+                        ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                        "acceptedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                        },
+                        "progress": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 3)"
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "rewardedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
+                      "clara-fish-compound": {
+                        ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                        "acceptedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                        },
+                        "progress": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "rewardedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
+                      "bach-piano-major": {
+                        ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                        "acceptedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                        },
+                        "progress": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "rewardedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
+                      "ellington-triad-three": {
+                        ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                        "acceptedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                        },
+                        "progress": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 3)"
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "rewardedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
+                      "miles-pitch-bass-ten": {
+                        ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                        "acceptedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                        },
+                        "progress": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 10)"
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "rewardedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
+                      "beethoven-fish-epic": {
+                        ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                        "acceptedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                        },
+                        "progress": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "rewardedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
+                      "nina-piano-minor": {
+                        ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                        "acceptedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                        },
+                        "progress": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "rewardedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
+                      "mozart-triad-advanced": {
+                        ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                        "acceptedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                        },
+                        "progress": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "rewardedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
+                      "ella-rhythm-seventy-five": {
+                        ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                        "acceptedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                        },
+                        "progress": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 75)"
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "rewardedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
+                      "joplin-fish-perfect-rare": {
+                        ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                        "acceptedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                        },
+                        "progress": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "rewardedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
+                      "clara-piano-memory": {
+                        ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                        "acceptedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                        },
+                        "progress": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "rewardedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
+                      "bach-pitch-grand-twenty": {
+                        ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                        "acceptedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                        },
+                        "progress": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 20)"
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "rewardedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
+                      "ellington-triad-hard": {
+                        ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                        "acceptedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                        },
+                        "progress": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "rewardedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
+                      "miles-fish-legendary": {
+                        ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                        "acceptedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                        },
+                        "progress": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 1)"
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "rewardedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
+                      "beethoven-pitch-level-thirty": {
+                        ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                        "acceptedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                        },
+                        "progress": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 30)"
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "rewardedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
+                      "joplin-rhythm-hundred": {
+                        ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
+                        "acceptedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"
+                        },
+                        "progress": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 100)"
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "rewardedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
+                      "bach-triad-hard-advanced": {
                         ".validate": "newData.hasChildren([\"acceptedAt\",\"progress\",\"completedAt\",\"rewardedAt\"])",
                         "acceptedAt": {
                           ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 1) && (newData.val() <= 253402300799999)"

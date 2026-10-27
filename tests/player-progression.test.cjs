@@ -161,3 +161,105 @@ test('missing, contradictory, or malformed clef details never grant clef cosmeti
  const player=progression.create({storage:storage()});player.recordGameEvent('pitch','missed',{...base,misses:1,clefStats:{...base.clefStats,treble:{correct:10,misses:1,bestStreak:5}}});
  assert.equal(player.unlocked('grandstaffbadge'),true);assert.equal(player.unlocked('grandstaffcrown'),false);
 });
+
+function savedXP(disk,xp){
+ const events=[];let remaining=xp;
+ while(remaining){const amount=Math.min(1000,remaining);events.push({id:'quest:level-fixture-'+events.length,xp:amount,reason:'Completed music practice'});remaining-=amount;}
+ disk.setItem(progression.KEY,JSON.stringify({version:1,xp,events,bestPitchLevel:0}));
+ return disk.getItem(progression.KEY);
+}
+const createWallet=disk=>require('../notes-shop.js').createWallet({storage:disk});
+
+test('level 50 extends the existing twelve thresholds without moving earned levels',()=>{
+ assert.deepEqual(progression.THRESHOLDS.slice(0,12),[0,80,180,320,500,720,980,1280,1630,2030,2480,2980]);
+ assert.equal(progression.THRESHOLDS.length,50);
+ for(const [index,xp]of progression.THRESHOLDS.entries()){
+  assert.equal(progression.levelForXP(xp),index+1);
+  if(index){assert.ok(xp>progression.THRESHOLDS[index-1]);assert.equal(progression.levelForXP(xp-1),index);}
+ }
+ assert.equal(progression.THRESHOLDS[19],9200);assert.equal(progression.THRESHOLDS[29],21450);
+ assert.equal(progression.THRESHOLDS[39],38700);assert.equal(progression.THRESHOLDS[49],60950);
+ const disk=storage();savedXP(disk,60950);const value=progression.create({storage:disk}).getState();
+ assert.equal(value.level,50);assert.equal(value.nextLevelXP,null);assert.equal(value.progress,1);
+ assert.equal(progression.levelForXP(100000),50);
+});
+
+test('every ten levels has a large Notes prize and later levels keep real reward listings',()=>{
+ assert.deepEqual(progression.LEVEL_NOTES.filter(item=>item.level%10===0).map(item=>[item.level,item.amount]),[[10,1000],[20,1500],[30,2500],[40,4000],[50,6000]]);
+ for(let level=13;level<=50;level++){
+  const notes=progression.prizesForLevel(level).filter(item=>item.kind==='notes');assert.equal(notes.length,1);
+  assert.equal(notes[0].id,'level-prize:'+level);assert.ok(notes[0].amount>=150);
+  if(level%10)assert.ok(notes[0].amount<=500);
+ }
+ assert.equal(progression.prizesForLevel(2).find(item=>item.kind==='cosmetic').id,'watchchain');
+ assert.equal(progression.prizesForLevel(2).find(item=>item.kind==='sound').id,10);
+ for(const [level,id]of [[20,'glowstick'],[30,'spooky'],[40,'aurora'],[50,'festival']])assert.equal(progression.prizesForLevel(level).find(item=>item.kind==='vibe').id,id);
+ const copy=progression.prizesForLevel(20);copy[0].amount=999999;copy[0].label='Changed';
+ assert.equal(progression.LEVEL_NOTES.find(item=>item.level===20).amount,1500);assert.notEqual(progression.prizesForLevel(20)[0].label,'Changed');
+ for(const bad of [0,51,-1,20.5,'20',NaN])assert.deepEqual(progression.prizesForLevel(bad),[]);
+});
+
+test('vibes unlock from the current saved experience level without equipping anything',()=>{
+ const disk=storage();savedXP(disk,9199);const player=progression.create({storage:disk});
+ assert.deepEqual(player.getState().unlockedVibes,[]);assert.equal(player.unlocked('glowstick'),false);
+ player.awardXP('quest:one-more',1,'Music quest');assert.deepEqual(player.getState().unlockedVibes,['glowstick']);assert.equal(player.unlocked('glowstick'),true);
+ savedXP(disk,21450);assert.deepEqual(player.refresh().unlockedVibes,['glowstick','spooky']);
+ savedXP(disk,60950);assert.deepEqual(progression.create({storage:disk}).getState().unlockedVibes,['glowstick','spooky','aurora','festival']);
+ assert.equal(disk.getItem('musicArcadeV1'),null,'A vibe unlock never rewrites the avatar');
+});
+
+test('reached level prizes backfill exactly once across reloads without adding XP',()=>{
+ const disk=storage(),proof=savedXP(disk,10200),player=progression.create({storage:disk}),wallet=createWallet(disk);
+ const expected=progression.LEVEL_NOTES.filter(item=>item.level<=21),total=expected.reduce((sum,item)=>sum+item.amount,0);
+ const first=player.claimLevelPrizes(wallet);assert.equal(first.ok,true);assert.equal(first.amount,total);
+ assert.deepEqual(first.claimed.map(item=>item.id),expected.map(item=>item.id));
+ assert.equal(wallet.snapshot().balance,150+total);assert.equal(wallet.snapshot().earned,150+total);
+ assert.equal(disk.getItem(progression.KEY),proof,'Currency prizes leave the XP journal byte-identical');
+ assert.equal(player.getState().xp,10200);
+ const loaded=progression.create({storage:disk}),next=loaded.claimLevelPrizes(createWallet(disk));
+ assert.equal(next.ok,true);assert.equal(next.alreadyClaimed,true);assert.equal(next.amount,0);assert.deepEqual(next.claimed,[]);
+ assert.equal(wallet.refresh().balance,150+total);
+});
+
+test('a full level 50 wallet receives every listed prize once and low levels receive none',()=>{
+ const lowDisk=storage();savedXP(lowDisk,2029);const low=createWallet(lowDisk);
+ assert.equal(progression.create({storage:lowDisk}).claimLevelPrizes(low).amount,0);assert.equal(low.snapshot().balance,150);
+ const disk=storage(),proof=savedXP(disk,60950),player=progression.create({storage:disk}),wallet=createWallet(disk);
+ const first=player.claimLevelPrizes(wallet),total=progression.LEVEL_NOTES.reduce((sum,item)=>sum+item.amount,0);
+ assert.equal(first.claimed.length,39);assert.equal(first.amount,total);assert.equal(wallet.snapshot().balance,150+total);
+ assert.deepEqual(wallet.snapshot().rewards,progression.LEVEL_NOTES.map(item=>item.id));
+ assert.equal(player.claimLevelPrizes(wallet).amount,0);assert.equal(disk.getItem(progression.KEY),proof);
+});
+
+test('a failed prize save is retried without replaying earlier paid prizes',()=>{
+ const disk=storage(),write=disk.setItem;let noteWrites=0,block=true;
+ disk.setItem=(key,value)=>{if(key==='codaNotesWalletV1'&&JSON.parse(value).rewards.length&&++noteWrites===2&&block)throw Error('quota');write(key,value);};
+ const proof=savedXP(disk,4250),player=progression.create({storage:disk}),wallet=createWallet(disk);
+ const failed=player.claimLevelPrizes(wallet);assert.equal(failed.ok,false);assert.equal(failed.amount,1000);assert.equal(failed.claimed.length,1);
+ assert.deepEqual(wallet.snapshot().rewards,['level-prize:10']);block=false;
+ const retry=player.claimLevelPrizes(wallet);assert.equal(retry.ok,true);assert.equal(retry.amount,310);
+ assert.deepEqual(wallet.snapshot().rewards,['level-prize:10','level-prize:13','level-prize:14']);
+ assert.equal(wallet.snapshot().balance,1460);assert.equal(disk.getItem(progression.KEY),proof);
+});
+
+test('wallet callbacks cannot recursively duplicate prizes or create XP notifications',()=>{
+ const disk=storage(),proof=savedXP(disk,9200);let player,wallet,changes=0;const nested=[];
+ player=progression.create({storage:disk,onChange:()=>changes++});
+ wallet=require('../notes-shop.js').createWallet({storage:disk,onChange:()=>{if(wallet)nested.push(player.claimLevelPrizes(wallet));}});
+ const result=player.claimLevelPrizes(wallet);
+ assert.equal(result.ok,true);assert.equal(nested.length,result.claimed.length);
+ assert.ok(nested.every(value=>value.ok&&value.busy&&value.amount===0&&value.claimed.length===0));
+ assert.equal(changes,0);assert.equal(disk.getItem(progression.KEY),proof);
+});
+
+test('paused, changed, cleared and unproved profiles cannot claim cached high-level rewards',()=>{
+ const disk=storage();savedXP(disk,60950);let allowed=false,calls=0;
+ const player=progression.create({storage:disk,canRecord:()=>allowed}),wallet={grantReward(){calls++;return {ok:true,amount:1000};}};
+ assert.equal(player.claimLevelPrizes(wallet).ok,false);assert.equal(calls,0);
+ allowed=true;disk.setItem(progression.KEY,'');assert.equal(player.claimLevelPrizes(wallet).ok,false);assert.equal(calls,0,'Cached level 50 is not proof for a fresh player');
+ disk.setItem(progression.KEY,JSON.stringify({version:1,xp:60950,events:[]}));assert.equal(player.claimLevelPrizes(wallet).ok,false);assert.equal(calls,0,'The event journal, not its untrusted total, proves the level');
+ savedXP(disk,60950);
+ const changingWallet={grantReward(id,amount){calls++;savedXP(disk,0);return {ok:true,amount};}};
+ const interrupted=player.claimLevelPrizes(changingWallet);assert.equal(interrupted.ok,false);assert.equal(calls,1);assert.equal(interrupted.claimed.length,1);
+ const thrown=progression.create({storage:disk,canRecord(){throw Error('unavailable');}});assert.equal(thrown.claimLevelPrizes(wallet).ok,false);
+});

@@ -40,9 +40,11 @@ function round(count=8){return {targets:Array.from({length:count},(_,i)=>i),taps
 function hit(tracker,current,index){current.taps.push({target:index,hit:true,error:0});current.matched.add(index);tracker.tap(current,{hit:true,error:0});}
 function extra(tracker,current){current.taps.push({target:0,hit:false,error:.5});current.extras++;tracker.tap(current,{hit:false,error:.5});}
 
-test('the nine musicians have stable, distinct missions and bounded Notes rewards',()=>{
-  assert.equal(DEFINITIONS.length,9);assert.equal(new Set(DEFINITIONS.map(item=>item.person)).size,9);
-  assert.equal(new Set(DEFINITIONS.map(item=>item.id)).size,9);
+test('the original nine musicians have stable missions plus twenty level-gated challenges',()=>{
+  assert.equal(DEFINITIONS.length,29);assert.equal(new Set(DEFINITIONS.map(item=>item.person)).size,9);
+  assert.equal(new Set(DEFINITIONS.map(item=>item.id)).size,29);
+  assert.equal(DEFINITIONS.filter(item=>item.minLevel===1).length,9);
+  assert.deepEqual([...new Set(DEFINITIONS.filter(item=>item.minLevel>1).map(item=>item.minLevel))],[3,5,10,15,20]);
   assert.ok(DEFINITIONS.some(item=>item.kind==='triad-win'));
   assert.ok(DEFINITIONS.some(item=>item.kind==='rhythm-streak'&&item.target===50));
   assert.ok(DEFINITIONS.every(item=>item.reward>0&&item.reward<=1000));
@@ -161,8 +163,8 @@ test('a mission panel offers collection only beside its giver and checks proximi
   const document={createElement:element},panelBody=element('div'),found=[];
   const f=fixture({api:{document,panelBody,findQuestGiver:person=>found.push(person)}});
   f.manager.accept('bach');f.attach();f.result(triad());assert.equal(f.manager.open('bach'),true);
-  const section=panelBody.children.at(-1),buttons=()=>section.children.filter(child=>child.tag==='button');
-  assert.match(section.children.find(child=>child.textContent.includes('Return to')).textContent,/Return to Bach/);
+  const section=panelBody.children.at(-1),descendants=node=>node.children.flatMap(child=>[child,...descendants(child)]),buttons=()=>descendants(section).filter(child=>child.tag==='button');
+  assert.match(descendants(section).find(child=>child.textContent.includes('Return to')).textContent,/Return to Bach/);
   assert.equal(buttons().find(button=>button.textContent==='Collect reward').disabled,true);
   buttons().find(button=>button.textContent==='Find quest giver').onclick();assert.deepEqual(found,['bach']);
   f.approach('bach');const collect=buttons().find(button=>button.textContent==='Collect reward');assert.equal(collect.disabled,false);
@@ -312,4 +314,125 @@ test('an unavailable classroom permission check fails closed',()=>{
     assert.equal(f.manager.accept('bach').ok,false);assert.equal(f.manager.get('bach').status,'available');
     assert.equal(f.store.getItem('codaMusicianMissionsV1'),null);
   }
+});
+
+const caught=(id,changes={})=>({id,fishId:'silver-minnow',rarity:'common',meter:'4/4',hits:16,misses:0,extras:0,perfect:true,caught:true,outcome:'caught',...changes});
+const pianoEvent=(runId,changes={})=>({runId,kind:'melody',mode:'guided',mistakes:0,...changes});
+
+test('quest tiers lock acceptance and unlock new missions while preserving old rewards',()=>{
+  let level=1;const f=fixture({api:{getLevel:()=>level}});
+  assert.equal(f.manager.get('miles-fish-legendary').status,'locked');
+  assert.match(f.manager.accept('miles-fish-legendary').error,/Level 20/);
+  assert.equal(f.manager.listFor('bach').length,4);
+  assert.equal(f.manager.get('bach').id,'bach-triad-win');
+  f.manager.accept('bach');f.attach();f.result();f.approach('bach');f.manager.turnIn('bach');
+  assert.equal(f.manager.get('bach').status,'rewarded','A locked future mission does not replace an old completion');
+  level=5;assert.equal(f.manager.get('bach').id,'bach-piano-major');
+  assert.equal(f.manager.get('bach-piano-major').status,'available');
+  level=20;assert.equal(f.manager.get('miles-fish-legendary').status,'available');
+  const levels=new Map();for(const mission of DEFINITIONS.filter(m=>m.minLevel>1))levels.set(mission.minLevel,(levels.get(mission.minLevel)||0)+1);
+  assert.deepEqual([...levels],[[3,4],[5,4],[10,4],[15,4],[20,4]]);
+});
+
+test('fishing quests count fresh accepted catches once, and reward only at their own musician',()=>{
+  const rewarded=[],f=fixture({api:{getLevel:()=>3,onMissionRewarded:m=>rewarded.push(m)}});
+  const stale=f.manager.beginActivity('fishing');f.manager.accept('ella-fish-five');
+  assert.equal(f.manager.recordActivity('fishing',caught('before-accept'),stale),true);
+  assert.equal(f.manager.get('ella-fish-five').progress,0);
+  for(let i=0;i<5;i++){
+    const token=f.manager.beginActivity('fishing');assert.equal(f.manager.recordActivity('fishing',caught('fresh-'+i),token),true);
+    assert.equal(f.manager.recordActivity('fishing',caught('fresh-'+i),token),false);
+  }
+  assert.equal(f.manager.get('ella-fish-five').status,'complete');assert.equal(f.wallet.snapshot().balance,150);
+  f.approach('bach');assert.equal(f.manager.turnIn('ella-fish-five').ok,false);
+  f.approach('ella');assert.equal(f.manager.turnIn('ella-fish-five').ok,true);
+  assert.equal(f.wallet.snapshot().balance,300);assert.equal(rewarded.length,1);
+  f.manager.turnIn('ella-fish-five');assert.equal(f.wallet.snapshot().balance,300);
+  const restored=fixture({storage:f.store,wallet:f.wallet,api:{getLevel:()=>3}});
+  assert.equal(restored.manager.get('ella-fish-five').status,'rewarded');
+});
+
+test('legendary, meter and perfect rare goals require their actual validated catch conditions',()=>{
+  const f=fixture({api:{getLevel:()=>20,validateActivity:(_game,event)=>event.verified===true}});
+  for(const id of ['miles-fish-legendary','clara-fish-compound','joplin-fish-perfect-rare','beethoven-fish-epic'])f.manager.accept(id);
+  let token=f.manager.beginActivity('fishing');
+  assert.equal(f.manager.recordActivity('fishing',caught('unverified',{rarity:'legendary'}),token),false);
+  assert.equal(f.manager.recordActivity('fishing',caught('practice',{rarity:'legendary',verified:true,practice:true}),token),false);
+  assert.equal(f.manager.recordActivity('fishing',caught('not-perfect',{rarity:'legendary',verified:true,misses:1}),token),false);
+  assert.equal(f.manager.recordActivity('fishing',caught('common',{verified:true}),token),true);
+  assert.equal(f.manager.get('miles-fish-legendary').progress,0);
+  token=f.manager.beginActivity('fishing');
+  assert.equal(f.manager.recordActivity('fishing',caught('legendary',{fishId:'luminous-dragonfish',rarity:'legendary',meter:'6/8',verified:true}),token),true);
+  for(const id of ['miles-fish-legendary','clara-fish-compound','joplin-fish-perfect-rare','beethoven-fish-epic'])assert.equal(f.manager.get(id).status,'complete',id);
+});
+
+test('piano quests use new challenge runs, preserve guided and scale distinctions, and require clean memory',()=>{
+  const f=fixture({api:{getLevel:()=>20}});
+  for(const id of ['nina-piano-melody','bach-piano-major','nina-piano-minor','clara-piano-memory'])f.manager.accept(id);
+  let token=f.manager.beginActivity('piano');f.manager.recordActivity('piano',pianoEvent('guided'),token);
+  assert.equal(f.manager.get('nina-piano-melody').status,'complete');assert.equal(f.manager.get('clara-piano-memory').progress,0);
+  token=f.manager.beginActivity('piano');f.manager.recordActivity('piano',pianoEvent('major',{kind:'scale',scaleType:'major'}),token);
+  assert.equal(f.manager.get('bach-piano-major').status,'complete');assert.equal(f.manager.get('nina-piano-minor').progress,0);
+  token=f.manager.beginActivity('piano');f.manager.recordActivity('piano',pianoEvent('minor',{kind:'scale',scaleType:'minor'}),token);
+  assert.equal(f.manager.get('nina-piano-minor').status,'complete');
+  token=f.manager.beginActivity('piano');f.manager.recordActivity('piano',pianoEvent('memory-miss',{mode:'memory',mistakes:1}),token);
+  assert.equal(f.manager.get('clara-piano-memory').progress,0);
+  token=f.manager.beginActivity('piano');f.manager.recordActivity('piano',pianoEvent('memory-clean',{mode:'memory'}),token);
+  assert.equal(f.manager.get('clara-piano-memory').status,'complete');
+});
+
+test('computer win counters dedupe runs and hard advanced quests reject easier settings',()=>{
+  const f=fixture({api:{getLevel:()=>20}});f.manager.accept('ellington-triad-three');f.manager.accept('bach-triad-hard-advanced');f.attach();
+  f.result(triad(),'first');f.result(triad(),'first');assert.equal(f.manager.get('ellington-triad-three').progress,1);
+  f.result(triad({mode:'multiplayer'}),'multi');assert.equal(f.manager.get('ellington-triad-three').progress,1);
+  f.result(triad({rules:'advanced',difficulty:'normal'}),'easy-advanced');f.result(triad({rules:'simple',difficulty:'hard'}),'hard-simple');
+  assert.equal(f.manager.get('ellington-triad-three').status,'complete');assert.equal(f.manager.get('bach-triad-hard-advanced').progress,0);
+  f.result(triad({rules:'advanced',difficulty:'hard'}),'hard-advanced');assert.equal(f.manager.get('bach-triad-hard-advanced').status,'complete');
+});
+
+test('bass, grand staff and level quests require internally consistent completed-run metrics',()=>{
+  const f=fixture({game:'pitch',api:{getLevel:()=>20}});
+  for(const id of ['miles-pitch-bass-ten','bach-pitch-grand-twenty','beethoven-pitch-level-thirty'])f.manager.accept(id);f.attach();
+  const clefs={treble:{correct:10,misses:0,bestStreak:10},bass:{correct:10,misses:0,bestStreak:10}};
+  f.result(pitch({correct:20,streak:20,staff:'grand',clefStats:{...clefs,bass:{correct:11,misses:0,bestStreak:11}}}),'bad-clefs');
+  assert.equal(f.manager.get('bach-pitch-grand-twenty').progress,0);
+  f.result(pitch({correct:20,streak:20,staff:'treble',clefStats:clefs}),'wrong-staff');
+  assert.equal(f.manager.get('miles-pitch-bass-ten').progress,0,'Treble-only runs cannot claim bass notes');
+  f.result(pitch({correct:20,streak:20,staff:'grand',clefStats:clefs}),'grand');
+  assert.equal(f.manager.get('miles-pitch-bass-ten').status,'complete');assert.equal(f.manager.get('bach-pitch-grand-twenty').status,'complete');
+  f.result(pitch({mode:'levels',completedLevel:29}),'level-29');assert.equal(f.manager.get('beethoven-pitch-level-thirty').progress,29);
+  f.result(pitch({mode:'levels',completedLevel:30}),'level-30');assert.equal(f.manager.get('beethoven-pitch-level-thirty').status,'complete');
+});
+
+test('new rhythm goals combine unique perfect rounds with the existing live ordered streak tracker',()=>{
+  const child={createTapRound:()=>round(8),gradeTap(value,target){value.taps.push({target,hit:true,error:0});value.matched.add(target);return {hit:true,error:0};},finishTapRound(){return true;}};
+  const f=fixture({game:'rhythm',child,api:{getLevel:()=>20}});
+  for(const id of ['joplin-rhythm-perfect-three','ella-rhythm-seventy-five','joplin-rhythm-hundred'])f.manager.accept(id);f.attach();
+  for(let index=0;index<13;index++){
+    const current=f.child.createTapRound();for(let i=0;i<8;i++)f.child.gradeTap(current,i);f.child.finishTapRound();
+    f.result(rhythm(),'round-'+index);f.result(rhythm(),'round-'+index);
+  }
+  for(const id of ['joplin-rhythm-perfect-three','ella-rhythm-seventy-five','joplin-rhythm-hundred'])assert.equal(f.manager.get(id).status,'complete',id);
+});
+
+test('paused local activities and a reduced level neither consume evidence nor bypass quest locks',()=>{
+  let allowed=true,level=20;const f=fixture({api:{canRecord:()=>allowed,getLevel:()=>level}});
+  f.manager.accept('miles-fish-legendary');const token=f.manager.beginActivity('fishing');allowed=false;
+  assert.equal(f.manager.recordActivity('fishing',caught('paused',{rarity:'legendary'}),token),false);
+  allowed=true;level=19;assert.equal(f.manager.recordActivity('fishing',caught('paused',{rarity:'legendary'}),token),true);
+  assert.equal(f.manager.get('miles-fish-legendary').progress,0);
+  level=20;const next=f.manager.beginActivity('fishing');f.manager.recordActivity('fishing',caught('fresh',{rarity:'legendary'}),next);
+  assert.equal(f.manager.get('miles-fish-legendary').status,'complete');level=19;f.approach('miles');assert.equal(f.manager.turnIn('miles-fish-legendary').ok,false);
+  level=20;assert.equal(f.manager.turnIn('miles-fish-legendary').ok,true);
+});
+
+test('fresh local activity tokens reject old sessions, malformed evidence and repeated stored catches',()=>{
+  const f=fixture({api:{getLevel:()=>3}});f.manager.accept('ella-fish-five');
+  const old=f.manager.beginActivity('fishing'),token=f.manager.beginActivity('fishing');
+  assert.equal(f.manager.recordActivity('fishing',caught('old'),old),false);
+  assert.equal(f.manager.recordActivity('fishing',caught('bad',{hits:-1}),token),false);
+  assert.equal(f.manager.recordActivity('fishing',caught('first'),token),true);
+  const fresh=f.manager.beginActivity('fishing');assert.equal(f.manager.recordActivity('fishing',caught('first'),fresh),false);
+  assert.equal(f.manager.get('ella-fish-five').progress,1);
+  assert.equal(f.manager.beginActivity('unrecognized'),null);
 });

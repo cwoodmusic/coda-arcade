@@ -14,6 +14,21 @@ authentication providers, and published origin were checked. When connecting a
 different Firebase project, keep `classroom.enabled: false` until those checks
 are complete. Classroom privacy protections also apply while enrollment is off.
 
+## Quest validation update — 2026-10-27
+
+The current client supports 29 authored musician quests and level rewards
+through Level 50. The live rules were backed up, merged and read back against
+the reviewed candidate. Only the two teacher/student mission-validation
+subtrees gained the 20 new optional quest entries. Existing quest validators,
+profile access checks and all other database namespaces were preserved.
+The merged rules compiled in the local emulator; all 21 classroom security
+cases passed. No student records were read or changed for this update.
+
+Developer **Test all unlocks** uses temporary browser memory and disables cloud
+saving and online play. Its Level 50 preview never needs a real profile card or
+administrator account, and its purchases, progress and editor changes do not
+replace the active player's saved data. Exit test mode to return to normal play.
+
 ## Activation verification — 2026-10-25
 
 The complete live rules were backed up before adding only `classroomV1`.

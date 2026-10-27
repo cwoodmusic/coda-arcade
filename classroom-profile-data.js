@@ -30,7 +30,20 @@
  const SCALES=split('c-major g-major d-major f-major a-minor c-minor d-minor e-minor');
  const INTERVALS=[1,2,3,4,5,7,12].flatMap(n=>['up-'+n,'down-'+n]);
  const PIANO_REWARDS=[...MELODIES.flatMap(id=>['piano-lesson:'+id,'piano-memory:'+id]),...SCALES.map(id=>'piano-scale:'+id),...INTERVALS.map(id=>'piano-interval:'+id)];
- const MISSION_TARGETS={'bach-triad-win':1,'mozart-triad-capture':3,'beethoven-pitch-win':1,'clara-pitch-streak':20,'joplin-rhythm-streak':20,'ellington-rhythm-streak':50,'ella-rhythm-perfect':1,'nina-pitch-notes':15,'miles-triad-comeback':1};
+ const MISSION_TARGETS={
+  'bach-triad-win':1,'mozart-triad-capture':3,'beethoven-pitch-win':1,'clara-pitch-streak':20,'joplin-rhythm-streak':20,'ellington-rhythm-streak':50,'ella-rhythm-perfect':1,'nina-pitch-notes':15,'miles-triad-comeback':1,
+  'ella-fish-five':5,'nina-piano-melody':1,'mozart-pitch-thirty':30,'joplin-rhythm-perfect-three':3,'clara-fish-compound':1,
+  'bach-piano-major':1,'ellington-triad-three':3,'miles-pitch-bass-ten':10,'beethoven-fish-epic':1,'nina-piano-minor':1,
+  'mozart-triad-advanced':1,'ella-rhythm-seventy-five':75,'joplin-fish-perfect-rare':1,'clara-piano-memory':1,'bach-pitch-grand-twenty':20,
+  'ellington-triad-hard':1,'miles-fish-legendary':1,'beethoven-pitch-level-thirty':30,'joplin-rhythm-hundred':100,'bach-triad-hard-advanced':1
+ };
+ // These tiny reward bounds also run before the progression module loads.
+ // A contract test keeps them aligned without adding a login dependency.
+ const LEVEL_PRIZE_XP=[0,80,180,320,500,720,980,1280,1630,2030,2480,2980,3600];
+ for(let level=14;level<=50;level++)LEVEL_PRIZE_XP.push(LEVEL_PRIZE_XP.at(-1)+650+(level-14)*50);
+ const LEVEL_PRIZES=new Map([[10,1000],...Array.from({length:38},(_,index)=>{
+  const level=index+13,amount=({20:1500,30:2500,40:4000,50:6000})[level]||Math.min(500,150+(level-13)*10);return [level,amount];
+ })].map(([level,amount])=>['level-prize:'+level,{xp:LEVEL_PRIZE_XP[level-1],amount}]));
  const FISH_ROWS=[
   ['silver-minnow','common',4,8],['cave-guppy','common',4,8],['bluegill','common',6,8],['yellow-perch','common',6,9],['brook-trout','common',8,10],['stone-loach','common',5,8],
   ['rainbow-trout','uncommon',12,12],['crystal-carp','uncommon',14,13],['copper-catfish','uncommon',14,13],['moon-bream','uncommon',12,12],['emerald-bass','uncommon',16,14],['ribbon-eel','uncommon',16,14],
@@ -121,7 +134,12 @@
   const xp=new Set(data.progression.events.map(event=>event.id)),paid=new Set(data.wallet.rewards);
   // Startup repairs these prefix families, including older/unknown IDs. Keep
   // the complete paid IDs, but never let importing one create a new XP award.
-  for(const token of paid){let expected=null;if(token.startsWith('npc-mission:'))expected='quest:'+token.slice(12);else if(['piano-lesson:','piano-interval:','piano-scale:'].some(prefix=>token.startsWith(prefix))||PIANO_REWARDS.includes(token))expected='quest:'+token;if(expected&&!xp.has(expected))fail('a Notes reward is missing its saved experience record. Retry saving that reward before syncing.');}
+  let paidLevelNotes=0;
+  for(const token of paid){
+   let expected=null;if(token.startsWith('npc-mission:'))expected='quest:'+token.slice(12);else if(['piano-lesson:','piano-interval:','piano-scale:'].some(prefix=>token.startsWith(prefix))||PIANO_REWARDS.includes(token))expected='quest:'+token;if(expected&&!xp.has(expected))fail('a Notes reward is missing its saved experience record. Retry saving that reward before syncing.');
+   if(token.startsWith('level-prize:')){const prize=LEVEL_PRIZES.get(token);if(!prize||data.progression.xp<prize.xp)fail('a level prize needs its earned player level.');paidLevelNotes+=prize.amount;}
+  }
+  if(data.wallet.earned<paidLevelNotes)fail('the saved level prizes exceed the complete earned Notes total.');
   if(MELODIES.every(id=>xp.has('quest:piano-memory:'+id))&&!xp.has('achievement:piano-memory-master'))fail('the completed memory-melody set is missing its saved mastery experience record. Retry saving that reward before syncing.');
   for(const token of data.piano.completed)if(!paid.has(token)||!xp.has('quest:'+token))fail('a piano completion is missing its reward records. Retry saving that challenge before syncing.');
   for(const [key,entry]of Object.entries(data.missions.missions))if(entry.rewardedAt&&(!paid.has('npc-mission:'+key)||!xp.has('quest:'+key)))fail('a mission reward is missing its saved reward records.');

@@ -143,6 +143,12 @@ window.createCodaDeveloperConsole = function (api) {
   const bottom = document.createElement('div');
   bottom.innerHTML = `<div class="dev-toolbar"><button id="devUndo" type="button">↶ Undo</button><button id="devRedo" type="button">↷ Redo</button><button id="devPlaytest" type="button" aria-pressed="false">▶ Playtest</button></div><p class="dev-status" id="devStatus" role="status">Loading saved world project…</p>`;
   panel.append(bottom);
+  if(window.CodaDeveloperTestMode){
+    const test=document.createElement('button');test.type='button';test.id='devTestUnlocks';test.textContent=window.CodaDeveloperTestMode.isEnabled()?'Exit test mode':'Test all unlocks';
+    test.title='Try level 50 rewards in a temporary game. Your real player and world edits stay unchanged.';
+    test.onclick=()=>window.CodaDeveloperTestMode.isEnabled()?window.CodaDeveloperTestMode.exit():window.CodaDeveloperTestMode.enter();
+    bottom.querySelector('.dev-toolbar').append(test);
+  }
   // Existing buttons now save and exchange the complete document, not just copies.
   $('assetExport').textContent = '↓ Export project JSON'; $('assetImport').textContent = '↑ Import project JSON';
   $('assetLayer').options[0].textContent = 'Background / behind actors';
