@@ -91,7 +91,13 @@ existing object, placed image, or a character and facing. The same character
 edits also appear in the existing **Sprites** tools and keep their animation.
 The classroom background is available in the arcade editor's source list.
 
-Use **Full screen** for detail work, then **Zoom** up to 64×. Right-drag or
+The pixel editor opens full screen. Use **Exit pixel editor** to return to the
+developer console. **Select** drags a pixel rectangle; **Copy** and **Paste**
+also support Ctrl/Cmd+C and Ctrl/Cmd+V. Move the paste preview, then click or
+press Enter to place it; Escape cancels it. The copied pixels stay available
+when switching artwork or rooms, including transparent pixels. **Eyedropper**
+samples the exact pixel colour and alpha. Each paste is one undo step.
+Use **Zoom** up to 64× for detail work. Right-drag or
 hold Space and drag to pan. **Pick colour** copies an existing pixel's exact
 colour, including transparency; the hex box also accepts `#RRGGBB` or
 `#RRGGBBAA`. **Straight line** previews the line while you drag and saves it

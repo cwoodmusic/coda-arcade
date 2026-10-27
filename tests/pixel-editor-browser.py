@@ -12,7 +12,7 @@ class Handler(SimpleHTTPRequestHandler):
     def log_message(self,*args):pass
     def do_GET(self):
         if self.path!='/pixel-fixture':return super().do_GET()
-        body='''<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/pixel-editor.css"><style>body{background:#101225;color:#fff;font:14px system-ui}#assetStudio{width:360px;max-width:calc(100vw - 24px);margin:auto}button,select,input{color:white;background:#32294b;border:1px solid #aa8abb;border-radius:5px;padding:8px}*{box-sizing:border-box}</style><section id="assetStudio" class="dev-console"><div id="editor"></div></section><canvas id="scene" width="200" height="150"></canvas><script src="/character-renderer.js"></script><script src="/pixel-editor.js"></script><script>
+        body='''<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/pixel-editor.css"><style>body{background:#101225;color:#fff;font:14px system-ui}#assetStudio{width:360px;max-width:calc(100vw - 24px);margin:auto}button,select,input{color:white;background:#32294b;border:1px solid #aa8abb;border-radius:5px;padding:8px}*{box-sizing:border-box}</style><section id="assetStudio" class="dev-console"><div id="editor"></div></section><canvas id="scene" width="200" height="150"></canvas><script src="/character-renderer.js"></script><script src="/pixel-selection.js"></script><script src="/pixel-editor.js"></script><script>
 window.renderer=createCodaCharacterRenderer({reducedMotion:()=>true});window.changes=[];window.data={};
 window.editor=CodaPixelEditor.mount({host:document.querySelector('#editor'),renderer,getData:()=>data,getProfile:()=>({}),getTargets:()=>[{id:'player',name:'Your avatar'},{id:'bach',name:'J. S. Bach'}],onChange:next=>{data=next;changes.push(JSON.parse(JSON.stringify(next)));renderer.setPixelEdits(next);}});
 window.framePixel=(target,x,y,options={})=>Array.from(renderer.renderPixelFrame(target,{}, {facing:options.facing||'down'},0,options).getContext('2d').getImageData(x,y,1,1).data);
@@ -43,6 +43,41 @@ class PixelEditorTests(unittest.TestCase):
         self.assertEqual(self.page.evaluate("framePixel('player',40,45)"),[255,95,151,255])
         self.page.get_by_label('Sprite character',exact=True).select_option('bach');self.page.get_by_label('Pixel tool',exact=True).select_option('pencil');self.paint(40,45)
         self.assertEqual(self.page.evaluate("framePixel('bach',40,45,{facing:'left'})"),[255,95,151,255]);self.assertEqual(self.page.evaluate("framePixel('player',40,45,{facing:'left'})")[3],0)
+    def test_rectangle_copy_paste_and_eyedropper_preserve_exact_sprite_pixels(self):
+        self.page.get_by_label('Animate sprite preview', exact=True).uncheck()
+        self.page.evaluate("data=CodaPixelEditor.changePixels({},'player','down',[[40,45]],'#12345680');data=CodaPixelEditor.changePixels(data,'player','down',[[41,45]],null);renderer.setPixelEdits(data);editor.refresh();changes=[]")
+        self.page.get_by_role('button', name='Select', exact=True).click()
+        canvas = self.page.locator('#pixelEditCanvas')
+        canvas.scroll_into_view_if_needed()
+        box = canvas.bounding_box()
+        self.page.mouse.move(box['x'] + 41.5*4, box['y'] + 46.5*4)
+        self.page.mouse.down()
+        self.page.mouse.move(box['x'] + 40.5*4, box['y'] + 45.5*4)
+        self.page.mouse.up()
+        self.assertEqual(self.page.evaluate('editor.getState().selection'), {'x':40,'y':45,'width':2,'height':2})
+        copied = self.page.evaluate("()=>[[40,45],[41,45],[40,46],[41,46]].map(([x,y])=>framePixel('player',x,y))")
+        self.page.get_by_role('button', name='Copy', exact=True).click()
+        before = self.page.evaluate('JSON.stringify(data)')
+        self.page.get_by_label('Sprite character', exact=True).select_option('bach')
+        self.page.get_by_label('Sprite direction', exact=True).select_option('left')
+        self.page.get_by_role('button', name='Paste', exact=True).click()
+        self.page.mouse.move(box['x'] + 43.5*4, box['y'] + 47.5*4)
+        self.assertEqual(self.page.evaluate('JSON.stringify(data)'), before)
+        self.page.keyboard.press('Escape')
+        self.assertFalse(self.page.evaluate('editor.getState().pasting'))
+        canvas.focus()
+        self.page.keyboard.press('ControlOrMeta+V')
+        self.page.mouse.move(box['x'] + 43.5*4, box['y'] + 47.5*4)
+        self.page.keyboard.press('Enter')
+        self.assertEqual(self.page.evaluate('changes.length'), 1)
+        self.assertEqual(self.page.evaluate("()=>[[43,47],[44,47],[43,48],[44,48]].map(([x,y])=>framePixel('bach',x,y,{facing:'left'}))"), copied)
+        self.page.get_by_role('button', name='Eyedropper', exact=True).click()
+        self.paint(43,47)
+        self.assertEqual(self.page.get_by_label('Pixel exact hex colour', exact=True).input_value(), '#' + ''.join(f'{byte:02x}' for byte in copied[0]))
+        self.assertEqual(self.page.evaluate('changes.length'), 1)
+        fields = self.page.get_by_label('Pixel exact hex colour', exact=True)
+        self.assertEqual(fields.evaluate("input=>['c','v'].map(key=>{const event=new KeyboardEvent('keydown',{key,ctrlKey:true,bubbles:true,cancelable:true});input.focus();input.dispatchEvent(event);return event.defaultPrevented;})"), [False,False])
+
     def test_transparent_character_pixel_preserves_world_and_motion_remains_animated(self):
         result=self.page.evaluate('''()=>{
           renderer.setPixelEdits({player:{down:[[40,45,null]]}});

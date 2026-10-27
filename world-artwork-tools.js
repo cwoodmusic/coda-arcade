@@ -53,7 +53,7 @@
    return api.applyRootData(next,changed)!==false;
   }
   function mount(host){
-   editor=pixels.mount({host,getTargets,getSource,getData,onChange:applyData,canEdit:api.canEdit,onUndo:api.onUndo,onRedo:api.onRedo,getHistory:api.getHistory,initialId:'background.world'});return editor;
+   editor=pixels.mount({host,getTargets,getSource,getData,onChange:applyData,canEdit:api.canEdit,onUndo:api.onUndo,onRedo:api.onRedo,getHistory:api.getHistory,onExit:api.onExit,fitOnFirstExpand:true,initialId:'background.world'});return editor;
   }
   function fragment(source,x,y){
    const patch=texture('background.world');if(!source||!patch)return source;

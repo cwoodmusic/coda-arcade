@@ -21,7 +21,7 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path != '/character-artwork-fixture':
             return super().do_GET()
         html = '''<!doctype html><title>Character artwork fixture</title>
-        <script src="character-renderer.js"></script><script src="pixel-editor.js"></script>
+        <script src="pixel-selection.js"></script><script src="character-renderer.js"></script><script src="pixel-editor.js"></script>
         <script src="artwork-editor.js"></script><script src="character-artwork-adapter.js"></script>
         <script>
         window.renderer=createCodaCharacterRenderer();window.sprites={};
@@ -88,6 +88,38 @@ class CharacterArtworkTests(unittest.TestCase):
                              'Partial alpha replaces the old pixel rather than tinting over it')
             for actual, expected in zip(pixel[:3], [17,34,51]):
                 self.assertLessEqual(abs(actual-expected), 1)
+
+    def test_copied_background_rgba_can_be_pasted_into_the_sprite_editor(self):
+        self.page.add_style_tag(path=str(ROOT / 'artwork-editor.css'))
+        self.page.evaluate("""()=>{
+          const host=document.createElement('section');host.id='crossArtwork';host.style.width='650px';document.body.append(host);
+          const source=document.createElement('canvas');source.width=source.height=2;
+          const g=source.getContext('2d'),image=g.createImageData(2,2);
+          image.data.set([18,34,50,128,0,0,0,0,6,23,50,255,255,127,0,255]);g.putImageData(image,0,0);
+          window.copiedExpected=Array.from(g.getImageData(0,0,2,2).data);
+          window.crossArtwork=CodaArtworkEditor.mount({host,getTargets:()=>[{id:'background.copy',name:'Copy source'}],getSource:()=>source,getData:()=>({}),onChange:()=>{throw Error('Copy must not change its source');}});
+        }""")
+        self.page.wait_for_function('crossArtwork.getState().width===2&&!crossArtwork.getState().loading')
+        self.page.locator('[data-artwork-select]').click()
+        canvas=self.page.locator('[data-artwork-canvas]');canvas.scroll_into_view_if_needed()
+        state=self.page.evaluate('crossArtwork.getState()');box=canvas.bounding_box()
+        def point(x,y):
+            return {'x':box['x']+(state['pan']['x']+(x+.5)*state['zoom'])*box['width']/state['viewport']['width'],
+                    'y':box['y']+(state['pan']['y']+(y+.5)*state['zoom'])*box['height']/state['viewport']['height']}
+        self.page.mouse.move(**point(0,0));self.page.mouse.down();self.page.mouse.move(**point(1,1));self.page.mouse.up()
+        self.page.locator('[data-artwork-copy]').click()
+        self.page.evaluate("""()=>{
+          crossArtwork.dispose();document.querySelector('#crossArtwork').remove();
+          const host=document.createElement('section');host.id='crossSprite';host.style.width='360px';document.body.append(host);
+          window.crossChanges=0;window.crossSprite=CodaPixelEditor.mount({host,renderer,getData:()=>sprites,getProfile:()=>({}),getTargets:()=>[{id:'player',name:'Your avatar'}],onChange:next=>{sprites=next;renderer.setPixelEdits(next);crossChanges++;}});
+        }""")
+        self.page.get_by_label('Animate sprite preview',exact=True).uncheck()
+        self.page.get_by_role('button',name='Paste',exact=True).click()
+        canvas=self.page.locator('#pixelEditCanvas');canvas.scroll_into_view_if_needed();box=canvas.bounding_box()
+        self.page.mouse.click(box['x']+40.5*4,box['y']+45.5*4)
+        actual=self.page.evaluate("()=>[[40,45],[41,45],[40,46],[41,46]].flatMap(([x,y])=>framePixel('player',x,y))")
+        self.assertEqual(actual,self.page.evaluate('copiedExpected'))
+        self.assertEqual(self.page.evaluate('crossChanges'),1,'Cross-editor paste is one normal reversible sprite change')
 
     def test_restoring_character_art_preserves_animation_and_other_character_views(self):
         result = self.page.evaluate('''()=>{

@@ -98,7 +98,7 @@ window.createCodaDeveloperConsole = function (api) {
     onReset:id=>{const before=snapshot();delete dialogue[id];changed(before);message('Restored default musician dialogue.');return true;}});
   else dialoguePane.textContent='Dialogue tools could not load. Reload the page to try again.';
   const pixelPane=pane('pixels','');
-  if(window.CodaPixelEditor&&api.renderer)pixelEditor=window.CodaPixelEditor.mount({host:pixelPane,renderer:api.renderer,getData:()=>sprites,getProfile:api.getPixelProfile,getTargets:api.getPixelTargets,
+  if(window.CodaPixelEditor&&api.renderer)pixelEditor=window.CodaPixelEditor.mount({host:pixelPane,renderer:api.renderer,getData:()=>sprites,getProfile:api.getPixelProfile,getTargets:api.getPixelTargets,canEdit:canEditArtwork,openArtwork:id=>{open('artwork');artworkEditor?.selectTarget(id);},
     onChange:next=>{if(!window.CodaPixelEditor.validate(next))return false;const before=snapshot();sprites=clone(next);api.renderer.setPixelEdits(sprites);changed(before);message('Applied pixel edits. Save or export the project to keep a backup.');return true;}});
   else pixelPane.textContent='Sprite tools could not load. Reload the page to try again.';
   const artworkPane=pane('artwork','');
@@ -108,13 +108,11 @@ window.createCodaDeveloperConsole = function (api) {
     artworkTools=window.createCodaWorldArtworkTools({width:W,height:H,catalog,getAssets:()=>studio.assets,getRootData:()=>artwork,
       getObjectSource:name=>{const part=catalog.find(p=>p.name===name);return part?sourcePicture({name,bounds:part.bounds}):null;},
       getAssetSource:api.getAssetArtworkSource,getBackgroundSource:()=>baseCache||worldArt,getClassroomSource:api.getClassroomArtworkSource,
-      getRoomEditors:api.getArtworkRooms,characters:characterArtwork,canEdit:canEditArtwork,onUndo:()=>undoRedo(true),onRedo:()=>undoRedo(false),getHistory:()=>({undo:studio.undo.length,redo:studio.redo.length}),applyRootData:applyArtworkData});
+      getRoomEditors:api.getArtworkRooms,characters:characterArtwork,canEdit:canEditArtwork,onExit:()=>setTab('objects'),onUndo:()=>undoRedo(true),onRedo:()=>undoRedo(false),getHistory:()=>({undo:studio.undo.length,redo:studio.redo.length}),applyRootData:applyArtworkData});
     artworkEditor=artworkTools.mount(artworkPane);
     const editPixels=document.createElement('button');editPixels.type='button';editPixels.id='devEditPixels';editPixels.textContent='Edit selected asset pixels';
     editPixels.onclick=()=>{const asset=api.selected();if(!asset)return;open('artwork');artworkEditor.selectTarget(asset.origin&&asset.kind==='builtin'?'object.'+asset.origin.name:'asset.'+asset.id);};
     $('assetSelection').append(editPixels);
-    const characterLink=document.createElement('button');characterLink.type='button';characterLink.textContent='Open full pixel editor';
-    characterLink.onclick=()=>{open('artwork');artworkEditor.selectTarget('character.player.down');};pixelPane.append(characterLink);
   }
   function canEditArtwork(){return studio.active&&!playtest&&!loading&&api.canDevelop?.()!==false;}
   function applyArtworkData(next,keys){
@@ -200,21 +198,22 @@ window.createCodaDeveloperConsole = function (api) {
   }
   function setTab(name) {
     name=name==='sprites'?'pixels':TABS.includes(name)?name:'objects';
-    finishGesture();if(name!==tab)artworkEditor?.setExpanded(false); tab=name; pickSample=false; studio.capturing=null;
+    finishGesture();if(name!==tab){if(tab==='pixels')pixelEditor?.cancelGesture();artworkEditor?.cancelPaste?.(false);artworkEditor?.setExpanded(false);} tab=name; pickSample=false; studio.capturing=null;
     if(name==='collision')collisionOverlay=true;if(name==='layers')layerOverlay=true;
     for(const name of TABS) { $('dev-'+name).hidden=name!==tab; $('devTab-'+name).setAttribute('aria-selected',String(name===tab)); }
     layer.active=studio.active&&tab==='layers'&&!playtest;if(layer.active)api.showForeground?.(); layer.preview=false;
     collision.setActive(studio.active&&tab==='collision'&&!playtest);
     studio.showGuides=tab==='objects'&&!playtest&&$('assetGuides').checked;
     c.classList.toggle('layer-editing',layer.active);panel.scrollTop=0; refreshCamera();refresh();
+    if(tab==='artwork'&&studio.active&&!playtest)artworkEditor?.setExpanded(true);
   }
-  function open(name='objects') { api.toggle(true); setTab(name); c.focus({preventScroll:true}); }
+  function open(name='objects') { api.toggle(true); setTab(name); if(!artworkEditor?.getState().expanded)c.focus({preventScroll:true}); }
   function onToggle() {
-    if(!studio.active) { artworkEditor?.setExpanded(false); spaceHeld=false; playtest=false; panel.classList.remove('dev-playtest'); $('devPlaytest').textContent='▶ Playtest'; $('devPlaytest').setAttribute('aria-pressed','false'); }
+    if(!studio.active) { pixelEditor?.cancelGesture();artworkEditor?.cancelPaste?.(false);artworkEditor?.setExpanded(false); spaceHeld=false; playtest=false; panel.classList.remove('dev-playtest'); $('devPlaytest').textContent='▶ Playtest'; $('devPlaytest').setAttribute('aria-pressed','false'); }
     setTab(tab); if(studio.active)message(loadFailed&&loadError?loadError:'Developer console active. Changes save locally; export a project backup.'+(publishedError?' '+publishedError:''));
   }
   function togglePlaytest() {
-    finishGesture(); spaceHeld=false; playtest=!playtest; panel.classList.toggle('dev-playtest',playtest); $('devPlaytest').setAttribute('aria-pressed',String(playtest)); $('devPlaytest').textContent=playtest?'■ Stop playtest':'▶ Playtest';
+    finishGesture();pixelEditor?.cancelGesture();artworkEditor?.cancelPaste?.(false);if(!playtest)artworkEditor?.setExpanded(false); spaceHeld=false; playtest=!playtest; panel.classList.toggle('dev-playtest',playtest); $('devPlaytest').setAttribute('aria-pressed',String(playtest)); $('devPlaytest').textContent=playtest?'■ Stop playtest':'▶ Playtest';
     api.invalidateRoutes(); setTab(tab); message(playtest?'Playtest: WASD or click the world to walk. Stop playtest to continue editing.':'Editing resumed.'); c.focus();
   }
   function defaultSample(bounds) {
@@ -597,7 +596,8 @@ window.createCodaDeveloperConsole = function (api) {
   };
   $('editorToggle').onclick=()=>open('layers');
   window.addEventListener('keydown',e=>{
-    if(e.target?.closest?.('[data-artwork-editor]')&&!e.ctrlKey&&!e.metaKey&&e.key!=='F2')return;
+    if(e.target?.closest?.('[data-artwork-editor]')&&e.key!=='F2')return;
+    if(e.target?.closest?.('.pixel-editor')&&e.key!=='F2'&&(!(e.ctrlKey||e.metaKey)||!['z','y'].includes(e.key.toLowerCase())))return;
     const typing=['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)||e.target?.isContentEditable;
     if(e.key==='F2'&&!typing){e.preventDefault();e.stopImmediatePropagation();api.toggle(!studio.active);return;}
     if(!studio.active)return;

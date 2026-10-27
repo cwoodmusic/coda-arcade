@@ -29,25 +29,33 @@
  }
  function mount(api={}){
   const host=api.host,renderer=api.renderer;if(!host||!renderer?.renderPixelFrame)throw Error('Pixel editing needs a host and character renderer.');
-  const doc=host.ownerDocument,win=doc.defaultView;let target='player',facing='down',tool='pencil',color='#ff5f97',zoom=4,mode='walk',showGrid=true,animated=true,working=null,stroke=null,frame=0,destroyed=false,lastTime=0,source=null;
+  const doc=host.ownerDocument,win=doc.defaultView;let target='player',facing='down',tool='pencil',color='#ff5f97',zoom=4,mode='walk',showGrid=true,animated=true,working=null,stroke=null,frame=0,destroyed=false,lastTime=0,source=null,selection=null,paste=null,pastePosition=null,pasteCanvas=null;
   const el=(tag,className,text)=>{const node=doc.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
   const button=(text,action)=>{const node=el('button','',text);node.type='button';node.onclick=action;return node;};
   const field=(label,node)=>{const wrapper=el('label','pixel-field');wrapper.append(doc.createTextNode(label),node);return wrapper;};
   const select=(label,values)=>{const node=el('select');node.setAttribute('aria-label',label);for(const value of values){const option=el('option','',value.label||value.name||value.id);option.value=value.id;node.append(option);}return node;};
   host.classList.add('pixel-editor');host.replaceChildren();
-  host.append(el('h3','dev-heading','Pixel sprite details'),el('p','dev-note','Paint one pixel at a time. Each direction has its own details. The character keeps its walking, jumping, clothing, and emotes. Erase makes the character pixel transparent; Restore brings back the original pixel. Choose Pan canvas to move around at high zoom.'));
+  host.append(el('h3','dev-heading','Pixel sprite details'),el('p','dev-note','Paint one pixel at a time. Drag Select around pixels, Copy, then Paste and click where they belong. Eyedropper samples an exact colour. Escape cancels a paste. Each direction keeps its own details and animation.'));
   const targets=(api.getTargets?.()||TARGETS.map(id=>({id,name:id}))).filter(item=>TARGETS.includes(item.id));if(!targets.length)targets.push({id:'player',name:'Your avatar'});target=targets[0].id;
   const targetSelect=select('Sprite character',targets),facingSelect=select('Sprite direction',[{id:'down',label:'Front'},{id:'left',label:'Left'},{id:'up',label:'Back'},{id:'right',label:'Right'}]);
   const toolbar=el('div','pixel-fields');toolbar.append(field('Character',targetSelect),field('Facing',facingSelect));host.append(toolbar);
-  const toolSelect=select('Pixel tool',[{id:'pencil',label:'Pencil'},{id:'erase',label:'Eraser'},{id:'picker',label:'Pick colour'},{id:'fill',label:'Fill connected colour'},{id:'restore',label:'Restore original pixel'},{id:'pan',label:'Pan canvas'}]);
+  const toolSelect=select('Pixel tool',[{id:'pencil',label:'Pencil'},{id:'select',label:'Select rectangle'},{id:'erase',label:'Eraser'},{id:'picker',label:'Eyedropper · pick colour'},{id:'fill',label:'Fill connected colour'},{id:'restore',label:'Restore original pixel'},{id:'pan',label:'Pan canvas'}]);
   const colorInput=el('input');colorInput.type='color';colorInput.value=color;colorInput.setAttribute('aria-label','Pixel colour');
   const tools=el('div','pixel-fields');tools.append(field('Tool',toolSelect),field('Colour',colorInput));host.append(tools);
+  const hexInput=el('input');hexInput.type='text';hexInput.value=color+'ff';hexInput.maxLength=9;hexInput.spellcheck=false;hexInput.setAttribute('aria-label','Pixel exact hex colour');host.append(field('Exact colour · #RRGGBBAA',hexInput));
+  const editTools=el('div','pixel-actions pixel-selection-tools');editTools.setAttribute('role','group');editTools.setAttribute('aria-label','Pixel selection and colour tools');
+  const selectButton=button('Select',()=>chooseTool('select'));selectButton.dataset.pixelSelect='';
+  const copyButton=button('Copy',copySelection);copyButton.dataset.pixelCopy='';copyButton.title='Copy selected pixels (Ctrl/Cmd+C)';
+  const pasteButton=button('Paste',beginPaste);pasteButton.dataset.pixelPaste='';pasteButton.title='Preview copied pixels (Ctrl/Cmd+V)';
+  const pickerButton=button('Eyedropper',()=>chooseTool('picker'));pickerButton.dataset.pixelEyedropper='';pickerButton.title='Sample the exact pixel colour (I or Alt-click)';
+  editTools.append(selectButton,copyButton,pasteButton,pickerButton);host.append(editTools);
+  if(typeof api.openArtwork==='function'){const full=button('Full-screen pixel editor',()=>{commit();clearTransient();api.openArtwork('character.'+target+'.'+facing);});full.dataset.pixelFullScreen='';host.append(full);}
   const palette=el('div','pixel-palette');palette.setAttribute('role','group');palette.setAttribute('aria-label','Pixel colour palette');
   for(const swatch of ['#171424','#ffffff','#999ca6','#626875','#e5ad75','#704633','#ff5f97','#6ce4da','#f4d77e','#7756a5','#3e6baf','#58a369']){const choose=button('',()=>setColor(swatch));choose.className='pixel-swatch';choose.style.background=swatch;choose.setAttribute('aria-label','Use colour '+swatch);palette.append(choose);}host.append(palette);
   const zoomSelect=select('Pixel zoom',[1,2,3,4,6,8,12].map(value=>({id:String(value),label:value+'×'})));zoomSelect.value=String(zoom);
   const gridToggle=el('input');gridToggle.type='checkbox';gridToggle.checked=true;gridToggle.setAttribute('aria-label','Show pixel grid');const gridLabel=field('Show grid',gridToggle);gridLabel.classList.add('pixel-check');
   const viewTools=el('div','pixel-fields');viewTools.append(field('Zoom',zoomSelect),gridLabel);host.append(viewTools);
-  const scroller=el('div','pixel-grid-scroll'),canvas=el('canvas','pixel-grid');canvas.id='pixelEditCanvas';canvas.tabIndex=0;canvas.setAttribute('aria-label','Editable pixel grid. Use arrow keys to move the cursor and Space to paint.');scroller.append(canvas);host.append(scroller);
+  const scroller=el('div','pixel-grid-scroll'),canvas=el('canvas','pixel-grid');canvas.id='pixelEditCanvas';canvas.tabIndex=0;canvas.setAttribute('aria-label','Editable pixel grid. Arrow keys move the cursor; Space paints. Drag Select, then copy and paste. Enter places a paste and Escape cancels it.');scroller.append(canvas);host.append(scroller);
   const status=el('p','pixel-status','Choose a pixel to edit.');status.setAttribute('role','status');status.setAttribute('aria-live','polite');host.append(status);
   const resets=el('div','pixel-actions');resets.append(button('Reset this direction',()=>reset(false)),button('Reset this character',()=>reset(true)));host.append(resets);
   const previewHeading=el('h4','','Live preview'),preview=el('canvas','pixel-preview');preview.id='pixelLivePreview';preview.width=160;preview.height=192;preview.setAttribute('aria-label','Animated sprite preview');
@@ -57,38 +65,74 @@
   let cursor={x:40,y:45};
   function data(){return working||normalize(api.getData?.()||{})||{};}
   function profile(){return api.getProfile?.(target)|| (target==='player'?{}:renderer.appearanceFor(target));}
-  function setColor(value){color=value;colorInput.value=value;status.textContent='Colour '+value+'.';}
+  const selectionCore=()=>win.CodaPixelSelection;
+  const editable=()=>!destroyed&&api.canEdit?.()!==false;
+  const typing=node=>!!node?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"])');
+  function setColor(value){if(typeof value!=='string'||!/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i.test(value))return false;color=value.toLowerCase();colorInput.value=color.slice(0,7);hexInput.value=color.length===7?color+'ff':color;hexInput.removeAttribute('aria-invalid');status.textContent='Colour '+hexInput.value+'.';return true;}
+  function syncSelectionTools(){const core=selectionCore();copyButton.disabled=!core||!selection;pasteButton.disabled=!core?.clipboard.has()||!editable();selectButton.setAttribute('aria-pressed',String(tool==='select'));pickerButton.setAttribute('aria-pressed',String(tool==='picker'));}
+  function clearTransient(){selection=null;paste=null;pastePosition=null;syncSelectionTools();}
+  function chooseTool(value){if(stroke)commit();paste=null;pastePosition=null;tool=value;toolSelect.value=value;canvas.style.touchAction=tool==='pan'?'pan-x pan-y':'none';syncSelectionTools();drawGrid();canvas.focus({preventScroll:true});status.textContent=tool==='select'?'Drag around the exact pixels to copy.':tool==='picker'?'Click a pixel to sample its exact RGBA colour.':'Choose a pixel to edit.';}
+  function copySelection(){
+   const core=selectionCore();if(!core||!selection||!source){status.textContent='Use Select to drag around the pixels you want to copy.';return false;}
+   const clip=core.copyPixels(source.getContext('2d').getImageData(0,0,WIDTH,HEIGHT).data,WIDTH,HEIGHT,selection);
+   if(!clip||!core.clipboard.set(clip))return false;
+   syncSelectionTools();status.textContent='Copied '+clip.width+' × '+clip.height+' pixels. Choose Paste, then click where they belong.';return true;
+  }
+  function beginPaste(){
+   if(!editable())return false;const clip=selectionCore()?.clipboard.get();if(!clip){status.textContent='Copy some pixels before choosing Paste.';return false;}
+   if(stroke)commit();paste={clip,target,facing};pastePosition={...cursor};syncSelectionTools();drawGrid();canvas.focus({preventScroll:true});status.textContent='Paste preview · click or press Enter to place · Escape cancels.';return true;
+  }
+  function commitPaste(){
+   if(!paste||!pastePosition)return false;if(!editable()||paste.target!==target||paste.facing!==facing){paste=null;pastePosition=null;refresh();status.textContent='Paste cancelled. Editing is unavailable.';return false;}
+   const points=selectionCore()?.stampPixels(paste.clip,WIDTH,HEIGHT,pastePosition.x,pastePosition.y)||[],next=copy(normalize(api.getData?.()||{})||{}),values=new Map((next[target]?.[facing]||[]).map(point=>[point[1]*WIDTH+point[0],point]));
+   for(const [x,y,value]of points)values.set(y*WIDTH+x,[x,y,normalizedColor(value)]);
+   if(points.length){next[target]??={};next[target][facing]=Array.from(values.values());working=normalize(next);}
+   paste=null;pastePosition=null;commit();if(!points.length)status.textContent='Paste is outside this image. No pixels changed.';return !!points.length;
+  }
   function pixels(options={}){return renderer.renderPixelFrame(target,profile(),{facing,walking:false},0,{pixelEdits:data(),...options});}
+  function pasteImage(){
+   if(!paste||!pastePosition)return source;
+   pasteCanvas??=doc.createElement('canvas');pasteCanvas.width=WIDTH;pasteCanvas.height=HEIGHT;const g=pasteCanvas.getContext('2d',{willReadFrequently:true});g.drawImage(source,0,0);
+   const image=g.getImageData(0,0,WIDTH,HEIGHT),clip=paste.clip,left=Math.max(0,pastePosition.x),top=Math.max(0,pastePosition.y),right=Math.min(WIDTH,pastePosition.x+clip.width),bottom=Math.min(HEIGHT,pastePosition.y+clip.height);
+   for(let y=top;y<bottom;y++)if(right>left){const from=((y-pastePosition.y)*clip.width+left-pastePosition.x)*4;image.data.set(clip.pixels.subarray(from,from+(right-left)*4),(y*WIDTH+left)*4);}
+   g.putImageData(image,0,0);return pasteCanvas;
+  }
   function drawGrid(){
    source=pixels();if(!source)return;canvas.width=WIDTH*zoom;canvas.height=HEIGHT*zoom;canvas.style.width=canvas.width+'px';canvas.style.height=canvas.height+'px';const g=canvas.getContext('2d');g.imageSmoothingEnabled=false;
-   const tile=Math.max(4,zoom*4);for(let y=0;y<canvas.height;y+=tile)for(let x=0;x<canvas.width;x+=tile){g.fillStyle=((x/tile+y/tile)%2)?'#293246':'#39445b';g.fillRect(x,y,tile,tile);}g.drawImage(source,0,0,canvas.width,canvas.height);
+   const tile=Math.max(4,zoom*4);for(let y=0;y<canvas.height;y+=tile)for(let x=0;x<canvas.width;x+=tile){g.fillStyle=((x/tile+y/tile)%2)?'#293246':'#39445b';g.fillRect(x,y,tile,tile);}g.drawImage(pasteImage(),0,0,canvas.width,canvas.height);
    if(showGrid&&zoom>=3){g.strokeStyle='#d9e5ff24';g.lineWidth=1;g.beginPath();for(let x=0;x<=WIDTH;x++){g.moveTo(x*zoom+.5,0);g.lineTo(x*zoom+.5,canvas.height);}for(let y=0;y<=HEIGHT;y++){g.moveTo(0,y*zoom+.5);g.lineTo(canvas.width,y*zoom+.5);}g.stroke();}
+   const outline=paste&&pastePosition?{x:pastePosition.x,y:pastePosition.y,width:paste.clip.width,height:paste.clip.height}:selection;
+   if(outline){g.save();g.strokeStyle='#121526';g.lineWidth=3;g.strokeRect(outline.x*zoom+.5,outline.y*zoom+.5,outline.width*zoom-1,outline.height*zoom-1);g.strokeStyle=paste?'#ffe17f':'#f0ffff';g.lineWidth=1;g.setLineDash([5,3]);g.strokeRect(outline.x*zoom+.5,outline.y*zoom+.5,outline.width*zoom-1,outline.height*zoom-1);g.restore();}
    g.strokeStyle='#a7ffde';g.lineWidth=1;g.strokeRect(cursor.x*zoom+.5,cursor.y*zoom+.5,Math.max(1,zoom-1),Math.max(1,zoom-1));
+   syncSelectionTools();
   }
   function drawPreview(time){const motion={facing,walking:mode==='walk',phase:time*7,emote:mode==='emote'?(profile().emote||'wave'):null,emoteTime:time};const image=renderer.renderPixelFrame(target,profile(),motion,time,{pixelEdits:data()});if(!image)return;const g=preview.getContext('2d');g.clearRect(0,0,preview.width,preview.height);g.imageSmoothingEnabled=false;g.drawImage(image,0,0,preview.width,preview.height);}
   function tick(time){frame=0;if(destroyed||!host.isConnected||!host.getClientRects().length)return;lastTime=time/1000;drawPreview(animated?lastTime:0);if(animated)frame=win.requestAnimationFrame(tick);}
   function start(){if(frame)win.cancelAnimationFrame(frame);frame=0;drawPreview(animated?lastTime:0);if(animated&&host.isConnected&&host.getClientRects().length)frame=win.requestAnimationFrame(tick);}
   function refresh(){if(destroyed)return;drawGrid();start();}
-  function commit(){const next=working;working=null;stroke=null;if(!next)return;const previous=normalize(api.getData?.()||{})||{};if(JSON.stringify(previous)!==JSON.stringify(next)){try{api.onChange?.(next);status.textContent='Pixel details applied. Undo is available.';}catch{status.textContent='Pixel details could not be saved. Try again.';}}refresh();}
+  function commit(){const next=working;working=null;stroke=null;if(!next){if(!destroyed)refresh();return;}const previous=normalize(api.getData?.()||{})||{};if(!editable()){refresh();status.textContent='Editing is unavailable. Pixel details were kept.';return;}if(JSON.stringify(previous)!==JSON.stringify(next)){try{if(api.onChange?.(next)===false)throw Error('unavailable');status.textContent='Pixel details applied. Undo is available.';}catch{status.textContent='Pixel details could not be saved. Try again.';}}refresh();}
   function locate(event){const box=canvas.getBoundingClientRect();return {x:Math.max(0,Math.min(WIDTH-1,Math.floor((event.clientX-box.left)*canvas.width/box.width/zoom))),y:Math.max(0,Math.min(HEIGHT-1,Math.floor((event.clientY-box.top)*canvas.height/box.height/zoom)))};}
-  function paint(point,last){cursor=point;if(tool==='picker'){const sample=source.getContext('2d').getImageData(point.x,point.y,1,1).data;if(sample[3])setColor('#'+Array.from(sample.slice(0,3),value=>value.toString(16).padStart(2,'0')).join(''));else status.textContent='This pixel is transparent.';return;}
+  function sample(point){cursor=point;if(!source)return;const value=source.getContext('2d').getImageData(point.x,point.y,1,1).data;setColor('#'+Array.from(value,channel=>channel.toString(16).padStart(2,'0')).join(''));drawGrid();}
+  function paint(point,last){cursor=point;if(tool==='picker'){sample(point);return;}if(!editable())return;
    let points=last?linePoints([last.x,last.y],[point.x,point.y]):[[point.x,point.y]];
    if(tool==='fill')points=floodPixels(source.getContext('2d').getImageData(0,0,WIDTH,HEIGHT).data,point.x,point.y);
    working=changePixels(data(),target,facing,points,tool==='erase'?null:tool==='restore'?undefined:color);drawGrid();drawPreview(lastTime);status.textContent='Pixel '+point.x+', '+point.y+' · '+(tool==='erase'?'transparent':tool==='restore'?'original':color);
   }
-  function down(event){if(event.button!==0)return;if(tool==='pan'){if(event.pointerType!=='touch'){event.preventDefault();stroke={id:event.pointerId,pan:true,x:event.clientX,y:event.clientY,left:scroller.scrollLeft,top:scroller.scrollTop};canvas.setPointerCapture?.(event.pointerId);}return;}event.preventDefault();canvas.focus({preventScroll:true});working=copy(normalize(api.getData?.()||{})||{});const point=locate(event);stroke={id:event.pointerId,last:point};canvas.setPointerCapture?.(event.pointerId);paint(point);if(tool==='picker'||tool==='fill')commit();}
-  function move(event){if(!stroke||event.pointerId!==stroke.id)return;event.preventDefault();if(stroke.pan){scroller.scrollLeft=stroke.left+stroke.x-event.clientX;scroller.scrollTop=stroke.top+stroke.y-event.clientY;return;}const point=locate(event);paint(point,stroke.last);stroke.last=point;}
-  function up(event){if(!stroke||event.pointerId!==stroke.id)return;event.preventDefault();commit();}
-  function cancel(event){if(stroke&&event.pointerId===stroke.id){working=null;stroke=null;refresh();status.textContent='Stroke cancelled.';}}
-  function reset(all){const next=copy(data());if(all)delete next[target];else if(next[target])delete next[target][facing];working=normalize(next);commit();}
+  function down(event){if(event.button!==0)return;const point=locate(event);if(event.altKey){event.preventDefault();canvas.focus({preventScroll:true});sample(point);return;}if(paste){event.preventDefault();cursor=point;pastePosition={...point};commitPaste();return;}if(tool==='pan'){if(event.pointerType!=='touch'){event.preventDefault();stroke={id:event.pointerId,pan:true,x:event.clientX,y:event.clientY,left:scroller.scrollLeft,top:scroller.scrollTop};canvas.setPointerCapture?.(event.pointerId);}return;}event.preventDefault();canvas.focus({preventScroll:true});if(tool==='select'){paste=null;pastePosition=null;selection=selectionCore()?.rectangle([point.x,point.y],[point.x,point.y],WIDTH,HEIGHT)||null;stroke={id:event.pointerId,select:true,start:point};cursor=point;canvas.setPointerCapture?.(event.pointerId);drawGrid();return;}if(tool==='picker'){sample(point);return;}if(!editable())return;working=copy(normalize(api.getData?.()||{})||{});stroke={id:event.pointerId,last:point};canvas.setPointerCapture?.(event.pointerId);paint(point);if(tool==='fill')commit();}
+  function move(event){const point=locate(event);if(paste&&!stroke){cursor=point;pastePosition={...point};drawGrid();return;}if(!stroke||event.pointerId!==stroke.id)return;event.preventDefault();if(stroke.pan){scroller.scrollLeft=stroke.left+stroke.x-event.clientX;scroller.scrollTop=stroke.top+stroke.y-event.clientY;return;}if(stroke.select){cursor=point;selection=selectionCore()?.rectangle([stroke.start.x,stroke.start.y],[point.x,point.y],WIDTH,HEIGHT)||null;drawGrid();return;}paint(point,stroke.last);stroke.last=point;}
+  function up(event){if(!stroke||event.pointerId!==stroke.id)return;event.preventDefault();const selected=stroke.select;commit();if(selected&&selection)status.textContent='Selected '+selection.width+' × '+selection.height+' pixels. Choose Copy.';}
+  function cancel(event){if(stroke&&event.pointerId===stroke.id){if(stroke.select)selection=null;working=null;stroke=null;refresh();status.textContent='Stroke cancelled.';}}
+  function reset(all){if(!editable())return;clearTransient();const next=copy(data());if(all)delete next[target];else if(next[target])delete next[target][facing];working=normalize(next);commit();}
   function exportPNG(){const image=pixels();if(!image)return;const link=doc.createElement('a');link.download='coda-'+target+'-'+facing+'.png';link.href=image.toDataURL('image/png');link.click();}
   canvas.addEventListener('pointerdown',down);canvas.addEventListener('pointermove',move);canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',cancel);canvas.addEventListener('lostpointercapture',event=>{if(stroke?.id===event.pointerId)commit();});
-  canvas.addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)){event.preventDefault();event.stopPropagation();cursor={x:Math.max(0,Math.min(WIDTH-1,cursor.x+(event.key==='ArrowRight'?1:event.key==='ArrowLeft'?-1:0))),y:Math.max(0,Math.min(HEIGHT-1,cursor.y+(event.key==='ArrowDown'?1:event.key==='ArrowUp'?-1:0)))};drawGrid();status.textContent='Pixel '+cursor.x+', '+cursor.y;}else if(event.code==='Space'||event.key==='Enter'){event.preventDefault();event.stopPropagation();if(tool==='pan'){status.textContent='Drag to pan the canvas, then choose a painting tool.';return;}working=copy(data());paint(cursor);commit();}});
-  for(const [control,action]of [[targetSelect,()=>{target=targetSelect.value;}],[facingSelect,()=>{facing=facingSelect.value;}],[toolSelect,()=>{tool=toolSelect.value;canvas.style.touchAction=tool==='pan'?'pan-x pan-y':'none';}],[zoomSelect,()=>{zoom=Number(zoomSelect.value);}],[gridToggle,()=>{showGrid=gridToggle.checked;}],[modeSelect,()=>{mode=modeSelect.value;}],[animateToggle,()=>{animated=animateToggle.checked;}]])control.addEventListener('change',()=>{if(stroke)commit();action();refresh();});
-  colorInput.addEventListener('input',()=>setColor(colorInput.value));refresh();
-  function cancelGesture(){if(stroke){working=null;stroke=null;refresh();status.textContent='Stroke cancelled.';}}
+  canvas.addEventListener('keydown',event=>{if(event.ctrlKey||event.metaKey)return;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)){event.preventDefault();event.stopPropagation();const dx=event.key==='ArrowRight'?1:event.key==='ArrowLeft'?-1:0,dy=event.key==='ArrowDown'?1:event.key==='ArrowUp'?-1:0;if(paste&&pastePosition){pastePosition={x:Math.max(1-paste.clip.width,Math.min(WIDTH-1,pastePosition.x+dx)),y:Math.max(1-paste.clip.height,Math.min(HEIGHT-1,pastePosition.y+dy))};}else cursor={x:Math.max(0,Math.min(WIDTH-1,cursor.x+dx)),y:Math.max(0,Math.min(HEIGHT-1,cursor.y+dy))};drawGrid();status.textContent=paste?'Paste preview · Enter places · Escape cancels.':'Pixel '+cursor.x+', '+cursor.y;}else if(event.code==='Space'||event.key==='Enter'){event.preventDefault();event.stopPropagation();if(paste){commitPaste();return;}if(tool==='pan'||tool==='select'){status.textContent=tool==='select'?'Drag to select a rectangle, then choose Copy.':'Drag to pan the canvas, then choose a painting tool.';return;}if(tool==='picker'){sample(cursor);return;}if(!editable())return;working=copy(data());paint(cursor);commit();}});
+  function shortcuts(event){if(typing(event.target))return;const key=event.key.toLowerCase(),command=event.ctrlKey||event.metaKey;if(command&&(key==='c'||key==='v')){event.preventDefault();event.stopPropagation();key==='c'?copySelection():beginPaste();return;}if(!command&&key==='i'){event.preventDefault();event.stopPropagation();chooseTool('picker');return;}if(event.key==='Escape'&&(paste||selection||stroke)){event.preventDefault();event.stopPropagation();working=null;stroke=null;clearTransient();refresh();status.textContent='Selection or paste cancelled.';}}
+  host.addEventListener('keydown',shortcuts);
+  for(const [control,action]of [[targetSelect,()=>{clearTransient();target=targetSelect.value;}],[facingSelect,()=>{clearTransient();facing=facingSelect.value;}],[toolSelect,()=>{chooseTool(toolSelect.value);}],[zoomSelect,()=>{zoom=Number(zoomSelect.value);}],[gridToggle,()=>{showGrid=gridToggle.checked;}],[modeSelect,()=>{mode=modeSelect.value;}],[animateToggle,()=>{animated=animateToggle.checked;}]])control.addEventListener('change',()=>{if(stroke)commit();action();refresh();});
+  colorInput.addEventListener('input',()=>setColor(colorInput.value));hexInput.addEventListener('input',()=>{if(!setColor(hexInput.value))hexInput.setAttribute('aria-invalid','true');});refresh();
+  function cancelGesture(){if(stroke||paste){working=null;stroke=null;paste=null;pastePosition=null;refresh();status.textContent='Stroke or paste cancelled.';}}
   const hidden=()=>{if(doc.hidden)cancelGesture();};win.addEventListener('blur',cancelGesture);doc.addEventListener('visibilitychange',hidden);
-  return {refresh,finishGesture:commit,cancelGesture,getState:()=>({target,facing,tool,color,zoom,mode,animated,grid:showGrid,stroke:!!stroke,edits:copy(data()),cursor:{...cursor}}),dispose(){if(destroyed)return;destroyed=true;win.removeEventListener('blur',cancelGesture);doc.removeEventListener('visibilitychange',hidden);if(frame)win.cancelAnimationFrame(frame);host.replaceChildren();}};
+  return {refresh,finishGesture:commit,cancelGesture,getState:()=>({target,facing,tool,color,zoom,mode,animated,grid:showGrid,stroke:!!stroke,selection:selection?{...selection}:null,pasting:!!paste,pastePosition:pastePosition?{...pastePosition}:null,clipboard:!!selectionCore()?.clipboard.has(),edits:copy(data()),cursor:{...cursor}}),dispose(){if(destroyed)return;destroyed=true;working=null;stroke=null;paste=null;selection=null;host.removeEventListener('keydown',shortcuts);win.removeEventListener('blur',cancelGesture);doc.removeEventListener('visibilitychange',hidden);if(frame)win.cancelAnimationFrame(frame);host.replaceChildren();}};
  }
  return {WIDTH,HEIGHT,ORIGIN,DIRECTIONS,TARGETS,validate,normalize,changePixels,linePoints,floodPixels,mount};
 });
