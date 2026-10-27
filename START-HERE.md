@@ -126,6 +126,12 @@ Open **Settings → Arcade vibe** to choose an earned atmosphere. Level 20 unloc
 The atmosphere also follows you into the Piano Lab, classroom and Fishing Cave.
 Your vibe choice stays on this browser, and each player's level controls which
 choices are available. The existing effects and reduced-motion settings apply.
+Glowsticks have bright white cores, cyan bloom and a pool of light at your feet.
+Spooky temporarily dresses musicians, shopkeepers, the DJ and room teachers in
+different Halloween costumes, with purple mist, cobwebs and glowing pumpkins.
+Switching vibes restores their original outfits. Aurora adds soft, flowing
+curtains and stars; Festival adds stronger colourful ribbons and sparkles.
+Broad effects use a cached smaller canvas while characters stay sharp.
 
 To try unlockables, open **Developer → Test all unlocks** in the arcade, or the
 room's Developer project tools. Test mode opens a temporary Level 50 player with

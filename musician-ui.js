@@ -26,7 +26,8 @@ window.createCodaMusicianUI=function(api){
       if(person.hidden)continue;
       const data=api.getBrain().getConversation(person),card=document.createElement('article');card.className='musician-card';
       const portrait=document.createElement('canvas');portrait.width=100;portrait.height=128;portrait.setAttribute('aria-label',person.name+' portrait');
-      const portraitContext=portrait.getContext('2d');portraitContext.save();portraitContext.translate(50,118);portraitContext.scale(1.35,1.35);api.renderer.drawNPC(portraitContext,{...person,x:0,y:0,facing:'down',walking:false,activity:'idle'},0);portraitContext.restore();
+      const portraitContext=portrait.getContext('2d'),vibe=api.getVibe?.(),appearance=vibe?.getState?.().active==='spooky'?vibe.characterAppearance?.({...api.renderer.appearanceFor?.(person.id),...person.appearance},{id:person.id,role:'npc'})||person.appearance:person.appearance;
+      portraitContext.save();portraitContext.translate(50,118);portraitContext.scale(1.35,1.35);api.renderer.drawNPC(portraitContext,{...person,appearance,x:0,y:0,facing:'down',walking:false,activity:'idle'},0);vibe?.drawCharacterCostume?.(portraitContext,{id:person.id,role:'npc',x:0,y:0,facing:'down',time:0});vibe?.drawCharacterGlow?.(portraitContext,{id:person.id,role:'npc',x:0,y:0,facing:'down',time:0});portraitContext.restore();
       const body=document.createElement('div'),name=document.createElement('strong'),bio=document.createElement('p'),activity=document.createElement('small');
       name.textContent=person.name;bio.textContent=data.description;activity.textContent='Now: '+data.activity;body.append(name,bio,activity);
       const button=document.createElement('button');button.type='button';const near=api.distance(person)<94;button.textContent=near?'Chat':'Find on map';button.setAttribute('aria-label',(near?'Chat with ':'Find ')+person.name);

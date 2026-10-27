@@ -11,11 +11,28 @@
  const DEFINITIONS=Object.freeze([
   {id:'classic',label:'Classic arcade',minLevel:1,description:'The familiar arcade lights.'},
   {id:'glowstick',label:'Glowstick Vibe',minLevel:20,description:'Blue lights and a glowstick for everybody.'},
-  {id:'spooky',label:'Spooky Vibe',minLevel:30,description:'Purple mist and ghostly green lights.'},
+  {id:'spooky',label:'Spooky Vibe',minLevel:30,description:'Halloween costumes, purple mist and ghostly green lights.'},
   {id:'aurora',label:'Aurora Vibe',minLevel:40,description:'Northern lights and little stars.'},
   {id:'festival',label:'Festival Vibe',minLevel:50,description:'Neon ribbons and celebration sparkles.'}
  ].map(item=>Object.freeze(item)));
  const byId=new Map(DEFINITIONS.map(item=>[item.id,item]));
+ // Costumes are display-only overlays. Never write these into an NPC outfit
+ // or the player's wardrobe: changing the vibe restores their original look.
+ const COSTUMES=Object.freeze([
+  {id:'wizard',outfit:'robe',shirt:'#253e9d',lowerColor:'#202754',headwear:'wizard',headwearColor:'#293991',accessory:'wand',shoes:'boots'},
+  {id:'vampire',outfit:'tuxedo',shirt:'#781d45',lowerColor:'#26172e',headwear:'none',accessory:'cape',shoes:'chelsea'},
+  {id:'skeleton',outfit:'pants',shirt:'#121b2a',lowerColor:'#121b2a',headwear:'none',accessory:'none',shoes:'boots'},
+  {id:'witch',outfit:'gown',shirt:'#742e83',lowerColor:'#432151',headwear:'witch',headwearColor:'#41204e',accessory:'wand',shoes:'platforms'},
+  {id:'pumpkin',outfit:'hoodie',shirt:'#f17b25',lowerColor:'#326137',headwear:'beret',headwearColor:'#426d35',accessory:'lantern',shoes:'boots'},
+  {id:'phantom',outfit:'suit',shirt:'#25203b',lowerColor:'#20192e',headwear:'tophat',headwearColor:'#4b235a',accessory:'cape',shoes:'oxfords'},
+  {id:'black-cat',outfit:'dress',shirt:'#222034',lowerColor:'#181b2b',headwear:'cat',headwearColor:'#211d31',accessory:'bow',shoes:'ballet'},
+  {id:'forest-witch',outfit:'robe',shirt:'#235b4e',lowerColor:'#1e3739',headwear:'witch',headwearColor:'#163b34',accessory:'magicorb',shoes:'boots'},
+  {id:'pirate',outfit:'coat',shirt:'#862b40',lowerColor:'#29243d',headwear:'pirate',headwearColor:'#292238',accessory:'sword',shoes:'combat'},
+  {id:'alchemist',outfit:'coat',shirt:'#c1efd2',lowerColor:'#3e4162',headwear:'none',eyewear:'steampunk',accessory:'magicorb',shoes:'boots'},
+  {id:'ghost',outfit:'robe',shirt:'#e2f4ed',lowerColor:'#c5dedb',headwear:'none',accessory:'lantern',shoes:'slippers'},
+  {id:'knight',outfit:'suit',shirt:'#7793b1',lowerColor:'#526b8c',headwear:'viking',headwearColor:'#758ca8',accessory:'shield',shoes:'combat'}
+ ].map(item=>Object.freeze(item)));
+ const CAST_COSTUMES=Object.freeze({bach:0,mozart:1,beethoven:2,clara:3,joplin:4,ellington:5,ella:6,nina:7,miles:8,dj:9,chopin:10,haydn:11,captain:8,'captain-cadence':8});
  const finite=(value,fallback=0)=>Number.isFinite(value)?value:fallback;
  const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
  const hex=value=>typeof value==='string'&&/^#[a-f0-9]{6}$/i.test(value);
@@ -95,56 +112,91 @@
    let source=frame.lights;try{if(!Array.isArray(source))source=api.getLights?.();}catch{source=[];}
    return (Array.isArray(source)?source:[]).slice(0,32).filter(item=>item&&Number.isFinite(item.x)&&Number.isFinite(item.y)&&Math.abs(item.x)<=16384&&Math.abs(item.y)<=16384).map(item=>({x:item.x,y:item.y,radius:clamp(finite(item.radius,100),12,420),color:hex(item.color)?item.color:'#408dff',kind:item.kind}));
   }
-  function drawSpecks(g,width,height,time,count,colors,drift){
+  function drawSpecks(g,width,height,time,count,colors,drift,stars=false){
    for(let i=0;i<count;i++){
-    const x=(seed(i,2)*width+time*(2+seed(i,4)*5)*drift)%width,y=(seed(i,7)*height+Math.sin(time*.32+i*1.7)*6*drift+height)%height,size=i%5===0?3:2;
-    g.fillStyle=colors[i%colors.length];g.globalAlpha=.22+(i%4)*.1;g.fillRect(Math.round(x),Math.round(y),size,size);
+    const x=Math.round((seed(i,2)*width+time*(2+seed(i,4)*5)*drift)%width),y=Math.round((seed(i,7)*height+Math.sin(time*.32+i*1.7)*9*drift+height)%height),size=i%5===0?3:2;
+    g.fillStyle=colors[i%colors.length];g.globalAlpha=.38+(i%4)*.14;g.fillRect(x,y,size,size);
+    if(stars&&i%3===0){g.globalAlpha=.7;g.fillRect(x-2,y+1,7,1);g.fillRect(x+1,y-2,1,7);}
    }
    g.globalAlpha=1;
   }
-  function ribbon(g,width,height,time,index,colors,opacity){
-   const y=height*(.18+index*.14),amplitude=height*.035;
+  function ribbon(g,width,height,time,index,colors,opacity,aurora=false){
+   const y=height*(.12+index*.115),amplitude=height*(aurora?.065:.035),thickness=height*.036;
+   if(aurora){
+    // Reuse one flowing path for layered translucent strokes. Wide, faint
+    // outer strokes and a narrow luminous vein feather the curtain without
+    // per-frame canvas blur or opaque polygon edges.
+    g.beginPath();for(let point=0;point<=18;point++){
+     const x=width*point/18,yy=y+Math.sin(point*.56+time*.13+index)*amplitude;
+     if(point===0)g.moveTo(x,yy);else g.lineTo(x,yy);
+    }
+    g.lineCap='round';g.lineJoin='round';g.strokeStyle=colors[index%colors.length];
+    for(const [size,alpha]of [[.20,.12],[.14,.20],[.09,.34],[.045,.5],[.012,.62]]){g.lineWidth=height*size;g.globalAlpha=opacity*alpha;g.stroke();}
+    g.globalAlpha=1;return;
+   }
    g.beginPath();
    for(let point=0;point<=18;point++){
     const x=width*point/18,yy=y+Math.sin(point*.56+time*.13+index)*amplitude;
     if(point===0)g.moveTo(x,yy);else g.lineTo(x,yy);
    }
-   for(let point=18;point>=0;point--){const x=width*point/18,yy=y+Math.sin(point*.56+time*.13+index)*amplitude+14+Math.sin(point*.31+index)*8;g.lineTo(x,yy);}
+   for(let point=18;point>=0;point--){const x=width*point/18,yy=y+Math.sin(point*.56+time*.13+index)*amplitude+thickness+Math.sin(point*.31+index)*height*.02;g.lineTo(x,yy);}
    g.closePath();g.fillStyle=colors[index%colors.length];g.globalAlpha=opacity;g.fill();g.globalAlpha=1;
   }
   function cobweb(g,x,y,scale){
-   g.save();g.translate(x,y);g.scale(scale,Math.abs(scale));g.strokeStyle='#a3d5d4';g.lineWidth=1;g.globalAlpha=.14;g.beginPath();
-   for(let i=0;i<4;i++){const angle=i*Math.PI/6;g.moveTo(0,0);g.lineTo(Math.cos(angle)*55,Math.sin(angle)*55);}
-   for(const radius of [17,34,52]){g.moveTo(radius,0);for(let i=1;i<=3;i++){const angle=i*Math.PI/6;g.lineTo(Math.cos(angle)*radius,Math.sin(angle)*radius);}}
+   g.save();g.translate(x,y);g.scale(scale,Math.abs(scale));g.strokeStyle='#c8f0df';g.lineWidth=1.5;g.globalAlpha=.4;g.beginPath();
+   for(let i=0;i<4;i++){const angle=i*Math.PI/6;g.moveTo(0,0);g.lineTo(Math.cos(angle)*72,Math.sin(angle)*72);}
+   for(const radius of [22,44,68]){g.moveTo(radius,0);for(let i=1;i<=3;i++){const angle=i*Math.PI/6;g.lineTo(Math.cos(angle)*radius,Math.sin(angle)*radius);}}
    g.stroke();g.restore();
   }
-  // Call after the scene's fixtures, before actors. Existing camera transforms
-  // are retained: dimensions and light anchors use native world coordinates.
+  function drawPumpkin(g,x,y,scale){
+   const r=(xx,yy,w,h,color)=>{g.fillStyle=color;g.fillRect(Math.round(x+xx*scale),Math.round(y+yy*scale),Math.ceil(w*scale),Math.ceil(h*scale));};
+   r(-10,-6,20,12,'#f07c21');r(-8,-8,16,16,'#fba22c');r(-4,-8,2,16,'#d96820');r(3,-8,2,16,'#de7722');r(-2,-12,4,5,'#3d9854');
+   r(-6,-3,4,3,'#3f2454');r(3,-3,4,3,'#3f2454');r(-4,3,9,2,'#3f2454');r(-5,-3,2,1,'#ffef7a');r(4,-3,2,1,'#ffef7a');
+  }
+  // A split pass lets a depth-sorted world grade its floor before actors, then
+  // add luminous atmosphere after furniture. Rooms can use the default all pass.
   function drawAtmosphere(g,frame={}){
    if(destroyed||!g?.save)return false;refresh();if(active==='classic')return false;
    const width=clamp(finite(frame.width,1672),1,8192),height=clamp(finite(frame.height,941),1,8192),q=quality(),quiet=reduced()||q==='off';
-   const time=quiet?0:Math.max(0,finite(frame.time,finite(api.getTime?.()))),count=q==='full'?24:q==='lite'?10:0;
+   const time=quiet?0:Math.max(0,finite(frame.time,finite(api.getTime?.()))),count=q==='full'?48:q==='lite'?20:0,phase=['grade','effects'].includes(frame.phase)?frame.phase:'all';
    g.save();try{
     g.globalCompositeOperation='source-over';g.globalAlpha=1;g.shadowBlur=0;
-    const fill=active==='glowstick'?'rgba(1,5,21,.72)':active==='spooky'?'rgba(13,3,29,.61)':active==='aurora'?'rgba(2,17,32,.34)':'rgba(16,4,32,.22)';g.fillStyle=fill;g.fillRect(0,0,width,height);
-    const lights=anchors(frame,width,height),limit=q==='full'?24:q==='lite'?12:4;
+    if(phase!=='effects'){
+     const fill=active==='glowstick'?'rgba(0,3,31,.82)':active==='spooky'?'rgba(37,0,52,.76)':active==='aurora'?'rgba(0,36,54,.57)':'rgba(45,2,62,.48)';
+     g.fillStyle=fill;g.fillRect(0,0,width,height);
+    }
+    if(phase==='grade')return true;
+    // A screen-blended colour wash also tints foreground fixtures without
+    // covering the white glowstick cores with a dark overlay.
+    g.globalCompositeOperation='screen';g.fillStyle=active==='glowstick'?'rgba(11,45,148,.24)':active==='spooky'?'rgba(100,10,147,.28)':active==='aurora'?'rgba(10,109,116,.23)':'rgba(153,29,116,.23)';g.fillRect(0,0,width,height);
+    if(q==='off')return true;
+    const lights=anchors(frame,width,height),limit=q==='full'?24:12;
     for(const anchor of lights.slice(0,limit)){
-     const color=active==='glowstick'?(anchor.kind==='neon'?anchor.color:'#2b7cff'):active==='spooky'?'#56bda0':anchor.color;
-     light(g,anchor.x,anchor.y,anchor.radius,color,q==='off'?.34:.7);
+     const color=active==='glowstick'?(anchor.kind==='neon'?anchor.color:'#226dff'):active==='spooky'?'#66e7ab':anchor.color;
+     light(g,anchor.x,anchor.y,anchor.radius*1.15,color,.94);
     }
     if(active==='glowstick'){
-     light(g,width*.55,height*.44,Math.min(width,height)*.6,'#164cce',.34);
-     if(count)drawSpecks(g,width,height,time,Math.ceil(count*.5),['#61f3ff','#c7ff5c'],quiet?0:1);
+     light(g,width*.55,height*.44,Math.min(width,height)*.72,'#175cff',.65);
+     drawSpecks(g,width,height,time,Math.ceil(count*.65),['#61f3ff','#c7ff5c','#c7fffa'],quiet?0:1,true);
     }else if(active==='spooky'){
-     if(q!=='off')for(let i=0;i<(q==='full'?5:3);i++){const x=width*(.08+i*.22)+Math.sin(time*.09+i)*width*.04;light(g,x,height*(.43+(i%2)*.28),Math.min(260,width*.18),'#7b45a3',.22);}
-     cobweb(g,34,36,1);cobweb(g,width-30,36,-1);
-     if(count)drawSpecks(g,width,height,time,Math.ceil(count*.6),['#a5e8cb','#b4a1d8'],quiet?0:.3);
+     for(let i=0;i<(q==='full'?7:3);i++){const x=width*(.04+i*.16)+Math.sin(time*.09+i)*width*.055;light(g,x,height*(.34+(i%3)*.21),Math.min(340,width*.25),i%2?'#743fbe':'#36bf93',.43);}
+     cobweb(g,30,30,1.25);cobweb(g,width-30,30,-1.25);
+     const pumpkins=q==='full'?5:2;
+     for(let i=0;i<pumpkins;i++){const x=width*(.13+i*.185),y=height*(.82+(i%2)*.06);light(g,x,y,34,'#ff9a31',.72);g.globalCompositeOperation='source-over';drawPumpkin(g,x,y,1.1);g.globalCompositeOperation='screen';}
+     drawSpecks(g,width,height,time,Math.ceil(count*.6),['#b4ffdf','#c8a8ff','#ffc580'],quiet?0:.45);
     }else if(active==='aurora'){
-     if(q!=='off')for(let i=0;i<(q==='full'?4:2);i++)ribbon(g,width,height,time,i,['#30dfc8','#5aa2ff','#9983ef','#b3f3d4'],.10);
-     if(count)drawSpecks(g,width,height,time,count,['#cafff4','#d7e3ff','#9eeed8'],quiet?0:.22);
+     const colors=['#38efbb','#48c5ff','#7d84ff','#a172f1','#5ff0d4','#78cdfd'];
+     light(g,width*.25,height*.32,width*.44,'#1fd6ad',.4);light(g,width*.75,height*.36,width*.4,'#8463f2',.4);
+     for(let i=0;i<(q==='full'?6:3);i++)ribbon(g,width,height,time,i,colors,q==='full'?.27:.24,true);
+     // Short vertical light streaks make the broad curtains read as northern
+     // lights rather than simple stripes. A fixed count bounds draw work.
+     for(let i=0;i<(q==='full'?18:8);i++){const x=width*(i+.5)/(q==='full'?18:8),y=height*(.13+seed(i,12)*.33)+Math.sin(time*.11+i)*height*.025;light(g,x,y,height*.13,colors[i%colors.length],.25);}
+     drawSpecks(g,width,height,time,count,['#cafff4','#e5ebff','#a8fce0'],quiet?0:.28,true);
     }else if(active==='festival'){
-     if(q!=='off')for(let i=0;i<(q==='full'?4:2);i++)ribbon(g,width,height,time,i,['#f777d7','#61d8ff','#f8d875','#90eac2'],.09);
-     if(count)drawSpecks(g,width,height,time,count,['#ff97dc','#76e4ff','#ffe59a','#a2f6c6'],quiet?0:1);
+     const colors=['#f777d7','#61d8ff','#f8d875','#90eac2'];
+     for(let i=0;i<(q==='full'?6:3);i++)ribbon(g,width,height,time,i,colors,.25);
+     light(g,width*.22,height*.42,width*.34,'#fd5bbf',.36);light(g,width*.78,height*.46,width*.34,'#4abaff',.36);
+     drawSpecks(g,width,height,time,count,colors,quiet?0:1.3,true);
     }
    }finally{g.restore();}
    return true;
@@ -153,11 +205,48 @@
    if(destroyed||active!=='glowstick'||!g?.save||!Number.isFinite(actor.x)||!Number.isFinite(actor.y))return false;
    if(playerLevel()<byId.get('glowstick').minLevel){refresh();return false;}
    const scale=clamp(finite(actor.scale,1),.2,4),q=quality(),time=reduced()||q==='off'?0:finite(actor.time,finite(api.getTime?.())),side=actor.facing==='left'?-1:1;
-   const x=actor.x+side*12*scale,y=actor.y-23*scale,lean=Math.sin(time*.8+actor.x*.01)*1.2*scale;
+   const x=actor.x+side*12*scale,y=actor.y-23*scale,lean=Math.sin(time*.8+actor.x*.01)*1.5*scale;
    g.save();try{
-    g.shadowBlur=0;g.globalCompositeOperation='source-over';if(q!=='off')light(g,x,y,17*scale,'#60ffe3',.7);
-    g.lineCap='round';g.strokeStyle='#164d61';g.lineWidth=5*scale;g.beginPath();g.moveTo(x,y+4*scale);g.lineTo(x+lean,y-7*scale);g.stroke();
-    g.strokeStyle='#64ffe2';g.lineWidth=3*scale;g.stroke();g.strokeStyle='#edfff1';g.lineWidth=scale;g.stroke();
+    g.shadowBlur=0;g.globalCompositeOperation='source-over';
+    if(q!=='off'){
+     light(g,x,y,45*scale,'#1bdfff',.9);light(g,x,y,22*scale,'#45ffcf',1);
+     if(q==='full')light(g,actor.x+side*8*scale,actor.y+2*scale,32*scale,'#21e8d0',.66);
+    }
+    g.lineCap='round';g.strokeStyle='#10b7d5';g.lineWidth=7*scale;g.beginPath();g.moveTo(x,y+5*scale);g.lineTo(x+lean,y-11*scale);g.stroke();
+    g.strokeStyle='#5dffe0';g.lineWidth=4*scale;g.stroke();g.strokeStyle='#f1fff8';g.lineWidth=1.8*scale;g.stroke();
+   }finally{g.restore();}
+   return true;
+  }
+  function costumeFor(actor={}){
+   const id=typeof actor.id==='string'?actor.id.toLowerCase():'';
+   if(destroyed||active!=='spooky'||actor.role!=='npc'||!id)return null;
+   if(playerLevel()<30){refresh();return null;}
+   const known=CAST_COSTUMES[id];let index=known;
+   if(index===undefined){let hash=0;for(let i=0;i<Math.min(id.length,160);i++)hash=(Math.imul(hash,31)+id.charCodeAt(i))>>>0;index=hash%COSTUMES.length;}
+   return COSTUMES[index];
+  }
+  function characterAppearance(appearance={},actor={}){
+   const costume=costumeFor(actor);if(!costume)return appearance;
+   const {id,...look}=costume;return {...appearance,...look};
+  }
+  function drawCharacterCostume(g,actor={}){
+   const costume=costumeFor(actor);if(!costume||!g?.save||!Number.isFinite(actor.x)||!Number.isFinite(actor.y))return false;
+   const scale=clamp(finite(actor.scale,1),.2,4),side=actor.facing==='left'||actor.facing==='right',back=actor.facing==='up';
+   const r=(x,y,w,h,color)=>{g.fillStyle=color;g.fillRect(Math.round(actor.x+x*scale),Math.round(actor.y+y*scale),Math.ceil(w*scale),Math.ceil(h*scale));};
+   g.save();try{
+    g.globalCompositeOperation='source-over';g.shadowBlur=0;
+    if(costume.id==='skeleton'){
+     r(side?2:-1,-23,2,17,'#dffbea');for(const yy of [-21,-17,-13]){r(side?-3:-7,yy,side?7:14,2,'#dffbea');}
+     for(const xx of [-5,4])r(xx,-7,2,9,'#c7ecdf');
+    }else if(costume.id==='pumpkin'){
+     r(-7,-20,4,3,'#44304b');r(3,-20,4,3,'#44304b');r(-5,-13,11,2,'#44304b');r(-3,-12,7,2,'#fff08c');r(-1,-24,3,3,'#599941');
+    }else if(costume.id==='ghost'){
+     r(-11,-11,23,6,'#d9f8ed');for(const xx of [-9,-3,3,9])r(xx,-6,3,3,'#d9f8ed');if(!back){r(side?2:-5,-21,2,3,'#425b67');r(side?6:4,-21,2,3,'#425b67');r(side?4:0,-16,2,2,'#425b67');}
+    }else if(costume.id==='vampire'||costume.id==='phantom'){
+     if(!back){r(side?1:-4,-24,side?4:8,3,'#e8f7dc');r(side?4:-2,-20,3,4,'#c84268');}
+    }else if(costume.id==='black-cat'){
+     if(!back){r(side?5:-7,-27,5,1,'#dbcaf3');r(side?6:4,-25,4,1,'#dbcaf3');}
+    }
    }finally{g.restore();}
    return true;
   }
@@ -166,7 +255,7 @@
    if(body?.dataset?.arcadeVibe===lastApplied){if(originalBodyVibe===undefined)delete body.dataset.arcadeVibe;else body.dataset.arcadeVibe=originalBodyVibe;}
   }
   refresh();
-  return {setVibe,getState:()=>refresh(),refresh,drawAtmosphere,drawCharacterGlow,mountControls,destroy};
+  return {setVibe,getState:()=>refresh(),refresh,drawAtmosphere,drawCharacterGlow,characterAppearance,drawCharacterCostume,mountControls,destroy};
  }
  return Object.freeze({KEY,DEFINITIONS,create});
 });

@@ -440,12 +440,13 @@
       if(backgroundImage?.complete&&backgroundImage.naturalWidth){g.drawImage(artworkBackground()||backgroundImage,0,0,1000,600);}else g.drawImage(artworkBackground()||background,0,0);
       vibe?.drawAtmosphere?.(g,{width:1000,height:600,time:clock,lights:[]});
       if(backgroundImage?.complete&&backgroundImage.naturalWidth){text('MUSIC CLASSROOM',500,148,18,'#b9f7f1');text('Professor Haydn’s study shelves',500,178,12,'#d9d3fa');text('ASK · LISTEN · LEARN',500,208,11,'#e5d7ac');}
-      if(renderer){renderer.drawNPC(g,HAYDN,clock);vibe?.drawCharacterGlow?.(g,{x:HAYDN.x,y:HAYDN.y,facing:HAYDN.facing||'down',time:clock,scale:1});
+      const haydnLook=vibe?.characterAppearance?.(HAYDN.appearance,{id:HAYDN.id,role:'npc'})||HAYDN.appearance;
+      if(renderer){renderer.drawNPC(g,{...HAYDN,appearance:haydnLook},clock);vibe?.drawCharacterCostume?.(g,{id:HAYDN.id,role:'npc',x:HAYDN.x,y:HAYDN.y,scale:1,facing:HAYDN.facing||'down',time:clock});vibe?.drawCharacterGlow?.(g,{x:HAYDN.x,y:HAYDN.y,facing:HAYDN.facing||'down',time:clock,scale:1});
         // The professor stands behind the desk; its front masks his lower legs.
         const art=artworkBackground()||background,aw=art.naturalWidth||art.width,ah=art.naturalHeight||art.height;g.drawImage(art,405*aw/1000,295*ah/600,181*aw/1000,69*ah/600,405,295,181,69);
         if(vibe){g.save();g.beginPath();g.rect(405,295,181,69);g.clip();vibe.drawAtmosphere?.(g,{width:1000,height:600,time:clock,lights:[]});g.restore();}
         companion?.draw(g,clock);renderer.drawPlayer(g,api.getAvatar?.()||{},{x:player.x,y:player.y,facing:player.facing,walking,phase:player.phase},clock);vibe?.drawCharacterGlow?.(g,{x:player.x,y:player.y,facing:player.facing,time:clock,scale:1});}else{rect(player.x-10,player.y-30,20,28,'#a8c7bc');rect(HAYDN.x-10,HAYDN.y-30,20,28,'#85a89a');}
-      text('PROFESSOR HAYDN',HAYDN.x,HAYDN.y-69,11,'#e7efbb');
+      text('PROFESSOR HAYDN',HAYDN.x,HAYDN.y-Math.max(69,renderer?.labelOffset?.(haydnLook,HAYDN.id)||0),11,'#e7efbb');
       if(near){const label=near.type==='professor'?'E · TALK TO HAYDN':'E · READ BOOKS';rect(near.x-85,near.y-17,170,24,'#182336');text(label,near.x,near.y,11,'#e8f5c5');}
       if(cameraActive)roomCamera.end(g);
     }

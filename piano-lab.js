@@ -3,6 +3,7 @@
  'use strict';
  const NOTE_NAMES=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
  const SHORTCUTS=['a','w','s','e','d','f','t','g','y','h','u','j','k'];
+ const CHOPIN_APPEARANCE=Object.freeze({name:'Chopin',skin:'#e6b99d',hair:'#493239',shirt:'#282b42',lowerColor:'#3d3a4a',hairstyle:'long',outfit:'coat',shoes:'oxfords',accessory:'bowtie'});
  const melodyLibrary=typeof module==='object'&&module.exports?require('./piano-melodies.js'):root.CodaPianoMelodies;
  const LESSONS=melodyLibrary?.LESSONS||Object.freeze([]);
  function fitMelodyRegister(source){
@@ -291,11 +292,13 @@
     WHITE_OFFSETS.forEach((offset,index)=>floorKey(offset,ROOM.keyX+index*keyWidth,keyWidth,false));BLACK_KEYS.forEach(([offset,index])=>floorKey(offset,ROOM.keyX+(index-.31)*keyWidth,keyWidth*.62,true));
    }
    roomEditor?.afterBackground(g,roomPlayer.y);
+   const chopinLook=vibe?.characterAppearance?.(CHOPIN_APPEARANCE,{id:'chopin',role:'npc'})||CHOPIN_APPEARANCE;
    const actors=[...(roomChopin.visible?[{x:roomChopin.x,y:roomChopin.y,id:'chopin'}]:[]),{x:roomPlayer.x,y:roomPlayer.y,id:'player'}].sort((a,b)=>a.y-b.y);
    companion?.draw(g,roomClock);
-   for(const actor of actors){g.save();g.translate(actor.x,actor.y);g.scale(1.5,1.5);if(renderer){if(actor.id==='player')renderer.drawPlayer(g,api.getAvatar?.()||{},{x:0,y:0,facing:roomPlayer.facing,walking:roomKeys.size>0||!!roomDest||roomFinger?.getState().following===true||!!(joystick.x||joystick.y),phase:roomPlayer.phase,jumpHeight:roomPlayer.jump/1.5},roomClock);else renderer.drawPlayer(g,{name:'Chopin',skin:'#e6b99d',hair:'#493239',shirt:'#282b42',lowerColor:'#3d3a4a',hairstyle:'long',outfit:'coat',shoes:'oxfords',accessory:'bowtie'},{x:0,y:0,facing:'down',pixelTarget:'chopin',emote:reactionState().active?chopinReaction.emote:'',emoteTime:roomClock-chopinReaction.started},roomClock);}else{rect(-8,-45,16,15,actor.id==='player'?'#c38d6c':'#e6b99d');rect(-10,-28,20,20,actor.id==='player'?'#92959c':'#282b42');rect(-9,-8,7,8,'#404257');rect(2,-8,7,8,'#404257');}vibe?.drawCharacterGlow?.(g,{x:0,y:actor.id==='player'?-roomPlayer.jump/1.5:0,facing:actor.id==='player'?roomPlayer.facing:'down',time:roomClock,scale:1});g.restore();}
-   if(backdropReady&&roomChopin.visible){g.font='bold 12px monospace';g.textAlign='center';g.lineWidth=3;g.strokeStyle='#10142c';g.strokeText('CHOPIN',roomChopin.x,roomChopin.y-78);g.fillStyle='#e8d7f5';g.fillText('CHOPIN',roomChopin.x,roomChopin.y-78);}
-   if(roomChopin.visible&&reactionState().active){const x=clamp(roomChopin.x,120,880),y=roomChopin.y-116;rect(x-112,y,224,27,'#172538');text(chopinReaction.text,x,y+18,12,'#fff3ba');}
+   for(const actor of actors){g.save();g.translate(actor.x,actor.y);g.scale(1.5,1.5);if(renderer){if(actor.id==='player')renderer.drawPlayer(g,api.getAvatar?.()||{},{x:0,y:0,facing:roomPlayer.facing,walking:roomKeys.size>0||!!roomDest||roomFinger?.getState().following===true||!!(joystick.x||joystick.y),phase:roomPlayer.phase,jumpHeight:roomPlayer.jump/1.5},roomClock);else renderer.drawPlayer(g,chopinLook,{x:0,y:0,facing:'down',pixelTarget:'chopin',emote:reactionState().active?chopinReaction.emote:'',emoteTime:roomClock-chopinReaction.started},roomClock);}else{rect(-8,-45,16,15,actor.id==='player'?'#c38d6c':'#e6b99d');rect(-10,-28,20,20,actor.id==='player'?'#92959c':'#282b42');rect(-9,-8,7,8,'#404257');rect(2,-8,7,8,'#404257');}if(actor.id==='chopin')vibe?.drawCharacterCostume?.(g,{id:'chopin',role:'npc',x:0,y:0,scale:1,facing:'down',time:roomClock});vibe?.drawCharacterGlow?.(g,{x:0,y:actor.id==='player'?-roomPlayer.jump/1.5:0,facing:actor.id==='player'?roomPlayer.facing:'down',time:roomClock,scale:1});g.restore();}
+   const chopinLabelOffset=Math.max(78,(renderer?.labelOffset?.(chopinLook,'chopin')||52)*1.5);
+   if(backdropReady&&roomChopin.visible){g.font='bold 12px monospace';g.textAlign='center';g.lineWidth=3;g.strokeStyle='#10142c';g.strokeText('CHOPIN',roomChopin.x,roomChopin.y-chopinLabelOffset);g.fillStyle='#e8d7f5';g.fillText('CHOPIN',roomChopin.x,roomChopin.y-chopinLabelOffset);}
+   if(roomChopin.visible&&reactionState().active){const x=clamp(roomChopin.x,120,880),y=roomChopin.y-Math.max(116,chopinLabelOffset+36);rect(x-112,y,224,27,'#172538');text(chopinReaction.text,x,y+18,12,'#fff3ba');}
    if(nearChopin()){rect(roomChopin.x-109,roomChopin.y+13,220,29,'#172538');text('E · TALK TO CHOPIN',roomChopin.x+1,roomChopin.y+33,13,'#b7f6e4');}
    if(challengeMode!=='free'&&floorNote!==null){rect(roomPlayer.x-70,roomPlayer.y+12,140,27,'#172538');text('E · PLAY '+displayNote(floorNote),roomPlayer.x,roomPlayer.y+31,13,'#ffddb0');}
    if(!backdropReady){rect(26,610,948,4,'#8b5c9a');rect(30,615,940,3,'#332a4b');}
