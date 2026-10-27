@@ -99,3 +99,23 @@
 .classroom-tutorial .lesson-key-answers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:min(100%,680px)}
 .classroom-tutorial .lesson-key-answers button{font-size:21px;min-width:0;min-height:60px;overflow-wrap:anywhere}
 @media(max-width:600px){.classroom-tutorial .lesson-key-answers{grid-template-columns:1fr}.classroom-tutorial .lesson-key-sounds{flex-direction:column}.classroom-tutorial .lesson-key-sounds button{width:100%}.classroom-tutorial .lesson-key-note-row{gap:5px}.classroom-tutorial .lesson-key-note{font-size:21px;padding:5px 8px}.classroom-tutorial .lesson-key-caption{font-size:19px}}
+.classroom-tutorial .lesson-expression-picture{display:flex;flex-direction:column;gap:14px;align-items:center;text-align:center;width:min(100%,660px);margin:0}
+.classroom-tutorial .lesson-expression-symbols{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:12px;width:100%;min-height:66px;color:#ffe6a8}
+.classroom-tutorial .lesson-dynamic-symbol{font:normal 54px/1.25 CodaBravura;display:inline-flex;align-items:center;justify-content:center;min-width:48px;min-height:66px;padding:0 8px;background:#283e59;border-radius:10px}
+.classroom-tutorial .lesson-tempo-word{font:750 clamp(20px,3.5vw,27px)/1.3 system-ui;overflow-wrap:anywhere;max-width:100%;padding:8px 12px;background:#283e59;border-radius:10px}
+.classroom-tutorial .lesson-hairpin{width:min(100%,330px)}
+.classroom-tutorial .lesson-hairpin svg{display:block;width:100%;height:auto}
+.classroom-tutorial .lesson-expression-caption{font-size:21px;line-height:1.4;max-width:36ch;color:#d9f2ed}
+.classroom-tutorial .lesson-expression-sounds button{font-size:20px;min-width:44px;max-width:100%}
+.classroom-tutorial .lesson-expression-pulse{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:2px solid #819caf;border-radius:50%;color:#c7d8df;font:700 22px/1 system-ui}
+.classroom-tutorial .lesson-expression-pulse.is-playing{background:#327861;border-color:#fff0ad;color:#fff}
+.classroom-tutorial .lesson-expression-answers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:min(100%,680px)}
+.classroom-tutorial .lesson-expression-answers button{font-size:21px;min-width:0;min-height:60px;overflow-wrap:anywhere}
+@media(max-width:600px){.classroom-tutorial .lesson-expression-answers{grid-template-columns:1fr}.classroom-tutorial .lesson-expression-sounds{flex-direction:column}.classroom-tutorial .lesson-expression-sounds button{width:100%}.classroom-tutorial .lesson-expression-symbols{gap:6px}.classroom-tutorial .lesson-dynamic-symbol{font-size:46px;min-width:40px;padding:0 5px}.classroom-tutorial .lesson-expression-caption{font-size:20px}}
+@media(orientation:landscape) and (max-height:500px){
+ .classroom-tutorial .lesson-content[data-kind=expression]{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 24px}
+ .classroom-tutorial .lesson-content[data-kind=expression]>.lesson-expression-picture{grid-column:2;grid-row:1/span 3;align-self:center}
+ .classroom-tutorial .lesson-content[data-kind=expression]>.lesson-expression-answers{grid-template-columns:1fr}
+ .classroom-tutorial .lesson-content[data-kind=expression]>.lesson-expression-pulse{grid-column:2;grid-row:4;justify-self:center}
+ .classroom-tutorial .lesson-expression-sounds button{font-size:19px;padding:8px 12px}
+}

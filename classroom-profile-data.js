@@ -3,11 +3,13 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaClassroomProfileData=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
  const MAX_BYTES=8*1024*1024,MAX_TIME=253402300799999;
- const KEYS=Object.freeze({avatar:'musicArcadeV1',progression:'codaPlayerProgressV1',wallet:'codaNotesWalletV1',missions:'codaMusicianMissionsV1',fishing:'codaRhythmFishingV1',piano:'codaPianoProgressV1',lessons:'codaClassroomLessonsV1',quizzes:'codaClassroomQuizzesV1',pitch:'pitchRaceLevelProgressV1',pitchTutorials:'pitchRaceTutorialsV1'});
+ const KEYS=Object.freeze({avatar:'musicArcadeV1',progression:'codaPlayerProgressV1',wallet:'codaNotesWalletV1',missions:'codaMusicianMissionsV1',fishing:'codaRhythmFishingV1',piano:'codaPianoProgressV1',lessons:'codaClassroomLessonsV1',quizzes:'codaClassroomQuizzesV1',pitch:'pitchRaceLevelProgressV1',pitchTutorials:'pitchRaceTutorialsV1',finalExam:'codaHaydnFinalExamV1'});
  // Compositions and named/local educational records stay local. They must be
  // cleared between students and restored exactly with the guest's local work.
- const LOCAL_ONLY_KEYS=Object.freeze(['codaPianoTakeV1','codaDJLibraryV1','codaHallOfFameV1','rhythm-room-practice-v1']);
+ const LOCAL_ONLY_KEYS=Object.freeze(['codaPianoTakeV1','codaDJLibraryV1','codaHallOfFameV1','rhythm-room-practice-v1','codaSongMachineDraftV1']);
  const SCOPED_KEYS=Object.freeze([...Object.values(KEYS),...LOCAL_ONLY_KEYS]);
+ // Pre-exam backups remain restorable after adding these two scoped slots.
+ const OPTIONAL_BACKUP_KEYS=new Set([KEYS.finalExam,'codaSongMachineDraftV1']);
  const split=value=>value.split(' ');
  const CATALOG={
   hairstyle:split('short bob long curly ponytail spiky bald buns pixie undercut braids locs afro slick pompadour mohawk powderwig'),
@@ -25,8 +27,11 @@
  const DEFAULT_AVATAR={version:1,skin:'#e5ad75',hair:'#171424',shirt:'#999ca6',lowerColor:'#626875',headwearColor:'#db687f',eyewearColor:'#30374b',hairstyle:'bald',outfit:'pants',headwear:'none',eyewear:'none',accessory:'none',shoes:'sneakers',emote:'wave',form:'human',pet:'none',customized:false,walked:0,jumps:0,emotesUsed:0};
  const STAT_NAMES=split('totalRounds pitchRounds pitchCorrect pitchStreak pitchWins pitchImproved pitchPerfect pitchBestClassic pitchBestEndless pitchBestLevels pitchBestMulti triadRounds triadCaptures triadWins triadComebacks rhythmRounds rhythmBest rhythm90 rhythmPerfect');
  const LEGACY_LESSONS=['note-naming','rhythm-tree','time-signatures','bass-clef','grand-staff'];
- const LESSON_TOTALS={'note-naming':10,'rhythm-tree':4,'time-signatures':8,'bass-clef':9,'grand-staff':8,'major-minor-keys':8};
- const QUIZ_CORRECT={'note-naming':[0,1,2,0,1],'rhythm-tree':[1,0,2,1,0],'time-signatures':[2,1,0,2,1],'bass-clef':[0,1,2,0,1],'grand-staff':[0,1,2,0,2],'major-minor-keys':[0,1,2,0,1]};
+ const LESSON_TOTALS={'note-naming':10,'rhythm-tree':4,'time-signatures':8,'bass-clef':9,'grand-staff':8,'major-minor-keys':8,dynamics:8,tempo:8};
+ const QUIZ_CORRECT={'note-naming':[0,1,2,0,1],'rhythm-tree':[1,0,2,1,0],'time-signatures':[2,1,0,2,1],'bass-clef':[0,1,2,0,1],'grand-staff':[0,1,2,0,2],'major-minor-keys':[0,1,2,0,1],dynamics:[0,1,2,0,1],tempo:[1,0,2,1,0]};
+ const EXAM_CATEGORIES=Object.freeze(['note-naming','bass-clef','grand-staff','rhythm-tree','time-signatures','major-minor-keys','dynamics','tempo']);
+ const EXAM_IDS=EXAM_CATEGORIES.flatMap(category=>Array.from({length:100},(_,index)=>category+'-'+String(index+1).padStart(3,'0')));
+ const EXAM_SIZES=[24,40,80];
  const MELODIES=split('twinkle mary london-bridge hot-cross-buns row-your-boat frere-jacques ode-to-joy jingle-bells old-macdonald');
  const SCALES=split('c-major d-flat-major d-major e-flat-major e-major f-major f-sharp-major g-major a-flat-major a-major b-flat-major b-major c-minor c-sharp-minor d-minor e-flat-minor e-minor f-minor f-sharp-minor g-minor g-sharp-minor a-minor b-flat-minor b-minor');
  const INTERVALS=[1,2,3,4,5,7,12].flatMap(n=>['up-'+n,'down-'+n]);
@@ -68,6 +73,7 @@
  const catchSchema=object({id:id(92),fishId:enumOf(Object.keys(FISH)),size:number(.1,10000),at:timestamp,meter:enumOf(['4/4','6/8','2/2']),perfect:boolean,caught:enumOf([true]),rewarded:boolean,result:resultSchema});
  const lessonSchema=object(Object.fromEntries(Object.entries(LESSON_TOTALS).map(([key,total])=>[key,object({step:integer(0,total),completed:boolean,completedAt:timestamp})])),LEGACY_LESSONS);
  const quizSchema=object(Object.fromEntries(Object.keys(LESSON_TOTALS).map(key=>[key,object({bankVersion:version,index:integer(0,5),answers:array(integer(0,2),5),bestAnswers:array(integer(0,2),5),completedAt:timestamp})])),LEGACY_LESSONS);
+ const finalExamSchema=object({version,bankVersion:version,size:enumOf(EXAM_SIZES),questionIds:array(enumOf(EXAM_IDS),80,true),orders:array(integer(0,5),80),answers:array(integer(-1,2),80),index:integer(0,80),submitted:boolean,attempts:integer(0,100000),bestPercent:integer(0,100),bestScore:integer(0,80),bestTotal:enumOf([0,...EXAM_SIZES]),bestByCategory:object(Object.fromEntries(EXAM_CATEGORIES.map(key=>[key,object({correct:integer(0,10),total:integer(0,10)})]))),completedAt:timestamp});
  const SCHEMA=object({
   avatar:avatarSchema,
   progression:object({version,xp:integer(0,20000000),events:array(object({id:id(),xp:integer(1,1000)}),20000),bestPitchLevel:integer(0,1000)}),
@@ -76,8 +82,8 @@
   fishing:object({version,catches:array(catchSchema,5000)}),
   piano:object({version,learned:array(enumOf(MELODIES),9,true),completed:array(enumOf(PIANO_REWARDS),PIANO_REWARDS.length,true)}),
   lessons:object({version,lessons:lessonSchema}),quizzes:object({version,quizzes:quizSchema}),
-  pitch:object({version,bestCompleted:integer(0,999)}),pitchTutorials:object({version,completed:array(enumOf(['treble','bass','grand']),3,true)})
- });
+  pitch:object({version,bestCompleted:integer(0,999)}),pitchTutorials:object({version,completed:array(enumOf(['treble','bass','grand']),3,true)}),finalExam:finalExamSchema
+ },Object.keys(KEYS).filter(key=>key!=='finalExam'));
  function freeze(value){if(value&&typeof value==='object'){for(const item of Object.values(value))freeze(item);Object.freeze(value);}return value;}
  freeze(SCHEMA);freeze(CATALOG);
  const own=(value,key)=>!!value&&Object.prototype.hasOwnProperty.call(value,key);
@@ -90,10 +96,30 @@
  function fail(message){throw Error('Classroom progress is invalid: '+message);}
  function bounded(value,max,label){if(value===undefined||value===null)return [];if(!Array.isArray(value))fail(label+' must be a list.');if(value.length>max)fail(label+' exceeds its safe limit; no entries were discarded.');return value;}
  function ids(value,max,length=512,allowed=null,label='Saved IDs'){const result=[],seen=new Set();for(const item of bounded(value,max,label)){if(!safeId(item,length)||allowed&&!allowed.includes(item)||seen.has(item))continue;seen.add(item);result.push(item);}return result;}
- function blank(){return {avatar:{...DEFAULT_AVATAR,visited:[],gameStats:{...Object.fromEntries(STAT_NAMES.map(key=>[key,0])),seen:[]}},progression:{version:1,xp:0,events:[],bestPitchLevel:0},wallet:{version:1,balance:150,earned:150,spent:0,owned:[],rewards:[]},missions:{version:1,missions:{},seen:[]},fishing:{version:1,catches:[]},piano:{version:1,learned:[],completed:[]},lessons:{version:1,lessons:Object.fromEntries(Object.keys(LESSON_TOTALS).map(key=>[key,{step:0,completed:false,completedAt:0}]))},quizzes:{version:1,quizzes:Object.fromEntries(Object.keys(LESSON_TOTALS).map(key=>[key,{bankVersion:1,index:0,answers:[],bestAnswers:[],completedAt:0}]))},pitch:{version:1,bestCompleted:0},pitchTutorials:{version:1,completed:[]}};}
+ function blankExam(){return {version:1,bankVersion:1,size:40,questionIds:[],orders:[],answers:[],index:0,submitted:false,attempts:0,bestPercent:0,bestScore:0,bestTotal:0,bestByCategory:Object.fromEntries(EXAM_CATEGORIES.map(key=>[key,{correct:0,total:0}])),completedAt:0};}
+ function blank(){return {avatar:{...DEFAULT_AVATAR,visited:[],gameStats:{...Object.fromEntries(STAT_NAMES.map(key=>[key,0])),seen:[]}},progression:{version:1,xp:0,events:[],bestPitchLevel:0},wallet:{version:1,balance:150,earned:150,spent:0,owned:[],rewards:[]},missions:{version:1,missions:{},seen:[]},fishing:{version:1,catches:[]},piano:{version:1,learned:[],completed:[]},lessons:{version:1,lessons:Object.fromEntries(Object.keys(LESSON_TOTALS).map(key=>[key,{step:0,completed:false,completedAt:0}]))},quizzes:{version:1,quizzes:Object.fromEntries(Object.keys(LESSON_TOTALS).map(key=>[key,{bankVersion:1,index:0,answers:[],bestAnswers:[],completedAt:0}]))},pitch:{version:1,bestCompleted:0},pitchTutorials:{version:1,completed:[]},finalExam:blankExam()};}
  function size(value){const json=JSON.stringify(value);if(typeof TextEncoder!=='undefined')return new TextEncoder().encode(json).length;return unescape(encodeURIComponent(json)).length;}
  function checkedSize(value){if(size(value)>MAX_BYTES)fail('this save is larger than 8 MiB; nothing was changed.');return value;}
  function cleanAnswers(value){const output=[];for(const item of bounded(value,5,'Quiz answers')){if(!Number.isInteger(item)||item<0||item>2)break;output.push(item);}return output;}
+ function cleanFinalExam(input){
+  if(!record(input))fail('the final exam must be a progress object.');
+  // Firebase omits empty lists; every scalar and category field stays required.
+  const exam={...input};for(const key of ['questionIds','orders','answers'])if(!own(exam,key))exam[key]=[];
+  const error=schemaError(finalExamSchema,exam,'data.finalExam');if(error)fail(error);
+  if(exam.bestScore>exam.bestTotal||exam.bestPercent!==(exam.bestTotal?Math.round(exam.bestScore/exam.bestTotal*100):0))fail('the final exam best score and percentage must agree.');
+  let correct=0,total=0;for(const category of EXAM_CATEGORIES){const result=exam.bestByCategory[category];if(result.correct>result.total||result.total!==(exam.bestTotal?exam.bestTotal/8:0))fail('the final exam category totals must match its balanced best result.');correct+=result.correct;total+=result.total;}
+  if(correct!==exam.bestScore||total!==exam.bestTotal)fail('the final exam category scores must equal its saved best score.');
+  if(exam.completedAt&&(!exam.bestTotal||exam.bestScore*100<exam.bestTotal*80))fail('a finished final exam requires a passing best result.');
+  if(exam.orders.length!==exam.questionIds.length||exam.answers.length!==exam.questionIds.length)fail('the saved final exam questions, choices and answers must line up.');
+  if(!exam.questionIds.length){if(exam.index!==0||exam.submitted)fail('an empty final exam cannot have an active question or submission.');}
+  else{
+   if(exam.questionIds.length!==exam.size||exam.index>exam.size)fail('the final exam needs a complete set of questions.');
+   const counts=Object.fromEntries(EXAM_CATEGORIES.map(key=>[key,0]));for(const id of exam.questionIds)counts[id.slice(0,-4)]++;
+   if(Object.values(counts).some(count=>count!==exam.size/8))fail('the final exam must include every category equally.');
+   if(exam.submitted?(exam.index!==exam.size||exam.answers.some(answer=>answer<0)):exam.index===exam.size)fail('the final exam position and submission must match its answers.');
+  }
+  return clone(exam);
+ }
  function cleanData(input){
   if(!record(input))fail('a progress object is required.');const out=blank(),raw=key=>record(input[key])?input[key]:{};
   for(const key of Object.keys(KEYS))if(record(input[key])&&own(input[key],'version')&&input[key].version!==1)fail(key+' uses an unsupported save version.');
@@ -118,6 +144,7 @@
    if(record(quiz)&&quiz.bankVersion===1){question.answers=cleanAnswers(quiz.answers);question.bestAnswers=cleanAnswers(quiz.bestAnswers);if(question.bestAnswers.length!==5)question.bestAnswers=[];question.index=Math.min(question.answers.length,int(quiz.index,0,5,question.answers.length));question.completedAt=question.answers.length===5?time(quiz.completedAt):0;}
   }
   out.pitch.bestCompleted=int(raw('pitch').bestCompleted,0,999);out.pitchTutorials.completed=ids(raw('pitchTutorials').completed,3,20,['treble','bass','grand'],'Pitch tutorials');
+  if(own(input,'finalExam'))out.finalExam=cleanFinalExam(input.finalExam);
   consistency(out);safeEquipment(out);return checkedSize(out);
  }
  function safeEquipment(data){
@@ -133,6 +160,7 @@
  }
  function consistency(data){
   const xp=new Set(data.progression.events.map(event=>event.id)),paid=new Set(data.wallet.rewards);
+  if(data.finalExam.completedAt&&!data.progression.events.some(event=>event.id==='achievement:haydn-final-exam'&&event.xp===200))fail('a finished final exam is missing its saved 200 experience achievement. Retry saving its reward before syncing.');
   // Startup repairs these prefix families, including older/unknown IDs. Keep
   // the complete paid IDs, but never let importing one create a new XP award.
   let paidLevelNotes=0;
@@ -174,8 +202,8 @@
   catch(error){let rolledBack=true;for(const key of changed.reverse())try{const value=previous.values[key];if(value===null)storage.removeItem(key);else storage.setItem(key,value);}catch{rolledBack=false;}return {ok:false,error:rolledBack?'This device could not save the profile. Its previous progress has been restored.':'This device stopped saving during profile recovery. Keep the local backup and retry before playing.',rolledBack};}
  }
  function restore(storage,saved){
-  if(!record(saved)||saved.localOnly!==true||saved.version!==1||!record(saved.values)||Object.keys(saved.values).length!==SCOPED_KEYS.length||SCOPED_KEYS.some(key=>!own(saved.values,key)||saved.values[key]!==null&&typeof saved.values[key]!=='string')||Object.keys(saved.values).some(key=>!SCOPED_KEYS.includes(key)))return {ok:false,error:'That is not a valid local progress backup.',rolledBack:true};
-  return writeAtomically(storage,saved.values);
+  if(!record(saved)||saved.localOnly!==true||saved.version!==1||!record(saved.values)||SCOPED_KEYS.some(key=>!own(saved.values,key)?!OPTIONAL_BACKUP_KEYS.has(key):saved.values[key]!==null&&typeof saved.values[key]!=='string')||Object.keys(saved.values).some(key=>!SCOPED_KEYS.includes(key)))return {ok:false,error:'That is not a valid local progress backup.',rolledBack:true};
+  return writeAtomically(storage,Object.fromEntries(SCOPED_KEYS.map(key=>[key,saved.values[key]??null])));
  }
  function clear(storage){return writeAtomically(storage,Object.fromEntries(SCOPED_KEYS.map(key=>[key,null])));}
  function capture(storage){return result(()=>{

@@ -174,3 +174,32 @@ lowers the brushed pixels. Brushes and straight lines use exact world pixels at
 any zoom. For intentional depth sorting, choose **Actor depth** and set the
 **Depth offset**; existing project strokes keep their original depth settings.
 The **Show layers** toggle controls the inspection tint separately from the art.
+
+
+Talk to **Professor Haydn** in the classroom to find eight hands-on lessons,
+including **Dynamics: loud & soft** and **Tempo: fast & slow**. Each new lesson
+uses short listen-and-try steps and ends with a five-question quiz. Passing
+awards 50 XP once per lesson.
+
+Haydn’s **Final Exam** draws from 100 questions for each of those eight topics
+(800 questions total). Choose 24, 40, or 80 questions; 40 is the default and
+includes five from each topic. Questions and choices are shuffled. There is no
+timer. Review or change answers before finishing; 80% passes. The result shows
+each topic’s score and links back to its lesson. A first pass earns 200 XP once.
+The current attempt and best result save with a classroom profile. Retakes
+select fresh questions and keep the previous best.
+
+**Song Machine** has a shared **Volume** slider for Simple and Advanced modes.
+It controls playback and note previews and remembers the device setting.
+Edits automatically save a working draft in this browser, including sounds,
+notes, drum rows, tempo and song settings. Reopening the cabinet restores it.
+Watch the browser-save message; if storage is unavailable, export a JSON copy
+before leaving. Drafts are browser-only and cleared when changing classroom
+players; JSON export and the existing song library remain available for portable
+copies. Clearing site data removes browser drafts.
+
+Music Triad’s **Advanced Tutorial** now offers 20 short lessons with actual
+playable cards, a lesson picker, replay, and an exit at every step. The
+**Cheat Sheet** covers values, card meters, all six special cards and worked
+examples. Its Simple/Advanced guide switch does not change the game’s rules.
+Meter multipliers are explicitly game powers rather than general music rules.

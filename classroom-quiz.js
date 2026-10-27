@@ -42,6 +42,20 @@
    {id:'major-minor-moods',prompt:'Can major and minor music have many moods?',answers:['Yes, both can','No, minor is always sad','No, major is always happy'],correct:0,explanation:'Major often sounds bright. Minor can sound mellow or dramatic. Neither has only one mood.'},
    {id:'shared-notes',prompt:'C major and A minor share notes. What changes?',answers:['Their note letters disappear','Their home notes','They must be played louder'],correct:1,explanation:'C major comes home to C. A minor comes home to A.'}
   ]),
+  'dynamics':quiz('Dynamics: loud & soft',[
+   {id:'dynamics-meaning',prompt:'What do dynamics tell you?',answers:['How loud or soft','How fast the beat goes','Which note letter to play'],correct:0,explanation:'Dynamics changes loudness. Tempo changes speed.'},
+   {id:'piano-soft',prompt:'The music says p (piano). How do you play?',answers:['Very fast','Softly','Loudly'],correct:1,explanation:'Piano means soft. Its sign is p.'},
+   {id:'dynamic-middle',prompt:'Which sign means moderately loud?',answers:['pp','mp','mf'],correct:2,explanation:'Mezzo forte, mf, means moderately loud. Mezzo means moderately.'},
+   {id:'crescendo-grow',prompt:'What happens during a crescendo?',answers:['Grow louder little by little','Grow slower little by little','Suddenly stop'],correct:0,explanation:'Crescendo means gradually louder. Keep the same tempo unless told to change it.'},
+   {id:'diminuendo-shrink',prompt:'What happens during a diminuendo?',answers:['Grow faster','Grow softer little by little','Change the note letters'],correct:1,explanation:'Diminuendo, also called decrescendo, means gradually softer.'}
+  ]),
+  'tempo':quiz('Tempo: fast & slow',[
+   {id:'tempo-meaning',prompt:'What does tempo tell you?',answers:['How loud to play','How fast the beat goes','Which instrument to use'],correct:1,explanation:'Tempo is beat speed. It can change while loudness stays the same.'},
+   {id:'bpm-meaning',prompt:'What does BPM mean?',answers:['Beats per minute','Bars per melody','Big piano music'],correct:0,explanation:'BPM counts how many beats happen in one minute.'},
+   {id:'presto-speed',prompt:'Which word suggests very fast music?',answers:['Adagio','Largo','Presto'],correct:2,explanation:'Presto means very fast. Tempo words describe a feel; exact speeds can vary.'},
+   {id:'accelerando-speed',prompt:'What happens during accelerando?',answers:['Get louder','Get faster little by little','Get softer'],correct:1,explanation:'Accelerando speeds up the beat. It does not mean louder.'},
+   {id:'ritardando-speed',prompt:'What happens during ritardando?',answers:['Get slower little by little','Get louder little by little','Play a higher note'],correct:0,explanation:'Ritardando slows down the beat. Loudness can stay the same.'}
+  ]),
   'grand-staff':quiz('Grand staff & Middle C',[
    {id:'grand-treble',prompt:'Name this note on the upper staff.',answers:['E','G','C'],correct:0,explanation:'The upper staff is treble. Its bottom line is E.',visual:{kind:'staff',clef:'treble',grand:true,position:0}},
    {id:'grand-bass',prompt:'Name this note on the lower staff.',answers:['B','D','F'],correct:1,explanation:'The lower staff is bass. Its middle line is D.',visual:{kind:'staff',clef:'bass',grand:true,position:4}},

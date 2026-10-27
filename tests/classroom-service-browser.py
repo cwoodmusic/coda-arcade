@@ -169,6 +169,68 @@ class ClassroomServiceBrowserTests(unittest.TestCase):
     def cloud(self,card=None):
         return database('classroomV1/classes/'+self.class_id+'/profiles/'+(card or self.card)['profileId'])
 
+    def test_legacy_six_lessons_migrate_and_exam_checkpoints_stay_private_across_profiles(self):
+        profile_path='classroomV1/classes/'+self.class_id+'/profiles/'+self.card['profileId']
+        legacy=self.cloud()['state']
+        legacy['data'].pop('finalExam',None)
+        for slot in ['lessons','quizzes']:
+            legacy['data'][slot][slot].pop('dynamics',None)
+            legacy['data'][slot][slot].pop('tempo',None)
+        self.assertEqual(len(legacy['data']['lessons']['lessons']),6)
+        database(profile_path+'/state',legacy,'PUT')
+        student=self.device()
+        student.evaluate("""()=>{
+          const exam=CodaClassroomProfileData.blank().finalExam;exam.size=80;
+          localStorage.codaHaydnFinalExamV1=JSON.stringify(exam);
+          localStorage.codaSongMachineDraftV1='PRIVATE GUEST SONG DRAFT';
+        }""")
+        self.join(student)
+        restored=student.evaluate('CodaClassroomProfileData.capture(localStorage)')
+        self.assertTrue(restored['ok'],restored)
+        self.assertEqual(len(restored['data']['lessons']['lessons']),8)
+        self.assertEqual(restored['data']['finalExam']['size'],40)
+        self.assertEqual(restored['data']['finalExam']['questionIds'],[])
+        self.assertIsNone(student.evaluate('localStorage.getItem("codaSongMachineDraftV1")'))
+        saved=student.evaluate("""()=>{
+          const data=CodaClassroomProfileData.capture(localStorage).data,exam=data.finalExam;
+          exam.size=24;exam.questionIds=Object.keys(exam.bestByCategory).flatMap(category=>Array.from({length:3},(_,index)=>category+'-'+String(index+1).padStart(3,'0')));
+          exam.orders=exam.questionIds.map((_,index)=>index%6);exam.answers=exam.questionIds.map((_,index)=>index<7?index%3:-1);exam.index=7;
+          data.lessons.lessons.dynamics={step:8,completed:true,completedAt:400};
+          data.quizzes.quizzes.dynamics={bankVersion:1,index:5,answers:[0,1,2,0,1],bestAnswers:[0,1,2,0,1],completedAt:400};
+          data.lessons.lessons.tempo={step:3,completed:false,completedAt:0};
+          data.progression.events.push({id:'achievement:classroom-dynamics',xp:50});data.progression.xp+=50;
+          const applied=CodaClassroomProfileData.apply(localStorage,data);if(!applied.ok)throw Error(applied.error);
+          localStorage.codaSongMachineDraftV1='PRIVATE STUDENT A SONG DRAFT';return data;
+        }""")
+        self.assert_ok(self.call(student,'flush'))
+        cloud=self.cloud()['state']['data']
+        self.assertEqual(cloud['finalExam'],saved['finalExam'])
+        self.assertEqual(len(cloud['lessons']['lessons']),8)
+        self.assertEqual(cloud['progression']['xp'],50)
+        self.assertNotIn('PRIVATE',json.dumps(cloud))
+        self.assertNotIn('codaSongMachineDraftV1',json.dumps(cloud))
+        student.reload();student.wait_for_function('window.fixtureReady');self.start(student)
+        self.assert_ok(self.call(student,'resume'))
+        self.assertTrue(self.call(student,'isWritable'))
+        self.assertEqual(student.evaluate('CodaClassroomProfileData.capture(localStorage).data'),saved)
+        self.assertEqual(student.evaluate('localStorage.codaSongMachineDraftV1'),'PRIVATE STUDENT A SONG DRAFT','This player keeps its local draft on reload')
+        self.assert_ok(self.call(student,'leave'))
+        self.assertEqual(student.evaluate('JSON.parse(localStorage.codaHaydnFinalExamV1).size'),80)
+        self.assertEqual(student.evaluate('localStorage.codaSongMachineDraftV1'),'PRIVATE GUEST SONG DRAFT')
+        next_card=self.call(self.admin,'createProfile',self.class_id);self.assert_ok(next_card)
+        self.join(student,next_card)
+        fresh=student.evaluate('CodaClassroomProfileData.capture(localStorage).data')
+        self.assertEqual(fresh['finalExam']['questionIds'],[])
+        self.assertFalse(fresh['lessons']['lessons']['dynamics']['completed'])
+        self.assertEqual(fresh['progression']['xp'],0)
+        self.assertIsNone(student.evaluate('localStorage.getItem("codaSongMachineDraftV1")'))
+        self.assert_ok(self.call(student,'leave'))
+        other=self.device();self.join(other)
+        reopened=other.evaluate('CodaClassroomProfileData.capture(localStorage)')
+        self.assertTrue(reopened['ok'],reopened)
+        self.assertEqual(reopened['data'],saved,'Another device resumes every saved exam answer, shuffle and lesson checkpoint')
+        self.assertIsNone(other.evaluate('localStorage.getItem("codaSongMachineDraftV1")'))
+
     def test_card_is_private_and_guest_work_restores_without_uploading_names_or_takes(self):
         student=self.device()
         guest={'version':1,'name':'PRIVATE GUEST NAME','email':'private-student@example.invalid','shirt':'#abcdef'}

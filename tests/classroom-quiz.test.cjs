@@ -7,7 +7,9 @@ const ANSWERS=Object.freeze({
  'time-signatures':[2,1,0,2,1],
  'bass-clef':[0,1,2,0,1],
  'grand-staff':[0,1,2,0,2],
- 'major-minor-keys':[0,1,2,0,1]
+ 'major-minor-keys':[0,1,2,0,1],
+ 'dynamics':[0,1,2,0,1],
+ 'tempo':[1,0,2,1,0]
 });
 function disk(){
  const values=new Map();

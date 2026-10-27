@@ -5,11 +5,11 @@ test('Haydn, every bookshelf and all interactive lessons have useful study conte
   assert.equal(HAYDN.name,'Professor Haydn');
   assert.equal(SHELVES.length,3);
   const ids=new Set(TOPICS.map(topic=>topic.id));assert.equal(ids.size,TOPICS.length);assert.ok(TOPICS.length>=14);
-  for(const id of ['welcome','pitch-race','music-triad','rhythm-room','pitch','staff','intervals','triads','rhythm','meter','piano','song-machine','note-naming','rhythm-tree','time-signatures','bass-clef','grand-staff','major-minor-keys'])assert.ok(ids.has(id),id);
+  for(const id of ['welcome','pitch-race','music-triad','rhythm-room','pitch','staff','intervals','triads','rhythm','meter','piano','song-machine','note-naming','rhythm-tree','time-signatures','bass-clef','grand-staff','major-minor-keys','dynamics','tempo','final-exam'])assert.ok(ids.has(id),id);
   for(const shelf of SHELVES){assert.ok(ids.has(shelf.topic));assert.ok(shelf.approach.y>=285&&shelf.approach.y<=565);}
   for(const topic of TOPICS){
     assert.ok(topic.title&&topic.html,topic.id);
-    if(!topic.tutorial){
+    if(!topic.tutorial&&!topic.exam){
       assert.ok(topic.html.length>160,'A guide needs an explanation, not just a title: '+topic.id);
       assert.ok(topic.quiz.answers.length>=3);assert.ok(topic.quiz.correct>=0&&topic.quiz.correct<topic.quiz.answers.length);assert.ok(topic.quiz.explanation);
     }
@@ -18,6 +18,7 @@ test('Haydn, every bookshelf and all interactive lessons have useful study conte
     assert.doesNotMatch(visible,/\b[A-G][♯♭]?[0-8]\b/,'Young learners should see letter names without octave digits: '+topic.id);
   }
   assert.equal(topicFor('bad-id').id,'welcome');
+  assert.equal(topicFor('final-exam').exam,true);assert.equal(topicFor('final-exam').tutorial,undefined,'An exam is separate from the eight teaching lessons');
 });
 test('classroom covers all cabinets and both Chopin game types accurately',()=>{
   const all=TOPICS.map(topic=>topic.title+' '+topic.html).join(' ');

@@ -2,6 +2,10 @@
 body>header{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
 body>header h1{flex:1;min-width:0}
 .song-editor-mode{min-height:44px;padding:8px 12px;flex:none;border-color:#7bd8cb;color:#cafff0}
+.song-master-volume{display:grid;grid-template-columns:auto minmax(90px,1fr) 42px;align-items:center;gap:8px;flex:0 1 250px;min-width:190px;max-width:290px;min-height:44px;color:#d5e9ef;font-size:13px;font-weight:700}
+.song-master-volume input{min-width:0;width:100%;height:44px;margin:0;padding:0;accent-color:#6be4d0;cursor:pointer}
+.song-master-volume output{text-align:right;font-variant-numeric:tabular-nums;color:#b8fff0}
+.song-master-volume input:focus-visible{outline:3px solid #b8fff0;outline-offset:2px;border-radius:6px}
 body[data-editor-mode="simple"]>header small{display:none}
 body[data-editor-mode="simple"] main>.toolbar,body[data-editor-mode="simple"] #gridview,body[data-editor-mode="simple"] #settings-summary,body[data-editor-mode="simple"] .pitch-legend,body[data-editor-mode="simple"] #song-level-summary,body[data-editor-mode="simple"] .grid-touch-tools{display:none!important}
 body[data-editor-mode="advanced"] #simpleSongEditor,body[data-editor-mode="advanced"] [data-simple-only]{display:none!important}
@@ -55,6 +59,7 @@ body[data-editor-mode="simple"] #songSaveTools{display:flex;margin-top:16px;padd
  body>header{padding:9px max(10px,env(safe-area-inset-right)) 9px max(10px,env(safe-area-inset-left));gap:7px}
  body>header h1{font-size:15px!important;letter-spacing:.5px}
  .song-editor-mode{font-size:12px;min-height:44px;padding:7px 9px;max-width:110px}
+ .song-master-volume{order:2;flex:1 0 100%;max-width:none;min-width:0;grid-template-columns:55px minmax(0,1fr) 42px;gap:9px}
  body[data-editor-mode="simple"] main{padding:8px max(7px,env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(7px,env(safe-area-inset-left))}
  #simpleSongEditor{--simple-step-size:36px;--simple-pitch-size:69px;--simple-row-size:39px;padding:9px}
  .simple-song-toolbar{gap:8px;align-items:center;display:grid;grid-template-columns:minmax(0,1fr) 68px}
@@ -168,3 +173,6 @@ body[data-editor-mode="simple"] #settings-panel .settings-fields label:first-chi
  .simple-sound-chooser{flex:1 1 150px;min-width:120px;max-width:220px}
  .simple-tempo{max-width:150px;min-width:115px}
 }
+
+.song-draft-status{flex:0 0 100%;color:#aeb8d7;font-size:12px;line-height:1.4}
+.song-draft-status[data-error="true"]{color:#ffd29b}

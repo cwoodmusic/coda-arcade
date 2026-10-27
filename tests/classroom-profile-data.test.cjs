@@ -34,8 +34,8 @@ function profile(){
 test('blank classroom profiles are bounded, private, and independent of guest state',()=>{
  const first=D.blank(),second=D.blank();assert.equal(D.validate(first).ok,true);assert.equal(first.progression.xp,0);assert.equal(first.wallet.balance,150);assert.equal(first.avatar.hairstyle,'bald');assert.equal(first.avatar.shirt,'#999ca6');
  first.wallet.rewards.push('something');assert.deepEqual(second.wallet.rewards,[]);
- assert.deepEqual(Object.keys(first),['avatar','progression','wallet','missions','fishing','piano','lessons','quizzes','pitch','pitchTutorials']);
- assert.equal(D.SCOPED_KEYS.includes('codaPianoTakeV1'),true);assert.equal(Object.values(D.KEYS).includes('codaPianoTakeV1'),false);assert.equal(Object.keys(D.SCHEMA.properties).length,10);
+ assert.deepEqual(Object.keys(first),['avatar','progression','wallet','missions','fishing','piano','lessons','quizzes','pitch','pitchTutorials','finalExam']);
+ assert.equal(D.SCOPED_KEYS.includes('codaPianoTakeV1'),true);assert.equal(Object.values(D.KEYS).includes('codaPianoTakeV1'),false);assert.equal(Object.keys(D.SCHEMA.properties).length,11);
  assert.ok(Object.isFrozen(D.SCHEMA));assert.ok(Object.isFrozen(D.SCHEMA.properties.avatar.properties));
 });
 
@@ -257,4 +257,86 @@ test('the standalone browser module has the same schema, defaults, and API as No
 test('the cloud cosmetic enums preserve every current renderer choice',()=>{
  const sandbox={window:{}};vm.runInNewContext(fs.readFileSync(require.resolve('../character-renderer.js'),'utf8'),sandbox);const renderer=sandbox.window.createCodaCharacterRenderer();
  for(const [slot,group]of Object.entries({hairstyle:'hairstyles',outfit:'outfits',headwear:'headwear',eyewear:'eyewear',accessory:'accessories',shoes:'shoes',emote:'emotes',form:'forms',pet:'pets'}))assert.deepEqual([...D.SCHEMA.properties.avatar.properties[slot].enum].sort(),Array.from(renderer.catalog[group],item=>item.id).sort(),slot+' must not silently discard a saved customization');
+});
+
+
+test('Dynamics and Tempo lessons and quizzes use their exact completion and XP records',()=>{
+ for(const [id,answers]of Object.entries({dynamics:[0,1,2,0,1],tempo:[1,0,2,1,0]})){
+  const data=D.blank();data.lessons.lessons[id]={step:8,completed:true,completedAt:400};
+  data.quizzes.quizzes[id]={bankVersion:1,index:5,answers:[...answers],bestAnswers:[...answers],completedAt:400};
+  assert.equal(D.validate(data).ok,false,'Completion needs the earned XP journal');
+  data.progression.events=[{id:'achievement:classroom-'+id,xp:50}];data.progression.xp=50;
+  assert.equal(D.validate(data).ok,true);const store=storage();assert.equal(D.apply(store,data).ok,true);assert.deepEqual(D.capture(store).data,data);
+  const wrong=clone(data);wrong.quizzes.quizzes[id].answers=wrong.quizzes.quizzes[id].bestAnswers=answers.map(answer=>(answer+1)%3);assert.equal(D.validate(wrong).ok,false);
+  const beyond=clone(data);beyond.lessons.lessons[id].step=9;assert.equal(D.validate(beyond).ok,false);
+ }
+ const old=profile();delete old.finalExam;for(const id of ['dynamics','tempo']){delete old.lessons.lessons[id];delete old.quizzes.quizzes[id];}
+ const result=D.validate(old);assert.equal(result.ok,true,result.error);
+ for(const id of ['dynamics','tempo']){assert.deepEqual(result.data.lessons.lessons[id],{step:0,completed:false,completedAt:0});assert.deepEqual(result.data.quizzes.quizzes[id],{bankVersion:1,index:0,answers:[],bestAnswers:[],completedAt:0});}
+});
+
+const EXAM_CATEGORIES=['note-naming','bass-clef','grand-staff','rhythm-tree','time-signatures','major-minor-keys','dynamics','tempo'];
+function activeExam(size=40){const exam=D.blank().finalExam;exam.size=size;exam.questionIds=EXAM_CATEGORIES.flatMap(id=>Array.from({length:size/8},(_,index)=>id+'-'+String(index+1).padStart(3,'0')));exam.orders=exam.questionIds.map((_,index)=>index%6);exam.answers=exam.questionIds.map(()=>-1);return exam;}
+function bestExam(){const exam=activeExam();exam.answers.fill(0);exam.index=40;exam.submitted=true;exam.attempts=1;exam.bestPercent=80;exam.bestScore=32;exam.bestTotal=40;exam.bestByCategory=Object.fromEntries(EXAM_CATEGORIES.map(id=>[id,{correct:4,total:5}]));return exam;}
+
+test('final exam is optional for old clouds while every original DTO slot remains required',()=>{
+ const old=D.blank();delete old.finalExam;const result=D.validate(old);assert.equal(result.ok,true,result.error);assert.deepEqual(result.data.finalExam,D.blank().finalExam);
+ assert.deepEqual(D.SCHEMA.required,Object.keys(D.KEYS).filter(key=>key!=='finalExam'));
+ for(const key of D.SCHEMA.required){const incomplete=clone(old);delete incomplete[key];assert.equal(D.validate(incomplete).ok,false,key+' remains required');}
+ const engine=require('../final-exam.js');assert.equal(D.KEYS.finalExam,engine.KEY);assert.deepEqual(D.blank().finalExam,engine.getDefaults());
+ const absentLists=D.blank();delete absentLists.finalExam.questionIds;delete absentLists.finalExam.orders;delete absentLists.finalExam.answers;
+ assert.deepEqual(D.validate(absentLists).data.finalExam,D.blank().finalExam,'Firebase empty lists return as blank lists');
+});
+
+test('the bounded final exam preserves every balanced active answer and shuffled choice order',()=>{
+ const schema=D.SCHEMA.properties.finalExam,ids=schema.properties.questionIds.items.enum;
+ assert.equal(ids.length,800);assert.equal(new Set(ids).size,800);
+ assert.deepEqual(ids,EXAM_CATEGORIES.flatMap(category=>Array.from({length:100},(_,index)=>category+'-'+String(index+1).padStart(3,'0'))));
+ for(const size of [24,40,80]){
+  const data=D.blank();data.finalExam=activeExam(size);data.finalExam.answers[0]=2;data.finalExam.index=size-1;
+  assert.equal(D.validate(data).ok,true);const store=storage();assert.equal(D.apply(store,data).ok,true);assert.deepEqual(D.capture(store).data,data);
+  assert.equal(require('../final-exam.js').validateState(data.finalExam,{getQuestion:id=>({id,category:id.slice(0,-4),prompt:'Test only',choices:[{id:'a',text:'a'},{id:'b',text:'b'},{id:'c',text:'c'}],answer:'a'})}).ok,true,'Engine and DTO accept the same state shape');
+ }
+});
+
+test('final exam rejects unknown/private fields, invalid IDs, unbalanced sets, and mismatched progress without rewriting local bytes',()=>{
+ const mutations=[
+  exam=>{exam.studentName='Private name';},exam=>{exam.bankVersion=2;},exam=>{exam.size=32;},exam=>{exam.questionIds[0]='note-naming-101';},
+  exam=>{exam.questionIds[0]='note-naming-000';},exam=>{exam.questionIds[0]='note-naming-1';},exam=>{exam.questionIds[0]='private-free-text-001';},
+  exam=>{exam.questionIds[1]=exam.questionIds[0];},exam=>{exam.questionIds[0]='tempo-100';},exam=>{exam.questionIds.pop();},
+  exam=>{exam.orders[0]=6;},exam=>{exam.answers[0]=3;},exam=>{exam.answers[0]=-2;},exam=>{exam.orders.pop();},exam=>{exam.answers.pop();},
+  exam=>{exam.index=40;},exam=>{exam.submitted=true;exam.index=40;},exam=>{exam.attempts=100001;},exam=>{exam.completedAt=1;},
+  exam=>{exam.bestByCategory.tempo.correct=1;},exam=>{exam.bestPercent=80;},exam=>{exam.bestTotal=20;},exam=>{exam.bestByCategory.dynamics.email='Private';},
+ ];
+ for(const mutate of mutations){
+  const data=D.blank();data.finalExam=activeExam();mutate(data.finalExam);const store=storage({[D.KEYS.finalExam]:JSON.stringify(data.finalExam),'unrelated':'guest work'}),before=dump(store);
+  assert.equal(D.validate(data).ok,false,JSON.stringify(data.finalExam));assert.equal(D.sanitize(data).ok,false);assert.equal(D.capture(store).ok,false);assert.equal(D.apply(store,data).ok,false);assert.deepEqual(dump(store),before);
+ }
+});
+
+test('final exam summaries stay consistent and completion only restores after its exact saved XP reward',()=>{
+ const data=D.blank();data.finalExam=bestExam();assert.equal(D.validate(data).ok,true,'A passing result may await its one-time reward');
+ const store=storage();assert.equal(D.apply(store,data).ok,true);assert.deepEqual(D.capture(store).data,data);
+ data.progression.events=[{id:'achievement:haydn-final-exam',xp:200}];data.progression.xp=200;assert.equal(D.validate(data).ok,true,'XP-first save must be accepted before completedAt is written');
+ data.finalExam.completedAt=600;assert.equal(D.validate(data).ok,true);assert.equal(D.apply(store,data).ok,true);assert.deepEqual(D.capture(store).data,data);
+ const progression=Progress.create({storage:store});assert.equal(progression.recordAchievement('haydn-final-exam').alreadyAwarded,true);assert.equal(progression.getState().xp,200,'Restore cannot mint another exam reward');
+ for(const mutate of [
+  saved=>{saved.progression.events=[];saved.progression.xp=0;},saved=>{saved.progression.events[0].xp=199;saved.progression.xp=199;},
+  saved=>{saved.finalExam.bestPercent=81;},saved=>{saved.finalExam.bestScore=31;saved.finalExam.bestPercent=78;saved.finalExam.bestByCategory.tempo.correct=3;},
+  saved=>{saved.finalExam.bestByCategory.tempo.total=4;},saved=>{saved.finalExam.bestByCategory.tempo.correct=3;},saved=>{saved.finalExam.answers[0]=-1;},
+ ]){const invalid=clone(data);mutate(invalid);assert.equal(D.validate(invalid).ok,false);}
+});
+
+test('new exam and browser-only Song Machine drafts cannot cross profiles and old backups still restore',()=>{
+ const draft='Private song title and notes',exam=JSON.stringify(activeExam()),store=storage({[D.KEYS.finalExam]:exam,codaSongMachineDraftV1:draft,'unrelated':'guest work'}),before=dump(store),saved=D.backup(store);
+ assert.ok(D.LOCAL_ONLY_KEYS.includes('codaSongMachineDraftV1'));assert.equal(Object.values(D.KEYS).includes('codaSongMachineDraftV1'),false);
+ assert.equal(D.apply(store,D.blank()).ok,true);assert.equal(store.getItem('codaSongMachineDraftV1'),null);assert.deepEqual(JSON.parse(store.getItem(D.KEYS.finalExam)),D.blank().finalExam);
+ store.setItem('codaSongMachineDraftV1','Student A private draft');store.setItem(D.KEYS.finalExam,exam);const captured=D.capture(store);assert.equal(captured.ok,true);assert.equal(JSON.stringify(captured.data).includes('Student A'),false);
+ assert.equal(D.apply(store,D.blank()).ok,true);assert.equal(store.getItem('codaSongMachineDraftV1'),null);assert.deepEqual(JSON.parse(store.getItem(D.KEYS.finalExam)),D.blank().finalExam);
+ assert.equal(D.restore(store,saved).ok,true);assert.deepEqual(dump(store),before);
+ const old=clone(saved);delete old.values[D.KEYS.finalExam];delete old.values.codaSongMachineDraftV1;
+ assert.equal(D.restore(store,old).ok,true);assert.equal(store.getItem(D.KEYS.finalExam),null);assert.equal(store.getItem('codaSongMachineDraftV1'),null);
+ const incomplete=clone(old);delete incomplete.values[D.KEYS.wallet];assert.equal(D.restore(store,incomplete).ok,false,'Original scoped backup fields remain required');
+ const extra=clone(old);extra.values.email='private';assert.equal(D.restore(store,extra).ok,false);
+ for(const key of [D.KEYS.finalExam,'codaSongMachineDraftV1']){const failing=storage(Object.fromEntries(D.SCOPED_KEYS.map(key=>[key,'original '+key]))),prior=dump(failing);failing.failNext(key,key==='codaSongMachineDraftV1'?'remove':'set');assert.equal(D.apply(failing,D.blank()).ok,false);assert.deepEqual(dump(failing),prior);}
 });

@@ -30,12 +30,18 @@ administrator account, and its purchases, progress and editor changes do not
 replace the active player's saved data. Exit test mode to return to normal play.
 
 The current progress schema also accepts all 24 guided scale rewards and their
-24 memory challenges, plus the optional **Major & minor keys** lesson and quiz.
+24 memory challenges, plus the optional **Major & minor keys**, **Dynamics**,
+and **Tempo** lessons and quizzes.
 The piano completion journal is bounded to the 80 authored piano challenge IDs.
-Old five-lesson saves remain valid; loading them supplies a blank new lesson.
+Old five- and six-lesson saves remain valid; loading them supplies blank new
+lessons. Haydn’s Final Exam is an optional closed record containing only known
+question IDs, shuffled choice-order codes, numeric answers, progress and scores.
+Its 24/40/80-question attempt and best result can follow the profile across
+devices. A completed exam requires its saved one-time 200 XP achievement.
 These changes were merged into a complete rules backup and read back after
-deployment. All 22 classroom security checks passed, including owner-only
-round trips and rejection of unknown scale IDs and out-of-range lesson steps.
+deployment. All 24 classroom security checks passed, including owner-only
+round trips, old-save compatibility, and rejection of unknown/private fields
+and out-of-range lesson steps and exam choices.
 Profile access rules and unrelated game namespaces remain unchanged.
 
 Test mode now virtualizes its temporary browsing-context name as well as its
@@ -87,7 +93,10 @@ The progress DTO uses fixed fields and rejects extra fields. It excludes the
 avatar's name, school roster data, song titles, compositions/drafts, text answers,
 editor projects, and shared leaderboards. [classroom-profile-data.js](classroom-profile-data.js) defines the
 allowed appearance values, progress records, collection limits, and number
-ranges. An additional 8 MiB UTF-8 limit applies in the client; Realtime Database
+ranges. Song Machine’s working draft stays in a browser-only scoped key; profile
+changes clear it, and leaving the classroom restores the guest’s original draft.
+Drafts and master-volume settings are not added to the cloud progress record.
+An additional 8 MiB UTF-8 limit applies in the client; Realtime Database
 rules enforce the typed field and collection bounds, not that overall byte
 limit.
 

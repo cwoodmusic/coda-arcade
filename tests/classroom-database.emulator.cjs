@@ -412,3 +412,40 @@ test('all 24 guided and memory scales plus the new key lesson save for their own
  const legacy=DTO.blank();delete legacy.lessons.lessons['major-minor-keys'];delete legacy.quizzes.quizzes['major-minor-keys'];
  await assertSucceeds(write(staff(),`${TEACHER_PATH}/state`,state(2,legacy)));
 });
+
+
+test('Dynamics and Tempo progress and optional final exam fields save only inside their existing owner boundaries',async()=>{
+ const student=anonymous('student_one'),owner=staff(),data=DTO.blank();
+ for(const [id,answers]of Object.entries({dynamics:[0,1,2,0,1],tempo:[1,0,2,1,0]})){
+  data.lessons.lessons[id]={step:8,completed:true,completedAt:400};data.quizzes.quizzes[id]={bankVersion:1,index:5,answers,bestAnswers:answers,completedAt:400};
+  data.progression.events.push({id:'achievement:classroom-'+id,xp:50});data.progression.xp+=50;
+ }
+ assert.equal(DTO.validate(data).ok,true);await assertSucceeds(write(student,`${PROFILE_PATH}/state`,state(2,data)));
+ await assertSucceeds(write(owner,TEACHER_PATH,teacherRecord(1,data)));
+ await assertFails(read(anonymous('student_two'),`${PROFILE_PATH}/state`));await assertFails(write(google('other_admin'),`${TEACHER_PATH}/state`,state(2,data)));
+ const invalid=clone(data);invalid.lessons.lessons.dynamics.step=9;
+ await assertFails(write(student,`${PROFILE_PATH}/state`,state(3,invalid)));
+ const extra=clone(data);extra.quizzes.quizzes.tempo.studentName='Private name';await assertFails(write(owner,`${TEACHER_PATH}/state`,state(2,extra)));
+ const legacy=DTO.blank();delete legacy.finalExam;for(const id of ['dynamics','tempo']){delete legacy.lessons.lessons[id];delete legacy.quizzes.quizzes[id];}
+ await assertSucceeds(write(student,`${PROFILE_PATH}/state`,state(3,legacy)));await assertSucceeds(write(owner,`${TEACHER_PATH}/state`,state(2,legacy)));
+ const required=clone(legacy);delete required.wallet;await assertFails(write(student,`${PROFILE_PATH}/state`,state(4,required)));
+});
+
+test('final exam rules validate exact bounded private state for both teacher and student records',async()=>{
+ const student=anonymous('student_one'),owner=staff(),data=DTO.blank(),exam=data.finalExam;
+ exam.size=80;exam.questionIds=Object.keys(exam.bestByCategory).flatMap(category=>Array.from({length:10},(_,index)=>category+'-'+String(index+1).padStart(3,'0')));exam.orders=exam.questionIds.map((_,index)=>index%6);exam.answers=exam.questionIds.map(()=>-1);exam.index=79;
+ assert.equal(DTO.validate(data).ok,true);await assertSucceeds(write(student,`${PROFILE_PATH}/state`,state(2,data)));await assertSucceeds(write(owner,TEACHER_PATH,teacherRecord(1,data)));
+ const invalid=[];const mutate=change=>{const value=clone(data);change(value.finalExam,value);invalid.push(value);};
+ mutate(exam=>{exam.studentName='Private name';});mutate(exam=>{exam.version=2;});mutate(exam=>{exam.bankVersion=2;});mutate(exam=>{exam.size=32;});
+ mutate(exam=>{exam.questionIds[0]='note-naming-000';});mutate(exam=>{exam.questionIds[0]='tempo-101';});mutate(exam=>{exam.questionIds[0]='private-name-001';});
+ mutate(exam=>{exam.questionIds={'0':'note-naming-001','80':'tempo-100'};});mutate(exam=>{exam.orders[0]=6;});mutate(exam=>{exam.answers[0]=3;});mutate(exam=>{exam.answers[0]=-2;});
+ mutate(exam=>{exam.index=81;});mutate(exam=>{exam.attempts=100001;});mutate(exam=>{exam.bestPercent=101;});mutate(exam=>{exam.bestScore=81;});mutate(exam=>{exam.bestTotal=20;});
+ mutate(exam=>{exam.bestByCategory.tempo.correct=11;});mutate(exam=>{exam.bestByCategory.dynamics.total=-1;});mutate(exam=>{exam.bestByCategory.dynamics.studentName='Private';});
+ mutate(exam=>{exam.completedAt=253402300800000;});mutate((exam,value)=>{value.songMachineDraft={title:'Private local song'};});
+ for(const [index,value]of invalid.entries()){
+  await assertFails(write(student,`${PROFILE_PATH}/state`,state(3,value)),`Final exam student case ${index}`);
+  await assertFails(write(owner,`${TEACHER_PATH}/state`,state(2,value)),`Final exam teacher case ${index}`);
+ }
+ await assertFails(write(student,`${PROFILE_PATH}/state/data/finalExam/index`,1),'Direct partial state writes remain unavailable');
+ await assertFails(write(anonymous('student_two'),`${PROFILE_PATH}/state`,state(3,data)));await assertFails(write(google('other_admin'),`${TEACHER_PATH}/state`,state(2,data)));
+});

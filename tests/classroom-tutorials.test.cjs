@@ -9,7 +9,7 @@ test('note-name teaching and staff positions agree with the actual musical pitch
  const pitchLetters=['C','','D','','E','F','','G','','A','','B'];
  for(const step of NOTE_STEPS){assert.equal(pitchLetters[step.pitch%12],step.answer);assert.doesNotMatch(step.teach+' '+step.prompt+' '+step.hint,/\b[A-G][0-8]\b/);}
  const staff=NOTE_STEPS.filter(step=>step.kind==='staff');assert.deepEqual(staff.map(step=>step.position),[0,1,2,3,4,5]);assert.deepEqual(staff.map(step=>step.answer),['E','F','G','A','B','C']);
- assert.equal(new Set(LESSONS.map(lesson=>lesson.id)).size,6);
+ assert.equal(new Set(LESSONS.map(lesson=>lesson.id)).size,8);
 });
 test('the build-a-bar check accepts any supported notes totaling four beats',()=>{
  for(const notes of [[4,2,2,8],[8,2,4,2],[16],[8,8],[4,4,4,4],Array(16).fill(1),[8,4,2,1,1]])assert.equal(validBar(notes),true);
@@ -18,7 +18,7 @@ test('the build-a-bar check accepts any supported notes totaling four beats',()=
 test('progress never accepts an incomplete lesson as completed and handles damaged saves',()=>{
  const state=normalize({version:1,lessons:{'note-naming':{step:3,completed:true},'rhythm-tree':{step:4,completed:true,completedAt:12}}});
  assert.equal(state.lessons['note-naming'].completed,false);assert.equal(state.lessons['rhythm-tree'].completed,true);
- const saved=readProgress({getItem:key=>key===KEY?JSON.stringify(state):null});assert.deepEqual(saved.completed,['rhythm-tree']);assert.equal(saved.completedCount,1);assert.equal(saved.total,6);
+ const saved=readProgress({getItem:key=>key===KEY?JSON.stringify(state):null});assert.deepEqual(saved.completed,['rhythm-tree']);assert.equal(saved.completedCount,1);assert.equal(saved.total,8);
  const damaged=readProgress({getItem(){throw Error('blocked');}});assert.equal(damaged.completedCount,0);assert.equal(damaged.persistent,false);assert.ok(damaged.error);
 });
 test('bass and grand staff steps teach the requested bottom-up reminders and real pitches',()=>{
@@ -91,4 +91,33 @@ test('major and minor keys teach musical homes through short, correctly pitched 
  assert.match(KEY_STEPS[4].caption,/Either.*happy or sad/,'Mood is not a rigid major/minor rule');
  const legacy=normalize({version:1,lessons:{'note-naming':{step:10,completed:true,completedAt:123}}});
  assert.equal(legacy.lessons['note-naming'].completed,true);assert.deepEqual(legacy.lessons['major-minor-keys'],{step:0,completed:false,completedAt:0});
+});
+
+test('dynamics and tempo teach different musical controls using matching examples',()=>{
+ const {DYNAMIC_LEVELS,DYNAMICS_STEPS,TEMPO_STEPS,EXPRESSION_NOTES}=require('../classroom-tutorials.js');
+ assert.deepEqual(DYNAMIC_LEVELS.map(value=>value.mark),['pp','p','mp','mf','f','ff']);
+ assert.ok(DYNAMIC_LEVELS.every((value,index)=>value.gain>0&&value.gain<=.14&&(!index||value.gain>DYNAMIC_LEVELS[index-1].gain)));
+ for(const [id,steps]of [['dynamics',DYNAMICS_STEPS],['tempo',TEMPO_STEPS]]){
+  assert.equal(steps.length,8);assert.equal(LESSONS.find(lesson=>lesson.id===id).total,8);
+  for(const step of steps){
+   assert.ok(step.guide.split(/\s+/).length<=13,'One short teaching idea');
+   assert.equal(new Set(step.answers).size,3);assert.ok(step.answers[step.answer]);assert.ok(step.hint&&step.caption);
+   for(const sound of step.sounds){
+    assert.equal(sound.bpms.length,EXPRESSION_NOTES.length);assert.equal(sound.gains.length,EXPRESSION_NOTES.length);
+    assert.ok(sound.bpms.every(bpm=>Number.isFinite(bpm)&&bpm>=60&&bpm<=168));
+    if(id==='dynamics')assert.ok(sound.bpms.every(bpm=>bpm===100),'Dynamics must not change speed');
+    else assert.ok(sound.gains.every(gain=>gain===.075),'Tempo must not change loudness');
+   }
+  }
+ }
+ const dynamicsCopy=JSON.stringify(DYNAMICS_STEPS),tempoCopy=JSON.stringify(TEMPO_STEPS);
+ for(const term of ['pianissimo','piano','mezzo piano','mezzo forte','forte','fortissimo'])assert.ok(DYNAMIC_LEVELS.some(level=>level.name===term));
+ for(const term of ['crescendo','diminuendo','decrescendo'])assert.ok(dynamicsCopy.includes(term));
+ for(const term of ['Largo','Adagio','Andante','Moderato','Allegro','Presto','accelerando','ritardando','BPM'])assert.ok(tempoCopy.includes(term));
+ const louder=DYNAMICS_STEPS[5].sounds[0].gains,softer=DYNAMICS_STEPS[6].sounds[0].gains;
+ assert.ok(louder.every((value,index)=>!index||value>louder[index-1]));assert.deepEqual(softer,[...louder].reverse());
+ const faster=TEMPO_STEPS[5].sounds[0].bpms,slower=TEMPO_STEPS[6].sounds[0].bpms;
+ assert.ok(faster.every((value,index)=>!index||value>faster[index-1]));assert.deepEqual(slower,[...faster].reverse());
+ const old=normalize({version:1,lessons:{'note-naming':{step:10,completed:true,completedAt:1}}});
+ assert.equal(old.lessons['note-naming'].completed,true);assert.equal(old.lessons.dynamics.step,0);assert.equal(old.lessons.tempo.completed,false);
 });

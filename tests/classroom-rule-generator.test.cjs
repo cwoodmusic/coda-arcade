@@ -22,7 +22,7 @@ test('piano and major/minor lessons expand only their exact teacher/student vali
 });
 
 test('array index caps accept exactly canonical decimal keys up to maxItems-1',()=>{
- for(const limit of [1,2,4,9,10,16,40,256,4096,5000,20000]){
+ for(const limit of [1,2,4,9,10,16,40,80,256,4096,5000,20000]){
   const regex=new RegExp(arrayIndexRegex(limit));
   for(let index=0;index<limit;index++)assert.equal(regex.test(String(index)),true,limit+':'+index);
   for(const invalid of [String(limit),String(limit+1),String(limit*10),'00','01','-1','1.0','1e0','name','', ' 0'])
@@ -122,4 +122,37 @@ test('additional quest targets change only the student and teacher mission valid
   assert.deepEqual(rules.$other,{'.validate':false});
   for(const id of legacyIds)assert.deepEqual(rules[id],previous[0][id],id+' retains its original contract');
  }
+});
+
+
+test('Dynamics, Tempo, and optional final exams expand only their exact private data subtrees',()=>{
+ const legacy=JSON.parse(JSON.stringify(SCHEMA));
+ for(const slot of ['lessons','quizzes'])for(const id of ['dynamics','tempo'])delete legacy.properties[slot].properties[slot].properties[id];
+ delete legacy.properties.finalExam;
+ const before=buildClassroomRules(legacy),after=buildClassroomRules(SCHEMA);
+ function strip(rules){for(const data of [rules.rules.classroomV1.teacherPlayers.$uid.state.data,rules.rules.classroomV1.classes.$classId.profiles.$profileId.state.data]){
+  delete data.finalExam;for(const slot of ['lessons','quizzes'])for(const id of ['dynamics','tempo'])delete data[slot][slot][id];
+ }}
+ strip(after);const alpha=value=>JSON.parse(JSON.stringify(value).replace(/\$dtoIndex\d+/g,'$dtoIndex'));
+ assert.deepEqual(alpha(after),alpha(before),'Roles, ownership, leases, revisions and all original validation remain identical');
+ const rules=buildClassroomRules(SCHEMA).rules.classroomV1,teacher=rules.teacherPlayers.$uid.state.data,student=rules.classes.$classId.profiles.$profileId.state.data;
+ assert.deepEqual(teacher.finalExam,student.finalExam);assert.doesNotMatch(teacher['.validate'],/finalExam/);
+ assert.equal(Buffer.byteLength(renderClassroomRules(SCHEMA))<256*1024,true,'Canonical rules remain within the RTDB source size limit');
+ assert.equal(JSON.stringify(rules).includes('codaSongMachineDraftV1'),false,'Private drafts never become cloud data');
+});
+
+test('final exam rules allow only the known 800 question IDs and bounded choice and answer arrays',()=>{
+ const schema=SCHEMA.properties.finalExam,converted=convertSchema(schema),questions=converted.questionIds;
+ const question=questions[Object.keys(questions).find(key=>key.startsWith('$'))];
+ const literal=question['.validate'].match(/newData\.val\(\)\.matches\((\/.+\/)\)/)[1];
+ const known=Function('return '+literal)();
+ for(const id of schema.properties.questionIds.items.enum)assert.equal(known.test(id),true,id);
+ for(const id of ['note-naming-000','note-naming-101','note-naming-1','note-naming-001-extra','student-name-001','tempo-100\n','tempo/001'])assert.equal(known.test(id),false,id);
+ for(const key of ['questionIds','orders','answers']){
+  const array=converted[key],variable=Object.keys(array).find(key=>key.startsWith('$'));
+  assert.ok(array[variable]['.validate'].includes(arrayIndexRegex(80)));
+ }
+ assert.deepEqual(schema.properties.orders.items,{type:'integer',minimum:0,maximum:5});
+ assert.deepEqual(schema.properties.answers.items,{type:'integer',minimum:-1,maximum:2});
+ assert.deepEqual(schema.properties.bestByCategory.required,['note-naming','bass-clef','grand-staff','rhythm-tree','time-signatures','major-minor-keys','dynamics','tempo']);
 });

@@ -140,7 +140,42 @@
   {guide:'Minor scales can start on different home notes too.',caption:'This is A natural minor.',notes:['A','B','C','D','E','F','G','A'],home:'A',sounds:[{label:'Hear A natural minor',notes:[57,59,60,62,64,65,67,69]}],prompt:'What is A minor’s home?',answers:['C','G','A'],answer:2,hint:'A minor comes home to A.'},
   {guide:'The same notes can have different homes.',caption:'C major and A minor share notes. Their homes are different.',notes:['C','D','E','F','G','A','B'],home:'C',minorNotes:['A','B','C','D','E','F','G'],minorHome:'A',sounds:[{label:'Hear C as home',notes:[60,64,67,72,67,64,60]},{label:'Hear A as home',notes:[57,60,64,69,64,60,57]}],prompt:'Do these keys have the same home?',answers:['No: C and A','Yes: both C','Yes: both A'],answer:0,hint:'Look at the glowing home notes: C and A.'}
  ].map(step=>Object.freeze({...step,notes:Object.freeze(step.notes),minorNotes:step.minorNotes?Object.freeze(step.minorNotes):null,answers:Object.freeze(step.answers),sounds:Object.freeze(step.sounds.map(sound=>Object.freeze({...sound,notes:Object.freeze(sound.notes)})))})));
- const LESSONS=Object.freeze([{id:'note-naming',title:'Note naming',total:NOTE_STEPS.length},{id:'rhythm-tree',title:'The rhythm tree',total:4},timeLesson?.LESSON||{id:'time-signatures',title:'Time signatures',total:8},{id:'bass-clef',title:'Bass clef',total:BASS_STEPS.length},{id:'grand-staff',title:'Grand staff & Middle C',total:GRAND_STEPS.length},{id:'major-minor-keys',title:'Major & minor keys',total:KEY_STEPS.length}].map(Object.freeze));
+ // One melody makes loudness and speed comparisons about just one changing thing.
+ const EXPRESSION_NOTES=Object.freeze([60,64,67,64,60,60]);
+ const DYNAMIC_LEVELS=Object.freeze([
+  {mark:'pp',name:'pianissimo',meaning:'very soft',gain:.018,code:0xe52b},
+  {mark:'p',name:'piano',meaning:'soft',gain:.032,code:0xe520},
+  {mark:'mp',name:'mezzo piano',meaning:'moderately soft',gain:.050,code:0xe52c},
+  {mark:'mf',name:'mezzo forte',meaning:'moderately loud',gain:.075,code:0xe52d},
+  {mark:'f',name:'forte',meaning:'loud',gain:.105,code:0xe522},
+  {mark:'ff',name:'fortissimo',meaning:'very loud',gain:.140,code:0xe52f}
+ ].map(Object.freeze));
+ const expressionSound=(label,bpm=100,gain=.075)=>({label,bpms:Array.isArray(bpm)?bpm:Array(6).fill(bpm),gains:Array.isArray(gain)?gain:Array(6).fill(gain)});
+ const softLoud=()=>[expressionSound('Hear soft',100,.032),expressionSound('Hear loud',100,.105)];
+ const slowerFaster=()=>[expressionSound('Hear slower',72),expressionSound('Hear faster',132)];
+ const freezeExpression=steps=>Object.freeze(steps.map(item=>Object.freeze({...item,marks:item.marks?Object.freeze(item.marks):null,words:item.words?Object.freeze(item.words):null,answers:Object.freeze(item.answers),sounds:Object.freeze(item.sounds.map(sound=>Object.freeze({...sound,bpms:Object.freeze(sound.bpms),gains:Object.freeze(sound.gains)})))})));
+ const DYNAMICS_STEPS=freezeExpression([
+  {guide:'Dynamics means how loud or soft music is.',caption:'Same tune. Same speed. Different loudness.',marks:['p','f'],sounds:softLoud(),prompt:'What do dynamics change?',answers:['Loudness','Speed','Note letters'],answer:0,hint:'Dynamics tells us how loud or soft to play.'},
+  {guide:'Piano means soft. Its music sign is p.',caption:'p = piano = soft',marks:['p'],sounds:[expressionSound('Hear piano: soft',100,.032)],prompt:'What does p mean?',answers:['Fast','Soft','Loud'],answer:1,hint:'Piano starts with p. It means soft.'},
+  {guide:'Forte means loud. Its music sign is f.',caption:'f = forte = loud',marks:['f'],sounds:[expressionSound('Hear forte: loud',100,.105)],prompt:'What does f mean?',answers:['Slow','Soft','Loud'],answer:2,hint:'Forte starts with f. It means loud.'},
+  {guide:'Double the letter for very soft or very loud.',caption:'pp = pianissimo: very soft. ff = fortissimo: very loud.',marks:['pp','ff'],sounds:[expressionSound('Hear pp: very soft',100,.018),expressionSound('Hear ff: very loud',100,.140)],prompt:'Which means very soft?',answers:['pp','ff','f'],answer:0,hint:'Two p signs make pianissimo: very soft.'},
+  {guide:'Mezzo means moderately. These levels sit in the middle.',caption:'mp = mezzo piano: moderately soft. mf = mezzo forte: moderately loud.',marks:['mp','mf'],sounds:[expressionSound('Hear mp',100,.050),expressionSound('Hear mf',100,.075)],prompt:'Which means moderately loud?',answers:['mp','mf','pp'],answer:1,hint:'Mezzo forte: moderately loud. Look for mf.'},
+  {guide:'Crescendo means grow louder little by little.',caption:'The opening sign shows the sound growing.',hairpin:'crescendo',sounds:[expressionSound('Hear crescendo',100,DYNAMIC_LEVELS.map(value=>value.gain))],prompt:'What happens during a crescendo?',answers:['It gets faster','It stops','It gets louder'],answer:2,hint:'Keep the same beat. Let the sound grow louder.'},
+  {guide:'Diminuendo means grow softer little by little.',caption:'Also called decrescendo. The sign closes.',hairpin:'diminuendo',sounds:[expressionSound('Hear diminuendo',100,DYNAMIC_LEVELS.map(value=>value.gain).reverse())],prompt:'What happens during a diminuendo?',answers:['It gets softer','It gets faster','It gets louder'],answer:0,hint:'The sound shrinks. The beat stays the same.'},
+  {guide:'Follow the loudness signs. Keep your steady beat.',caption:'Soft → loud. Speed does not change.',marks:['pp','p','mp','mf','f','ff'],sounds:softLoud(),prompt:'Can soft music still be fast?',answers:['No','Yes','Only with no beat'],answer:1,hint:'Loudness and speed are separate choices.'}
+ ]);
+ const TEMPO_STEPS=freezeExpression([
+  {guide:'Tempo means how fast or slow the beat goes.',caption:'Same tune. Same loudness. Different speed.',words:['Slower','Faster'],sounds:slowerFaster(),prompt:'What does tempo change?',answers:['Loudness','Beat speed','Note letters'],answer:1,hint:'Tempo changes how quickly the beats arrive.'},
+  {guide:'BPM means beats per minute.',caption:'60 BPM: one beat each second. 120 BPM: twice as many.',words:['60 BPM','120 BPM'],sounds:[expressionSound('Hear 60 BPM',60),expressionSound('Hear 120 BPM',120)],prompt:'Which has more beats in one minute?',answers:['120 BPM','60 BPM','They are the same'],answer:0,hint:'120 beats is twice as many as 60 beats.'},
+  {guide:'Largo and Adagio are words for slow tempos.',caption:'Largo: broad and slow. Adagio: slowly.',words:['Largo','Adagio'],sounds:[expressionSound('Hear a slow example',60)],prompt:'Which word suggests a slow tempo?',answers:['Presto','Allegro','Adagio'],answer:2,hint:'Adagio means slowly. Presto is very fast.'},
+  {guide:'Andante feels like walking. Moderato means a moderate pace.',caption:'These words guide the feel, not one exact BPM.',words:['Andante','Moderato'],sounds:[expressionSound('Hear a walking example',88),expressionSound('Hear a moderate example',108)],prompt:'Which word suggests a walking pace?',answers:['Presto','Andante','Largo'],answer:1,hint:'Walk along with Andante.'},
+  {guide:'Allegro is lively and fast. Presto is very fast.',caption:'Exact speeds can vary with the music.',words:['Allegro','Presto'],sounds:[expressionSound('Hear a fast example',132),expressionSound('Hear a very fast example',168)],prompt:'Which word means very fast?',answers:['Presto','Adagio','Largo'],answer:0,hint:'Presto is the very fast word.'},
+  {guide:'Accelerando means get faster little by little.',caption:'The beats move closer together. Loudness stays the same.',words:['accelerando','Slow → fast'],sounds:[expressionSound('Hear accelerando',[72,84,96,108,120,132])],prompt:'What happens during accelerando?',answers:['It gets softer','It gets louder','It gets faster'],answer:2,hint:'Accelerando speeds up the beat.'},
+  {guide:'Ritardando means get slower little by little.',caption:'The beats spread apart. Loudness stays the same.',words:['ritardando','Fast → slow'],sounds:[expressionSound('Hear ritardando',[132,120,108,96,84,72])],prompt:'What happens during ritardando?',answers:['It gets louder','It gets slower','It gets softer'],answer:1,hint:'Ritardando slows down the beat.'},
+  {guide:'Choose speed and loudness separately.',caption:'Tempo = speed. Dynamics = loud or soft.',words:['Tempo: speed','Dynamics: loudness'],sounds:slowerFaster(),prompt:'Which instruction changes only tempo?',answers:['Keep loudness. Play faster.','Keep speed. Play louder.','Change the note letters.'],answer:0,hint:'To change tempo, change speed while keeping loudness.'}
+ ]);
+ const EXPRESSION_LESSONS=Object.freeze({dynamics:DYNAMICS_STEPS,tempo:TEMPO_STEPS});
+ const LESSONS=Object.freeze([{id:'note-naming',title:'Note naming',total:NOTE_STEPS.length},{id:'rhythm-tree',title:'The rhythm tree',total:4},timeLesson?.LESSON||{id:'time-signatures',title:'Time signatures',total:8},{id:'bass-clef',title:'Bass clef',total:BASS_STEPS.length},{id:'grand-staff',title:'Grand staff & Middle C',total:GRAND_STEPS.length},{id:'major-minor-keys',title:'Major & minor keys',total:KEY_STEPS.length},{id:'dynamics',title:'Dynamics: loud & soft',total:DYNAMICS_STEPS.length},{id:'tempo',title:'Tempo: fast & slow',total:TEMPO_STEPS.length}].map(Object.freeze));
  const SIMPLE_NOTE_COPY=Object.freeze({
   'note-naming':Object.freeze([
    ['Two black keys help us find C.','C','Tap C.','C is beside two black keys.'],
@@ -202,6 +237,14 @@
     notes.forEach((note,index)=>{const length=rhythm?note/4*beat:.38,pitch=rhythm?67:note,osc=context.createOscillator(),gain=context.createGain();osc.type='triangle';osc.frequency.value=440*2**((pitch-69)/12);gain.gain.setValueAtTime(.0001,at);gain.gain.exponentialRampToValueAtTime(.11,at+.012);gain.gain.exponentialRampToValueAtTime(.0001,at+Math.max(.04,length*.92));osc.connect(gain).connect(context.destination);osc.start(at);osc.stop(at+length);voices.push(osc);
      if(rhythm){const start=(at-context.currentTime)*1000;timers.push(win.setTimeout(()=>host.querySelector(treeLevel===null?'[data-pattern-index="'+index+'"]':'[data-tree-level="'+treeLevel+'"][data-tree-index="'+(index%2)+'"]')?.classList.add('is-playing'),start));timers.push(win.setTimeout(()=>host.querySelector(treeLevel===null?'[data-pattern-index="'+index+'"]':'[data-tree-level="'+treeLevel+'"][data-tree-index="'+(index%2)+'"]')?.classList.remove('is-playing'),start+length*1000));}at+=rhythm?length:.44;
     });timers.push(win.setTimeout(stopAudio,(at-context.currentTime+.2)*1000));
+   }catch{stopAudio();feedback('Sound could not start. You can still try the lesson.',null);}
+  }
+  function playExpression(sound){
+   stopAudio();const Constructor=api.AudioContext||win.AudioContext||win.webkitAudioContext;if(!Constructor){feedback('You can still try every question without sound.',null);return;}
+   try{audio=new Constructor();audio.resume().catch(()=>{});const context=audio;let at=context.currentTime+.05;
+    EXPRESSION_NOTES.forEach((pitch,index)=>{const beat=60/sound.bpms[index],length=.24,osc=context.createOscillator(),gain=context.createGain();osc.type='triangle';osc.frequency.value=440*2**((pitch-69)/12);gain.gain.setValueAtTime(.0001,at);gain.gain.exponentialRampToValueAtTime(sound.gains[index],at+.012);gain.gain.exponentialRampToValueAtTime(.0001,at+length);osc.connect(gain).connect(context.destination);osc.start(at);osc.stop(at+length+.01);voices.push(osc);
+     const start=(at-context.currentTime)*1000;timers.push(win.setTimeout(()=>{const pulse=host.querySelector('[data-expression-pulse]');if(pulse){pulse.classList.add('is-playing');pulse.textContent=String(index+1);}},start));timers.push(win.setTimeout(()=>host.querySelector('[data-expression-pulse]')?.classList.remove('is-playing'),start+Math.min(beat*.6,.24)*1000));at+=beat;
+    });timers.push(win.setTimeout(stopAudio,(at-context.currentTime+.1)*1000));
    }catch{stopAudio();feedback('Sound could not start. You can still try the lesson.',null);}
   }
   function feedback(text,isCorrect){message=text;correct=isCorrect;const status=host.querySelector('.tutorial-feedback');if(status){status.textContent=text;status.dataset.correct=String(isCorrect);}}
@@ -342,6 +385,23 @@
    }
    appendFeedback(section);nextButton(section,step===KEY_STEPS.length-1?'Start quiz':'Next');
   }
+  function renderExpression(section){
+   section.dataset.kind='expression';const steps=EXPRESSION_LESSONS[id],question=steps[step];
+   actionCue(section,learningStage==='look'?question.guide:answered?'Yes!':question.prompt);
+   const picture=element('figure','lesson-expression-picture'),symbols=element('div','lesson-expression-symbols');
+   if(question.marks)for(const mark of question.marks){const value=DYNAMIC_LEVELS.find(item=>item.mark===mark),symbol=element('span','lesson-dynamic-symbol',String.fromCodePoint(value.code));symbol.setAttribute('role','img');symbol.setAttribute('aria-label',mark+': '+value.name+', '+value.meaning);symbol.dataset.dynamic=mark;symbols.append(symbol);}
+   if(question.words)for(const word of question.words)symbols.append(element('span','lesson-tempo-word',word));
+   if(question.hairpin){const growing=question.hairpin==='crescendo',hairpin=element('div','lesson-hairpin');hairpin.setAttribute('role','img');hairpin.setAttribute('aria-label',question.hairpin+': gradually '+(growing?'louder':'softer'));hairpin.innerHTML='<svg viewBox="0 0 240 52" aria-hidden="true" focusable="false"><path d="'+(growing?'M12 26L228 7M12 26L228 45':'M12 7L228 26M12 45L228 26')+'" fill="none" stroke="currentColor" stroke-width="3"/></svg>';symbols.append(hairpin);}
+   picture.append(symbols,element('figcaption','lesson-expression-caption',question.caption));section.append(picture);
+   const sounds=element('div','lesson-actions lesson-expression-sounds');question.sounds.forEach((sound,index)=>sounds.append(button(sound.label,()=>playExpression(sound),{'data-expression-listen':index})));section.append(sounds);
+   const pulse=element('span','lesson-expression-pulse','•');pulse.dataset.expressionPulse='';pulse.setAttribute('aria-hidden','true');section.append(pulse);
+   if(learningStage==='look'){appendFeedback(section);tryButton(section);return;}
+   if(!answered){const answers=element('div','lesson-expression-answers');answers.setAttribute('role','group');answers.setAttribute('aria-label','Choose an answer');question.answers.forEach((label,index)=>answers.append(button(label,()=>{
+    if(answered||complete)return;if(index!==question.answer){feedback('Not yet. '+question.hint,false);return;}
+    stopAudio();answered=true;persist(step+1);message='Yes!';correct=true;render();host.querySelector('[data-tutorial-next]')?.focus({preventScroll:true});
+   },{'data-expression-answer':index})));section.append(answers);}
+   appendFeedback(section);nextButton(section,step===steps.length-1?'Start quiz':'Next');
+  }
   function appendFeedback(section){const feedbackNode=element('p','tutorial-feedback',message);feedbackNode.setAttribute('role','status');feedbackNode.setAttribute('aria-live','polite');feedbackNode.dataset.correct=String(correct);section.append(feedbackNode);}
   function renderComplete(section){
    actionCue(section,'You did it!');
@@ -353,7 +413,7 @@
    if(destroyed||!id)return;const oldFocus=host.contains(doc.activeElement)?doc.activeElement:null;let restore=null;if(oldFocus){for(const attr of ['data-pitch','data-note-answer','data-tree-split','data-tree-join','data-tutorial-next','data-add-value','data-check-rhythm','data-tutorial-replay'])if(oldFocus.hasAttribute(attr)){restore='['+attr+'=\"'+oldFocus.getAttribute(attr)+'\"]';break;}}host.replaceChildren();host.classList.add('classroom-tutorial');host.dataset.tutorial=id;host.dataset.phase=complete?'complete':quizzing?'quiz':'lesson';host.dataset.learningStage=learningStage;const lesson=LESSONS.find(item=>item.id===id),heading=element('div','lesson-topline');heading.append(element('span','lesson-step-label',complete?'Finished':quizzing?'Quiz':'Step '+(step+1)+' of '+lesson.total));host.append(heading);
    if(!quizzing){const progress=element('progress');progress.max=lesson.total;progress.value=complete?lesson.total:step+(answered?1:0);progress.setAttribute('aria-label',lesson.title+' progress');host.append(progress);}
    const section=element('section','lesson-content');section.setAttribute('aria-label',lesson.title+(quizzing?' quiz':' activity'));host.append(section);
-   if(complete)renderComplete(section);else if(quizzing){if(ensureQuiz())quiz.render(section);else section.append(element('p','lesson-teach','The quiz could not load. Reload the page to try again.'));}else if(NOTE_LESSONS[id])renderNaming(section);else if(id==='major-minor-keys')renderKeys(section);else if(id==='time-signatures'){if(signatureLesson)signatureLesson.render(section,{step,answered});else section.append(element('p','','The time-signature lesson could not load. Reload the page to try again.'));}else renderRhythm(section);const bookViewport=host.closest('.classroom-books');if(bookViewport)bookViewport.scrollTop=0;if(oldFocus&&!quizzing){let target=restore?host.querySelector(restore):null;if(!target||target.disabled)target=host.querySelector('h3');if(target){if(target.tagName==='H3')target.tabIndex=-1;target.focus({preventScroll:true});}}
+   if(complete)renderComplete(section);else if(quizzing){if(ensureQuiz())quiz.render(section);else section.append(element('p','lesson-teach','The quiz could not load. Reload the page to try again.'));}else if(NOTE_LESSONS[id])renderNaming(section);else if(id==='major-minor-keys')renderKeys(section);else if(EXPRESSION_LESSONS[id])renderExpression(section);else if(id==='time-signatures'){if(signatureLesson)signatureLesson.render(section,{step,answered});else section.append(element('p','','The time-signature lesson could not load. Reload the page to try again.'));}else renderRhythm(section);const bookViewport=host.closest('.classroom-books');if(bookViewport)bookViewport.scrollTop=0;if(oldFocus&&!quizzing){let target=restore?host.querySelector(restore):null;if(!target||target.disabled)target=host.querySelector('h3');if(target){if(target.tagName==='H3')target.tabIndex=-1;target.focus({preventScroll:true});}}
   }
   function reset(resume=true){
    stopAudio();quiz?.destroy();quiz=null;signatureLesson?.reset();const saved=readProgress(storage).lessons.find(lesson=>lesson.id===id),total=LESSONS.find(lesson=>lesson.id===id).total;step=resume?saved.step:0;complete=resume&&saved.completed;quizzing=resume&&!complete&&step>=total;freshQuiz=!resume;learningStage='look';answered=false;message='';correct=null;hintShown=false;level=0;explored=new Set([0]);bar=[];award=null;
@@ -362,5 +422,5 @@
   function open(lessonId){if(!LESSONS.some(lesson=>lesson.id===lessonId))return false;id=lessonId;reset();return true;}
   return {open,stopAudio,destroy(){stopAudio();quiz?.destroy();signatureLesson?.destroy();destroyed=true;host.replaceChildren();},getState:()=>({...readProgress(storage),active:id?{id,step,learningStage:id==='time-signatures'?signatureLesson?.getState().stage||'look':learningStage,answered,complete,phase:complete?'complete':quizzing?'quiz':'lesson',quiz:quiz?.getState()||null,treeLevel:level,explored:[...explored],bar:[...bar],timeSignatures:id==='time-signatures'?signatureLesson?.getState():null,audioPlaying:!!audio||signatureLesson?.getState().audioPlaying===true,error}:null})};
  }
- return {KEY,LESSONS,VALUES,NOTE_STEPS,BASS_STEPS,GRAND_STEPS,KEY_STEPS,NOTE_LESSONS,SIMPLE_NOTE_COPY,splitExample,validBar,normalize,readProgress,glyph,staffSVG,treeSVG,create};
+ return {KEY,LESSONS,VALUES,NOTE_STEPS,BASS_STEPS,GRAND_STEPS,KEY_STEPS,NOTE_LESSONS,DYNAMIC_LEVELS,DYNAMICS_STEPS,TEMPO_STEPS,EXPRESSION_LESSONS,EXPRESSION_NOTES,SIMPLE_NOTE_COPY,splitExample,validBar,normalize,readProgress,glyph,staffSVG,treeSVG,create};
 });
