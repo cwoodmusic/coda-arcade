@@ -5,15 +5,15 @@ const notation=require('../piano-wall-notation.js');
 test('major and natural minor scales use their real interval patterns and fit every painted key',()=>{
  const painted=new Set(paintedFloorKeys().map(key=>key.offset));
  const patterns={major:[2,2,1,2,2,2,1],minor:[2,1,2,2,1,2,2]};
- assert.equal(SCALES.length,8);assert.equal(new Set(SCALES.map(scale=>scale.id)).size,8);
+ assert.equal(SCALES.length,24);assert.equal(new Set(SCALES.map(scale=>scale.id)).size,24);assert.equal(SCALES.filter(scale=>scale.type==='major').length,12);assert.equal(SCALES.filter(scale=>scale.type==='minor').length,12);
  for(const scale of SCALES){
   assert.ok(Object.isFrozen(scale));assert.ok(Object.isFrozen(scale.notes));
-  assert.equal(scale.notes.length,8);assert.equal(scale.spellings.length,8);
-  assert.deepEqual(scale.notes.slice(1).map((note,index)=>note-scale.notes[index]),patterns[scale.type],scale.id);
-  assert.equal(scale.notes.at(-1)-scale.notes[0],12,scale.id+' reaches the same letter one octave higher');
-  assert.ok(scale.notes.every(note=>painted.has(note)),scale.id+' stays on the painted 22-key floor');
+  assert.equal(scale.notes.length,15);assert.equal(scale.spellings.length,15);
+  assert.deepEqual(scale.notes.slice(1,8).map((note,index)=>note-scale.notes[index]),patterns[scale.type],scale.id);
+  assert.equal(scale.notes[7]-scale.notes[0],12,scale.id+' reaches the same letter one octave higher');assert.equal(scale.notes.at(-1),scale.notes[0]);assert.deepEqual(scale.notes.slice(8),scale.notes.slice(0,7).reverse(),scale.id+' descends to the starting tonic');
+  assert.equal(scale.events.reduce((sum,event)=>sum+event.beats,0),16);assert.equal(scale.events.at(-1).beats,2);assert.ok(scale.notes.every(note=>painted.has(note)),scale.id+' stays on the painted 24-key floor');
   assert.equal(scale.spellings[0][0],scale.spellings.at(-1)[0]);
-  for(let index=0;index<8;index++)assert.equal(notation.pitch(60+scale.notes[index],scale.spellings[index]).label,scale.spellings[index]);
+  for(let index=0;index<15;index++)assert.equal(notation.pitch(60+scale.notes[index],scale.spellings[index]).label,scale.spellings[index]);
  }
  assert.ok(SCALES.some(scale=>scale.type==='major'&&scale.spellings.includes('F♯')));
  assert.ok(SCALES.some(scale=>scale.spellings.includes('B♭')));

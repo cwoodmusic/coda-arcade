@@ -5,6 +5,7 @@ QUIZ_ANSWERS = {
     'time-signatures': (2, 1, 0, 2, 1),
     'bass-clef': (0, 1, 2, 0, 1),
     'grand-staff': (0, 1, 2, 0, 2),
+    'major-minor-keys': (0, 1, 2, 0, 1),
 }
 
 

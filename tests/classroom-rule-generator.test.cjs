@@ -5,6 +5,22 @@ const path=require('node:path');
 const {SCHEMA}=require('../classroom-profile-data.js');
 const {arrayIndexRegex,convertSchema,buildClassroomRules,renderClassroomRules}=require('../tools/build-classroom-rules.cjs');
 
+test('piano and major/minor lessons expand only their exact teacher/student validation fields',()=>{
+ const previous=JSON.parse(JSON.stringify(SCHEMA)),legacyScales='c-major g-major d-major f-major a-minor c-minor d-minor e-minor'.split(' '),completed=previous.properties.piano.properties.completed;
+ completed.maxItems=40;completed.items.enum=completed.items.enum.filter(id=>!id.startsWith('piano-scale-memory:')&&(!id.startsWith('piano-scale:')||legacyScales.includes(id.slice(12))));
+ delete previous.properties.lessons.properties.lessons.properties['major-minor-keys'];
+ delete previous.properties.quizzes.properties.quizzes.properties['major-minor-keys'];
+ const before=buildClassroomRules(previous),after=buildClassroomRules(SCHEMA);
+ function strip(rules){for(const data of [rules.rules.classroomV1.teacherPlayers.$uid.state.data,rules.rules.classroomV1.classes.$classId.profiles.$profileId.state.data]){
+  delete data.piano.completed;delete data.lessons.lessons['major-minor-keys'];delete data.quizzes.quizzes['major-minor-keys'];
+ }}
+ // Generated array variables are local bindings. Two new quiz arrays change
+ // later variable numbers without changing those arrays' constraints.
+ const alphaEquivalent=value=>JSON.parse(JSON.stringify(value).replace(/\$dtoIndex\d+/g,'$dtoIndex'));
+ strip(before);strip(after);assert.deepEqual(alphaEquivalent(after),alphaEquivalent(before),'Roles, journals, profile boundaries, leases and all unrelated field constraints are unchanged');
+ assert.equal(completed.items.enum.length,40);
+});
+
 test('array index caps accept exactly canonical decimal keys up to maxItems-1',()=>{
  for(const limit of [1,2,4,9,10,16,40,256,4096,5000,20000]){
   const regex=new RegExp(arrayIndexRegex(limit));

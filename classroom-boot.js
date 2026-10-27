@@ -41,7 +41,7 @@
    gate.hidden=false;gate.replaceChildren();const heading=win.document.createElement('h2');heading.textContent='Your classroom profile';
    const message=win.document.createElement('p');message.textContent=text;
    const open=win.document.createElement('button');open.type='button';open.textContent='Open my profile';open.onclick=()=>{gate.hidden=true;ui?.open();};
-   const guest=win.document.createElement('button');guest.type='button';guest.textContent='Play without a saved profile';guest.onclick=async()=>{const result=await service?.leave({discard:true});if(result?.ok)hideGate();};
+   const guest=win.document.createElement('button');guest.type='button';guest.textContent='Play without a saved profile';guest.onclick=async()=>{const result=await service?.leave({discard:true,exitToTitle:false});if(result?.ok)hideGate();};
    gate.append(heading,message,open,guest);
  }
  function start(options={}){
@@ -54,15 +54,25 @@
      if(entryView&&scope?.tabId)try{win.sessionStorage.setItem(ENTRY_KEY,JSON.stringify({version:1,tabId:scope.tabId,view:entryView}));}catch{}
      win.location.reload();
    };
+   const returnToTitle=()=>{
+     if(win.CodaDeveloperTestMode?.isEnabled?.())return false;
+     try{
+       identityReloading=true;preparing=true;
+       win.document.documentElement.classList.add('classroom-preparing');
+       win.location.replace(new URL('index.html',win.location.href).href);return true;
+     }catch{identityReloading=false;return false;}
+   };
    const settings=error?{...config,classroom:{...config.classroom,enabled:false}}:config;
    service=win.CodaClassroom.create({window:win,config:settings,storageScope:scope,
      onIdentityChange:event=>{
        options.beforeIdentityChange?.(event);
+       if(event.exitToTitle&&returnToTitle())return;
        if(event.reloadNeeded){reloadIdentity();return;}
        hideGate();options.onState?.(service.getState());
      },
      onLock:event=>{
        options.onLock?.(event);
+       if(event.exitToTitle&&returnToTitle())return;
        if(event.reloadNeeded){try{win.sessionStorage.setItem('codaClassroomNoticeV1',event.reason);}catch{}reloadIdentity();return;}
        showGate(event.reason==='workspace-lost'?'Your profile is open in another tab.':'Ask your teacher to help open your card again.');
      }

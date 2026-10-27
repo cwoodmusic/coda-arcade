@@ -148,7 +148,7 @@ class PianoLabTests(unittest.TestCase):
     def test_scale_and_interval_events_include_the_challenge_type_and_mistakes(self):
         for scale,kind,offsets in [('c-major','major',[0,2,4,5,7,9,11,12]),('a-minor','minor',[9,11,12,14,16,17,19,21])]:
             self.menu('games');self.page.locator('#pianoScale').select_option(scale);self.page.locator('#pianoStartScale').click()
-            self.page.locator('[data-piano-dialogue-action="play"]').click();self.play_sequence([60+offset for offset in offsets])
+            self.page.locator('[data-piano-dialogue-action="play"]').click();self.play_sequence([60+offset for offset in offsets+list(reversed(offsets[:-1]))])
             event=self.page.evaluate('challengeCompletions.at(-1)')
             self.assertEqual((event['kind'],event['scaleType'],event['lessonId'],event['mistakes']),('scale',kind,scale,0))
         self.menu('games');self.page.locator('#pianoInterval').select_option('up-4');self.page.locator('#pianoStartInterval').click()
@@ -363,7 +363,7 @@ class PianoLabTests(unittest.TestCase):
         self.page.locator('#closepiano').focus(); self.page.keyboard.press('Shift+Tab')
         self.assertTrue(self.page.evaluate('pianoroom.contains(document.activeElement)'))
 
-    def test_painted_keys_keep_their_art_and_hit_the_same_perspective_polygons(self):
+    def test_expanded_keys_keep_the_room_frame_and_hit_the_same_perspective_polygons(self):
         background = 'data:image/png;base64,'+base64.b64encode((ROOT/'assets/world/piano-lab-room.png').read_bytes()).decode()
         self.page.evaluate('''url=>{
           lab.destroy();window.lab=createCodaPianoLab({host:document.querySelector('#pianoroom'),
@@ -379,13 +379,23 @@ class PianoLabTests(unittest.TestCase):
           const image=new Image();image.src=lab.getState().background.url;
           return image.decode().then(()=>{
             painter.drawImage(image,0,0,1000,620);
-            return [[327,75],[400,450],[700,500]].map(([x,y])=>({
+            return [[327,75],[400,550],[940,450]].map(([x,y])=>({
              actual:Array.from(g.getImageData(x,y,1,1).data),
              expected:Array.from(painter.getImageData(x,y,1,1).data)}));
           });
         }''')
-        for pixel in result: self.assertEqual(pixel['actual'],pixel['expected'],'Live piano must preserve the painted key and wall-frame pixels')
-        keys=self.state()['floorKeys'];self.assertEqual(len(keys),22)
+        for pixel in result: self.assertEqual(pixel['actual'],pixel['expected'],'Expanding the keybed must preserve the room and outer-frame pixels')
+        keys=self.state()['floorKeys'];self.assertEqual(len(keys),24)
+        ink=self.page.evaluate('''()=>{
+          const g=document.querySelector('#pianoRoomCanvas').getContext('2d');
+          return lab.getState().floorKeys.map(key=>{
+            const x=key.black?key.polygon.reduce((sum,p)=>sum+p[0],0)/4:(key.polygon[2][0]+key.polygon[3][0])/2,
+              y=key.black?key.polygon.reduce((sum,p)=>sum+p[1],0)/4:key.polygon[2][1]-10;
+            const pixel=g.getImageData(Math.floor(x),Math.floor(y),1,1).data;
+            return {midi:key.midi,black:key.black,brightness:(pixel[0]+pixel[1]+pixel[2])/3};
+          });
+        }''')
+        self.assertTrue(all(key['brightness']<110 if key['black'] else key['brightness']>140 for key in ink),ink)
         def point(midi):
             key=next(key for key in keys if key['midi']==midi)
             if key['black']:

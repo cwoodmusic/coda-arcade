@@ -39,6 +39,36 @@ test('blank classroom profiles are bounded, private, and independent of guest st
  assert.ok(Object.isFrozen(D.SCHEMA));assert.ok(Object.isFrozen(D.SCHEMA.properties.avatar.properties));
 });
 
+test('all major/minor scale and memory rewards fit the closed piano journal and preserve old saves',()=>{
+ const piano=require('../piano-lab.js'),scales=piano.SCALES.map(scale=>scale.id),schema=D.SCHEMA.properties.piano.properties.completed;
+ assert.equal(scales.length,24);assert.equal(schema.maxItems,80);assert.equal(schema.items.enum.length,80);
+ for(const id of scales)for(const prefix of ['piano-scale:','piano-scale-memory:'])assert.ok(schema.items.enum.includes(prefix+id));
+ const saved=D.blank(),tokens=schema.items.enum;
+ saved.piano.completed=[...tokens];saved.wallet.rewards=[...tokens];saved.wallet.balance=saved.wallet.earned=10000;
+ saved.progression.events=tokens.map(id=>({id:'quest:'+id,xp:100}));
+ saved.progression.events.push({id:'achievement:piano-memory-master',xp:250});
+ saved.progression.xp=saved.progression.events.reduce((sum,event)=>sum+event.xp,0);
+ const store=storage();assert.equal(D.validate(saved).ok,true);assert.equal(D.apply(store,saved).ok,true);
+ assert.deepEqual(D.capture(store).data,saved);
+ const missing=clone(saved);missing.progression.events=missing.progression.events.filter(event=>event.id!=='quest:piano-scale-memory:b-major');missing.progression.xp-=100;
+ assert.equal(D.validate(missing).ok,false,'A memory reward still requires its saved XP proof');
+ const unknown=clone(saved);unknown.piano.completed.push('piano-scale-memory:unlisted-key');assert.equal(D.validate(unknown).ok,false);
+ const old=profile();delete old.lessons.lessons['major-minor-keys'];delete old.quizzes.quizzes['major-minor-keys'];
+ const restored=D.validate(old);assert.equal(restored.ok,true,restored.error);assert.equal(restored.data.lessons.lessons['major-minor-keys'].step,0);
+ assert.equal(restored.data.quizzes.quizzes['major-minor-keys'].index,0);
+});
+
+test('major/minor lesson completion needs the passing quiz and its own earned experience',()=>{
+ const saved=D.blank(),id='major-minor-keys';
+ saved.lessons.lessons[id]={step:8,completed:true,completedAt:400};
+ saved.quizzes.quizzes[id]={bankVersion:1,index:5,answers:[0,1,2,0,1],bestAnswers:[0,1,2,0,1],completedAt:400};
+ assert.equal(D.validate(saved).ok,false);
+ saved.progression.events=[{id:'achievement:classroom-'+id,xp:50}];saved.progression.xp=50;
+ assert.equal(D.validate(saved).ok,true);
+ const wrong=clone(saved);wrong.quizzes.quizzes[id].answers=wrong.quizzes.quizzes[id].bestAnswers=[2,2,2,2,2];assert.equal(D.validate(wrong).ok,false);
+ saved.lessons.lessons[id].studentName='Not permitted';assert.equal(D.validate(saved).ok,false);
+});
+
 test('a full avatar, currency, progression, missions, catches, lessons, and checkpoint round trip',()=>{
  const data=profile(),store=storage();assert.equal(D.validate(data).ok,true);assert.equal(D.apply(store,data).ok,true);
  const captured=D.capture(store);assert.equal(captured.ok,true,captured.error);assert.deepEqual(captured.data,data);

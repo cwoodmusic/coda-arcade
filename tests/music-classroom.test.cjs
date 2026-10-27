@@ -5,7 +5,7 @@ test('Haydn, every bookshelf and all interactive lessons have useful study conte
   assert.equal(HAYDN.name,'Professor Haydn');
   assert.equal(SHELVES.length,3);
   const ids=new Set(TOPICS.map(topic=>topic.id));assert.equal(ids.size,TOPICS.length);assert.ok(TOPICS.length>=14);
-  for(const id of ['welcome','pitch-race','music-triad','rhythm-room','pitch','staff','intervals','triads','rhythm','meter','piano','song-machine','note-naming','rhythm-tree','time-signatures','bass-clef','grand-staff'])assert.ok(ids.has(id),id);
+  for(const id of ['welcome','pitch-race','music-triad','rhythm-room','pitch','staff','intervals','triads','rhythm','meter','piano','song-machine','note-naming','rhythm-tree','time-signatures','bass-clef','grand-staff','major-minor-keys'])assert.ok(ids.has(id),id);
   for(const shelf of SHELVES){assert.ok(ids.has(shelf.topic));assert.ok(shelf.approach.y>=285&&shelf.approach.y<=565);}
   for(const topic of TOPICS){
     assert.ok(topic.title&&topic.html,topic.id);
@@ -24,7 +24,7 @@ test('classroom covers all cabinets and both Chopin game types accurately',()=>{
   for(const game of ['Pitch Race','Music Triad','Rhythm Room','Song Machine','Piano Lab'])assert.ok(all.includes(game));
   assert.match(topicFor('music-triad').html,/Notes battle notes/i);assert.match(topicFor('music-triad').html,/Rests battle rests/i);
   assert.match(topicFor('music-triad').html,/3 × 3/);
-  assert.match(topicFor('piano').html,/walking (?:is silent|stays quiet)/i);assert.match(topicFor('piano').html,/<strong>E/);
+  assert.match(topicFor('piano').html,/walking (?:is silent|stays quiet)/i);assert.match(topicFor('piano').html,/<strong>E/);assert.match(topicFor('piano').html,/major or natural minor/);assert.match(topicFor('piano').html,/back down/);assert.match(topicFor('piano').html,/memory challenge/);
   assert.match(topicFor('intervals').html,/half step/i);assert.match(topicFor('intervals').html,/starting key/i);
   assert.match(topicFor('meter').html,/6\/8/);assert.match(topicFor('meter').html,/two big beats/i);
   assert.match(topicFor('song-machine').html,/sixteen|16/i);assert.match(topicFor('song-machine').html,/one bar/i);

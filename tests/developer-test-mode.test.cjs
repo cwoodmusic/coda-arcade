@@ -64,6 +64,17 @@ test('the sandbox denies native IndexedDB access and restores the real browsing-
  f.pagehide();assert.equal(f.win.name,f.originalName);f.win.name='sandbox-name-again';assert.equal(mode.exit(),true);assert.equal(f.win.name,f.originalName);assert.equal(new URL(f.navigations.at(-1).url).searchParams.has('dev-test'),false);assert.equal(f.navigations.at(-1).method,'replace');assertNativeUnchanged(f);
 });
 
+test('sandbox tab names never write the browser context name that reloads and Google-session bindings inherit',()=>{
+ const f=fixture({owner:true});let nativeName=f.originalName,writes=0;
+ Object.defineProperty(f.win,'name',{configurable:true,enumerable:true,get:()=>nativeName,set:value=>{nativeName=String(value);writes++;}});
+ const mode=create(f.win),boundary=storageAPI.create({window:f.win,keys:data.SCOPED_KEYS});
+ assert.notEqual(f.win.name,f.originalName,'The sandbox still receives its own virtual workspace name');
+ assert.equal(nativeName,f.originalName,'A new document inherits the untouched real browsing-context name');assert.equal(writes,0);
+ f.win.name='another preview name';assert.equal(nativeName,f.originalName);assert.equal(writes,0);
+ f.pagehide();assert.equal(nativeName,f.originalName);assert.equal(writes,0);assert.equal(mode.exit(),true);assert.equal(writes,0);
+ boundary.destroy();assertNativeUnchanged(f);
+});
+
 test('enter uses a same-tab clean URL and drops profile actions and pass fragments',()=>{
  const f=fixture({url:'https://www.coda-arcade.com/world-preview.html?v=next&profile=admin#classroom-pass=PRIVATE'}),mode=create(f.win);assert.equal(mode.enter(),true);const nav=f.navigations[0],url=new URL(nav.url);assert.equal(nav.method,'assign');assert.equal(url.origin,'https://www.coda-arcade.com');assert.equal(url.pathname,'/world-preview.html');assert.equal(url.searchParams.get('dev-test'),'1');assert.equal(url.searchParams.get('v'),'next');assert.equal(url.searchParams.has('profile'),false);assert.equal(url.hash,'');assertNativeUnchanged(f);
 });
@@ -72,6 +83,14 @@ test('unavailable native storage still permits a fresh isolated demo; nonreplace
  const f=fixture();for(const key of ['localStorage','sessionStorage'])Object.defineProperty(f.win,key,{configurable:true,get(){throw Error('Storage blocked');}});
  const mode=create(f.win);assert.equal(mode.getState().isolated,true);assert.equal(mode.seedUnlocks().ok,true);assert.equal(JSON.parse(f.win.localStorage.musicArcadeV1).name,'Test player');assertNativeUnchanged(f);
  const frozen=fixture();Object.defineProperty(frozen.win,'localStorage',{configurable:false,value:frozen.local});const refused=create(frozen.win);assert.equal(refused.getState().isolated,false);assert.equal(refused.seedUnlocks().ok,false);assert.match(refused.getState().error,/safely/);assert.throws(()=>frozen.win.CodaClassroomStorage.create({window:frozen.win,keys:data.SCOPED_KEYS}),/unavailable/);assertNativeUnchanged(frozen);
+});
+
+test('a nonreplaceable browser name rolls back the storage overrides and fails closed',()=>{
+ const f=fixture({owner:true}),database=f.win.indexedDB;
+ Object.defineProperty(f.win,'name',{configurable:false,writable:true,value:f.originalName});
+ const refused=create(f.win);assert.equal(refused.getState().isolated,false);assert.equal(refused.seedUnlocks().ok,false);
+ assert.equal(f.win.localStorage,f.local);assert.equal(f.win.sessionStorage,f.session);assert.equal(f.win.indexedDB,database);assert.equal(f.win.name,f.originalName);
+ assert.throws(()=>f.win.CodaClassroomStorage.create({window:f.win,keys:data.SCOPED_KEYS}),/unavailable/);assertNativeUnchanged(f);
 });
 
 test('memory Storage supports property and native-method operations without shared references',()=>{

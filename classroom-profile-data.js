@@ -24,12 +24,13 @@
  const COLORS=['skin','hair','shirt','lowerColor','headwearColor','eyewearColor'];
  const DEFAULT_AVATAR={version:1,skin:'#e5ad75',hair:'#171424',shirt:'#999ca6',lowerColor:'#626875',headwearColor:'#db687f',eyewearColor:'#30374b',hairstyle:'bald',outfit:'pants',headwear:'none',eyewear:'none',accessory:'none',shoes:'sneakers',emote:'wave',form:'human',pet:'none',customized:false,walked:0,jumps:0,emotesUsed:0};
  const STAT_NAMES=split('totalRounds pitchRounds pitchCorrect pitchStreak pitchWins pitchImproved pitchPerfect pitchBestClassic pitchBestEndless pitchBestLevels pitchBestMulti triadRounds triadCaptures triadWins triadComebacks rhythmRounds rhythmBest rhythm90 rhythmPerfect');
- const LESSON_TOTALS={'note-naming':10,'rhythm-tree':4,'time-signatures':8,'bass-clef':9,'grand-staff':8};
- const QUIZ_CORRECT={'note-naming':[0,1,2,0,1],'rhythm-tree':[1,0,2,1,0],'time-signatures':[2,1,0,2,1],'bass-clef':[0,1,2,0,1],'grand-staff':[0,1,2,0,2]};
+ const LEGACY_LESSONS=['note-naming','rhythm-tree','time-signatures','bass-clef','grand-staff'];
+ const LESSON_TOTALS={'note-naming':10,'rhythm-tree':4,'time-signatures':8,'bass-clef':9,'grand-staff':8,'major-minor-keys':8};
+ const QUIZ_CORRECT={'note-naming':[0,1,2,0,1],'rhythm-tree':[1,0,2,1,0],'time-signatures':[2,1,0,2,1],'bass-clef':[0,1,2,0,1],'grand-staff':[0,1,2,0,2],'major-minor-keys':[0,1,2,0,1]};
  const MELODIES=split('twinkle mary london-bridge hot-cross-buns row-your-boat frere-jacques ode-to-joy jingle-bells old-macdonald');
- const SCALES=split('c-major g-major d-major f-major a-minor c-minor d-minor e-minor');
+ const SCALES=split('c-major d-flat-major d-major e-flat-major e-major f-major f-sharp-major g-major a-flat-major a-major b-flat-major b-major c-minor c-sharp-minor d-minor e-flat-minor e-minor f-minor f-sharp-minor g-minor g-sharp-minor a-minor b-flat-minor b-minor');
  const INTERVALS=[1,2,3,4,5,7,12].flatMap(n=>['up-'+n,'down-'+n]);
- const PIANO_REWARDS=[...MELODIES.flatMap(id=>['piano-lesson:'+id,'piano-memory:'+id]),...SCALES.map(id=>'piano-scale:'+id),...INTERVALS.map(id=>'piano-interval:'+id)];
+ const PIANO_REWARDS=[...MELODIES.flatMap(id=>['piano-lesson:'+id,'piano-memory:'+id]),...SCALES.flatMap(id=>['piano-scale:'+id,'piano-scale-memory:'+id]),...INTERVALS.map(id=>'piano-interval:'+id)];
  const MISSION_TARGETS={
   'bach-triad-win':1,'mozart-triad-capture':3,'beethoven-pitch-win':1,'clara-pitch-streak':20,'joplin-rhythm-streak':20,'ellington-rhythm-streak':50,'ella-rhythm-perfect':1,'nina-pitch-notes':15,'miles-triad-comeback':1,
   'ella-fish-five':5,'nina-piano-melody':1,'mozart-pitch-thirty':30,'joplin-rhythm-perfect-three':3,'clara-fish-compound':1,
@@ -65,15 +66,15 @@
  const missionSchema=object(Object.fromEntries(Object.entries(MISSION_TARGETS).map(([key,target])=>[key,object({acceptedAt:integer(1,MAX_TIME),progress:integer(0,target),completedAt:timestamp,rewardedAt:timestamp})])),[]);
  const resultSchema=object({id:id(92),fishId:enumOf(Object.keys(FISH)),rarity:enumOf(split('common uncommon rare epic legendary')),meter:enumOf(['4/4','6/8','2/2']),timeSignature:enumOf(['4/4','6/8','2/2']),hits:integer(1,1000000),misses:integer(0,1000000),extras:integer(0,1000000),perfect:boolean,notes:integer(1,1000),xp:integer(1,1000),caught:enumOf([true]),outcome:enumOf(['caught'])});
  const catchSchema=object({id:id(92),fishId:enumOf(Object.keys(FISH)),size:number(.1,10000),at:timestamp,meter:enumOf(['4/4','6/8','2/2']),perfect:boolean,caught:enumOf([true]),rewarded:boolean,result:resultSchema});
- const lessonSchema=object(Object.fromEntries(Object.entries(LESSON_TOTALS).map(([key,total])=>[key,object({step:integer(0,total),completed:boolean,completedAt:timestamp})])));
- const quizSchema=object(Object.fromEntries(Object.keys(LESSON_TOTALS).map(key=>[key,object({bankVersion:version,index:integer(0,5),answers:array(integer(0,2),5),bestAnswers:array(integer(0,2),5),completedAt:timestamp})])));
+ const lessonSchema=object(Object.fromEntries(Object.entries(LESSON_TOTALS).map(([key,total])=>[key,object({step:integer(0,total),completed:boolean,completedAt:timestamp})])),LEGACY_LESSONS);
+ const quizSchema=object(Object.fromEntries(Object.keys(LESSON_TOTALS).map(key=>[key,object({bankVersion:version,index:integer(0,5),answers:array(integer(0,2),5),bestAnswers:array(integer(0,2),5),completedAt:timestamp})])),LEGACY_LESSONS);
  const SCHEMA=object({
   avatar:avatarSchema,
   progression:object({version,xp:integer(0,20000000),events:array(object({id:id(),xp:integer(1,1000)}),20000),bestPitchLevel:integer(0,1000)}),
   wallet:object({version,balance:integer(0,1000000),earned:integer(0,1000000),spent:integer(0,1000000),owned:array(enumOf(OWNED),256,true),rewards:array(id(100),4096,true)}),
   missions:object({version,missions:missionSchema,seen:array(id(140),512,true)},['version']),
   fishing:object({version,catches:array(catchSchema,5000)}),
-  piano:object({version,learned:array(enumOf(MELODIES),9,true),completed:array(enumOf(PIANO_REWARDS),40,true)}),
+  piano:object({version,learned:array(enumOf(MELODIES),9,true),completed:array(enumOf(PIANO_REWARDS),PIANO_REWARDS.length,true)}),
   lessons:object({version,lessons:lessonSchema}),quizzes:object({version,quizzes:quizSchema}),
   pitch:object({version,bestCompleted:integer(0,999)}),pitchTutorials:object({version,completed:array(enumOf(['treble','bass','grand']),3,true)})
  });
@@ -110,7 +111,7 @@
    const result=entry?.result,fish=FISH[entry?.fishId];if(!record(entry)||!fish||!safeId(entry.id,92)||fishSeen.has(entry.id)||!record(result)||result.id!==entry.id||result.fishId!==entry.fishId||result.caught!==true||result.outcome!=='caught'||result.practice===true||result.reason!=null||result.rarity!==fish.rarity||!['4/4','6/8','2/2'].includes(result.meter)||result.timeSignature!==undefined&&result.timeSignature!==result.meter||!int(result.hits,1,1e6)||!Number.isSafeInteger(result.misses)||result.misses<0||result.misses>1e6||!Number.isSafeInteger(result.extras)||result.extras<0||result.extras>1e6||result.perfect!==(result.misses===0&&result.extras===0)||result.notes!==fish.notes||result.xp!==fish.xp||!finite(entry.size,.1,10000)||typeof entry.rewarded!=='boolean')continue;
    fishSeen.add(entry.id);out.fishing.catches.push({id:entry.id,fishId:entry.fishId,size:entry.size,at:time(entry.at),meter:result.meter,perfect:result.perfect,caught:true,rewarded:entry.rewarded,result:{id:entry.id,fishId:entry.fishId,rarity:fish.rarity,meter:result.meter,timeSignature:result.meter,hits:result.hits,misses:result.misses,extras:result.extras,perfect:result.perfect,notes:fish.notes,xp:fish.xp,caught:true,outcome:'caught'}});
   }
-  const piano=raw('piano');out.piano.learned=ids(piano.learned,9,80,MELODIES,'Learned melodies');out.piano.completed=ids(piano.completed,40,100,PIANO_REWARDS,'Piano challenge completions');
+  const piano=raw('piano');out.piano.learned=ids(piano.learned,9,80,MELODIES,'Learned melodies');out.piano.completed=ids(piano.completed,PIANO_REWARDS.length,100,PIANO_REWARDS,'Piano challenge completions');
   for(const [key,total]of Object.entries(LESSON_TOTALS)){
    const lesson=raw('lessons').lessons?.[key],quiz=raw('quizzes').quizzes?.[key],target=out.lessons.lessons[key],question=out.quizzes.quizzes[key];
    if(record(lesson)){target.step=int(lesson.step,0,total);target.completed=lesson.completed===true&&target.step===total;target.completedAt=target.completed?time(lesson.completedAt):0;}
@@ -136,7 +137,7 @@
   // the complete paid IDs, but never let importing one create a new XP award.
   let paidLevelNotes=0;
   for(const token of paid){
-   let expected=null;if(token.startsWith('npc-mission:'))expected='quest:'+token.slice(12);else if(['piano-lesson:','piano-interval:','piano-scale:'].some(prefix=>token.startsWith(prefix))||PIANO_REWARDS.includes(token))expected='quest:'+token;if(expected&&!xp.has(expected))fail('a Notes reward is missing its saved experience record. Retry saving that reward before syncing.');
+   let expected=null;if(token.startsWith('npc-mission:'))expected='quest:'+token.slice(12);else if(['piano-lesson:','piano-interval:','piano-scale:','piano-scale-memory:'].some(prefix=>token.startsWith(prefix))||PIANO_REWARDS.includes(token))expected='quest:'+token;if(expected&&!xp.has(expected))fail('a Notes reward is missing its saved experience record. Retry saving that reward before syncing.');
    if(token.startsWith('level-prize:')){const prize=LEVEL_PRIZES.get(token);if(!prize||data.progression.xp<prize.xp)fail('a level prize needs its earned player level.');paidLevelNotes+=prize.amount;}
   }
   if(data.wallet.earned<paidLevelNotes)fail('the saved level prizes exceed the complete earned Notes total.');

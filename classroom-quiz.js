@@ -35,6 +35,13 @@
    {id:'bass-space',prompt:'Name this bass space note.',answers:['C','A','E'],correct:0,explanation:'Bass spaces go A C E G. The second is C.',visual:{kind:'staff',clef:'bass',position:3}},
    {id:'bass-top-space',prompt:'Name this top-space note.',answers:['E','G','F'],correct:1,explanation:'Bass spaces go A C E G. The top is G.',visual:{kind:'staff',clef:'bass',position:7}}
   ]),
+  'major-minor-keys':quiz('Major & minor keys',[
+   {id:'key-home',prompt:'What is a key’s home note?',answers:['Where the music feels settled','Always the loudest note','Always the fastest note'],correct:0,explanation:'The home note is where the music feels settled.'},
+   {id:'d-major-home',prompt:'What is D major’s home note?',answers:['A','D','C'],correct:1,explanation:'The first part of the key name tells its home: D.'},
+   {id:'c-minor-colour',prompt:'Which note changes C E G into C minor?',answers:['F instead of G','D instead of C','E-flat instead of E'],correct:2,explanation:'C E-flat G is the C minor sound. C is still home.'},
+   {id:'major-minor-moods',prompt:'Can major and minor music have many moods?',answers:['Yes, both can','No, minor is always sad','No, major is always happy'],correct:0,explanation:'Major often sounds bright. Minor can sound mellow or dramatic. Neither has only one mood.'},
+   {id:'shared-notes',prompt:'C major and A minor share notes. What changes?',answers:['Their note letters disappear','Their home notes','They must be played louder'],correct:1,explanation:'C major comes home to C. A minor comes home to A.'}
+  ]),
   'grand-staff':quiz('Grand staff & Middle C',[
    {id:'grand-treble',prompt:'Name this note on the upper staff.',answers:['E','G','C'],correct:0,explanation:'The upper staff is treble. Its bottom line is E.',visual:{kind:'staff',clef:'treble',grand:true,position:0}},
    {id:'grand-bass',prompt:'Name this note on the lower staff.',answers:['B','D','F'],correct:1,explanation:'The lower staff is bass. Its middle line is D.',visual:{kind:'staff',clef:'bass',grand:true,position:4}},

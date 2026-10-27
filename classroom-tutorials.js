@@ -130,7 +130,17 @@
   staffStep('bass',9,'B',59,'Middle C connects the two staffs. You can count down from it as well as up from it.','Top bass line A → space B → Middle C on its little line.','The note is one place below Middle C and just above the top bass line. C → B.',true)
  ]);
  const NOTE_LESSONS=Object.freeze({'note-naming':NOTE_STEPS,'bass-clef':BASS_STEPS,'grand-staff':GRAND_STEPS});
- const LESSONS=Object.freeze([{id:'note-naming',title:'Note naming',total:NOTE_STEPS.length},{id:'rhythm-tree',title:'The rhythm tree',total:4},timeLesson?.LESSON||{id:'time-signatures',title:'Time signatures',total:8},{id:'bass-clef',title:'Bass clef',total:BASS_STEPS.length},{id:'grand-staff',title:'Grand staff & Middle C',total:GRAND_STEPS.length}].map(Object.freeze));
+ const KEY_STEPS=Object.freeze([
+  {guide:'A key gives music a home note.',caption:'This little tune comes home to C.',notes:['C','E','G','D','C'],home:'C',sounds:[{label:'Hear the C tune',notes:[60,64,67,62,60]}],prompt:'What is its home note?',answers:['C','G','A'],answer:0,hint:'The tune starts and ends on C.'},
+  {guide:'A scale is a ladder of notes in a key.',caption:'C major: up to C, then back down.',notes:['C','D','E','F','G','A','B','C'],home:'C',sounds:[{label:'Hear C major go up and down',notes:[60,62,64,65,67,69,71,72,71,69,67,65,64,62,60]}],prompt:'What did the scale do?',answers:['Went up and down','Stayed on one note','Made only silence'],answer:0,hint:'The notes climbed, then came back home.'},
+  {guide:'Major and minor can have the same home.',caption:'C major and C minor both come home to C.',notes:['C','E','G','C'],minorNotes:['C','E♭','G','C'],home:'C',sounds:[{label:'Hear C major',notes:[60,64,67,72,67,64,60]},{label:'Hear C minor',notes:[60,63,67,72,67,63,60]}],prompt:'What home do both share?',answers:['C','D','E'],answer:0,hint:'Both names begin with C.'},
+  {guide:'Change E to E-flat. Hear a different colour.',caption:'E-flat (E♭) is the piano key just left of E.',notes:['C','E','G'],minorNotes:['C','E♭','G'],home:'C',sounds:[{label:'Hear C major: C E G',notes:[60,64,67]},{label:'Hear C minor: C E-flat G',notes:[60,63,67]}],prompt:'Which note replaces E?',answers:['E♭','E','F'],answer:0,hint:'The minor example uses E-flat: E♭.'},
+  {guide:'Major often sounds bright. Minor can sound mellow or dramatic.',caption:'Either kind can make happy or sad music.',notes:['Major','Minor'],sounds:[{label:'Hear the major example',notes:[60,64,67,72,67,64,60]},{label:'Hear the minor example',notes:[60,63,67,72,67,63,60]}],prompt:'Can minor music sound happy too?',answers:['Yes','Never','Only if it is loud'],answer:0,hint:'Music has many moods. Major and minor are not mood rules.'},
+  {guide:'The same kind of scale can start somewhere else.',caption:'D major uses D as its home.',notes:['D','E','F♯','G','A','B','C♯','D'],home:'D',sounds:[{label:'Hear D major',notes:[62,64,66,67,69,71,73,74]}],prompt:'What is D major’s home?',answers:['C','D','A'],answer:1,hint:'The first part of a key’s name tells its home note.'},
+  {guide:'Minor scales can start on different home notes too.',caption:'This is A natural minor.',notes:['A','B','C','D','E','F','G','A'],home:'A',sounds:[{label:'Hear A natural minor',notes:[57,59,60,62,64,65,67,69]}],prompt:'What is A minor’s home?',answers:['C','G','A'],answer:2,hint:'A minor comes home to A.'},
+  {guide:'The same notes can have different homes.',caption:'C major and A minor share notes. Their homes are different.',notes:['C','D','E','F','G','A','B'],home:'C',minorNotes:['A','B','C','D','E','F','G'],minorHome:'A',sounds:[{label:'Hear C as home',notes:[60,64,67,72,67,64,60]},{label:'Hear A as home',notes:[57,60,64,69,64,60,57]}],prompt:'Do these keys have the same home?',answers:['No: C and A','Yes: both C','Yes: both A'],answer:0,hint:'Look at the glowing home notes: C and A.'}
+ ].map(step=>Object.freeze({...step,notes:Object.freeze(step.notes),minorNotes:step.minorNotes?Object.freeze(step.minorNotes):null,answers:Object.freeze(step.answers),sounds:Object.freeze(step.sounds.map(sound=>Object.freeze({...sound,notes:Object.freeze(sound.notes)})))})));
+ const LESSONS=Object.freeze([{id:'note-naming',title:'Note naming',total:NOTE_STEPS.length},{id:'rhythm-tree',title:'The rhythm tree',total:4},timeLesson?.LESSON||{id:'time-signatures',title:'Time signatures',total:8},{id:'bass-clef',title:'Bass clef',total:BASS_STEPS.length},{id:'grand-staff',title:'Grand staff & Middle C',total:GRAND_STEPS.length},{id:'major-minor-keys',title:'Major & minor keys',total:KEY_STEPS.length}].map(Object.freeze));
  const SIMPLE_NOTE_COPY=Object.freeze({
   'note-naming':Object.freeze([
    ['Two black keys help us find C.','C','Tap C.','C is beside two black keys.'],
@@ -311,6 +321,27 @@
    }else section.append(count,drawing);
    appendFeedback(section);if(answered)nextButton(section,'Start quiz');
   }
+  function renderKeys(section){
+   section.dataset.kind='keys';const question=KEY_STEPS[step];
+   actionCue(section,learningStage==='look'?question.guide:answered?'Yes!':question.prompt);
+   const picture=element('figure','lesson-keys-picture');
+   function noteRow(notes,home,label){
+    const group=element('div','lesson-key-example');if(label)group.append(element('strong','lesson-key-example-label',label));
+    const row=element('div','lesson-key-note-row');row.setAttribute('role','img');row.setAttribute('aria-label',(label?label+': ':'')+notes.join(', ')+(home?'. Home note '+home+'.':''));
+    notes.forEach(note=>{const chip=element('span','lesson-key-note'+(note===home?' is-home':''),note);if(note===home)chip.setAttribute('data-key-home',note);row.append(chip);});group.append(row);picture.append(group);
+   }
+   noteRow(question.notes,question.home,question.minorNotes?'Major':'');if(question.minorNotes)noteRow(question.minorNotes,question.minorHome||question.home,'Minor');
+   picture.append(element('figcaption','lesson-key-caption',question.caption));section.append(picture);
+   const sounds=element('div','lesson-actions lesson-key-sounds');for(const [index,sound]of question.sounds.entries())sounds.append(button(sound.label,()=>play(sound.notes),{'data-key-listen':index}));section.append(sounds);
+   if(learningStage==='look'){tryButton(section);return;}
+   if(!answered){const answers=element('div','lesson-key-answers');answers.setAttribute('role','group');answers.setAttribute('aria-label','Choose an answer');
+    question.answers.forEach((label,index)=>answers.append(button(label,()=>{
+     if(answered||complete)return;if(index!==question.answer){feedback('Not yet. '+question.hint,false);return;}
+     answered=true;persist(step+1);message='Yes!';correct=true;render();host.querySelector('[data-tutorial-next]')?.focus({preventScroll:true});
+    },{'data-key-answer':index})));section.append(answers);
+   }
+   appendFeedback(section);nextButton(section,step===KEY_STEPS.length-1?'Start quiz':'Next');
+  }
   function appendFeedback(section){const feedbackNode=element('p','tutorial-feedback',message);feedbackNode.setAttribute('role','status');feedbackNode.setAttribute('aria-live','polite');feedbackNode.dataset.correct=String(correct);section.append(feedbackNode);}
   function renderComplete(section){
    actionCue(section,'You did it!');
@@ -322,7 +353,7 @@
    if(destroyed||!id)return;const oldFocus=host.contains(doc.activeElement)?doc.activeElement:null;let restore=null;if(oldFocus){for(const attr of ['data-pitch','data-note-answer','data-tree-split','data-tree-join','data-tutorial-next','data-add-value','data-check-rhythm','data-tutorial-replay'])if(oldFocus.hasAttribute(attr)){restore='['+attr+'=\"'+oldFocus.getAttribute(attr)+'\"]';break;}}host.replaceChildren();host.classList.add('classroom-tutorial');host.dataset.tutorial=id;host.dataset.phase=complete?'complete':quizzing?'quiz':'lesson';host.dataset.learningStage=learningStage;const lesson=LESSONS.find(item=>item.id===id),heading=element('div','lesson-topline');heading.append(element('span','lesson-step-label',complete?'Finished':quizzing?'Quiz':'Step '+(step+1)+' of '+lesson.total));host.append(heading);
    if(!quizzing){const progress=element('progress');progress.max=lesson.total;progress.value=complete?lesson.total:step+(answered?1:0);progress.setAttribute('aria-label',lesson.title+' progress');host.append(progress);}
    const section=element('section','lesson-content');section.setAttribute('aria-label',lesson.title+(quizzing?' quiz':' activity'));host.append(section);
-   if(complete)renderComplete(section);else if(quizzing){if(ensureQuiz())quiz.render(section);else section.append(element('p','lesson-teach','The quiz could not load. Reload the page to try again.'));}else if(NOTE_LESSONS[id])renderNaming(section);else if(id==='time-signatures'){if(signatureLesson)signatureLesson.render(section,{step,answered});else section.append(element('p','','The time-signature lesson could not load. Reload the page to try again.'));}else renderRhythm(section);const bookViewport=host.closest('.classroom-books');if(bookViewport)bookViewport.scrollTop=0;if(oldFocus&&!quizzing){let target=restore?host.querySelector(restore):null;if(!target||target.disabled)target=host.querySelector('h3');if(target){if(target.tagName==='H3')target.tabIndex=-1;target.focus({preventScroll:true});}}
+   if(complete)renderComplete(section);else if(quizzing){if(ensureQuiz())quiz.render(section);else section.append(element('p','lesson-teach','The quiz could not load. Reload the page to try again.'));}else if(NOTE_LESSONS[id])renderNaming(section);else if(id==='major-minor-keys')renderKeys(section);else if(id==='time-signatures'){if(signatureLesson)signatureLesson.render(section,{step,answered});else section.append(element('p','','The time-signature lesson could not load. Reload the page to try again.'));}else renderRhythm(section);const bookViewport=host.closest('.classroom-books');if(bookViewport)bookViewport.scrollTop=0;if(oldFocus&&!quizzing){let target=restore?host.querySelector(restore):null;if(!target||target.disabled)target=host.querySelector('h3');if(target){if(target.tagName==='H3')target.tabIndex=-1;target.focus({preventScroll:true});}}
   }
   function reset(resume=true){
    stopAudio();quiz?.destroy();quiz=null;signatureLesson?.reset();const saved=readProgress(storage).lessons.find(lesson=>lesson.id===id),total=LESSONS.find(lesson=>lesson.id===id).total;step=resume?saved.step:0;complete=resume&&saved.completed;quizzing=resume&&!complete&&step>=total;freshQuiz=!resume;learningStage='look';answered=false;message='';correct=null;hintShown=false;level=0;explored=new Set([0]);bar=[];award=null;
@@ -331,5 +362,5 @@
   function open(lessonId){if(!LESSONS.some(lesson=>lesson.id===lessonId))return false;id=lessonId;reset();return true;}
   return {open,stopAudio,destroy(){stopAudio();quiz?.destroy();signatureLesson?.destroy();destroyed=true;host.replaceChildren();},getState:()=>({...readProgress(storage),active:id?{id,step,learningStage:id==='time-signatures'?signatureLesson?.getState().stage||'look':learningStage,answered,complete,phase:complete?'complete':quizzing?'quiz':'lesson',quiz:quiz?.getState()||null,treeLevel:level,explored:[...explored],bar:[...bar],timeSignatures:id==='time-signatures'?signatureLesson?.getState():null,audioPlaying:!!audio||signatureLesson?.getState().audioPlaying===true,error}:null})};
  }
- return {KEY,LESSONS,VALUES,NOTE_STEPS,BASS_STEPS,GRAND_STEPS,NOTE_LESSONS,SIMPLE_NOTE_COPY,splitExample,validBar,normalize,readProgress,glyph,staffSVG,treeSVG,create};
+ return {KEY,LESSONS,VALUES,NOTE_STEPS,BASS_STEPS,GRAND_STEPS,KEY_STEPS,NOTE_LESSONS,SIMPLE_NOTE_COPY,splitExample,validBar,normalize,readProgress,glyph,staffSVG,treeSVG,create};
 });

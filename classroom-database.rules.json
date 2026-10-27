@@ -893,7 +893,7 @@
                 "completed": {
                   ".validate": "newData.hasChildren()",
                   "$dtoIndex8": {
-                    ".validate": "($dtoIndex8.matches(/^(0|[1-9]|[1-2][0-9]|3[0-8]|39)$/)) && ((newData.isString()) && (newData.val().matches(/^(piano-lesson:twinkle|piano-memory:twinkle|piano-lesson:mary|piano-memory:mary|piano-lesson:london-bridge|piano-memory:london-bridge|piano-lesson:hot-cross-buns|piano-memory:hot-cross-buns|piano-lesson:row-your-boat|piano-memory:row-your-boat|piano-lesson:frere-jacques|piano-memory:frere-jacques|piano-lesson:ode-to-joy|piano-memory:ode-to-joy|piano-lesson:jingle-bells|piano-memory:jingle-bells|piano-lesson:old-macdonald|piano-memory:old-macdonald|piano-scale:c-major|piano-scale:g-major|piano-scale:d-major|piano-scale:f-major|piano-scale:a-minor|piano-scale:c-minor|piano-scale:d-minor|piano-scale:e-minor|piano-interval:up-1|piano-interval:down-1|piano-interval:up-2|piano-interval:down-2|piano-interval:up-3|piano-interval:down-3|piano-interval:up-4|piano-interval:down-4|piano-interval:up-5|piano-interval:down-5|piano-interval:up-7|piano-interval:down-7|piano-interval:up-12|piano-interval:down-12)$/)))"
+                    ".validate": "($dtoIndex8.matches(/^(0|[1-9]|[1-6][0-9]|7[0-8]|79)$/)) && ((newData.isString()) && (newData.val().matches(/^(piano-lesson:twinkle|piano-memory:twinkle|piano-lesson:mary|piano-memory:mary|piano-lesson:london-bridge|piano-memory:london-bridge|piano-lesson:hot-cross-buns|piano-memory:hot-cross-buns|piano-lesson:row-your-boat|piano-memory:row-your-boat|piano-lesson:frere-jacques|piano-memory:frere-jacques|piano-lesson:ode-to-joy|piano-memory:ode-to-joy|piano-lesson:jingle-bells|piano-memory:jingle-bells|piano-lesson:old-macdonald|piano-memory:old-macdonald|piano-scale:c-major|piano-scale-memory:c-major|piano-scale:d-flat-major|piano-scale-memory:d-flat-major|piano-scale:d-major|piano-scale-memory:d-major|piano-scale:e-flat-major|piano-scale-memory:e-flat-major|piano-scale:e-major|piano-scale-memory:e-major|piano-scale:f-major|piano-scale-memory:f-major|piano-scale:f-sharp-major|piano-scale-memory:f-sharp-major|piano-scale:g-major|piano-scale-memory:g-major|piano-scale:a-flat-major|piano-scale-memory:a-flat-major|piano-scale:a-major|piano-scale-memory:a-major|piano-scale:b-flat-major|piano-scale-memory:b-flat-major|piano-scale:b-major|piano-scale-memory:b-major|piano-scale:c-minor|piano-scale-memory:c-minor|piano-scale:c-sharp-minor|piano-scale-memory:c-sharp-minor|piano-scale:d-minor|piano-scale-memory:d-minor|piano-scale:e-flat-minor|piano-scale-memory:e-flat-minor|piano-scale:e-minor|piano-scale-memory:e-minor|piano-scale:f-minor|piano-scale-memory:f-minor|piano-scale:f-sharp-minor|piano-scale-memory:f-sharp-minor|piano-scale:g-minor|piano-scale-memory:g-minor|piano-scale:g-sharp-minor|piano-scale-memory:g-sharp-minor|piano-scale:a-minor|piano-scale-memory:a-minor|piano-scale:b-flat-minor|piano-scale-memory:b-flat-minor|piano-scale:b-minor|piano-scale-memory:b-minor|piano-interval:up-1|piano-interval:down-1|piano-interval:up-2|piano-interval:down-2|piano-interval:up-3|piano-interval:down-3|piano-interval:up-4|piano-interval:down-4|piano-interval:up-5|piano-interval:down-5|piano-interval:up-7|piano-interval:down-7|piano-interval:up-12|piano-interval:down-12)$/)))"
                   }
                 },
                 "$other": {
@@ -968,6 +968,21 @@
                     }
                   },
                   "grand-staff": {
+                    ".validate": "newData.hasChildren([\"step\",\"completed\",\"completedAt\"])",
+                    "step": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 8)"
+                    },
+                    "completed": {
+                      ".validate": "(newData.isBoolean())"
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
+                  "major-minor-keys": {
                     ".validate": "newData.hasChildren([\"step\",\"completed\",\"completedAt\"])",
                     "step": {
                       ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 8)"
@@ -1132,6 +1147,33 @@
                       ".validate": false
                     }
                   },
+                  "major-minor-keys": {
+                    ".validate": "newData.hasChildren([\"bankVersion\",\"index\",\"completedAt\"])",
+                    "bankVersion": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() === 1)"
+                    },
+                    "index": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 5)"
+                    },
+                    "answers": {
+                      ".validate": "newData.hasChildren()",
+                      "$dtoIndex19": {
+                        ".validate": "($dtoIndex19.matches(/^(0|[1-3]|4)$/)) && ((newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 2))"
+                      }
+                    },
+                    "bestAnswers": {
+                      ".validate": "newData.hasChildren()",
+                      "$dtoIndex20": {
+                        ".validate": "($dtoIndex20.matches(/^(0|[1-3]|4)$/)) && ((newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 2))"
+                      }
+                    },
+                    "completedAt": {
+                      ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  },
                   "$other": {
                     ".validate": false
                   }
@@ -1159,8 +1201,8 @@
                 },
                 "completed": {
                   ".validate": "newData.hasChildren()",
-                  "$dtoIndex19": {
-                    ".validate": "($dtoIndex19.matches(/^(0|1|2)$/)) && ((newData.isString()) && (newData.val().matches(/^(treble|bass|grand)$/)))"
+                  "$dtoIndex21": {
+                    ".validate": "($dtoIndex21.matches(/^(0|1|2)$/)) && ((newData.isString()) && (newData.val().matches(/^(treble|bass|grand)$/)))"
                   }
                 },
                 "$other": {
@@ -2139,7 +2181,7 @@
                     "completed": {
                       ".validate": "newData.hasChildren()",
                       "$dtoIndex8": {
-                        ".validate": "($dtoIndex8.matches(/^(0|[1-9]|[1-2][0-9]|3[0-8]|39)$/)) && ((newData.isString()) && (newData.val().matches(/^(piano-lesson:twinkle|piano-memory:twinkle|piano-lesson:mary|piano-memory:mary|piano-lesson:london-bridge|piano-memory:london-bridge|piano-lesson:hot-cross-buns|piano-memory:hot-cross-buns|piano-lesson:row-your-boat|piano-memory:row-your-boat|piano-lesson:frere-jacques|piano-memory:frere-jacques|piano-lesson:ode-to-joy|piano-memory:ode-to-joy|piano-lesson:jingle-bells|piano-memory:jingle-bells|piano-lesson:old-macdonald|piano-memory:old-macdonald|piano-scale:c-major|piano-scale:g-major|piano-scale:d-major|piano-scale:f-major|piano-scale:a-minor|piano-scale:c-minor|piano-scale:d-minor|piano-scale:e-minor|piano-interval:up-1|piano-interval:down-1|piano-interval:up-2|piano-interval:down-2|piano-interval:up-3|piano-interval:down-3|piano-interval:up-4|piano-interval:down-4|piano-interval:up-5|piano-interval:down-5|piano-interval:up-7|piano-interval:down-7|piano-interval:up-12|piano-interval:down-12)$/)))"
+                        ".validate": "($dtoIndex8.matches(/^(0|[1-9]|[1-6][0-9]|7[0-8]|79)$/)) && ((newData.isString()) && (newData.val().matches(/^(piano-lesson:twinkle|piano-memory:twinkle|piano-lesson:mary|piano-memory:mary|piano-lesson:london-bridge|piano-memory:london-bridge|piano-lesson:hot-cross-buns|piano-memory:hot-cross-buns|piano-lesson:row-your-boat|piano-memory:row-your-boat|piano-lesson:frere-jacques|piano-memory:frere-jacques|piano-lesson:ode-to-joy|piano-memory:ode-to-joy|piano-lesson:jingle-bells|piano-memory:jingle-bells|piano-lesson:old-macdonald|piano-memory:old-macdonald|piano-scale:c-major|piano-scale-memory:c-major|piano-scale:d-flat-major|piano-scale-memory:d-flat-major|piano-scale:d-major|piano-scale-memory:d-major|piano-scale:e-flat-major|piano-scale-memory:e-flat-major|piano-scale:e-major|piano-scale-memory:e-major|piano-scale:f-major|piano-scale-memory:f-major|piano-scale:f-sharp-major|piano-scale-memory:f-sharp-major|piano-scale:g-major|piano-scale-memory:g-major|piano-scale:a-flat-major|piano-scale-memory:a-flat-major|piano-scale:a-major|piano-scale-memory:a-major|piano-scale:b-flat-major|piano-scale-memory:b-flat-major|piano-scale:b-major|piano-scale-memory:b-major|piano-scale:c-minor|piano-scale-memory:c-minor|piano-scale:c-sharp-minor|piano-scale-memory:c-sharp-minor|piano-scale:d-minor|piano-scale-memory:d-minor|piano-scale:e-flat-minor|piano-scale-memory:e-flat-minor|piano-scale:e-minor|piano-scale-memory:e-minor|piano-scale:f-minor|piano-scale-memory:f-minor|piano-scale:f-sharp-minor|piano-scale-memory:f-sharp-minor|piano-scale:g-minor|piano-scale-memory:g-minor|piano-scale:g-sharp-minor|piano-scale-memory:g-sharp-minor|piano-scale:a-minor|piano-scale-memory:a-minor|piano-scale:b-flat-minor|piano-scale-memory:b-flat-minor|piano-scale:b-minor|piano-scale-memory:b-minor|piano-interval:up-1|piano-interval:down-1|piano-interval:up-2|piano-interval:down-2|piano-interval:up-3|piano-interval:down-3|piano-interval:up-4|piano-interval:down-4|piano-interval:up-5|piano-interval:down-5|piano-interval:up-7|piano-interval:down-7|piano-interval:up-12|piano-interval:down-12)$/)))"
                       }
                     },
                     "$other": {
@@ -2214,6 +2256,21 @@
                         }
                       },
                       "grand-staff": {
+                        ".validate": "newData.hasChildren([\"step\",\"completed\",\"completedAt\"])",
+                        "step": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 8)"
+                        },
+                        "completed": {
+                          ".validate": "(newData.isBoolean())"
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
+                      "major-minor-keys": {
                         ".validate": "newData.hasChildren([\"step\",\"completed\",\"completedAt\"])",
                         "step": {
                           ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 8)"
@@ -2378,6 +2435,33 @@
                           ".validate": false
                         }
                       },
+                      "major-minor-keys": {
+                        ".validate": "newData.hasChildren([\"bankVersion\",\"index\",\"completedAt\"])",
+                        "bankVersion": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() === 1)"
+                        },
+                        "index": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 5)"
+                        },
+                        "answers": {
+                          ".validate": "newData.hasChildren()",
+                          "$dtoIndex19": {
+                            ".validate": "($dtoIndex19.matches(/^(0|[1-3]|4)$/)) && ((newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 2))"
+                          }
+                        },
+                        "bestAnswers": {
+                          ".validate": "newData.hasChildren()",
+                          "$dtoIndex20": {
+                            ".validate": "($dtoIndex20.matches(/^(0|[1-3]|4)$/)) && ((newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 2))"
+                          }
+                        },
+                        "completedAt": {
+                          ".validate": "(newData.isNumber()) && (newData.val() % 1 === 0) && (newData.val() >= 0) && (newData.val() <= 253402300799999)"
+                        },
+                        "$other": {
+                          ".validate": false
+                        }
+                      },
                       "$other": {
                         ".validate": false
                       }
@@ -2405,8 +2489,8 @@
                     },
                     "completed": {
                       ".validate": "newData.hasChildren()",
-                      "$dtoIndex19": {
-                        ".validate": "($dtoIndex19.matches(/^(0|1|2)$/)) && ((newData.isString()) && (newData.val().matches(/^(treble|bass|grand)$/)))"
+                      "$dtoIndex21": {
+                        ".validate": "($dtoIndex21.matches(/^(0|1|2)$/)) && ((newData.isString()) && (newData.val().matches(/^(treble|bass|grand)$/)))"
                       }
                     },
                     "$other": {

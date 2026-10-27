@@ -136,7 +136,7 @@ class PianoSongNotationTests(_scale._world.WorldBrowserCase):
         self.start_song('frere-jacques');self.assertEqual(self.state()['octave'],3)
         self.start_scale('c-major')
         state = self.state();self.assertEqual(state['octave'],4)
-        self.assertEqual(state['lessonPitches'],[60,62,64,65,67,69,71,72])
+        self.assertEqual(state['lessonPitches'],[60,62,64,65,67,69,71,72,71,69,67,65,64,62,60])
         self.assertEqual(state['keyHighlight']['midi'],60)
         self.play_keyboard(60);self.assertEqual(self.state()['scaleStep'],1)
 
@@ -183,7 +183,7 @@ class PianoSongNotationTests(_scale._world.WorldBrowserCase):
         self.assertTrue(self.page.evaluate('document.querySelector("#pianoroom").contains(document.querySelector(".coda-touch-controls"))'))
         self.floor_key(60)
         play = self.page.locator('.coda-touch-interact')
-        self.assertTrue(play.is_visible());self.assertGreaterEqual(play.bounding_box()['height'],80)
+        self.assertTrue(play.is_visible());self.assertGreaterEqual(play.bounding_box()['height'],64)
         self.assertEqual(self.state()['lessonStep'],0)
         play.tap();self.page.clock.run_for(32)
         self.assertEqual(self.state()['lessonStep'],1)

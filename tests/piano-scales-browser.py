@@ -10,8 +10,8 @@ _world = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_world)
 from world_navigation_helpers import enter_room
 
-D_MAJOR = [62, 64, 66, 67, 69, 71, 73, 74]
-A_MINOR = [69, 71, 72, 74, 76, 77, 79, 81]
+D_MAJOR = [62, 64, 66, 67, 69, 71, 73, 74, 73, 71, 69, 67, 66, 64, 62]
+A_MINOR = [69, 71, 72, 74, 76, 77, 79, 81, 79, 77, 76, 74, 72, 71, 69]
 C_MAJOR = [60, 62, 64, 65, 67, 69, 71, 72]
 
 PAINT_PROBE = r"""(()=>{
@@ -214,7 +214,7 @@ class PianoScaleTests(_world.WorldBrowserCase):
         self.menu('keyboard')
         self.assertIn('E♭',self.page.locator('.piano-key[data-midi="63"]').get_attribute('aria-label'))
         self.assertIn('B♭',self.page.locator('.piano-key[data-midi="70"]').get_attribute('aria-label'))
-        for index,midi in enumerate([60,62,63,65,67,68,70,72]):
+        for index,midi in enumerate([60,62,63,65,67,68,70,72,70,68,67,65,63,62,60]):
             self.play_keyboard(midi);self.assertEqual(self.state()['scaleStep'],index+1)
         self.assertIn('piano-scale:c-minor',self.state()['completed'])
 

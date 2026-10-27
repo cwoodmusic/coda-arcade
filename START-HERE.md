@@ -23,6 +23,11 @@ When this tab already has a classroom profile, the title screen offers
 **Continue profile** and **Change player**. Changing players opens the existing
 profile options, where the player can save and leave the device before using a
 different card or playing as a guest. The title screen does not reset progress.
+Signing out, saving and leaving a classroom profile, or losing an established
+login returns to the title screen. Choosing **Play as guest** still opens the
+arcade normally. Developer test mode preserves the real tab's login even when
+the preview is reloaded; it does not copy authentication into the test player
+or require new cookies.
 
 The **Motion** setting uses the same saved animation preference as the original
 arcade and respects the device's reduced-motion setting. The title screen loads
@@ -144,6 +149,24 @@ purchases and world edits stay in memory and disappear when you leave or reload;
 the real player's browser data, editor files and cloud saves are not changed.
 Online multiplayer is disabled in this mode. Export any test artwork or world
 project you want to keep before exiting.
+
+Chopin now offers all **12 major and 12 natural minor scales**. Each challenge
+goes up to the octave and back to the starting note. Guided practice earns
+35 Notes once per scale; after its reward saves, **Play scale from memory**
+offers 60 Notes once per scale. Memory mode hides the next key and future
+notation. The 24-key floor fits every pitch, and the last piano note rings out
+as the completion dialogue opens. Panic and leaving the room still stop sound.
+
+In the classroom, ask Haydn for **Major & minor keys**. Eight short interactive
+steps use listening examples and note ladders, followed by a five-question quiz.
+Passing the saved quiz completes the lesson and awards its 50 XP once. Existing
+profiles retain their earlier lesson progress.
+
+Music Triad's **Advanced** selection also applies to **VS CLASSMATE** and
+**TOURNAMENT**. Choose rules before creating a room; joining players inherit
+the host's selection. Four-character game codes and five-character tournament
+codes remain in use. Advanced tournaments support 2–4 players, and every match
+keeps the 4×4 board and Advanced rules. Tied boards redeal until a winner.
 
 In **Developer → Layers**, **Paint foreground** puts the visible artwork above
 characters, including moved/imported assets and pixel edits. **Send to background**

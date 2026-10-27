@@ -43,7 +43,7 @@
    const configurationReason=!supported?'unsupported-host':!crypto?.getRandomValues||!crypto?.subtle?'secure-crypto-unavailable':!config.firebase?.projectId||!dataApi||namespace!==NS?'not-configured':'';
    const configured=!configurationReason;
    const enabled=configured&&config.classroom?.enabled===true;
-   const listeners=new Set(),subscriptions=[];
+   const listeners=new Set(),subscriptions=[],authSubscriptions=[];
    let sdk,db,auth,adminDb,adminAuth,connecting,studentUid=null,adminUid=null,adminAuthorized=false,adminRoleStop=null,personalAvailable=false;
    let active=null,leaseOwned=false,loaded=false,baseRevision=0,lastSaved='',pending=false,saving=false;
    let loading=false,locked=false,waitingTakeover=false,code='',status='',destroyed=false,generation=0,inFlightSave=null,transitioning=false,retiredPersonalSave=null,signingOut=false;
@@ -87,7 +87,7 @@
        // its opener. Teacher access must be explicitly granted in this tab.
        if(adminUid&&readBound(ADMIN_KEY)?.uid!==adminUid){await api.signOut(adminAuth);adminUid=null;}
        try{const snap=await api.get(api.ref(db,'.info/serverTimeOffset'));offset=Number(snap.val())||0;}catch{}
-       if(adminUid){await checkAdmin();watchAdmin();}notify();return {ok:true};
+       if(adminUid){await checkAdmin();watchAdmin();}watchAuthentication();notify();return {ok:true};
      }catch{sdk=null;message('Classroom connection is unavailable. Try again.','connection-unavailable');return fail('connection-unavailable');}finally{connecting=null;}})();
      return connecting;
    }
@@ -107,6 +107,26 @@
      const uid=adminUid;adminRoleStop=sdk.onValue(sdk.ref(adminDb,path('admins/'+uid)),snap=>{
        if(adminUid===uid&&snap.val()!==true)revoked();
      },()=>{if(adminUid===uid)revoked();});
+   }
+   function watchAuthentication(){
+     for(const stop of authSubscriptions.splice(0))try{stop();}catch{}
+     if(typeof sdk?.onAuthStateChanged!=='function')return;
+     const observe=(instance,administrator)=>sdk.onAuthStateChanged(instance,user=>{
+       if(destroyed||loading||transitioning||signingOut)return;
+       const uid=user?.uid||null,previous=administrator?adminUid:studentUid;
+       if(!previous||uid===previous)return;
+       if(administrator){
+         adminUid=null;adminAuthorized=false;personalAvailable=false;
+         if(adminRoleStop){adminRoleStop();adminRoleStop=null;}
+         try{session.removeItem(ADMIN_KEY);}catch{}
+         if(personalProfile(active))lock('session-ended');
+         else{message('Your sign-in has ended. Open your profile to sign in again.','session-ended');identity('signed-out',false,{exitToTitle:true});}
+       }else{
+         studentUid=uid;
+         if(active&&!personalProfile(active))lock('session-ended');else notify();
+       }
+     });
+     authSubscriptions.push(observe(adminAuth,true),observe(auth,false));
    }
    async function refreshPersonal(){
      personalAvailable=false;if(!adminAuthorized||!adminUid)return false;
@@ -133,6 +153,7 @@
    }catch{message('Admin sign-in could not finish. Try again.','admin-sign-in-failed');return fail('admin-sign-in-failed');}finally{loading=false;notify();if(closedPersonal&&!active)identity('left',true);}}
    async function adminSignOut(){
      if(loading||transitioning)return fail('busy');
+     const wasSignedIn=!!adminUid||!!readBound(ADMIN_KEY)?.uid;
      loading=true;signingOut=true;notify();let pausedPersonalDatabase=false,closedPersonal=false;
      if(personalProfile(active)){
        // A failed or offline save stays in this tab's private recovery buffer.
@@ -148,7 +169,7 @@
        }
        const left=await leave({skipFlush:true,silentIdentity:true,internal:true});if(!left.ok){loading=false;signingOut=false;notify();if(pausedPersonalDatabase)sdk.goOnline?.(adminDb);return left;}closedPersonal=true;loading=true;
      }
-     if(adminRoleStop){adminRoleStop();adminRoleStop=null;}adminUid=null;adminAuthorized=false;personalAvailable=false;try{session.removeItem(ADMIN_KEY);}catch{}notify();if(adminAuth)try{await sdk.signOut(adminAuth);}catch{}finally{if(pausedPersonalDatabase)sdk.goOnline?.(adminDb);}loading=false;signingOut=false;notify();if(closedPersonal)identity('left',true);return {ok:true};
+     if(adminRoleStop){adminRoleStop();adminRoleStop=null;}adminUid=null;adminAuthorized=false;personalAvailable=false;try{session.removeItem(ADMIN_KEY);}catch{}notify();if(adminAuth)try{await sdk.signOut(adminAuth);}catch{}finally{if(pausedPersonalDatabase)sdk.goOnline?.(adminDb);}loading=false;signingOut=false;notify();if(closedPersonal||wasSignedIn)identity(closedPersonal?'left':'signed-out',closedPersonal,{exitToTitle:true});return {ok:true};
    }
    async function staff(){const ready=await connect();if(!ready.ok)return ready;if(!enabled)return fail('classroom-not-enabled');return await checkAdmin()?{ok:true}:fail('admin-not-approved');}
    async function withWorkspace(fn){return storageScope?.withLock?storageScope.withLock(fn):fn();}
@@ -179,7 +200,7 @@
      }catch{}
    }
    function sessionMarker(){try{return JSON.parse(session.getItem(ACTIVE_KEY)||'null');}catch{return null;}}
-   function identity(reason,reloadNeeded){try{options.onIdentityChange?.({active:!!active,profile:state().profile,reason,reloadNeeded});}catch{}}
+   function identity(reason,reloadNeeded,extra={}){try{options.onIdentityChange?.({active:!!active,profile:state().profile,reason,reloadNeeded,...extra});}catch{}}
    function restoreGuest(){
      if(!ownsWorkspace())return false;
      try{
@@ -192,7 +213,7 @@
      if(destroyed||locked)return;keepPending();generation++;stopSubscriptions();leaseOwned=false;loaded=false;locked=true;waitingTakeover=false;
      const restored=reason!=='workspace-lost'&&reason!=='unsaved-conflict'&&restoreGuest();
      message(reason==='workspace-lost'?'This arcade tab is resting. Use your other tab.':reason==='device-changed'?'Your profile is open on another device.':reason==='unsaved-conflict'?'Another device saved newer progress. Ask your teacher which saved progress to use.':reason==='idle'?'Your profile is resting. Scan your card to play again.':'This card is no longer active. Ask your teacher for a new card.',reason);
-     if(!signingOut)try{options.onLock?.({reason,profile:state().profile,pending,reloadNeeded:restored});}catch{}
+     if(!signingOut)try{options.onLock?.({reason,profile:state().profile,pending,reloadNeeded:restored,...(reason==='session-ended'?{exitToTitle:true}:{})});}catch{}
    }
    async function lease(takeover=false,renew=false){
      if(personalProfile(active)){leaseOwned=adminAuthorized&&adminUid===active.profileId;return leaseOwned;}
@@ -289,7 +310,12 @@
          if(adminAuthorized&&enabled){
            if(await refreshPersonal()&&(marker||!teacher?.personalClosed))return await activate({kind:'teacher',classId:PERSONAL_CLASS,profileId:adminUid,classLabel:'My player'},{reason:'resumed'});
          }
-         if(marker){lock('session-ended');return fail('session-ended');}
+         if(marker){if(!adminUid)try{session.removeItem(ADMIN_KEY);}catch{}lock('session-ended');return fail('session-ended');}
+         if(teacher?.uid&&!adminUid){
+           try{session.removeItem(ADMIN_KEY);}catch{}
+           message('Your sign-in has ended. Open your profile to sign in again.','session-ended');
+           identity('signed-out',false,{exitToTitle:true});return fail('session-ended');
+         }
          return {ok:true,guest:true};
        }
        if(!auth.currentUser){lock('session-ended');return fail('session-ended');}
@@ -342,7 +368,7 @@
        await Promise.race([cleanup,new Promise(resolve=>win.setTimeout(resolve,1500))]);
        try{await sdk.signOut(auth);}catch{}
      }
-     if(!personalProfile(old))studentUid=null;loading=false;message('This device is ready for another player.');if(!settings.silentIdentity)identity(old?'left':'guest',!!old||restored);return {ok:true};
+     if(!personalProfile(old))studentUid=null;loading=false;message('This device is ready for another player.');if(!settings.silentIdentity)identity(old?'left':'guest',!!old||restored,old&&settings.exitToTitle!==false?{exitToTitle:true}:{});return {ok:true};
    }
    async function useSavedProgress(){
      if(!active||code!=='unsaved-conflict'||loading)return fail('no-conflict');
@@ -458,7 +484,7 @@
    flushTimer=win?.setInterval?.(()=>{if(isWritable())flush();},1500);
    leaseTimer=win?.setInterval?.(async()=>{if(!isWritable())return;try{if(!await lease(false,true))lock('device-changed');}catch{message('Connection paused. Keep this tab open.','connection-unavailable');}},20000);
    idleTimer=win?.setInterval?.(()=>{if(now()-lastActivity<=Math.max(60000,options.idleMs||600000))return;if(adminUid){const personal=personalProfile(active);adminSignOut();if(personal)return;}if(active&&!locked&&!loading)flush().then(result=>{if(result.ok)leave({discard:true});else lock('idle');});},10000);
-   function destroy(){keepPending();destroyed=true;generation++;stopSubscriptions();if(adminRoleStop){adminRoleStop();adminRoleStop=null;}for(const stop of pendingJobs)try{stop();}catch{}for(const timer of [flushTimer,leaseTimer,idleTimer])if(timer!==null)win?.clearInterval?.(timer);for(const type of ['pointerdown','keydown','touchstart'])win?.removeEventListener?.(type,activity);win?.removeEventListener?.('pagehide',keepPending);win?.document?.removeEventListener?.('visibilitychange',pageHidden);listeners.clear();}
+   function destroy(){keepPending();destroyed=true;generation++;stopSubscriptions();for(const stop of authSubscriptions.splice(0))try{stop();}catch{}if(adminRoleStop){adminRoleStop();adminRoleStop=null;}for(const stop of pendingJobs)try{stop();}catch{}for(const timer of [flushTimer,leaseTimer,idleTimer])if(timer!==null)win?.clearInterval?.(timer);for(const type of ['pointerdown','keydown','touchstart'])win?.removeEventListener?.(type,activity);win?.removeEventListener?.('pagehide',keepPending);win?.document?.removeEventListener?.('visibilitychange',pageHidden);listeners.clear();}
    return {getState:state,subscribe(listener){listeners.add(listener);return()=>listeners.delete(listener);},connect,resume,join,leave,takeOver,useSavedProgress,adminSignIn,adminSignOut,savePersonalPlayer,renamePersonalPlayer,openPersonalPlayer,listClasses,createClass,listProfiles,createProfile,reissuePass,deleteProfile,deleteClass,flush,isWritable,destroy};
  }
  return Object.freeze({create,consumeFragment,parsePass:passCode,formatPass,hashPass});

@@ -159,10 +159,10 @@ parent.postMessage({coda:1,type:'ready',game:'pitch'},'*');
         page.locator('#classpassLeave').click()
         with page.expect_navigation(wait_until='load'):
             page.locator('#classpassConfirm').click()
-        self.ready(page)
-        page.wait_for_function('window.CodaClassroomSession&&!window.CodaClassroomSession.getState().profile&&!window.CodaClassroomSession.getState().loading&&window.CodaArcadeQA?.classroomSession().canPlay',timeout=30000)
+        page.wait_for_url('**/index.html')
+        expect(page.locator('#titleGuest')).to_be_visible()
         page.wait_for_timeout(400)
-        self.assertEqual(len(self.world_navigations),navigations+1,'Leaving restores guest with one reload')
+        self.assertEqual(len(self.world_navigations),navigations+1,'Leaving returns to the title after restoring guest data')
         self.assertEqual(page.evaluate('JSON.parse(localStorage.musicArcadeV1).name'),'PRIVATE WORLD GUEST')
         self.assertEqual(page.evaluate('localStorage.codaPianoTakeV1'),'GUEST TAKE')
 
@@ -241,6 +241,10 @@ parent.postMessage({coda:1,type:'ready',game:'pitch'},'*');
         self.assertEqual(page.evaluate('CodaArcadeQA.progression().xp'),480)
         with page.expect_navigation(wait_until='load'):
             page.locator('#classpassAdminSignOut').click()
+        page.wait_for_url('**/index.html')
+        expect(page.locator('#titleGuest')).to_be_visible()
+        self.assertIsNone(page.evaluate('sessionStorage.getItem("codaClassroomAdminTabV1")'))
+        page.locator('#titleGuest').click()
         self.ready(page)
         page.wait_for_function('!CodaClassroomSession.getState().admin.signedIn&&!CodaClassroomSession.getState().profile')
         self.assertTrue(page.evaluate('CodaArcadeQA.classroomSession().canPlay'))

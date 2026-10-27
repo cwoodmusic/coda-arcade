@@ -29,6 +29,22 @@ saving and online play. Its Level 50 preview never needs a real profile card or
 administrator account, and its purchases, progress and editor changes do not
 replace the active player's saved data. Exit test mode to return to normal play.
 
+The current progress schema also accepts all 24 guided scale rewards and their
+24 memory challenges, plus the optional **Major & minor keys** lesson and quiz.
+The piano completion journal is bounded to the 80 authored piano challenge IDs.
+Old five-lesson saves remain valid; loading them supplies a blank new lesson.
+These changes were merged into a complete rules backup and read back after
+deployment. All 22 classroom security checks passed, including owner-only
+round trips and rejection of unknown scale IDs and out-of-range lesson steps.
+Profile access rules and unrelated game namespaces remain unchanged.
+
+Test mode now virtualizes its temporary browsing-context name as well as its
+stores, so reloading a preview cannot invalidate the real administrator's tab
+binding. Real Firebase Auth/Database emulator checks cover preserved teacher
+logins, repeated preview reloads, independent-tab rejection, student leaves,
+expired sessions and the return to the title screen. Session-only sign-in,
+idle limits and unsent-save recovery protections remain in place.
+
 ## Activation verification — 2026-10-25
 
 The complete live rules were backed up before adding only `classroomV1`.

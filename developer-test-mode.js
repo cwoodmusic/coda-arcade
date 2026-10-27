@@ -49,12 +49,18 @@
    let native=null,nativeSession=null;try{native=win.localStorage;}catch{}try{nativeSession=win.sessionStorage;}catch{}
    local=memoryStorage(cloneSource(native,nativeSession));sessions=memoryStorage();
    configure();protectNetwork();
-   const descriptors={};for(const key of ['localStorage','sessionStorage','indexedDB'])descriptors[key]=Object.getOwnPropertyDescriptor(win,key);
+   const descriptors={};for(const key of ['localStorage','sessionStorage','indexedDB','name'])descriptors[key]=Object.getOwnPropertyDescriptor(win,key);
+   // Classroom storage gives its temporary workspace a new tab name. Keep
+   // that name in memory too: pagehide is too late to restore the browser's
+   // underlying browsing-context name before some reloads. Otherwise exiting
+   // a reloaded preview invalidates the real tab's Google-session binding.
+   let previewName=originalName;
    const denied=()=>{const failure=Error('IndexedDB is unavailable in developer test mode.');failure.name='SecurityError';throw failure;};
    try{
     Object.defineProperty(win,'localStorage',{configurable:true,enumerable:descriptors.localStorage?.enumerable??true,get:()=>local});
     Object.defineProperty(win,'sessionStorage',{configurable:true,enumerable:descriptors.sessionStorage?.enumerable??true,get:()=>sessions});
     Object.defineProperty(win,'indexedDB',{configurable:true,enumerable:descriptors.indexedDB?.enumerable??true,value:Object.freeze({open:denied,deleteDatabase:denied,databases:async()=>[]})});
+    Object.defineProperty(win,'name',{configurable:true,enumerable:descriptors.name?.enumerable??true,get:()=>previewName,set:value=>{previewName=String(value);}});
     isolated=true;win.addEventListener?.('pagehide',restoreName);
    }catch{
     // The caller must stop gameplay when isolation is unavailable, rather

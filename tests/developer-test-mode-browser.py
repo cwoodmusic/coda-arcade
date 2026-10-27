@@ -130,6 +130,13 @@ class DeveloperTestModeBrowserTests(_world.WorldBrowserCase):
         self.assertIsNone(self.page.evaluate('localStorage["firebase:authUser:secret"]'))
         self.assertIsNone(self.page.evaluate('sessionStorage["firebase:session:secret"]'))
         self.assert_native(before)
+        # A document reload snapshots the browser's underlying window.name
+        # before pagehide can repair it. The sandbox name must stay virtual.
+        for _ in range(2):
+            self.page.reload(wait_until='domcontentloaded');self.wait_test_mode()
+            self.assertEqual(self.page.evaluate('CodaArcadeQA.testMode().source'),'own-player')
+            self.assertEqual(self.page.evaluate('__beforeBoot.name'),before['name'])
+            self.assert_native(before)
         self.page.locator('[data-developer-test-exit]').click()
         self.page.wait_for_url(lambda url:'dev-test' not in str(url));self.page.wait_for_function('window.__beforeBoot&&window.CodaArcadeQA')
         self.assertEqual(self.page.evaluate('__beforeBoot'),before)

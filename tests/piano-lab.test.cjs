@@ -24,9 +24,9 @@ test('guided melodies fit the visible piano and have distinct stable reward ids'
  assert.ok(LESSONS.length>=3);
  for(const lesson of LESSONS){assert.ok(lesson.notes.length>=8);assert.ok(lesson.floorOffsets.every(note=>Number.isInteger(note)&&note>=0&&note<=21));assert.ok(lesson.description);}
 });
-test('painted perspective piano uses all 22 measured keys and no floor outside them',()=>{
- const keys=paintedFloorKeys();assert.equal(keys.length,22);assert.equal(keys.filter(key=>key.black).length,9);
- assert.deepEqual(keys.map(key=>key.offset).sort((a,b)=>a-b),Array.from({length:22},(_,index)=>index));
+test('painted perspective piano uses all 24 perspective keys and no floor outside them',()=>{
+ const keys=paintedFloorKeys();assert.equal(keys.length,24);assert.equal(keys.filter(key=>key.black).length,10);
+ assert.deepEqual(keys.map(key=>key.offset).sort((a,b)=>a-b),Array.from({length:24},(_,index)=>index));
  for(const key of keys){
   assert.equal(key.polygon.length,4);assert.ok(key.polygon.flat().every(Number.isFinite));
   const x=key.polygon.reduce((sum,point)=>sum+point[0],0)/4,y=key.polygon.reduce((sum,point)=>sum+point[1],0)/4;

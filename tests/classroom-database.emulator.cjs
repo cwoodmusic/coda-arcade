@@ -391,3 +391,24 @@ test('new quest progress remains target-bounded and rejects unknown and private 
  await assertSucceeds(write(student,`${PROFILE_PATH}/state`,state(2)));
  await assertSucceeds(write(owner,`${TEACHER_PATH}/state`,state(2)));
 });
+
+test('all 24 guided and memory scales plus the new key lesson save for their owners only',async()=>{
+ const data=DTO.blank(),tokens=DTO.SCHEMA.properties.piano.properties.completed.items.enum;
+ data.piano.completed=[...tokens];data.wallet.rewards=[...tokens];data.wallet.balance=data.wallet.earned=10000;
+ data.progression.events=tokens.map(id=>({id:'quest:'+id,xp:100}));
+ data.progression.events.push({id:'achievement:piano-memory-master',xp:250},{id:'achievement:classroom-major-minor-keys',xp:50});
+ data.progression.xp=data.progression.events.reduce((sum,event)=>sum+event.xp,0);
+ data.lessons.lessons['major-minor-keys']={step:8,completed:true,completedAt:400};
+ data.quizzes.quizzes['major-minor-keys']={bankVersion:1,index:5,answers:[0,1,2,0,1],bestAnswers:[0,1,2,0,1],completedAt:400};
+ assert.equal(DTO.validate(data).ok,true);assert.equal(tokens.length,80);
+ await assertSucceeds(write(anonymous('student_one'),`${PROFILE_PATH}/state`,state(2,data)));
+ await assertSucceeds(write(staff(),TEACHER_PATH,teacherRecord(1,data)));
+ await assertFails(read(anonymous('student_two'),`${PROFILE_PATH}/state`));
+ await assertFails(write(google('other_admin'),`${TEACHER_PATH}/state`,state(2,data)));
+ const malformed=clone(data);malformed.piano.completed[79]='piano-scale-memory:private-free-text';
+ await assertFails(write(anonymous('student_one'),`${PROFILE_PATH}/state`,state(3,malformed)));
+ const invalid=clone(data);invalid.lessons.lessons['major-minor-keys'].step=9;
+ await assertFails(write(staff(),`${TEACHER_PATH}/state`,state(2,invalid)));
+ const legacy=DTO.blank();delete legacy.lessons.lessons['major-minor-keys'];delete legacy.quizzes.quizzes['major-minor-keys'];
+ await assertSucceeds(write(staff(),`${TEACHER_PATH}/state`,state(2,legacy)));
+});
