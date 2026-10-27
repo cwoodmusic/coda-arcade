@@ -209,3 +209,19 @@ playable cards, a lesson picker, replay, and an exit at every step. The
 **Cheat Sheet** covers values, card meters, all six special cards and worked
 examples. Its Simple/Advanced guide switch does not change the game’s rules.
 Meter multipliers are explicitly game powers rather than general music rules.
+
+
+Walk to the **Hall of Fame** and choose **Achievements** to browse all 42 goals.
+Earned and locked achievements appear together, with requirements, rewards,
+and progress where the game tracks it. Filter by topic or choose Earned/Locked.
+The **Records** tab still shows game scores. Viewing achievements never claims
+rewards or changes saved progress.
+
+In Song Machine, the button beside the title says **Switch to Simple mode**
+when Advanced is open, and **Switch to Advanced mode** when Simple is open.
+Switching keeps the composition, browser draft, Undo history and volume.
+
+Musicians give the player room while walking and step aside during idle
+routines. Walking into an NPC no longer traps it in place. Conversations and
+explicitly placed characters keep their intended positions, and routes continue
+to respect the edited collision map.

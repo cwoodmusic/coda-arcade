@@ -21,7 +21,7 @@
     wander:[[1065,405],[1180,620],[1340,655],[1100,720],[925,450],[1435,665]]
   };
   const ACTIVITY={cabinet:'playing',lounge:'relaxing',dance:'dancing',wander:'waiting'};
-  const ARRIVAL=12,PERSON_SPACE=19;
+  const ARRIVAL=12,PERSON_SPACE=23,PLAYER_SPACE=44,PLAYER_YIELD=50,PLAYER_GOAL_SPACE=PLAYER_YIELD+ARRIVAL;
   window.CodaMusicianCast=Object.freeze(PROFILES.map(profile=>Object.freeze({id:profile.id,name:profile.name,...(profile.unlockItem?{unlockItem:profile.unlockItem,appearance:profile.appearance,fictional:true}:{})})));
   window.CodaNPCDialogueDefaults=Object.freeze(Object.fromEntries(PROFILES.map(profile=>[profile.id,Object.freeze({
     description:profile.description,greetings:Object.freeze(profile.greetings.slice()),
@@ -36,6 +36,7 @@
     const profileFor=(p,index)=>PROFILES.find(profile=>profile.id===p.id||profile.name===p.name)||PROFILES[index%PROFILES.length];
     const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
     const player=()=>api.getPlayer?.()||{x:-9999,y:-9999};
+    const anchored=p=>p.userPlaced||p.authoredPosition||p.pinned;
     function unlocked(p){const item=states.get(p)?.profile.unlockItem;if(!item)return true;try{return api.isUnlocked?.(item)===true;}catch{return false;}}
     function missionIds(){let missions=[];try{const value=api.getMissions?.();missions=Array.isArray(value)?value:Array.isArray(value?.missions)?value.missions:[];}catch{}return new Set(missions.filter(mission=>mission&&['active','complete'].includes(mission.status)).map(mission=>mission.person||mission.giver||mission.npcId).filter(Boolean));}
     function pinned(p,missions=missionIds()){if(states.get(p)?.chat||(states.get(p)?.recallUntil||0)>elapsed||p.conversation||p.pinned||p.userPlaced||p.authoredPosition||missions.has(p.id))return true;try{return api.isPinned?.(p)===true;}catch{return false;}}
@@ -48,8 +49,8 @@
         choices:Array.isArray(edited.choices)?edited.choices:base.choices};
     }
     function facing(p,dx,dy){if(Math.hypot(dx,dy)<.01)return;p.facing=Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'down':'up';}
-    function occupied(x,y,p,space=PERSON_SPACE){
-      const user=player();if(Math.hypot(x-user.x,y-user.y)<space)return true;
+    function occupied(x,y,p,space=PERSON_SPACE,playerSpace=PLAYER_SPACE){
+      const user=player();if(Math.hypot(x-user.x,y-user.y)<playerSpace)return true;
       return npcs.some(other=>other!==p&&!other.hidden&&Number.isFinite(other.x)&&Number.isFinite(other.y)&&Math.hypot(x-other.x,y-other.y)<space);
     }
     function safePoint(x,y,p,radius=60,avoidPeople=false){
@@ -60,11 +61,11 @@
     }
     const duplicateStart=npcs.length>1&&npcs.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)&&distance(p,npcs[0])<1);
     npcs.forEach((p,index)=>{
-      const profile=profileFor(p,index),state={profile,index,next:0,target:null,replanIn:index*.09,retries:0,blocked:0,chat:false,lastLine:'',greetings:0,wasActivity:'waiting',targetSerial:0,visitState:'visiting',visitRemaining:visitDuration*(1+(index%5)*.1),outsideSince:0,departureAge:0,unlocked:false,invitation:false,recallUntil:0};states.set(p,state);
+      const profile=profileFor(p,index),state={profile,index,next:0,target:null,replanIn:index*.09,retries:0,blocked:0,chat:false,lastLine:'',greetings:0,wasActivity:'waiting',targetSerial:0,visitState:'visiting',visitRemaining:visitDuration*(1+(index%5)*.1),outsideSince:0,departureAge:0,unlocked:false,invitation:false,recallUntil:0,avoidSide:1};states.set(p,state);
       p.id=p.id||profile.id;p.name=profile.name;if(profile.appearance)p.appearance={...profile.appearance,...(p.appearance||{})};p.visitorOpacity=1;p.personality=profile.description;p.facing=p.facing||'down';p.walking=false;p.conversation=false;p.phase=Number.isFinite(p.phase)?p.phase:0;
       p.route=[];p.routeKey='';p.arrived=false;p.mode='wander';p.activity='waiting';p.wait=0;p.goal=profile.favorite;
-      const [sx,sy]=SEEDS[index%SEEDS.length],initial=duplicateStart||!Number.isFinite(p.x)||!Number.isFinite(p.y)?{x:sx,y:sy}:p;
-      const point=safePoint(initial.x,initial.y,p,100,true)||safePoint(sx,sy,p,150,true);
+      const [sx,sy]=SEEDS[index%SEEDS.length],hasPosition=Number.isFinite(p.x)&&Number.isFinite(p.y),initial=anchored(p)&&hasPosition?p:duplicateStart||!hasPosition?{x:sx,y:sy}:p;
+      const point=anchored(p)?api.inside(initial.x,initial.y)?{x:initial.x,y:initial.y}:null:safePoint(initial.x,initial.y,p,100,true)||safePoint(sx,sy,p,150,true);
       if(point){p.x=point.x;p.y=point.y;p.hidden=false;}else{p.hidden=true;state.replanIn=2;}
     });
 
@@ -111,14 +112,14 @@
           for(const game of candidates){
             if(npcs.some(other=>other!==p&&states.get(other)?.target?.mode==='cabinet'&&states.get(other).target.gameIndex===game.index))continue;
             const point=safePoint(game.npcX??game.x,game.npcY??game.y,p,30);
-            if(!point||occupied(point.x,point.y,p))continue;
+            if(!point||occupied(point.x,point.y,p,PERSON_SPACE,PLAYER_GOAL_SPACE))continue;
             state.target={...point,mode,gameIndex:game.index,label:game.name};p.goal=game.index;break;
           }
         }else{
           const points=DESTINATIONS[mode];
           for(let j=0;j<points.length;j++){
             const raw=points[(state.index+state.targetSerial+j)%points.length],point=safePoint(raw[0],raw[1],p,40);
-            if(!point)continue;
+            if(!point||occupied(point.x,point.y,p,PERSON_SPACE,PLAYER_GOAL_SPACE))continue;
             if(npcs.some(other=>other!==p&&states.get(other)?.target&&distance(states.get(other).target,point)<PERSON_SPACE))continue;
             state.target={...point,mode};break;
           }
@@ -134,6 +135,7 @@
       p.hidden=true;p.conversation=false;p.visitorOpacity=1;releaseTarget(p,.6+state.index*.03);if(rotation)state.visitState='recovering';state.retries=0;state.blocked=0;
     }
     function entryPoint(p,state){
+      if(anchored(p))return api.inside(p.x,p.y)?{x:p.x,y:p.y}:null;
       if(rotation){let entry={x:1450,y:752};try{const value=api.getEntrance?.();if(Number.isFinite(value?.x)&&Number.isFinite(value?.y))entry=value;}catch{}return safePoint(entry.x,entry.y,p,60,true);}
       const seeds=[SEEDS[state.index%SEEDS.length],[1450,752],...SEEDS];
       for(const [x,y]of seeds){const point=safePoint(x,y,p,100,true);if(point)return point;}
@@ -160,8 +162,42 @@
     }
     function tryStep(p,dx,dy){
       const x=p.x+dx,y=p.y+dy;
-      if(!api.inside(x,y)||occupied(x,y,p))return false;
+      if(!api.inside(x,y))return false;
+      // The player can walk onto a visitor. In that case rejecting every
+      // substep inside the radius traps the visitor permanently. Permit an
+      // escape which increases existing separation, never a deeper overlap.
+      const clear=(other,space)=>{const before=distance(p,other),after=Math.hypot(x-other.x,y-other.y);return after>=space||before<space&&after>before+.0001;};
+      if(!clear(player(),PLAYER_SPACE)||npcs.some(other=>other!==p&&!other.hidden&&!clear(other,PERSON_SPACE)))return false;
       p.x=x;p.y=y;return true;
+    }
+    function avoidStep(p,dx,dy,amount){
+      const state=states.get(p),dist=Math.hypot(dx,dy);if(dist<.001)return false;
+      const nx=dx/dist,ny=dy/dist;
+      // A consistent passing side lets two approaching visitors separate.
+      // Keep that side through the encounter rather than oscillating around
+      // the same blocked waypoint on alternate frames.
+      for(const side of [state.avoidSide,-state.avoidSide]){
+        for(const angle of [Math.PI/2,Math.PI/4,Math.PI*3/4]){
+          const turn=angle*side,c=Math.cos(turn),s=Math.sin(turn);
+          if(tryStep(p,(nx*c-ny*s)*amount,(nx*s+ny*c)*amount)){state.avoidSide=side;return true;}
+        }
+      }
+      return false;
+    }
+    function givePlayerSpace(p,dt){
+      const user=player(),away=distance(p,user),state=states.get(p);
+      if(away>=PLAYER_YIELD-.05){state.yielding=false;return false;}
+      if(away>=PLAYER_SPACE&&!p.arrived&&!state.yielding)return false;
+      state.yielding=true;
+      const angle=state.index*2.399963229728653,dx=away>.001?p.x-user.x:Math.cos(angle),dy=away>.001?p.y-user.y:Math.sin(angle),length=Math.hypot(dx,dy),step=Math.min(state.profile.speed*dt,PLAYER_YIELD-away),parts=Math.max(1,Math.ceil(step/3)),before={x:p.x,y:p.y};
+      if(p.arrived)releaseTarget(p,.25+state.index*.02);
+      for(let part=0;part<parts;part++){
+        if(tryStep(p,dx/length*step/parts,dy/length*step/parts))continue;
+        if(!avoidStep(p,dx,dy,step/parts))break;
+      }
+      const moved=distance(before,p);p.walking=moved>.01;p.activity=p.walking?'walking':'waiting';
+      if(p.walking){facing(p,dx,dy);p.phase+=moved/7;p.walked=(p.walked||0)+moved;}
+      return true;
     }
     function walk(p,dt){
       const state=states.get(p),target=state.target;
@@ -177,18 +213,18 @@
       while(p.route.length&&distance(p,p.route[0])<1)p.route.shift();
       if(!p.route.length){if(distance(p,target)<=ARRIVAL)arrive(p);else failedRoute(p);return;}
       const point=p.route[0],dx=point.x-p.x,dy=point.y-p.y,dist=Math.hypot(dx,dy),step=Math.min(state.profile.speed*dt,dist),steps=Math.max(1,Math.ceil(step/3)),before={x:p.x,y:p.y};
-      let wall=false;
+      let wall=false,crowded=false;
       for(let i=0;i<steps;i++){
         const mx=dx/dist*step/steps,my=dy/dist*step/steps;
         if(tryStep(p,mx,my))continue;
-        wall=!api.inside(p.x+mx,p.y+my);break;
+        wall=!api.inside(p.x+mx,p.y+my);
+        if(!wall){crowded=true;if(avoidStep(p,dx,dy,step/steps))continue;}
+        break;
       }
       let moved=distance(before,p);
-      if(moved<.01){
+      if(moved<.01||crowded){
         state.blocked+=dt;
-        // A patient sidestep can let another visitor or the player pass.
-        if(!wall&&state.blocked>.4){const side=state.index%2?1:-1,amount=Math.min(2,state.profile.speed*dt);if(!tryStep(p,-dy/dist*amount*side,dx/dist*amount*side))tryStep(p,dy/dist*amount*side,-dx/dist*amount*side);moved=distance(before,p);}
-        if(wall||state.blocked>1.6){p.route=[];p.routeKey='';state.replanIn=.45+state.index*.09;state.blocked=0;state.retries++;if(state.retries>=3&&!(rotation&&state.visitState==='leaving'))releaseTarget(p,1);}
+        if(wall||state.blocked>2.4){p.route=[];p.routeKey='';state.replanIn=.45+state.index*.09;state.blocked=0;state.retries++;if(state.retries>=3&&!(rotation&&state.visitState==='leaving'))releaseTarget(p,1);}
       }else state.blocked=0;
       p.walking=moved>.01;p.activity=p.walking?'walking':'waiting';
       // Brief avoidance steps should not flash a different facing before
@@ -206,8 +242,10 @@
         if(!p.hidden&&!api.inside(p.x,p.y)){despawnBlocked(p);continue;}
         if(p.hidden){if(rotation)continue;if(!state.replanIn){const point=entryPoint(p,state);if(point){p.x=point.x;p.y=point.y;p.hidden=false;}else state.replanIn=2;}continue;}
         if(state.chat){p.activity='chatting';const user=player();facing(p,user.x-p.x,user.y-p.y);continue;}
-        if(p.userPlaced||p.authoredPosition){p.route=[];p.activity='waiting';continue;}
+        if(anchored(p)){p.route=[];p.activity='waiting';continue;}
+        if(givePlayerSpace(p,dt))continue;
         refreshCabinet(p,available);
+        if(state.target&&state.target.mode!=='leave'&&distance(state.target,player())<PLAYER_GOAL_SPACE)releaseTarget(p,.15);
         if(state.target&&p.arrived){
           if(!api.inside(p.x,p.y)){releaseTarget(p,.5);continue;}
           p.wait=Math.max(0,p.wait-dt);p.activity=ACTIVITY[p.mode]||'waiting';if(p.wait>0)continue;releaseTarget(p,0);

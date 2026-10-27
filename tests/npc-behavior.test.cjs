@@ -99,10 +99,10 @@ test('the player and other visitors are never shoved through or overlapped while
 });
 
 test('yielding sidesteps keep a musician facing their route instead of flashing a side view',()=>{
-  const env=setup({player:{x:145,y:100}}),p=env.npcs[0];let sidesteps=0;
+  const env=setup({player:{x:160,y:100},games:[{...GAME(),npcX:260,npcY:100}]}),p=env.npcs[0];let sidesteps=0;
   for(let frame=0;frame<120;frame++){
     const before={x:p.x,y:p.y,phase:p.phase};env.engine.update(.05);
-    if(Math.abs(p.x-before.x)<1e-8&&Math.abs(p.y-before.y)>.1){
+    if(p.y-before.y>.1&&p.x<180){
       sidesteps++;assert.equal(p.facing,'right','A short crowd-avoidance step must not turn the character for one frame');
       assert.equal(p.walking,true);assert.ok(p.phase>before.phase,'The sidestep still advances movement animation');
     }
@@ -137,4 +137,57 @@ test('standing-cell recovery also catches unannounced map changes and ends an un
   assert.equal(p.hidden,true);assert.equal(p.conversation,false);assert.equal(env.engine.snapshot()[0].conversation,false);
   run(env.engine,3);assert.equal(p.hidden,true);assert.equal(env.calls.length,0);
   open=true;run(env.engine,3);assert.equal(p.hidden,false);assert.equal(env.inside(p.x,p.y),true);
+});
+
+test('a visitor escapes when the player walks onto their feet, then resumes the routine',()=>{
+  const env=setup({games:[{...GAME(),npcX:300,npcY:100}]}),p=env.npcs[0];env.engine.update(.1);
+  const user={x:p.x,y:p.y};env.setPlayer(user);
+  for(let frame=0;frame<40;frame++){
+    const before={x:p.x,y:p.y};env.engine.update(.1);
+    assert.ok(Math.hypot(p.x-before.x,p.y-before.y)<=6.5+1e-7,'Giving space is ordinary walking, not a position jump');
+    assert.equal(env.inside(p.x,p.y),true);
+  }
+  assert.ok(Math.hypot(p.x-user.x,p.y-user.y)>=44);
+  assert.ok(p.phase>0);assert.ok(p.x>user.x+80,'Clearing the overlap must not strand the visitor at the spacing boundary');
+  run(env.engine,2);assert.equal(p.arrived,true);assert.equal(p.activity,'playing');
+});
+
+test('visitors route past a stationary player instead of stopping in a ring around them',()=>{
+  const user={x:160,y:100},env=setup({player:user,games:[{...GAME(),npcX:300,npcY:100}]}),p=env.npcs[0];let detoured=false;
+  for(let frame=0;frame<60;frame++){
+    env.engine.update(.1);detoured=detoured||Math.abs(p.y-100)>20;
+    assert.ok(Math.hypot(p.x-user.x,p.y-user.y)>=44-1e-7);
+  }
+  assert.equal(detoured,true,'The route must go around the person standing on it');
+  assert.equal(p.arrived,true);assert.equal(p.activity,'playing');assert.ok(env.calls.length<=3,'Local passing should not pathfind every frame');
+  assert.deepEqual(user,{x:160,y:100});
+});
+
+test('a player entering a tight group disperses the crowd and nobody freezes at the give-space threshold',()=>{
+  const npcs=IDS.map((id,index)=>index?{id,x:500+32*Math.cos((index-1)*Math.PI/4),y:500+32*Math.sin((index-1)*Math.PI/4)}:{id,x:500,y:500});
+  const env=setup({npcs,games:[0,1,2,3].map(index=>({...GAME(),index,npcX:700+index*100,npcY:300}))}),user={x:500,y:500};env.setPlayer(user);
+  for(let frame=0;frame<100;frame++){
+    const before=npcs.map(p=>({x:p.x,y:p.y})),queries=env.calls.length;env.engine.update(.1);
+    assert.ok(env.calls.length-queries<=2,'A crowded frame still shares the route budget');
+    npcs.forEach((p,index)=>{assert.equal(env.inside(p.x,p.y),true);assert.ok(Math.hypot(p.x-before[index].x,p.y-before[index].y)<=7.8+1e-7);});
+  }
+  for(const p of npcs)assert.ok(Math.hypot(p.x-user.x,p.y-user.y)>80,'Every visitor must return to a destination beyond the player’s immediate space');
+  assert.ok(new Set(npcs.map(p=>p.mode)).size>=3);assert.deepEqual(user,{x:500,y:500});
+});
+
+test('idle visitors give space, while conversations and authored or pinned positions remain still',()=>{
+  const env=setup({games:[{...GAME(),npcX:100,npcY:100}]}),p=env.npcs[0];env.engine.update(.1);assert.equal(p.arrived,true);
+  env.setPlayer({x:105,y:100});run(env.engine,2);assert.ok(Math.hypot(p.x-105,p.y-100)>=44);assert.equal(p.arrived,false);
+  env.engine.beginConversation(p);const talking={x:p.x,y:p.y,phase:p.phase};env.setPlayer({x:p.x,y:p.y});run(env.engine,1);
+  assert.deepEqual({x:p.x,y:p.y,phase:p.phase},talking);env.engine.endConversation();run(env.engine,2);assert.ok(Math.hypot(p.x-talking.x,p.y-talking.y)>=44);
+  for(const key of ['userPlaced','authoredPosition','pinned']){
+    const fixed={id:'bach',x:100,y:100,[key]:true},f=setup({npcs:[fixed],player:{x:100,y:100}});run(f.engine,3);
+    assert.equal(fixed.x,100);assert.equal(fixed.y,100);assert.equal(fixed.walking,false,'A developer-positioned visitor is not moved by spacing');
+  }
+});
+
+test('new collision under a pinned visitor waits for that authored position instead of moving them to an entrance',()=>{
+  let open=true;const fixed={id:'bach',x:100,y:100,pinned:true},env=setup({npcs:[fixed],inside:(x,y)=>open&&x>=0&&y>=0&&x<1672&&y<941});
+  open=false;run(env.engine,1);assert.equal(fixed.hidden,true);assert.equal(fixed.x,100);assert.equal(fixed.y,100);
+  open=true;run(env.engine,2);assert.equal(fixed.hidden,false);assert.equal(fixed.x,100);assert.equal(fixed.y,100);
 });
