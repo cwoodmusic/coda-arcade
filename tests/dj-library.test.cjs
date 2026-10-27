@@ -3,9 +3,9 @@ const assert=require('node:assert/strict');
 const library=require('../dj-library.js');
 
 test('the guest DJ collection contains distinct playable original arrangements',()=>{
-  assert.equal(library.songs.length,5);
-  assert.equal(new Set(library.songs.map(song=>song.id)).size,5);
-  assert.equal(new Set(library.songs.map(song=>JSON.stringify(song.composition))).size,5);
+  assert.equal(library.songs.length,7);
+  assert.equal(new Set(library.songs.map(song=>song.id)).size,7);
+  assert.equal(new Set(library.songs.map(song=>JSON.stringify(song.composition))).size,7);
   for(const song of library.songs){assert.ok(library.valid(song.composition));assert.ok(song.composition.tracks.some(track=>track.notes.length>0));}
 });
 
@@ -71,7 +71,21 @@ test('the three familiar selections stay free while the waltz unlocks from music
  assert.equal(library.isUnlocked(waltz,{level:3}),false);assert.equal(library.isUnlocked(waltz,{level:4}),true);assert.equal(library.isUnlocked('starlight-waltz',{level:5}),true);
  assert.equal(library.isUnlocked({id:'starlight-waltz'},{level:1}),false,'Known track IDs use the catalog requirement even if a caller omits metadata');
  assert.match(library.requirement(waltz),/musician level 4/);assert.equal(library.isUnlocked('unknown'),false);
- const progress={level:4,fishCaught:5,achievements:[]},before=structuredClone(progress);for(const record of library.songs)assert.equal(library.isUnlocked(record,progress),true);assert.deepEqual(progress,before,'Checking a track never awards XP or changes progress');
+ const progress={level:4,fishCaught:5,achievements:[]},before=structuredClone(progress);for(const record of library.songs.slice(0,5))assert.equal(library.isUnlocked(record,progress),true);assert.deepEqual(progress,before,'Checking a track never awards XP or changes progress');
+});
+
+test('new line-dance tracks require their saved achievements rather than level, fish, or borrowed metadata',()=>{
+ for(const [id,achievement,label,bpm]of [['first-steps','dance-first-finish','First Steps',88],['midnight-headliner','dance-hard-groove','DJ Coda’s Headliner',100]]){
+  const record=library.songs.find(song=>song.id===id);
+  assert.equal(record.composition.bpm,bpm);assert.deepEqual(record.unlock,{kind:'achievement',id:achievement,label});
+  for(const progress of [undefined,null,{level:50,fishCaught:30},{achievements:[]},{achievements:['dance-perfect-set']},{achievements:achievement}])assert.equal(library.isUnlocked(id,progress),false,id);
+  const progress={level:1,fishCaught:0,achievements:[achievement]},before=structuredClone(progress);
+  assert.equal(library.isUnlocked(id,progress),true);assert.equal(library.isUnlocked(id,{achievements:new Set([achievement])}),true);
+  assert.equal(library.isUnlocked({id,unlock:null},{level:50}),false,'A known track always retains its catalog gate');
+  assert.equal(library.requirement(id),'Earn '+label+' to unlock this track.');assert.deepEqual(progress,before);
+ }
+ assert.equal(library.isUnlocked('midnight-headliner',{achievements:['dance-first-finish']}),false);
+ assert.equal(library.isUnlocked('first-steps',{achievements:['dance-hard-groove']}),false);
 });
 
 test('built-in arrangements use the ten guest voices with bounded density and balanced levels',()=>{

@@ -160,6 +160,36 @@ test('experience is recomputed from stable ids and no equipment alone can create
  const long='game:pitch:'+'x'.repeat(128);valid.progression.events.push({id:long,xp:5});valid.progression.xp+=5;assert.equal(D.sanitize(valid).data.progression.events.at(-1).id,long);
 });
 
+test('DJ dance gear survives a classroom save and restore from its earned achievements without purchases',()=>{
+ const data=D.blank(),store=storage();
+ Object.assign(data.avatar,{eyewear:'shutter',shoes:'rollerskates',accessory:'boombox'});
+ data.progression.events=[
+  {id:'achievement:dance-twenty-streak',xp:100},
+  {id:'achievement:dance-perfect-set',xp:150},
+  {id:'achievement:dance-hard-perfect',xp:250}
+ ];
+ data.progression.xp=500;
+ assert.deepEqual(data.wallet.owned,[]);
+ const validated=D.validate(data);assert.equal(validated.ok,true,validated.error);assert.deepEqual(validated.data,data);
+ assert.equal(D.apply(store,data).ok,true);assert.deepEqual(D.capture(store).data,data);
+ assert.deepEqual(JSON.parse(store.getItem(D.KEYS.wallet)).owned,[],'Earning gear never invents a purchase');
+});
+
+test('unearned and unowned DJ dance gear resets to the existing player defaults',()=>{
+ const data=D.blank();Object.assign(data.avatar,{eyewear:'shutter',shoes:'rollerskates',accessory:'boombox'});
+ const clean=D.sanitize(data);assert.equal(clean.ok,true,clean.error);
+ for(const slot of ['eyewear','shoes','accessory'])assert.equal(clean.data.avatar[slot],D.blank().avatar[slot],slot);
+ assert.deepEqual(clean.data.progression.events,[]);assert.deepEqual(clean.data.wallet.owned,[]);
+});
+
+test('previously purchased DJ dance gear stays equipped without its dance achievements',()=>{
+ const data=D.blank(),store=storage();
+ Object.assign(data.avatar,{eyewear:'shutter',shoes:'rollerskates',accessory:'boombox'});
+ data.wallet.owned=['shutter','rollerskates','boombox'];
+ assert.deepEqual(data.progression.events,[]);
+ assert.equal(D.apply(store,data).ok,true);assert.deepEqual(D.capture(store).data,data);
+});
+
 test('applying a student replaces every scoped store and leaves unrelated guest work intact',()=>{
  const guest=storage({'musicArcadeV1':'{"name":"Guest work","walked":33}','codaPianoTakeV1':'[{"midi":60,"at":0,"duration":1}]','codaWorldProjectV1':'EXACT editor bytes','unrelated-account':'untouched','codaHallOfFameV1':'scores'}),before=dump(guest),backup=D.backup(guest);
  assert.equal(D.apply(guest,profile()).ok,true);assert.equal(guest.getItem('codaPianoTakeV1'),null);assert.equal(guest.getItem('codaWorldProjectV1'),'EXACT editor bytes');assert.equal(guest.getItem('unrelated-account'),'untouched');assert.equal(guest.getItem('codaHallOfFameV1'),null);

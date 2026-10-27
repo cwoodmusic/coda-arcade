@@ -8,9 +8,9 @@
  }
  function create(api={}){
   const win=api.window||window,stage=win.CodaDanceFloorStage.create({player:api.player,npcs:api.npcs,isWalkable:api.isWalkable,reducedMotion:api.reducedMotion});
-  let active=false,previous=null,restoring=false;
+  let active=false,previous=null,restoring=false,run=null;
   function cleanup(reason='close'){
-   if(!active||restoring)return;restoring=true;active=false;stage.close();
+   if(!active||restoring)return;restoring=true;active=false;run=null;stage.close();
    if(previous){api.setCamera(previous.camera);api.setFacing?.(previous.facing);if(api.canPlay?.()!==false&&!win.document.hidden&&!['profile','hidden','paused','profile-changed','destroyed'].includes(reason))api.restoreMusic?.(previous.music);}
    previous=null;api.clearInput?.();api.onChange?.();restoring=false;
   }
@@ -19,15 +19,21 @@
    return {x:box.left+(dj.x-cam.x)*cam.zoom*box.width/api.width,y:box.top+(dj.y-55-cam.y)*cam.zoom*box.height/api.height};
   }
   const game=win.CodaDanceRhythmGame.create({canPlay:()=>active&&api.canPlay?.()!==false,getAnchor:anchor,
-   onStart(){
+   onStart(event){
+    run=null;
     if(stage.getState().active)stage.close();
     if(!stage.start()){api.onError?.('The dance floor is blocked. Leave some clear space in the middle.');return false;}
+    run={id:event.runId,owner:api.getIdentity?.()};
     api.clearInput?.();api.onChange?.();return true;
    },
    onCue:event=>stage.cue(event.direction),
    onStep:event=>stage.step(event.direction,{actorId:'player'}),
    onMiss:event=>stage.miss(event.direction),
-   onFinish:()=>stage.cue('down'),
+   onFinish:event=>{
+    stage.cue('down');
+    if(!active||api.canPlay?.()===false||!run||event.runId!==run.id||api.getIdentity?.()!==run.owner)return {ok:false,error:'Your player changed before the dance finished.'};
+    run=null;return api.onFinish?.(event);
+   },
    onClose:({reason}={})=>cleanup(reason)
   });
   return {

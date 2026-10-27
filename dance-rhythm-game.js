@@ -15,14 +15,14 @@
   if(!engineModule?.create)throw Error('The dance rhythm engine could not load.');
   const ownHost=!api.host,host=api.host||doc.createElement('section');if(ownHost)doc.body.append(host);
   host.classList.add('dance-rhythm-game');host.hidden=true;host.setAttribute('aria-label','DJ line dance');
-  let opened=false,destroyed=false,phase='closed',mode='easy',engine=null,state=null,frame=0,priorFocus=null,finished=false;
+  let opened=false,destroyed=false,phase='closed',mode='easy',engine=null,state=null,frame=0,priorFocus=null,finished=false,runId=null;
   let audio=null,master=null,audioStart=0,nextClick=-4,voices=new Set(),feedbackTimer=0,lastPointer=null,music=true;
   let canvas=null,ctx=null,scoreText=null,feedbackText=null,countText=null,beatText=null,progress=null,statusText='',nextCue=0;
   const held=new Set(),clock=()=>typeof api.now==='function'?api.now():win.performance.now()/1000;
   const node=(tag,className,text)=>{const item=doc.createElement(tag);if(className)item.className=className;if(text!==undefined)item.textContent=text;return item;};
   const button=(text,action,name,value='')=>{const item=node('button','',text);item.type='button';if(name)item.setAttribute('data-dance-'+name,value);item.onclick=action;return item;};
   const allowed=()=>{try{return api.canPlay?.()!==false;}catch{return false;}};
-  function getState(){return {open:opened,phase,difficulty:mode,music,audioPlaying:!!audio,engine:engine?.getState()||state,lastFeedback:statusText};}
+  function getState(){return {open:opened,phase,difficulty:mode,runId,music,audioPlaying:!!audio,engine:engine?.getState()||state,lastFeedback:statusText};}
   function changed(){api.onChange?.(getState());}
   function safeCallback(name,...args){try{return api[name]?.(...args);}catch(error){win.console?.error?.('Dance callback failed:',error);return false;}}
   function stopAudio(){
@@ -80,8 +80,9 @@
   }
   function start(difficulty='easy'){
    if(destroyed||!opened||!allowed())return false;mode=MODES.some(item=>item.id===difficulty)?difficulty:'easy';
+   runId=win.crypto?.randomUUID?.()||'dance-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
    engine?.destroy();engine=engineModule.create({difficulty:mode,seed:api.seed??Math.floor(Math.random()*0xffffffff)});finished=false;held.clear();statusText='Get ready…';nextClick=-4;nextCue=0;
-   const now=clock();engine.start(now);state=engine.getState();phase='countin';startAudio(now);renderGame();const ready=safeCallback('onStart',{difficulty:mode,chart:state.chart,bpm:state.bpm});
+   const now=clock();engine.start(now);state=engine.getState();phase='countin';startAudio(now);renderGame();const ready=safeCallback('onStart',{runId,difficulty:mode,chart:state.chart,bpm:state.bpm});
    if(ready===false){renderMenu();const help=node('p','dance-rhythm-feedback','The dance floor needs a little more space. Try again in a moment.');help.setAttribute('role','status');host.append(help);return false;}
    win.cancelAnimationFrame(frame);tick();changed();return true;
   }
@@ -119,7 +120,12 @@
   function finish(){
    if(finished||!opened)return;finished=true;phase='result';state=engine.getState();win.cancelAnimationFrame(frame);stopAudio();held.clear();win.clearTimeout(feedbackTimer);host.replaceChildren();header('Dance complete!');
    const accuracy=Math.round((state.accuracy||0)*100);host.append(node('p','dance-rhythm-result',state.misses===0?'Perfect dance!':accuracy>=80?'Great dancing!':'Keep practising—you can do it!'));
-   host.append(node('p','dance-rhythm-help',state.hits+' steps right · '+accuracy+'% · Best streak '+state.bestStreak));const choices=node('div','dance-rhythm-result-actions');choices.append(button('Dance again',()=>start(mode),'again'),button('Choose difficulty',renderMenu,'choose'),button('Back to the arcade',()=>close('finished'),'done'));host.append(choices);position();safeCallback('onFinish',{difficulty:mode,score:state.score,hits:state.hits,misses:state.misses,accuracy:state.accuracy,bestStreak:state.bestStreak,perfect:state.misses===0,bars:state.chart.bars});changed();host.querySelector('[data-dance-again]')?.focus({preventScroll:true});
+   host.append(node('p','dance-rhythm-help','Score '+state.score+' · '+state.hits+' steps right · '+accuracy+'% · Best streak '+state.bestStreak));
+   const reward=safeCallback('onFinish',{runId,complete:state.complete,difficulty:mode,score:state.score,hits:state.hits,misses:state.misses,accuracy:state.accuracy,bestStreak:state.bestStreak,perfect:state.perfect,bars:state.chart.bars,notesTotal:state.notesTotal,perfectHits:state.perfectHits,goodHits:state.goodHits,wrongInputs:state.wrongInputs,lateMisses:state.lateMisses,extras:state.extras});
+   if(reward?.ok&&reward.amount>0){
+    const line=node('p','dance-rhythm-rewards','+'+reward.amount+' XP'+(reward.unlocks?.length?' · Unlocked: '+reward.unlocks.join(', '):''));line.setAttribute('role','status');host.append(line);
+   }else if(reward?.ok===false){const line=node('p','dance-rhythm-small',reward.error||'Progress could not save. Try another dance.');line.setAttribute('role','status');host.append(line);}
+   const choices=node('div','dance-rhythm-result-actions');choices.append(button('Dance again',()=>start(mode),'again'),button('Choose difficulty',renderMenu,'choose'),button('Back to the arcade',()=>close('finished'),'done'));host.append(choices);position();changed();host.querySelector('[data-dance-again]')?.focus({preventScroll:true});
   }
   function open(options={}){
    if(destroyed||!allowed())return false;if(opened)return true;priorFocus=doc.activeElement;opened=true;host.hidden=false;host.dataset.danceOpen='true';music=options.music!==false;renderMenu();safeCallback('onOpen',{});return true;

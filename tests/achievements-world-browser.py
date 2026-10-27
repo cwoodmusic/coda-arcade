@@ -23,10 +23,27 @@ class AchievementsWorldTests(_world.WorldBrowserCase):
 
     def test_all_includes_locked_requirements_and_filters_never_award_rewards(self):
         self.open_achievements();before=self.journals()
-        self.assertEqual(self.page.locator('[data-achievement-id]').count(),43)
-        self.assertEqual(self.page.locator('[data-achievement-id][data-earned="false"]').count(),43)
+        self.assertEqual(self.page.locator('[data-achievement-id]').count(),49)
+        self.assertEqual(self.page.locator('[data-achievement-id][data-earned="false"]').count(),49)
+        categories=self.page.locator('#fame-achievement-category')
+        self.assertEqual(categories.locator('option').count(),9,'Eight achievement categories plus Every topic')
+        expect(categories.locator('option[value="dance"]')).to_have_text('DJ Line Dance')
         locked=self.page.locator('[data-achievement-id="triad-hard-advanced-win"]')
         expect(locked).to_contain_text('Locked');expect(locked).to_contain_text('Hard')
+        categories.select_option('dance')
+        self.assertEqual(self.page.locator('[data-achievement-id]').count(),6)
+        self.assertEqual(self.page.locator('[data-achievement-id][data-earned="false"]').count(),6)
+        for achievement,requirement,reward in [
+            ('dance-first-finish','eight-bar','First Steps DJ track'),
+            ('dance-twenty-streak','twenty steps in a row','Shutter shades'),
+            ('dance-hard-groove','Hard DJ line dance with at least 80% accuracy','Midnight Headliner DJ track'),
+            ('dance-perfect-set','no wrong or extra arrows','Roller skates'),
+            ('dance-hard-perfect','Hard DJ line dance with no wrong or extra arrows','Boombox')]:
+            card=self.page.locator('[data-achievement-id="'+achievement+'"]')
+            expect(card).to_contain_text('Locked');expect(card).to_contain_text(requirement)
+            expect(card).to_contain_text('Unlock: '+reward)
+        expect(self.page.locator('[data-achievement-id="dance-normal-groove"]')).to_contain_text('Normal DJ line dance with at least 80% accuracy')
+        self.assertEqual(self.journals(),before,'Browsing locked DJ goals and unlocks cannot award XP or Notes')
         self.page.locator('#fame-achievement-category').select_option('fishing')
         self.assertEqual(self.page.locator('[data-achievement-id]').count(),9)
         self.page.locator('#fame-achievement-status').select_option('earned')
@@ -63,7 +80,7 @@ class AchievementsWorldTests(_world.WorldBrowserCase):
         self.assertTrue(result['ok']);self.page.reload(wait_until='domcontentloaded')
         self.page.wait_for_function('CodaDeveloperConsole?.ready()');self.open_achievements()
         self.assertEqual(self.page.locator('[data-achievement-id][data-earned="true"]').count(),0)
-        self.assertEqual(self.page.locator('[data-achievement-id]').count(),43)
+        self.assertEqual(self.page.locator('[data-achievement-id]').count(),49)
 
     def test_mobile_tabs_and_filters_fit_and_escape_returns_to_the_arcade(self):
         self.page.set_viewport_size({'width':390,'height':844});self.open_achievements()

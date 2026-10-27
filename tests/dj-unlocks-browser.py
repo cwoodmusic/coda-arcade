@@ -25,12 +25,12 @@ class DJUnlockTests(_world.WorldBrowserCase):
    });localStorage.setItem('codaRhythmFishingV1',JSON.stringify({version:1,catches}));
   }''',{'count':count,'valid':valid})
   self.load()
- def test_new_player_sees_three_free_tracks_and_two_clear_locked_requirements(self):
+ def test_new_player_sees_three_free_tracks_and_four_clear_locked_requirements(self):
   before=self.totals();self.dj()
-  self.assertEqual(self.page.locator('[data-house-track]').count(),5)
+  self.assertEqual(self.page.locator('[data-house-track]').count(),7)
   for id in ['neon-afterhours','velvet-lounge','mirrorball-bounce']:
    self.assertFalse(self.button(id).is_disabled());self.assertNotIn('jukebox-track-locked',self.row(id).get_attribute('class'))
-  for id,requirement in [('lanternwake-shanty','Catch 5 fish'),('starlight-waltz','level 4')]:
+  for id,requirement in [('lanternwake-shanty','Catch 5 fish'),('starlight-waltz','level 4'),('first-steps','Earn First Steps'),('midnight-headliner','Earn DJ Coda’s Headliner')]:
    self.assertTrue(self.button(id).is_disabled());self.assertIn('🔒',self.row(id).inner_text());self.assertIn(requirement,self.row(id).locator('[data-dj-requirement]').inner_text())
    self.assertIn('jukebox-track-locked',self.row(id).get_attribute('class'))
    muted=self.row(id).locator('strong').evaluate("node=>getComputedStyle(node).color.match(/[0-9]+/g).slice(0,3).map(Number)");free=self.row('neon-afterhours').locator('strong').evaluate("node=>getComputedStyle(node).color.match(/[0-9]+/g).slice(0,3).map(Number)")
@@ -63,5 +63,31 @@ class DJUnlockTests(_world.WorldBrowserCase):
   self.assertEqual(self.state()['bpm'],78);self.assertEqual(self.totals(),before)
   self.page.screenshot(path='/tmp/dj49-unlocked-waltz.png');self.page.locator('#jukeboxStop').click()
   self.load();self.dj();self.assertFalse(self.button('starlight-waltz').is_disabled());self.assertEqual(self.totals(),before)
+
+ def test_saved_dance_achievements_unlock_their_tracks_and_persist_without_spending_or_reawarding(self):
+  def save(achievements):
+   self.page.evaluate('''achievements=>{
+    const events=achievements.map(([id,xp])=>({id:'achievement:'+id,xp,reason:'Saved dance achievement'}));
+    localStorage.setItem('codaPlayerProgressV1',JSON.stringify({version:1,xp:events.reduce((sum,event)=>sum+event.xp,0),events}));
+   }''',achievements)
+   self.load()
+  save([['dance-perfect-set',150]])
+  self.dj()
+  for id in ['first-steps','midnight-headliner']:self.assertTrue(self.button(id).is_disabled(),'An unrelated dance achievement cannot unlock this track')
+  save([['dance-first-finish',50]])
+  before=self.totals();self.dj()
+  self.assertFalse(self.button('first-steps').is_disabled());self.assertTrue(self.button('midnight-headliner').is_disabled())
+  self.assertEqual(self.row('first-steps').locator('[data-dj-requirement]').inner_text(),'')
+  self.button('first-steps').click();self.page.wait_for_function('CodaArcadeQA.jukebox().title==="First Steps"&&CodaArcadeQA.jukebox().playing')
+  self.assertEqual(self.state()['bpm'],88);self.assertEqual(self.totals(),before)
+  self.page.locator('#jukeboxStop').click();self.load();self.dj()
+  self.assertFalse(self.button('first-steps').is_disabled());self.assertTrue(self.button('midnight-headliner').is_disabled());self.assertEqual(self.totals(),before)
+  save([['dance-first-finish',50],['dance-hard-groove',150]])
+  before=self.totals();self.dj()
+  for id in ['first-steps','midnight-headliner']:self.assertFalse(self.button(id).is_disabled())
+  self.button('midnight-headliner').click();self.page.wait_for_function('CodaArcadeQA.jukebox().title==="Midnight Headliner"&&CodaArcadeQA.jukebox().playing')
+  self.assertEqual(self.state()['bpm'],100);self.assertEqual(self.totals(),before,'Playing an earned song spends no Notes, awards no XP, and leaves gear unchanged')
+  self.page.locator('#jukeboxStop').click();self.load();self.dj()
+  self.assertFalse(self.button('midnight-headliner').is_disabled());self.assertEqual(self.totals(),before)
 
 if __name__=='__main__':unittest.main(verbosity=2)

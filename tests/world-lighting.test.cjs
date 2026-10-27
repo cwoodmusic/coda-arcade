@@ -14,7 +14,7 @@ function fixture(options={}) {
     revision:()=>revision++,checks:()=>checks};
 }
 function context() {
-  return {shadowBlur:30,calls:[],save(){},restore(){},beginPath(){},closePath(){},moveTo(){},lineTo(){},clip(){this.calls.push(['clip']);},fill(){},stroke(){},setTransform(){},clearRect(){this.calls.push(['clear']);},
+  return {shadowBlur:30,calls:[],save(){},restore(){},beginPath(){},closePath(){},moveTo(){},lineTo(){},clip(){this.calls.push(['clip']);},fill(){},stroke(){this.calls.push(['stroke']);},setTransform(){},clearRect(){this.calls.push(['clear']);},
     createRadialGradient(){return {addColorStop(){}};},
     drawImage(...args){this.calls.push(['image',...args]);},
     fillRect(...args){assert.equal(this.shadowBlur,0,'No per-frame shadow blur');this.calls.push(['rect',...args]);}};
@@ -46,6 +46,21 @@ test('spinning facets create moving floor pins and geometry is reused within its
   f.time(1);const next=f.lighting.snapshot();assert.notDeepEqual(next.spots,first.spots);
   assert.equal(next.spots.length,32);
   for(const spot of next.spots)assert.ok(spot.x>=0&&spot.y>=0&&spot.x<10000&&spot.y<10000);
+});
+
+test('circling reflections have short moving traces, with no trails for reduced or stopped motion',()=>{
+  const f=fixture(),first=f.lighting.snapshot();
+  assert.ok(first.spots.every(spot=>spot.trace));
+  for(const spot of first.spots)assert.ok(Math.hypot(spot.trace.x-spot.x,spot.trace.y-spot.y)<=9.000001);
+  const ctx=context();f.lighting.drawFloorPins(ctx);
+  assert.equal(ctx.calls.filter(call=>call[0]==='stroke').length,first.spotCount);
+  f.time(1);assert.notDeepEqual(f.lighting.snapshot().spots,first.spots);
+  f.reduced(true);assert.ok(f.lighting.snapshot().spots.every(spot=>spot.trace===null));
+  f.reduced(false);
+  for(const stopped of [{animate:false},{spin:0}]){
+    f.balls([{id:'still',x:2000,y:2000,radius:28,...stopped}]);
+    assert.ok(f.lighting.snapshot().spots.every(spot=>spot.trace===null));
+  }
 });
 
 test('translating, rotating and resizing a ball transforms its anchor and every projected pin together',()=>{

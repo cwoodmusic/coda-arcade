@@ -32,7 +32,18 @@
   {id:'magicorb',label:'Magic orb',level:12}
  ].map(Object.freeze));
  const PIANO_MEMORIES=Object.freeze(['twinkle','mary','london-bridge','hot-cross-buns','row-your-boat','frere-jacques','ode-to-joy','jingle-bells','old-macdonald']);
+ const DANCE_ACHIEVEMENTS=Object.freeze([
+  {id:'dance-first-finish',title:'First Steps',description:'Finish an eight-bar DJ line dance with at least one correct step.',xp:50},
+  {id:'dance-twenty-streak',title:'Find the Groove',description:'Match twenty steps in a row in one completed DJ line dance.',xp:100},
+  {id:'dance-normal-groove',title:'Dance Floor Regular',description:'Finish a Normal DJ line dance with at least 80% accuracy.',xp:100},
+  {id:'dance-hard-groove',title:'DJ Coda’s Headliner',description:'Finish a Hard DJ line dance with at least 80% accuracy.',xp:150},
+  {id:'dance-perfect-set',title:'Mirrorball Master',description:'Match every step in a completed DJ line dance with no wrong or extra arrows.',xp:150},
+  {id:'dance-hard-perfect',title:'Disco Legend',description:'Match every step in a completed Hard DJ line dance with no wrong or extra arrows.',xp:250}
+ ].map(Object.freeze));
  const ACHIEVEMENT_REWARDS=Object.freeze([
+  {id:'shutter',label:'Shutter shades',achievement:'dance-twenty-streak',requirement:'Match 20 steps in a row in one completed DJ line dance.',purchaseAlternative:true},
+  {id:'rollerskates',label:'Roller skates',achievement:'dance-perfect-set',requirement:'Complete a DJ line dance without a wrong or extra arrow.',purchaseAlternative:true},
+  {id:'boombox',label:'Boombox',achievement:'dance-hard-perfect',requirement:'Complete a Hard DJ line dance without a wrong or extra arrow.',purchaseAlternative:true},
   {id:'rhythmfox',label:'Rhythm fox companion',achievement:'rhythm-hundred-streak',requirement:'Match 100 notes in a row in Rhythm Room.'},
   {id:'lakeotter',label:'Lake otter companion',achievement:'fishing-all-species',requirement:'Catch all 30 fish species.'},
   {id:'pianophoenix',label:'Piano phoenix companion',achievement:'piano-memory-master',requirement:'Complete all nine Piano Lab melodies from memory.'},
@@ -93,6 +104,14 @@
   if(game==='triad')return ['computer','multiplayer','advanced'].includes(result.mode)&&integer(result.captures,1000)&&integer(result.score,16)&&typeof result.won==='boolean';
   return game==='rhythm'&&result.mode==='tap'&&integer(result.total,128)&&result.total>0&&integer(result.hits,128)&&result.hits<=result.total&&integer(result.extra,1000)&&integer(result.early,128)&&integer(result.late,128)&&result.early+result.late<=result.hits;
  }
+ function validDanceResult(result){
+  if(!result||typeof result!=='object'||result.complete!==true||result.bars!==8||!['easy','normal','hard'].includes(result.difficulty))return false;
+  if(!integer(result.notesTotal,256)||result.notesTotal<1||!integer(result.hits,256)||result.hits<1||result.hits>result.notesTotal)return false;
+  if(!['misses','wrongInputs','extras'].every(key=>integer(result[key],10000))||!['perfectHits','goodHits','lateMisses','bestStreak'].every(key=>integer(result[key],256)))return false;
+  return result.hits+result.misses-result.extras===result.notesTotal&&result.perfectHits+result.goodHits===result.hits&&
+   result.wrongInputs+result.lateMisses===result.misses&&result.extras<=result.wrongInputs&&result.bestStreak<=result.hits&&
+   result.score===100*result.perfectHits+70*result.goodHits&&Number.isFinite(result.accuracy)&&Math.abs(result.accuracy-result.hits/(result.hits+result.misses))<1e-9;
+ }
  function create(api={}){
   let storage=api.storage;if(storage===undefined)try{storage=window.localStorage;}catch{}
   let state={version:1,xp:0,events:[]},persistent=false,error='',claimingLevelPrizes=false;const listeners=new Set();
@@ -137,7 +156,48 @@
    const awarded=[resultAward,...achievements.map(recordAchievement)].filter(value=>value.ok&&!value.alreadyAwarded);
    return {...getState(),ok:true,alreadyAwarded:awarded.length===0,amount:awarded.reduce((sum,value)=>sum+value.amount,0),leveledUp:levelForXP(state.xp)>before};
   }
-  function recordAchievement(id){return awardXP('achievement:'+id,({'pitch-bass-reader':100,'pitch-bass-streak':150,'pitch-grand-reader':150,'pitch-grand-perfect':250})[id]||(['rhythm-hundred-streak','piano-memory-master','triad-hard-advanced-win','pitch-level-50'].includes(id)?250:50),'Achievement: '+String(id).replace(/[-_]/g,' '));}
+  function recordDanceResult(runId,result){
+   const allowed=()=>{try{return api.canRecord?.()!==false;}catch{return false;}};
+   if(!allowed())return {ok:false,error:'Progress rewards are paused.'};
+   if(typeof runId!=='string'||!/^[A-Za-z0-9:_-]{1,128}$/.test(runId)||!validDanceResult(result))return {ok:false,error:'A completed DJ line dance result is required.'};
+   let sourceProof;
+   try{
+    sourceProof=storage?.getItem(KEY)??null;
+    if(sourceProof===null)state={version:1,xp:0,events:[],bestPitchLevel:0};
+    else{const raw=JSON.parse(sourceProof),current=clean(raw);if(!current||current.events.length!==raw.events.length||current.xp!==raw.xp)return {ok:false,error:'Saved progress could not be read safely. Your dance reward was not saved.'};state=current;}
+   }catch{return {ok:false,error:'Saved progress could not be read safely. Your dance reward was not saved.'};}
+   const id='game:dance:'+runId;
+   // Never reconsider altered evidence for a run already saved for this player.
+   if(state.events.some(event=>event.id===id))return {...getState(),ok:true,alreadyAwarded:true,amount:0,achievements:[]};
+   const perfect=result.hits===result.notesTotal&&result.misses===0,accuracy=result.hits/(result.hits+result.misses);
+   const reached=new Set(['dance-first-finish']);
+   if(result.bestStreak>=20)reached.add('dance-twenty-streak');
+   if(result.difficulty==='normal'&&accuracy>=.8)reached.add('dance-normal-groove');
+   if(result.difficulty==='hard'&&accuracy>=.8)reached.add('dance-hard-groove');
+   if(perfect)reached.add('dance-perfect-set');
+   if(perfect&&result.difficulty==='hard')reached.add('dance-hard-perfect');
+   const achievements=DANCE_ACHIEVEMENTS.filter(item=>reached.has(item.id)&&!state.events.some(event=>event.id==='achievement:'+item.id));
+   const awards=[{id,xp:10+Math.min(60,result.hits*2)+(perfect?20:0),reason:'DJ line dance ('+result.difficulty+')'},
+    ...achievements.map(item=>({id:'achievement:'+item.id,xp:item.xp,reason:'Achievement: '+item.title}))];
+   if(state.events.length+awards.length>MAX_EVENTS)return {ok:false,error:'The experience journal is full.'};
+   const before=state.xp,amount=awards.reduce((sum,event)=>sum+event.xp,0),next={version:1,xp:before+amount,bestPitchLevel:state.bestPitchLevel||0,events:[...state.events,...awards]};
+   // Save the run and its achievements together, so a failed write can retry
+   // without losing an achievement or replaying an already-recorded run.
+   const proof=JSON.stringify(next);
+   try{
+    if(!storage||typeof storage.setItem!=='function')throw Error('storage');
+    if(!allowed()||storage.getItem(KEY)!==sourceProof)return {ok:false,error:'Your player changed before the dance reward was saved.'};
+    storage.setItem(KEY,proof);state=next;persistent=true;error='';
+   }
+   catch{persistent=false;error='Browser saving is unavailable. This dance reward has not been saved; try again.';changed();return {ok:false,error};}
+   changed();let awardedXP=before;
+   for(const award of awards){
+    try{if(!allowed()||storage.getItem(KEY)!==proof)break;}catch{break;}
+    try{api.onAward?.({id:award.id,amount:award.xp,reason:award.reason,levelBefore:levelForXP(awardedXP),level:levelForXP(awardedXP+award.xp)});}catch{}awardedXP+=award.xp;
+   }
+   return {...getState(),ok:true,alreadyAwarded:false,amount,achievements:achievements.map(item=>item.id),leveledUp:levelForXP(state.xp)>levelForXP(before)};
+  }
+  function recordAchievement(id){return awardXP('achievement:'+id,DANCE_ACHIEVEMENTS.find(item=>item.id===id)?.xp||({'pitch-bass-reader':100,'pitch-bass-streak':150,'pitch-grand-reader':150,'pitch-grand-perfect':250})[id]||(['rhythm-hundred-streak','piano-memory-master','triad-hard-advanced-win','pitch-level-50'].includes(id)?250:50),'Achievement: '+String(id).replace(/[-_]/g,' '));}
   function recordQuest(id,amount=100){return awardXP('quest:'+id,amount,'Quest: '+String(id).replace(/[-_:]/g,' '));}
   function recordRhythmStreak(value){if(!integer(value)||value<100)return {ok:false,error:'A verified streak of 100 notes is required.'};return recordAchievement('rhythm-hundred-streak');}
   function recordPianoMemory(id){
@@ -195,7 +255,7 @@
   }
   const onStorage=event=>{if(event.key===KEY){refresh();changed();}};
   if(typeof window!=='undefined')window.addEventListener('storage',onStorage);
-  return {awardXP,recordGameEvent,recordAchievement,recordQuest,recordRhythmStreak,recordPianoMemory,claimLevelPrizes,prizesForLevel,requirement,getState,snapshot:getState,refresh,unlocked,open,dispose(){if(typeof window!=='undefined')window.removeEventListener('storage',onStorage);listeners.clear();},subscribe(listener){listeners.add(listener);return ()=>listeners.delete(listener);}};
+  return {awardXP,recordGameEvent,recordDanceResult,recordAchievement,recordQuest,recordRhythmStreak,recordPianoMemory,claimLevelPrizes,prizesForLevel,requirement,getState,snapshot:getState,refresh,unlocked,open,dispose(){if(typeof window!=='undefined')window.removeEventListener('storage',onStorage);listeners.clear();},subscribe(listener){listeners.add(listener);return ()=>listeners.delete(listener);}};
  }
- return Object.freeze({KEY,THRESHOLDS,COSMETICS,SOUNDS,LEVEL_NOTES,VIBES,prizesForLevel,ACHIEVEMENT_REWARDS,PIANO_MEMORIES,requirement,levelForXP,soundRequiredLevel,readState,validResult,create});
+ return Object.freeze({KEY,THRESHOLDS,COSMETICS,SOUNDS,LEVEL_NOTES,VIBES,prizesForLevel,ACHIEVEMENT_REWARDS,PIANO_MEMORIES,DANCE_ACHIEVEMENTS,requirement,levelForXP,soundRequiredLevel,readState,validResult,validDanceResult,create});
 });

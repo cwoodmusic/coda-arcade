@@ -119,6 +119,87 @@ class BoutiqueLocksTests(_world.WorldBrowserCase):
         self.page.get_by_role('button',name='Save my look',exact=True).click()
         self.assertEqual(self.appearance()['headwear'],'triadchampion')
 
+    def test_locked_dj_gear_shows_its_dance_goal_and_keeps_the_notes_purchase_path(self):
+        before=self.appearance()
+        saved=self.page.evaluate('''()=>({wallet:localStorage.getItem('codaNotesWalletV1'),
+          progression:localStorage.getItem('codaPlayerProgressV1')})''')
+        self.wardrobe()
+        for category,item,goal in [('Glasses','shutter','20 steps'),
+                                   ('Shoes','rollerskates','without a wrong or extra arrow'),
+                                   ('Accessories','boombox','Hard DJ line dance')]:
+            with self.subTest(item=item):
+                self.browse(category,item)
+                tile=self.page.locator('[data-item-id="'+item+'"]')
+                self.assertTrue(tile.is_disabled())
+                self.assertIn(goal,tile.locator('small').inner_text())
+                self.assertIn('buy with Notes',tile.locator('small').inner_text())
+        self.page.get_by_role('button',name='Cancel',exact=True).click()
+        open_destination(self.page,'shop')
+        for item in ['shutter','rollerskates','boombox']:
+            card=self.page.locator('[data-shop-item="'+item+'"]')
+            self.assertEqual(card.count(),1)
+            self.assertTrue(card.locator('button').is_enabled())
+            self.assertIn('Buy',card.locator('button').inner_text())
+        self.assertEqual(self.appearance(),before)
+        self.assertEqual(self.page.evaluate('''()=>({wallet:localStorage.getItem('codaNotesWalletV1'),
+          progression:localStorage.getItem('codaPlayerProgressV1')})'''),saved,
+          'Browsing either path must not award experience, spend Notes, or invent ownership.')
+
+    def test_purchased_dj_gear_stays_equipable_without_dance_achievements(self):
+        self.page.evaluate('''()=>{
+          localStorage.setItem('codaNotesWalletV1',JSON.stringify({version:1,balance:150,
+            earned:500,spent:350,owned:['shutter','rollerskates','boombox'],rewards:[]}));
+          localStorage.removeItem('codaPlayerProgressV1');
+        }''')
+        self.load()
+        before=self.appearance()
+        saved=self.page.evaluate('''()=>({wallet:localStorage.getItem('codaNotesWalletV1'),
+          progression:localStorage.getItem('codaPlayerProgressV1')})''')
+        self.wardrobe()
+        for category,item in [('Glasses','shutter'),('Shoes','rollerskates'),('Accessories','boombox')]:
+            self.browse(category,item)
+            tile=self.page.locator('[data-item-id="'+item+'"]')
+            self.assertTrue(tile.is_enabled())
+            tile.click()
+        self.assertEqual(self.appearance(),before,'Trying purchased gear only changes the wardrobe draft.')
+        self.assertEqual(self.page.evaluate('''()=>({wallet:localStorage.getItem('codaNotesWalletV1'),
+          progression:localStorage.getItem('codaPlayerProgressV1')})'''),saved)
+        self.page.get_by_role('button',name='Save my look',exact=True).click()
+        for slot,item in [('eyewear','shutter'),('shoes','rollerskates'),('accessory','boombox')]:
+            self.assertEqual(self.appearance()[slot],item)
+        self.assertFalse(self.page.evaluate('''()=>JSON.parse(localStorage.getItem('codaPlayerProgressV1')||'{"events":[]}')
+          .events.some(event=>event.id.startsWith('achievement:dance-'))'''))
+
+    def test_saved_dance_achievements_unlock_dj_gear_without_a_purchase_or_auto_equipping(self):
+        self.page.evaluate('''()=>{
+          localStorage.setItem('codaPlayerProgressV1',JSON.stringify({version:1,xp:500,
+            events:[{id:'achievement:dance-twenty-streak',xp:100},
+              {id:'achievement:dance-perfect-set',xp:150},
+              {id:'achievement:dance-hard-perfect',xp:250}]}));
+        }''')
+        self.load()
+        before=self.appearance()
+        self.assertEqual(before['eyewear'],'none')
+        self.assertEqual(before['shoes'],'sneakers')
+        self.assertEqual(before['accessory'],'none')
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().owned'),[])
+        saved=self.page.evaluate('''()=>({wallet:localStorage.getItem('codaNotesWalletV1'),
+          progression:localStorage.getItem('codaPlayerProgressV1')})''')
+        self.wardrobe()
+        for category,item in [('Glasses','shutter'),('Shoes','rollerskates'),('Accessories','boombox')]:
+            self.browse(category,item)
+            tile=self.page.locator('[data-item-id="'+item+'"]')
+            self.assertTrue(tile.is_enabled())
+            tile.click()
+        self.assertEqual(self.appearance(),before,'Earning and trying on gear must not auto-equip it.')
+        self.assertEqual(self.page.evaluate('''()=>({wallet:localStorage.getItem('codaNotesWalletV1'),
+          progression:localStorage.getItem('codaPlayerProgressV1')})'''),saved,
+          'Browsing earned gear must leave the saved reward journals unchanged.')
+        self.page.get_by_role('button',name='Save my look',exact=True).click()
+        for slot,item in [('eyewear','shutter'),('shoes','rollerskates'),('accessory','boombox')]:
+            self.assertEqual(self.appearance()[slot],item)
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().owned'),[])
+
     def test_notes_shop_only_lists_buyable_stock_and_keeps_expensive_goals(self):
         open_destination(self.page,'shop')
         stock=self.page.evaluate('CodaNotesShop.stockForCatalog(createCodaCharacterRenderer().catalog).filter(x=>Number.isSafeInteger(x.price)&&x.price>0).map(x=>x.id)')

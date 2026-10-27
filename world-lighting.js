@@ -117,7 +117,18 @@
           const start = transformPoint(matrix, raw.x + Math.cos(angle) * r * .24, raw.y + Math.sin(angle) * r * .18);
           beams.push({ballId: id, start, end: {x: hit.x, y: hit.y}, color, opacity: opacity * (q === 'full' ? .135 : .075) * shimmer,
             hitWall: hit.hitWall, length: Math.hypot(hit.x - start.x, hit.y - start.y), region});
-          spots.push({ballId: id, x: hit.x, y: hit.y, rx: 4.2 + ray % 3, ry: 1.8 + (ray % 2) * .6, color, intensity: opacity * (.48 + .35 * shimmer)});
+          // A tiny tangential streak makes the circling reflection readable
+          // against the bright painted dance tiles. It follows the same orbit
+          // and room boundary as the pin, without storing per-frame trails.
+          let trace = null;
+          if (!reduced && animate && spin !== 0) {
+            const tx = -Math.sin(angle), ty = Math.cos(angle) * (raw.club ? .46 : .72);
+            const length = (q === 'full' ? 9 : 6) * Math.sign(spin) / Math.hypot(tx, ty);
+            const dx = -tx * length, dy = -ty * length;
+            const end = traceFloorRay(hit, {x: hit.x + matrix[0] * dx + matrix[2] * dy, y: hit.y + matrix[1] * dx + matrix[3] * dy}, allowed);
+            if (end && end.length > 1) trace = {x: end.x, y: end.y};
+          }
+          spots.push({ballId: id, x: hit.x, y: hit.y, rx: 4.2 + ray % 3, ry: 1.8 + (ray % 2) * .6, color, intensity: opacity * (.48 + .35 * shimmer), trace});
         }
       }
       current = {balls, beams, spots}; return current;
@@ -172,6 +183,10 @@
       const frame=getGeometry();if(quality()==='off')return;
       ctx.save();ctx.shadowBlur=0;ctx.globalCompositeOperation='screen';
       for (const spot of frame.spots) {
+        if (spot.trace) {
+          ctx.globalAlpha = spot.intensity * .6; ctx.strokeStyle = spot.color; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(spot.trace.x, spot.trace.y); ctx.lineTo(spot.x, spot.y); ctx.stroke();
+        }
         const image = glow(spot.color); ctx.globalAlpha = spot.intensity * .75;
         if (image) ctx.drawImage(image, spot.x - spot.rx * 2, spot.y - spot.ry * 2, spot.rx * 4, spot.ry * 4);
         ctx.globalAlpha = spot.intensity; ctx.fillStyle = spot.color;
@@ -207,7 +222,7 @@
       const frame = getGeometry();
       return {quality: quality(), time: time(), reducedMotion: quiet(), lanterns: lanternState(),
         balls: frame.balls.map(ball => ({...ball})), beams: frame.beams.map(({region, ...beam}) => ({...beam, start: {...beam.start}, end: {...beam.end}})),
-        spots: frame.spots.map(spot => ({...spot})), rayCount: frame.beams.length, spotCount: frame.spots.length, glowTextures: textures.size, beamRaster: api.getBeamRaster?.()||{width:beamSurface?.width||0,height:beamSurface?.height||0,refreshHz:30}};
+        spots: frame.spots.map(spot => ({...spot, trace: spot.trace ? {...spot.trace} : null})), rayCount: frame.beams.length, spotCount: frame.spots.length, glowTextures: textures.size, beamRaster: api.getBeamRaster?.()||{width:beamSurface?.width||0,height:beamSurface?.height||0,refreshHz:30}};
     }
     return {drawLanterns, drawDisco, drawBeams, drawFloorPins, snapshot};
   }

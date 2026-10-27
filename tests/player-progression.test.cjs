@@ -3,6 +3,152 @@ const assert=require('node:assert/strict');
 const progression=require('../player-progression.js');
 function storage(){const values=new Map();return {getItem:key=>values.get(key)||null,setItem:(key,value)=>values.set(key,value)};}
 const pitch={mode:'classic',score:20,correct:15,misses:0,streak:10,won:true,perfect:true};
+function danceResult(changes={}){
+ const notesTotal=changes.notesTotal??32,hits=changes.hits??notesTotal,extras=changes.extras??0,wrongInputs=changes.wrongInputs??extras;
+ const lateMisses=changes.lateMisses??notesTotal-hits-wrongInputs+extras,misses=changes.misses??wrongInputs+lateMisses,goodHits=changes.goodHits??0,perfectHits=changes.perfectHits??hits-goodHits;
+ return {complete:true,difficulty:'hard',bars:8,notesTotal,hits,misses,bestStreak:hits,score:100*perfectHits+70*goodHits,perfectHits,goodHits,wrongInputs,lateMisses,extras,accuracy:hits/(hits+misses),perfect:misses===0,...changes};
+}
+
+test('completed DJ dances save run XP and reached achievements together before announcing rewards',()=>{
+ const disk=storage(),write=disk.setItem,announced=[];let writes=0;
+ disk.setItem=(key,value)=>{writes++;write(key,value);};
+ const player=progression.create({storage:disk,onAward:award=>{
+  assert.equal(JSON.parse(disk.getItem(progression.KEY)).events.some(event=>event.id===award.id),true);
+  announced.push(award);
+ }});
+ const first=player.recordDanceResult('hard-perfect',danceResult());
+ assert.equal(first.ok,true);assert.equal(first.amount,790);assert.equal(writes,1);
+ assert.deepEqual(first.achievements,['dance-first-finish','dance-twenty-streak','dance-hard-groove','dance-perfect-set','dance-hard-perfect']);
+ assert.equal(announced.length,6);assert.equal(announced[0].id,'game:dance:hard-perfect');assert.equal(announced[0].amount,90);
+ for(const id of ['shutter','rollerskates','boombox'])assert.equal(player.unlocked(id),true);
+ const replay=player.recordDanceResult('hard-perfect',danceResult());assert.equal(replay.alreadyAwarded,true);assert.equal(replay.amount,0);assert.equal(writes,1);assert.equal(announced.length,6);
+ const next=player.recordDanceResult('normal-perfect',danceResult({difficulty:'normal'}));assert.equal(next.amount,190);assert.deepEqual(next.achievements,['dance-normal-groove']);
+ const loaded=progression.create({storage:disk});assert.equal(loaded.getState().xp,980);assert.equal(loaded.unlocked('boombox'),true);
+ for(const achievement of progression.DANCE_ACHIEVEMENTS){const events=JSON.parse(disk.getItem(progression.KEY)).events.filter(event=>event.id==='achievement:'+achievement.id);assert.equal(events.length,1);assert.equal(events[0].xp,achievement.xp);}
+ for(const id of ['shutter','rollerskates','boombox'])assert.equal(progression.ACHIEVEMENT_REWARDS.find(item=>item.id===id).purchaseAlternative,true);
+});
+
+test('DJ difficulty and streak goals use completed-run evidence at their exact thresholds',()=>{
+ for(const difficulty of ['easy','normal','hard'])for(const hits of [19,20]){
+  const disk=storage(),player=progression.create({storage:disk}),result=danceResult({difficulty,notesTotal:25,hits});
+  assert.equal(player.recordDanceResult('threshold',result).ok,true);
+  const earned=new Set(JSON.parse(disk.getItem(progression.KEY)).events.map(event=>event.id));
+  assert.equal(earned.has('achievement:dance-twenty-streak'),hits===20);
+  assert.equal(earned.has('achievement:dance-normal-groove'),difficulty==='normal'&&hits===20);
+  assert.equal(earned.has('achievement:dance-hard-groove'),difficulty==='hard'&&hits===20);
+  assert.equal(earned.has('achievement:dance-perfect-set'),false);assert.equal(earned.has('achievement:dance-hard-perfect'),false);
+ }
+ const disk=storage(),player=progression.create({storage:disk});
+ player.recordDanceResult('short-streak',danceResult({notesTotal:25,hits:25,bestStreak:19,extras:1}));
+ assert.equal(player.unlocked('shutter'),false,'A high hit total is not evidence of a continuous streak');
+});
+
+test('DJ perfect rewards derive from actual hits and mistakes rather than the reported flag',()=>{
+ for(const changes of [{hits:31,perfect:true},{extras:1,perfect:true}]){
+  const disk=storage(),player=progression.create({storage:disk});
+  assert.equal(player.recordDanceResult('not-perfect',danceResult(changes)).ok,true);
+  const events=JSON.parse(disk.getItem(progression.KEY)).events;
+  assert.equal(events.find(event=>event.id==='game:dance:not-perfect').xp,70);
+  for(const id of ['dance-perfect-set','dance-hard-perfect'])assert.equal(events.some(event=>event.id==='achievement:'+id),false);
+ }
+ const disk=storage(),player=progression.create({storage:disk});
+ assert.equal(player.recordDanceResult('all-hit',danceResult({perfect:false,goodHits:4})).ok,true);
+ assert.equal(player.unlocked('rollerskates'),true);assert.equal(player.unlocked('boombox'),true,'Good timing still matches the step');
+});
+
+test('partial, empty, contradictory and malformed DJ results never award progress',()=>{
+ const disk=storage(),player=progression.create({storage:disk});
+ const changes=[{complete:false},{bars:7},{difficulty:'expert'},{notesTotal:0},{notesTotal:257},{hits:0},{hits:33},{hits:1.5},
+  {misses:-1},{misses:10001},{wrongInputs:-1},{extras:2,wrongInputs:1},{lateMisses:257},{bestStreak:33},
+  {score:3201},{perfectHits:31},{goodHits:1,perfectHits:32},{accuracy:.99},{accuracy:NaN},{accuracy:Infinity},{misses:1,lateMisses:0}];
+ for(const [index,change]of changes.entries())assert.equal(player.recordDanceResult('bad-'+index,danceResult(change)).ok,false,JSON.stringify(change));
+ const zero=danceResult({hits:0,bestStreak:0});assert.equal(player.recordDanceResult('zero-hits',zero).ok,false);
+ for(const id of ['',null,'bad id','<script>','a'.repeat(129)])assert.equal(player.recordDanceResult(id,danceResult()).ok,false);
+ for(const result of [null,{},[],{complete:true}])assert.equal(player.recordDanceResult('missing',result).ok,false);
+ assert.equal(disk.getItem(progression.KEY),null);assert.equal(player.getState().xp,0);
+});
+
+test('altering a saved DJ run cannot upgrade its difficulty, streak or perfect achievements',()=>{
+ const disk=storage(),player=progression.create({storage:disk}),first=player.recordDanceResult('same-run',danceResult({difficulty:'easy',notesTotal:8,hits:1}));
+ assert.equal(first.amount,62);const saved=disk.getItem(progression.KEY);
+ const replay=player.recordDanceResult('same-run',danceResult());assert.equal(replay.alreadyAwarded,true);assert.equal(replay.amount,0);assert.deepEqual(replay.achievements,[]);assert.equal(disk.getItem(progression.KEY),saved);
+ assert.equal(player.unlocked('boombox'),false);
+ const loaded=progression.create({storage:disk});assert.equal(loaded.recordDanceResult('same-run',danceResult()).amount,0);
+ assert.equal(loaded.recordDanceResult('new-run',danceResult()).amount,740);assert.equal(loaded.unlocked('boombox'),true);
+});
+
+test('failed or paused DJ reward saves grant no partial achievements and allow a safe retry',()=>{
+ const disk=storage(),write=disk.setItem,announced=[];let blocked=true,allowed=false;
+ disk.setItem=(key,value)=>{if(blocked)throw Error('quota');write(key,value);};
+ const player=progression.create({storage:disk,canRecord:()=>allowed,onAward:award=>announced.push(award)});
+ assert.equal(player.recordDanceResult('retry',danceResult()).ok,false);assert.equal(disk.getItem(progression.KEY),null);
+ allowed=true;assert.equal(player.recordDanceResult('retry',danceResult()).ok,false);assert.equal(player.getState().xp,0);assert.equal(announced.length,0);assert.equal(disk.getItem(progression.KEY),null);
+ blocked=false;assert.equal(player.recordDanceResult('retry',danceResult()).amount,790);assert.equal(announced.length,6);
+ assert.equal(player.recordDanceResult('retry',danceResult()).alreadyAwarded,true);assert.equal(announced.length,6);
+ const thrown=progression.create({storage:disk,canRecord(){throw Error('profile unavailable');}});assert.equal(thrown.recordDanceResult('blocked',danceResult()).ok,false);
+});
+
+test('DJ reward callbacks cannot recursively duplicate the completed run',()=>{
+ const disk=storage(),nested=[];let player;
+ player=progression.create({storage:disk,onChange:()=>{if(player)nested.push(player.recordDanceResult('reentrant',danceResult()));}});
+ assert.equal(player.recordDanceResult('reentrant',danceResult()).amount,790);
+ assert.equal(nested.length,1);assert.equal(nested[0].alreadyAwarded,true);assert.equal(nested[0].amount,0);
+ assert.equal(JSON.parse(disk.getItem(progression.KEY)).events.length,6);
+});
+
+test('DJ results use the current player journal and never revive cleared cached progress',()=>{
+ for(const replacement of [null,JSON.stringify({version:1,xp:10,events:[{id:'quest:next-player',xp:10}],bestPitchLevel:0})]){
+  let raw=null;const disk={getItem:()=>raw,setItem:(_key,value)=>{raw=value;}},player=progression.create({storage:disk});
+  player.awardXP('quest:previous-player',100,'Old player',{pitchLevel:30});raw=replacement;
+  assert.equal(player.recordDanceResult('current-player',danceResult({difficulty:'easy',notesTotal:8,hits:1})).amount,62);
+  const saved=JSON.parse(raw);assert.equal(saved.events.some(event=>event.id==='quest:previous-player'),false);assert.equal(saved.bestPitchLevel,0);
+  assert.equal(saved.xp,replacement===null?62:72);
+  assert.equal(saved.events.some(event=>event.id==='quest:next-player'),replacement!==null);
+ }
+});
+
+test('DJ results leave corrupt or unreadable current journals unchanged instead of overwriting them',()=>{
+ const corrupt=['{broken','null','{}',JSON.stringify({version:1,xp:100,events:[]}),
+  JSON.stringify({version:1,xp:0,events:[{id:'quest:bad',xp:0}]})];
+ for(const damaged of corrupt){
+  let raw=null;const disk={getItem:()=>raw,setItem:(_key,value)=>{raw=value;}},player=progression.create({storage:disk});
+  player.awardXP('quest:cached-player',100);raw=damaged;
+  assert.equal(player.recordDanceResult('corrupt',danceResult()).ok,false);assert.equal(raw,damaged);
+ }
+ let raw=null,blocked=false,writes=0;const disk={getItem(){if(blocked)throw Error('storage unavailable');return raw;},setItem(_key,value){writes++;raw=value;}};
+ const player=progression.create({storage:disk});player.awardXP('quest:cached-player',100);const before=raw;blocked=true;
+ assert.equal(player.recordDanceResult('unreadable',danceResult()).ok,false);assert.equal(raw,before);assert.equal(writes,1);
+ blocked=false;assert.equal(player.recordDanceResult('unreadable',danceResult()).ok,true);
+});
+
+test('DJ results recheck permission and current-player proof immediately before their atomic write',()=>{
+ for(const switchProfile of [false,true]){
+  let raw=null,calls=0;const replacement=JSON.stringify({version:1,xp:5,events:[{id:'quest:next-player',xp:5}]});
+  const disk={getItem:()=>raw,setItem:(_key,value)=>{raw=value;}};
+  const player=progression.create({storage:disk,canRecord:()=>{
+   calls++;if(calls===2){if(switchProfile)raw=replacement;else return false;}return true;
+  }});
+  assert.equal(player.recordDanceResult('interrupted',danceResult()).ok,false);
+  assert.equal(raw,switchProfile?replacement:null);
+ }
+});
+
+test('DJ reward notifications stop if a save subscriber synchronously switches, clears or pauses the profile',()=>{
+ for(const interruption of ['switch','clear','pause','award-callback']){
+  let raw=null,allowed=true;const announced=[],replacement=JSON.stringify({version:1,xp:5,events:[{id:'quest:next-player',xp:5}]});
+  const disk={getItem:()=>raw,setItem:(_key,value)=>{raw=value;}};
+  const player=progression.create({storage:disk,canRecord:()=>allowed,onChange:()=>{
+   if(interruption==='switch')raw=replacement;
+   if(interruption==='clear')raw=null;
+   if(interruption==='pause')allowed=false;
+  },onAward:award=>{announced.push(award);if(interruption==='award-callback')raw=replacement;}});
+  assert.equal(player.recordDanceResult('completed',danceResult()).ok,true,'The original run was saved before the subscriber interrupted');
+  assert.equal(announced.length,interruption==='award-callback'?1:0);
+  if(interruption==='award-callback')assert.equal(announced[0].id,'game:dance:completed');
+  if(['switch','award-callback'].includes(interruption))assert.equal(raw,replacement);
+  if(interruption==='clear')assert.equal(raw,null);
+ }
+});
 
 test('verified game play, achievements and quests earn separately persisted XP',()=>{
  const saved=storage(),player=progression.create({storage:saved});

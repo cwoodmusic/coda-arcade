@@ -94,7 +94,9 @@
   house('neon-afterhours','Neon Afterhours',110,60,[0,2,3,2,1,4,2,1],0,[[min(0),maj(-4),maj(3),maj(-2)],[min(5),min(0),maj(-4),maj(7)],[min(0),maj(3),min(5),maj(7)],[min(0),maj(-4),min(5),maj(7)]],'neon'),
   house('velvet-lounge','Velvet Lounge',86,57,[1,2,4,2,3,2,1,0],6,[[min(0),min(5),maj(-4),maj(7)],[maj(3),maj(-2),min(5),maj(7)],[min(0),maj(-4),min(5),maj(7)],[min(0),min(5),maj(-4),maj(7)]],'lounge'),
   house('mirrorball-bounce','Mirrorball Bounce',124,62,[0,3,2,4,1,2,3,2],1,[[min(0),maj(3),maj(-2),maj(7)],[min(5),maj(-4),min(0),maj(7)],[min(0),maj(3),min(5),maj(7)],[min(0),maj(3),min(5),maj(7)]],'bounce'),
-  shanty(),waltz()
+  shanty(),waltz(),
+  {...house('first-steps','First Steps',88,60,[0,1,2,3,2,1,0,4],8,[[maj(0),maj(5),min(9),maj(7)],[min(2),maj(5),maj(0),maj(7)],[min(9),min(2),maj(5),maj(7)],[maj(0),maj(5),min(9),maj(7)]],'neon'),description:'A bright plucked melody, an easygoing dance groove, and a joyful return to celebrate your first complete dance.',unlock:Object.freeze({kind:'achievement',id:'dance-first-finish',label:'First Steps'})},
+  {...house('midnight-headliner','Midnight Headliner',100,57,[0,3,5,2,4,3,1,2],3,[[min(0),maj(3),maj(5),maj(7)],[maj(8),maj(3),min(0),maj(7)],[min(5),maj(8),maj(3),maj(7)],[min(0),maj(5),maj(3),maj(7)]],'bounce'),description:'Celebratory bell hooks and a bouncing bass answer build through a quiet middle into a sparkling headliner finale.',unlock:Object.freeze({kind:'achievement',id:'dance-hard-groove',label:'DJ Coda’s Headliner'})}
  ].map(record=>Object.freeze(record)));
  const recordFor=value=>typeof value==='string'?songs.find(record=>record.id===value):value&&typeof value==='object'?songs.find(record=>record.id===value.id)||value:null;
  function isUnlocked(value,progress={}){

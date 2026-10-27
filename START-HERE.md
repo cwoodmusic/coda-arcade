@@ -45,6 +45,15 @@ to the front door. Direct world links and existing picture-card links still work
 The main game's internal filename is still `world-preview.html`; it serves the
 main Coda Arcade, not a separate preview build.
 
+Talk to DJ Coda in the dance room to play **DJ Line Dance**. Six saved achievements
+reward completed dances, streaks, accuracy, and perfect sets. Earn two new DJ
+tracks, shutter shades, roller skates, and a boombox; select earned gear at the
+boutique. Previous purchases keep working. See the
+[dance guide and reward goals](docs/dj-line-dance.md).
+Disco-ball rays and small reflection trails circle using elapsed time, so their
+motion stays visible when rendering slows down. Motion Off keeps them still;
+FX Off disables them.
+
 The shared project includes the main arcade and Piano Lab collision and layer
 edits. A fresh browser loads those defaults without creating local editor saves,
 so later published updates can still arrive. Existing complete-world projects

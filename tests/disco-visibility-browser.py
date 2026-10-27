@@ -29,7 +29,7 @@ SDK_WRAPPER = ''';(()=>{
 })();'''
 
 PIXEL_ACCESSOR = '''window.fixtureDiscoRayPixels=sampleTime=>{
- const previousClock=clock;clock=sampleTime;
+ const previousClock=clock,previousLightingClock=lightingClock;clock=sampleTime;lightingClock=sampleTime;
  try{
   const lights=worldLighting.snapshot(),left=682,top=310,width=453,height=65;
   const sample=enabled=>{
@@ -49,7 +49,7 @@ PIXEL_ACCESSOR = '''window.fixtureDiscoRayPixels=sampleTime=>{
   }
   return {quality:lights.quality,reduced:lights.reducedMotion,samples,visible,energy,maxDelta,
    hash:hash>>>0,mainRays:lights.beams.filter(beam=>beam.ballId==='disco_ball_arcade').length};
- }finally{window.fixtureHideDisco=false;clock=previousClock;ambientLightStamp=-1;}
+ }finally{window.fixtureHideDisco=false;clock=previousClock;lightingClock=previousLightingClock;ambientLightStamp=-1;}
 };\n'''
 
 
@@ -101,6 +101,27 @@ class DiscoVisibilityTests(unittest.TestCase):
         self.quality('off')
         result = self.pixels(1.25)
         self.assertEqual((result['mainRays'], result['visible'], result['energy']), (0, 0, 0))
+
+    def test_live_reflections_keep_circling_when_rendering_frames_are_slow(self):
+        self.load()
+        self.quality('full')
+        session=self.context.new_cdp_session(self.page)
+        session.send('Emulation.setCPUThrottlingRate',{'rate':4})
+        sample='''()=>({wall:performance.now()/1000,lights:CodaArcadeQA.lighting(),
+          pixels:Array.from(document.querySelector('#view').getContext('2d').getImageData(300,680,100,60).data)
+            .reduce((hash,value)=>Math.imul(hash^value,16777619),2166136261)})'''
+        try:
+            before=self.page.evaluate(sample)
+            self.page.wait_for_timeout(1500)
+            after=self.page.evaluate(sample)
+        finally:
+            session.send('Emulation.setCPUThrottlingRate',{'rate':1})
+        elapsed=after['wall']-before['wall']
+        self.assertGreater(after['lights']['time']-before['lights']['time'],elapsed*.7,
+                           'Decorative orbits must use elapsed time rather than capped walking steps.')
+        self.assertNotEqual(before['lights']['spots'],after['lights']['spots'])
+        self.assertNotEqual(before['pixels'],after['pixels'],'The live canvas must keep repainting.')
+        self.assertTrue(any(spot['trace'] for spot in after['lights']['spots']))
 
     def test_reduced_motion_keeps_visible_rays_steady(self):
         self.load(reduced=True)

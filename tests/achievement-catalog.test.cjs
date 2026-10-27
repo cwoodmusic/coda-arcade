@@ -21,14 +21,16 @@ test('catalog lists every issued achievement and matches the real cosmetic, fish
   'first-pitch-result','first-triad-result','first-rhythm-result','triad-first-win',
   'pitch-ten-correct','pitch-ten-streak','pitch-perfect-run','rhythm-perfect-round',
   ...P.ACHIEVEMENT_REWARDS.map(reward=>reward.achievement),
+  ...P.DANCE_ACHIEVEMENTS.map(achievement=>achievement.id),
   ...F.ACHIEVEMENTS.map(achievement=>achievement.id),
   ...Lessons.LESSONS.map(lesson=>'classroom-'+lesson.id),'classroom-accidentals-key-signatures','haydn-final-exam'
  ];
  assert.deepEqual(new Set(A.CATALOG.map(row=>row.id)),new Set(emitted));
- assert.equal(A.CATALOG.length,43);assert.equal(new Set(A.CATALOG.map(row=>row.id)).size,43);
- assert.equal(A.CATEGORIES.length,7);
+ assert.equal(A.CATALOG.length,49);assert.equal(new Set(A.CATALOG.map(row=>row.id)).size,49);
+ assert.equal(A.CATEGORIES.length,8);
  for(const reward of P.ACHIEVEMENT_REWARDS)assert.ok(A.CATALOG.find(row=>row.id===reward.achievement).rewards.includes('Unlock: '+reward.label));
  for(const source of F.ACHIEVEMENTS){const row=A.CATALOG.find(row=>row.id===source.id);assert.equal(row.xp,source.xp);assert.equal(row.target,source.target);assert.equal(row.description,source.description);}
+ for(const source of P.DANCE_ACHIEVEMENTS){const row=A.CATALOG.find(row=>row.id===source.id);assert.equal(row.xp,source.xp);assert.equal(row.title,source.title);assert.equal(row.description,source.description);}
  assert.ok(Object.isFrozen(A.CATALOG));assert.ok(Object.isFrozen(A.CATALOG[0].rewards));
 });
 
@@ -55,6 +57,19 @@ test('actual cabinet reward engines produce every listed cabinet achievement wit
  assert.equal(cabinetRows.length,19);assert.equal(cabinetRows.filter(row=>row.earned).length,19);
  for(const row of cabinetRows){const award=raw.events.find(value=>value.id==='achievement:'+row.id);assert.equal(award.xp,row.xp,row.id);assert.ok(row.rewards.includes(award.xp+' XP'));}
  assert.match(item(state,'rhythm-perfect-round').description,/no extra taps/,'Early/late judgements are not an extra requirement');
+});
+
+test('saved full DJ dance results earn the six listed Dance achievements with matching XP and unlock labels',()=>{
+ const saved=store(),player=P.create({storage:saved}),result={complete:true,difficulty:'hard',bars:8,notesTotal:32,hits:32,misses:0,bestStreak:32,score:3200,perfectHits:32,goodHits:0,wrongInputs:0,lateMisses:0,extras:0,accuracy:1,perfect:true};
+ assert.equal(snapshot({progression:{version:1,xp:99999,events:[]},dance:{perfect:true,bestStreak:100}}).items.filter(row=>row.category==='dance'&&row.earned).length,0);
+ assert.equal(player.recordDanceResult('hard-set',result).ok,true);
+ assert.equal(player.recordDanceResult('normal-set',{...result,difficulty:'normal'}).ok,true);
+ const raw=JSON.parse(saved.getItem(P.KEY)),state=snapshot({progression:raw}),rows=state.items.filter(row=>row.category==='dance');
+ assert.equal(rows.length,6);assert.equal(rows.filter(row=>row.earned).length,6);
+ assert.equal(state.categories.find(category=>category.id==='dance').label,'DJ Line Dance');
+ for(const row of rows){assert.equal(raw.events.find(event=>event.id==='achievement:'+row.id).xp,row.xp);assert.ok(row.rewards.includes(row.xp+' XP'));}
+ for(const [id,label]of [['dance-first-finish','First Steps DJ track'],['dance-twenty-streak','Shutter shades'],['dance-hard-groove','Midnight Headliner DJ track'],['dance-perfect-set','Roller skates'],['dance-hard-perfect','Boombox']])assert.ok(item(state,id).rewards.includes('Unlock: '+label));
+ assert.equal(item(state,'dance-normal-groove').rewards.length,1);
 });
 
 test('per-run achievements do not invent progress from aggregate game counts, while saved milestones and avatar steps do',()=>{
@@ -112,7 +127,7 @@ test('snapshots are independent, do not mutate player data, and run in a browser
  const input={progression:journal([event('starclip')]),avatar:{jumps:10}},before=JSON.stringify(input),first=snapshot(input);
  first.items[0].rewards.push('not a real reward');first.items[0].title='Changed';first.categories[0].label='Changed';
  assert.equal(JSON.stringify(input),before);assert.equal(snapshot().earned,0);assert.equal(snapshot(input).items[0].title,'Your Own Style');
- assert.equal(snapshot(null).total,43);
+ assert.equal(snapshot(null).total,49);
  const win={};Object.defineProperty(win,'localStorage',{get(){throw Error('No storage reads are permitted');}});win.fetch=()=>{throw Error('No network');};
  const context=vm.createContext({window:win});vm.runInContext(fs.readFileSync(require.resolve('../achievement-catalog.js'),'utf8'),context);
  assert.equal(JSON.stringify(win.CodaAchievements.buildSnapshot(input)),JSON.stringify(snapshot(input)));
