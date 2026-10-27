@@ -96,6 +96,15 @@ while its cloud progress is being restored. This prevents repeated identity
 reloads on the “Opening your profile” screen. Check the regression with
 `node tools/test-classroom-service.cjs --profile-open`.
 
+The profile-restoration overlay is loading-only. Profile options are available
+from the game’s Settings and Profile UI. Failed restoration opens those options
+while hiding and pausing gameplay until the identity is resolved.
+**Log out** saves the active profile, ends both student and staff authentication
+in this tab, and returns to the title screen. A failed save stays available for
+retry; incomplete local/auth cleanup keeps gameplay protected. Test with
+`node tools/test-classroom-service.cjs --logout` and
+`node tools/test-classroom-service.cjs --loading-logout`.
+
 The progress DTO uses fixed fields and rejects extra fields. It excludes the
 avatar's name, school roster data, song titles, compositions/drafts, text answers,
 editor projects, and shared leaderboards. [classroom-profile-data.js](classroom-profile-data.js) defines the

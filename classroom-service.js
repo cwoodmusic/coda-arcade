@@ -206,7 +206,9 @@
      try{
        const backup=readBound(BACKUP_KEY),target=guardedStorage();
        const result=backup?dataApi.restore(target,backup.backup):dataApi.clear(target);if(!result.ok)return false;
-       session.removeItem(BACKUP_KEY);storageScope?.release();return true;
+       // Keep the original guest backup until workspace metadata is released.
+       // A failed release can then retry restoration without clearing it.
+       if(storageScope&&!storageScope.release())return false;session.removeItem(BACKUP_KEY);return true;
      }catch{return false;}
    }
    function lock(reason='access-revoked'){
@@ -368,7 +370,54 @@
        await Promise.race([cleanup,new Promise(resolve=>win.setTimeout(resolve,1500))]);
        try{await sdk.signOut(auth);}catch{}
      }
-     if(!personalProfile(old))studentUid=null;loading=false;message('This device is ready for another player.');if(!settings.silentIdentity)identity(old?'left':'guest',!!old||restored,old&&settings.exitToTitle!==false?{exitToTitle:true}:{});return {ok:true};
+     if(!personalProfile(old))studentUid=null;loading=signingOut;message('This device is ready for another player.');if(!settings.silentIdentity)identity(old?'left':'guest',!!old||restored,old&&settings.exitToTitle!==false?{exitToTitle:true}:{});return {ok:true};
+   }
+   async function logOut(){
+     if(destroyed)return fail('closed');
+     if(loading||transitioning||signingOut)return fail('busy');
+     // One explicit logout ends both identities. Suppress intermediate auth
+     // notifications so the title screen opens only after cleanup finishes.
+     signingOut=true;loading=true;notify();
+     let cleanupStarted=false,recoveryNeeded=false;
+     const cleanupFailure=text=>{
+       // The game still holds the old player's in-memory objects after leave.
+       // Keep that realm paused until cleanup can finish and navigation occurs.
+       // Restoration may already have written guest stores. Never capture those
+       // bytes as the old student's pending progress or restore them again.
+       generation++;stopSubscriptions();leaseOwned=false;loaded=false;locked=true;waitingTakeover=false;
+       recoveryNeeded=true;message(text,'logout-unavailable');return fail('logout-unavailable');
+     };
+     try{
+       if(active&&loaded&&!locked){
+         keepPending();let timeout;
+         const saved=await Promise.race([flush(),new Promise(resolve=>{timeout=win.setTimeout(()=>resolve(null),1500);})]).finally(()=>{if(timeout!==undefined)win.clearTimeout(timeout);});
+         if(!saved?.ok){
+           keepPending();message('Your progress has not finished saving. Keep this tab open, reconnect if needed, then try Log out again.','unsaved-progress');return fail('unsaved-progress');
+         }
+       }
+       cleanupStarted=true;
+       const left=await leave({skipFlush:true,silentIdentity:true,internal:true});
+       if(!left.ok)return cleanupFailure('This device could not finish logging out. Your saved progress is safe. Try again.');
+       loading=true;
+       if(adminRoleStop){adminRoleStop();adminRoleStop=null;}
+       // These are this tab's bindings. Never clear another tab's native
+       // workspace or erase an unsent progress recovery buffer.
+       try{session.removeItem(ADMIN_KEY);session.removeItem(ACTIVE_KEY);session.removeItem(BACKUP_KEY);}catch{return cleanupFailure('This device could not finish logging out. Try again.');}
+       for(const instance of [auth,adminAuth])if(instance?.currentUser){
+         try{await sdk.signOut(instance);}catch{return cleanupFailure('Log out could not finish. Please try again.');}
+       }
+       if(auth?.currentUser||adminAuth?.currentUser)return cleanupFailure('Log out could not finish. Please try again.');
+       studentUid=null;adminUid=null;adminAuthorized=false;personalAvailable=false;
+       message('You are logged out.');identity('signed-out',false,{exitToTitle:true});return {ok:true};
+     }catch{
+       if(cleanupStarted)return cleanupFailure('Log out could not finish. Please try again.');keepPending();
+       message('Log out could not finish. Please try again.','logout-unavailable');return fail('logout-unavailable');
+     }finally{
+       studentUid=auth?.currentUser?.uid||null;adminUid=adminAuth?.currentUser?.uid||null;
+       if(!adminUid){adminAuthorized=false;personalAvailable=false;}
+       loading=false;signingOut=false;notify();
+       if(recoveryNeeded)try{options.onLock?.({reason:'logout-unavailable',profile:state().profile,pending,reloadNeeded:false});}catch{}
+     }
    }
    async function useSavedProgress(){
      if(!active||code!=='unsaved-conflict'||loading)return fail('no-conflict');
@@ -485,7 +534,7 @@
    leaseTimer=win?.setInterval?.(async()=>{if(!isWritable())return;try{if(!await lease(false,true))lock('device-changed');}catch{message('Connection paused. Keep this tab open.','connection-unavailable');}},20000);
    idleTimer=win?.setInterval?.(()=>{if(now()-lastActivity<=Math.max(60000,options.idleMs||600000))return;if(adminUid){const personal=personalProfile(active);adminSignOut();if(personal)return;}if(active&&!locked&&!loading)flush().then(result=>{if(result.ok)leave({discard:true});else lock('idle');});},10000);
    function destroy(){keepPending();destroyed=true;generation++;stopSubscriptions();for(const stop of authSubscriptions.splice(0))try{stop();}catch{}if(adminRoleStop){adminRoleStop();adminRoleStop=null;}for(const stop of pendingJobs)try{stop();}catch{}for(const timer of [flushTimer,leaseTimer,idleTimer])if(timer!==null)win?.clearInterval?.(timer);for(const type of ['pointerdown','keydown','touchstart'])win?.removeEventListener?.(type,activity);win?.removeEventListener?.('pagehide',keepPending);win?.document?.removeEventListener?.('visibilitychange',pageHidden);listeners.clear();}
-   return {getState:state,subscribe(listener){listeners.add(listener);return()=>listeners.delete(listener);},connect,resume,join,leave,takeOver,useSavedProgress,adminSignIn,adminSignOut,savePersonalPlayer,renamePersonalPlayer,openPersonalPlayer,listClasses,createClass,listProfiles,createProfile,reissuePass,deleteProfile,deleteClass,flush,isWritable,destroy};
+   return {getState:state,subscribe(listener){listeners.add(listener);return()=>listeners.delete(listener);},connect,resume,join,leave,logOut,takeOver,useSavedProgress,adminSignIn,adminSignOut,savePersonalPlayer,renamePersonalPlayer,openPersonalPlayer,listClasses,createClass,listProfiles,createProfile,reissuePass,deleteProfile,deleteClass,flush,isWritable,destroy};
  }
  return Object.freeze({create,consumeFragment,parsePass:passCode,formatPass,hashPass});
 });

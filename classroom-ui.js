@@ -20,6 +20,7 @@
   'popup-closed-by-user':'Sign-in was closed. You can try again when you are ready.',
   'popup-blocked':'Your browser blocked sign-in. Allow the sign-in window, then try again.',
   'unsaved-progress':'Some progress has not saved yet. Stay here and save before leaving.',
+  'logout-unavailable':'Log out could not finish. Keep this tab open and try Log out again.',
   'newer-progress':'Your profile has a newer save. The changes on this device are being kept safe.',
   'unsaved-conflict':'Your profile has a newer save. Unsaved changes on this device are being kept safe.',
   'lease-lost':'This profile has moved to another device. Use your card to play here again.',
@@ -60,7 +61,7 @@
  function create(api={}){
   const body=api.panelBody||api.host,service=api.service;if(!body||!service)throw Error('Class passes need a panel and service.');
   const doc=body.ownerDocument,win=doc.defaultView||root;
-  let opened=false,disposed=false,view='student',section=null,busy='',message='',messageKind='status',confirmation=null,card=null,printSheet=null,printTimer=null;
+  let opened=false,disposed=false,view='student',section=null,busy='',message='',messageKind='status',confirmation=null,card=null,printSheet=null,printTimer=null,logoutRetry=false;
   let classes=[],profiles=[],selectedClass='',classDraft='',joinDraft='',profileSearch='',profilePage=0,generation=0,lastAuthorized=false;
   let nicknameEditing=false,nicknameDraft='',nicknameOwner='';
   const snapshot=()=>{try{return service.getState?.()||{};}catch{return {};}};
@@ -155,6 +156,12 @@
    const actions=element('div','classpass-actions');actions.append(save,cancel);form.append(label,input,actions);form.onsubmit=saveNickname;host.append(form);
   }
   function leave(discard=false){const teacher=snapshot().profile?.kind==='teacher';return act('Leaving',()=>service.leave(discard?{discard:true}:undefined),()=>{confirmation=null;joinDraft='';setMessage(teacher?'Your player is closed on this device. It stays saved with your Google account.':'You have left this device. Use your card to return.');api.onProfile?.(null);});}
+  function logOut(){
+   if(disposed||busy)return;
+   if(!opened)open('student');
+   confirmation=null;clearCard();logoutRetry=true;
+   return act('Logging out',async()=>{const result=await service.logOut();logoutRetry=result?.ok===false;return result;},()=>{classes=[];profiles=[];joinDraft='';setMessage('You are logged out.');api.onProfile?.(null);});
+  }
   function confirmAction(){
    const pending=confirmation;if(!pending)return;
    if(pending.kind==='save-personal'){
@@ -335,6 +342,9 @@
    const tabs=element('nav','classpass-tabs');tabs.setAttribute('aria-label',state.profile?.kind==='teacher'?'Player and teacher pages':'Profile Pass pages');for(const [id,label]of [['student',state.profile?.kind==='teacher'?'My player':'My pass'],['admin','For teachers']]){const tab=button(label,()=>{if(busy)return;clearCard();confirmation=null;view=id;setMessage('');render();if(id==='admin'&&authorized())refreshClasses();},'classpassTab-'+id);tab.setAttribute('aria-pressed',String(view===id));tab.disabled=tab.disabled||!!confirmation||!!card;tabs.append(tab);}section.append(tabs);
    if(state.configured===false)section.append(configurationNotice(state));
    if(confirmation)renderConfirmation();else if(card&&canManage())renderCard();else if(view==='admin')renderAdmin(state);else renderStudent(state);
+   if(typeof service.logOut==='function'&&(state.profile||state.admin?.signedIn||logoutRetry)){
+    const actions=element('div','classpass-actions');actions.append(button('Log out',logOut,'classpassLogOut'));section.append(actions);
+   }
    const code=errorCode(state),shownRecovery=view==='student'&&['newer-progress','unsaved-conflict'].includes(code),notice=message||(state.code&&!state.waitingTakeover?friendlyError(state):'');
    const status=element('p','classpass-status',busy?busy+'…':shownRecovery&&notice===ERRORS[code]?'':notice);status.id='classpassStatus';status.setAttribute('role',messageKind==='error'?'alert':'status');status.setAttribute('aria-live','polite');if(messageKind==='error')status.classList.add('is-error');section.append(status);
    if(focusId){const restored=doc.getElementById(focusId);if(restored&&section.contains(restored)&&!restored.disabled){restored.focus({preventScroll:true});if(selection&&restored.setSelectionRange)try{restored.setSelectionRange(selection.start,selection.end);}catch{}}}
@@ -356,7 +366,7 @@
    if(opened&&(!section?.isConnected||hidden)){opened=false;generation++;busy='';joinDraft='';confirmation=null;clearNickname();resetBrowser();clearCard();}
   }):null;
   observer?.observe(body.parentElement||body,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden','style','class']});
-  return {open,close,handleEscape(){if(!opened)return false;if(confirmation){confirmation=null;render();}else close();return true;},getState:()=>({open:opened,view,busy:!!busy,cardVisible:!!card,classId:selectedClass,confirmation:confirmation?.kind||null}),destroy(){disposed=true;opened=false;generation++;clearCard();clearNickname();joinDraft='';confirmation=null;section?.remove();observer?.disconnect();if(typeof unsubscribe==='function')unsubscribe();}};
+  return {open,close,logOut,handleEscape(){if(!opened)return false;if(confirmation){confirmation=null;render();}else close();return true;},getState:()=>({open:opened,view,busy:!!busy,cardVisible:!!card,classId:selectedClass,confirmation:confirmation?.kind||null}),destroy(){disposed=true;opened=false;generation++;clearCard();clearNickname();joinDraft='';confirmation=null;section?.remove();observer?.disconnect();if(typeof unsubscribe==='function')unsubscribe();}};
  }
  return Object.freeze({create,friendlyError,pictureNode});
 });

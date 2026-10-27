@@ -27,30 +27,34 @@
    win.sessionStorage.removeItem(ENTRY_KEY);
    if(!requestedView&&scope?.tabId&&pending?.version===1&&pending.tabId===scope.tabId&&['student','admin'].includes(pending.view))requestedView=pending.view;
  }catch{}
- let preparing=incoming!==null||initial?.mode==='owner'||initial?.blocked===true;
+ let preparing=incoming!==null||initial?.mode==='owner'||initial?.blocked===true,recovering=false;
  if(preparing)win.document.documentElement.classList.add('classroom-preparing');
  const style=win.document.createElement('style');style.textContent=
-   'html.classroom-preparing #worldStage,html.classroom-preparing #pianoroom,html.classroom-preparing #musicClassroom,html.classroom-preparing #rhythmFishing,html.classroom-preparing #gameoverlay,html.classroom-preparing #room{visibility:hidden!important}'+
+   'html:is(.classroom-preparing,.classroom-protected) :is(#worldStage,#pianoroom,#musicClassroom,#rhythmFishing,#gameoverlay,#room){visibility:hidden!important}'+
    '#classroom-session-notice{position:fixed;inset:0;z-index:9500;background:#17243c;color:#f5fff8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:28px;text-align:center;font:22px/1.4 system-ui}'+
-   '#classroom-session-notice[hidden]{display:none!important}#classroom-session-notice p{max-width:30ch;margin:0}#classroom-session-notice button{font:700 21px system-ui;min-height:52px;padding:12px 18px;border-radius:10px;border:2px solid #abe8d1;background:#285b59;color:white}';
+   '#classroom-session-notice[hidden]{display:none!important}#classroom-session-notice h2{font-size:clamp(26px,5vw,36px);margin:0}#classroom-session-notice p{max-width:30ch;margin:0}'+
+   '.classroom-loading-spinner{width:44px;height:44px;border:5px solid #abe8d13d;border-top-color:#abe8d1;border-radius:50%;animation:classroom-loading-turn 1s linear infinite}'+
+   '@keyframes classroom-loading-turn{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.classroom-loading-spinner{animation:none}}';
  win.document.head.append(style);
- function hideGate(){preparing=false;win.document.documentElement.classList.remove('classroom-preparing');if(gate)gate.hidden=true;}
+ function finishLoading(protect=false){
+   preparing=false;recovering=protect;win.document.documentElement.classList.remove('classroom-preparing');win.document.documentElement.classList.toggle('classroom-protected',protect);
+   if(gate){gate.hidden=true;gate.setAttribute('aria-busy','false');}
+ }
+ function hideGate(){finishLoading();}
  function showGate(text){
-   preparing=true;win.document.documentElement.classList.add('classroom-preparing');
-   if(!gate){gate=win.document.createElement('section');gate.id='classroom-session-notice';gate.setAttribute('role','dialog');gate.setAttribute('aria-modal','true');win.document.body.append(gate);}
-   gate.hidden=false;gate.replaceChildren();const heading=win.document.createElement('h2');heading.textContent='Your classroom profile';
+   preparing=true;recovering=false;win.document.documentElement.classList.add('classroom-preparing');win.document.documentElement.classList.remove('classroom-protected');
+   if(!gate){gate=win.document.createElement('section');gate.id='classroom-session-notice';gate.setAttribute('role','status');gate.setAttribute('aria-live','polite');win.document.body.append(gate);}
+   gate.hidden=false;gate.setAttribute('aria-busy','true');gate.replaceChildren();const spinner=win.document.createElement('span');spinner.className='classroom-loading-spinner';spinner.setAttribute('aria-hidden','true');
+   const heading=win.document.createElement('h2');heading.textContent='Loading…';
    const message=win.document.createElement('p');message.textContent=text;
-   const open=win.document.createElement('button');open.type='button';open.textContent='Open my profile';open.onclick=()=>{gate.hidden=true;ui?.open();};
-   const guest=win.document.createElement('button');guest.type='button';guest.textContent='Play without a saved profile';guest.onclick=async()=>{const result=await service?.leave({discard:true,exitToTitle:false});if(result?.ok)hideGate();};
-   gate.append(heading,message,open,guest);
+   gate.append(spinner,heading,message);
  }
  function start(options={}){
    if(!privacy&&!preparing)return null;
    const current=card;let entryView=requestedView,identityReloading=false;card=null;requestedView=null;
    const reloadIdentity=()=>{
      identityReloading=true;
-     preparing=true;
-     win.document.documentElement.classList.add('classroom-preparing');
+     showGate('Getting your arcade ready.');
      if(entryView&&scope?.tabId)try{win.sessionStorage.setItem(ENTRY_KEY,JSON.stringify({version:1,tabId:scope.tabId,view:entryView}));}catch{}
      win.location.reload();
    };
@@ -74,27 +78,28 @@
        options.onLock?.(event);
        if(event.exitToTitle&&returnToTitle())return;
        if(event.reloadNeeded){try{win.sessionStorage.setItem('codaClassroomNoticeV1',event.reason);}catch{}reloadIdentity();return;}
-       showGate(event.reason==='workspace-lost'?'Your profile is open in another tab.':'Ask your teacher to help open your card again.');
+       openRecovery();
      }
    });
    win.CodaClassroomSession=service;
    ui=win.createCodaClassroomUI({...options,service});win.CodaClassroomUIInstance=ui;
    service.subscribe(value=>options.onState?.(value));
    const openEntry=()=>{ui.open(entryView||'student');entryView=null;};
+   function openRecovery(){const alreadyRecovering=recovering;finishLoading(true);options.onState?.(service.getState());if(!alreadyRecovering||entryView)openEntry();}
    if(preparing)showGate(current!==null?'Opening your card…':initial?.blocked?'Another arcade tab is using this browser.':'Opening your profile…');
    Promise.resolve(current!==null?service.join(current):service.resume()).then(result=>{
      if(identityReloading)return;
      const value=service.getState();
-     if(value.profile&&!value.locked&&!value.waitingTakeover){hideGate();if(entryView)openEntry();return;}
-     if(entryView||!result.ok||notice){if(gate)gate.hidden=true;openEntry();}
-     else if(!initial?.blocked)hideGate();
-   }).catch(()=>{if(identityReloading)return;if(entryView){if(gate)gate.hidden=true;openEntry();}else showGate('Ask your teacher to help open your card.');});
-   return {service,ui,open:view=>ui.open(view),canPlay:()=>{const value=service.getState();return !preparing&&!value.loading&&!value.locked&&(!value.profile||service.isWritable());},getState:()=>({preparing,privacy,...service.getState()})};
+     if(result.ok&&value.profile&&!value.locked&&!value.waitingTakeover){hideGate();if(entryView)openEntry();return;}
+     if(!result.ok||value.locked||value.waitingTakeover||notice||initial?.blocked){openRecovery();return;}
+     hideGate();if(entryView)openEntry();
+   }).catch(()=>{if(!identityReloading)openRecovery();});
+   return {service,ui,open:view=>ui.open(view),logOut:()=>ui.logOut?.(),canPlay:()=>{const value=service.getState();return !preparing&&!recovering&&!value.loading&&!value.locked&&!value.waitingTakeover&&(!value.profile||service.isWritable());},getState:()=>({preparing,recovering,privacy,...service.getState()})};
  }
  // A signed-in student uses the connected world, including when a cabinet
  // opens the site's older landing page in the same tab.
  if(/\/classic-arcade\.html$/.test(win.location.pathname)&&!win.location.pathname.includes('/song-machine/')&&initial?.mode==='owner'){
    win.location.replace(new URL('world-preview.html',win.location.href).href);
  }
- win.CodaClassroomBoot=Object.freeze({start,getState:()=>({preparing,privacy,storageAvailable:!error}),hideGate});
+ win.CodaClassroomBoot=Object.freeze({start,getState:()=>({preparing,recovering,privacy,storageAvailable:!error}),hideGate});
 })(window);

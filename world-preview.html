@@ -3,12 +3,12 @@
 <script src="classroom-profile-data.js?v=exam-86"></script>
 <script src="classroom-storage.js?v=classroom-54"></script>
 <script src="developer-test-mode.js?v=session-85"></script>
-<script src="classroom-service.js?v=session-85"></script>
+<script src="classroom-service.js?v=logout-88"></script>
 <script src="vendor/qrcode-generator.js?v=classroom-54"></script>
 <script src="classroom-pass-qr.js?v=classroom-54"></script>
 <link rel="stylesheet" href="classroom-ui.css?v=roster-58">
-<script src="classroom-ui.js?v=nickname-79"></script>
-<script src="classroom-boot.js?v=session-85"></script><title>The Coda Arcade</title><style>
+<script src="classroom-ui.js?v=logout-88"></script>
+<script src="classroom-boot.js?v=logout-88"></script><title>The Coda Arcade</title><style>
 *{box-sizing:border-box}body{margin:0;background:#10101e;color:#e9def9;font:15px system-ui}header{padding:12px 20px;display:flex;align-items:center;gap:18px;justify-content:space-between;background:#211a37}a{color:#a6eff4}button{background:#392f58;color:white;border:1px solid #ba8fdf;border-radius:6px;padding:9px 12px;cursor:pointer}button:hover{background:#514073}#view{display:block;width:min(100vw,calc((100dvh - 110px) * 1672 / 941));height:auto;aspect-ratio:1672/941;margin:0 auto;image-rendering:pixelated;background:#10101e;touch-action:none}footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 16px;min-height:44px;background:#211a37;font-size:12px}#dialog{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);width:min(490px,90vw);padding:20px;background:#261d40;border:2px solid #d8a6f1;box-shadow:0 8px 50px #000b;display:none}#dialog strong{color:#f4c8fa}#dialog p{line-height:1.6}#dialog button{float:right}@media(max-width:650px){header{font-size:12px;padding:8px}#view{width:min(100vw,calc((100dvh - 110px) * 1672 / 941));height:auto}}
 #gameoverlay{position:fixed;inset:0;z-index:100;background:#121327;display:flex;flex-direction:column}#gameoverlay[hidden]{display:none}.gamebar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#231a3c;border-bottom:2px solid #b583dc}.gamebar strong{color:#f0d7ff}#gameiframe{border:0;width:100%;flex:1;min-height:0;background:#111628}body.game-open{overflow:hidden}@media(max-width:650px){.gamebar{gap:6px}.gamebar strong{font-size:12px}}
 #panel{position:fixed;z-index:90;top:50%;left:50%;transform:translate(-50%,-50%);width:min(570px,94vw);max-height:84dvh;overflow:auto;padding:20px;background:#231c3b;border:2px solid #c69be9;box-shadow:0 0 0 100vmax #05030ab8,0 14px 55px #000c;border-radius:12px}#panel[hidden]{display:none}.panelHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.panelRow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0;padding:10px;border:1px solid #66517f;border-radius:7px}.panelRow small{display:block;opacity:.75}.formRow{display:grid;gap:5px;margin:10px 0}.formRow select,.formRow input{background:#17142c;color:#fff;border:1px solid #a08dbd;padding:9px;border-radius:5px;width:100%}.panelActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.muted{color:#c1b4d7;font-size:13px}.panelMsg{min-height:22px;color:#9fe9dc}
@@ -96,7 +96,7 @@ function classroomState(){return classroomRuntime?.service?.getState?.()||window
 function classroomAlias(){const alias=classroomState()?.profile?.alias;return typeof alias==='string'&&alias?alias:null;}
 function classroomStudent(){const value=classroomState();if(value?.profile?.kind==='teacher'&&value.admin?.authorized===true)return false;return !!value?.profile||window.CodaClassroomStorageInstance?.getState?.().mode==='owner';}
 function classroomCanPlay(){
- if(window.CodaClassroomBoot?.getState?.().preparing)return false;
+ const boot=window.CodaClassroomBoot?.getState?.();if(boot?.preparing||boot?.recovering)return false;
  const value=classroomState();if(value&&(value.loading||value.locked||value.waitingTakeover||value.profile&&value.readOnly))return false;
  return classroomRuntime?.canPlay?classroomRuntime.canPlay():true;
 }
@@ -1149,7 +1149,7 @@ async function loadAssetStudio(){let found=null;
 window.CodaAssetStudioQA={get:()=>({active:assetStudio.active,count:assetStudio.assets.length,selected:assetStudio.selected,assets:assetStudio.assets.map(a=>({id:a.id,name:a.name,kind:a.kind,x:a.x,y:a.y,w:a.w,h:a.h,layer:a.layer,anim:a.anim,frames:a.frames}))}),open:()=>toggleAssetStudio(true),close:()=>toggleAssetStudio(false),preset:()=>assetUI('assetPreset').click(),export:downloadAssetJSON,save:persistAssets};
 // --- END ASSET STUDIO ------------------------------------------------------
 
-window.CODA_BUILD="87.0-profile-startup-fix";
+window.CODA_BUILD="88.0-loading-and-logout";
 function drawActor(name,x,y,w=38,h=52,bob=0){
  if(!actorsArtReady())return;
  let [kind,direction,frame]=name.split('_');
@@ -2017,7 +2017,9 @@ function installMobileWorld(){
  const legacy=document.createElement('div');legacy.id='worldLegacyShortcuts';legacy.hidden=true;legacy.inert=true;document.body.append(legacy);
  for(const id of ['hallFameBtn','notesBtn','pianoLabBtn','classroomBtn','fishingBtn','jukeboxBtn','assetToggle','editorToggle','avatarBtn','musiciansBtn']){const node=document.getElementById(id);if(node)legacy.append(node);}
  const oldArcadeLink=menu.querySelector('a[href="classic-arcade.html"]');if(oldArcadeLink)legacy.append(oldArcadeLink);
- const titleLink=document.createElement('a');titleLink.id='worldTitleScreenLink';titleLink.href='index.html?v=world-87';titleLink.textContent='← Title screen';menu.append(titleLink);arcadeVibes?.mountControls(menu);
+ const account=document.querySelector('#accountBtn');account.textContent='Profile options';account.setAttribute('aria-label','Profile options');
+ const logOut=document.createElement('button');logOut.id='worldLogOut';logOut.type='button';logOut.textContent='Log out';logOut.hidden=true;logOut.style.display='none';logOut.onclick=()=>classroomRuntime?.logOut?.();account.after(logOut);
+ const titleLink=document.createElement('a');titleLink.id='worldTitleScreenLink';titleLink.href='index.html?v=world-88';titleLink.textContent='← Title screen';menu.append(titleLink);arcadeVibes?.mountControls(menu);
  const quick=document.createElement('div');quick.className='world-quick-actions';
  const developer=document.createElement('button');developer.id='worldDeveloperBtn';developer.type='button';developer.textContent='Developer';developer.title='Developer console (F2)';developer.onclick=()=>{closeMenu();window.CodaDeveloperConsole.open('objects');};
  quick.append(document.querySelector('#levelBtn'),developer,document.querySelector('#musicBtn'));header.insertBefore(quick,menu);
@@ -2449,12 +2451,13 @@ function pauseClassroomWorld(){
  mobileControls?.refresh();pausedBackdrop=false;
 }
 function reflectClassroomState(value){
- const blocked=!!(value.loading||value.locked||value.waitingTakeover||value.profile&&value.readOnly||window.CodaClassroomBoot?.getState?.().preparing);
+ const boot=window.CodaClassroomBoot?.getState?.(),blocked=!!(value.loading||value.locked||value.waitingTakeover||value.profile&&value.readOnly||boot?.preparing||boot?.recovering);
  if(blocked&&!classroomWasPaused)pauseClassroomWorld();classroomWasPaused=blocked;
  const alias=classroomAlias();if(alias)avatar.name=alias;
  const student=classroomStudent();for(const button of document.querySelectorAll('#worldDeveloperBtn,#assetToggle,#editorToggle,[data-room-dev-open]')){button.hidden=student;button.disabled=student||blocked;button.style.display=student?'none':'';}
  if(student&&assetStudio.active)toggleAssetStudio(false);
- document.querySelector('#accountBtn').textContent=alias?'◉ '+alias:classroomPrivacy?'Classroom profile':'◉ Guest';
+ const account=document.querySelector('#accountBtn');account.textContent='Profile options';account.title=alias?'Profile options for '+alias:'Open profile options';
+ const logOut=document.querySelector('#worldLogOut');if(logOut){logOut.hidden=!value.profile&&!value.admin?.signedIn&&!boot?.recovering;logOut.style.display=logOut.hidden?'none':'';logOut.disabled=!!value.loading;}
  musicButton.disabled=blocked;mobileControls?.refresh();playerProfile?.refresh();
 }
 installMobileWorld();

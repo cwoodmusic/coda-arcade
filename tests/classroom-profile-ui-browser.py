@@ -62,6 +62,42 @@ class ClassroomProfileUITests(unittest.TestCase):
   self.admin();self.page.locator('#classpassCreateProfile').click();self.idle();self.assertTrue(self.page.locator('.classpass-card').is_visible())
  def calls(self,method):return self.page.evaluate('method=>__calls.filter(item=>item.method===method)',method)
 
+ def test_log_out_is_available_in_profile_and_teacher_views_and_from_closed_options(self):
+  self.page.evaluate("""()=>{
+   __service.logOut=async()=>{__record('logOut');__emit({profile:null,admin:{signedIn:false,authorized:false},code:''});return {ok:true};};
+   __emit({profile:{classId:'class-blue',profileId:'profile-one',alias:'Amber Fox 14',picture:'fox'}});
+  }""")
+  self.assertTrue(self.page.locator('#classpassLogOut').is_visible())
+  self.page.locator('#classpassTab-admin').click()
+  self.assertTrue(self.page.locator('#classpassLogOut').is_visible())
+  self.page.locator('#classpassLogOut').click();self.idle()
+  self.assertEqual(len(self.calls('logOut')),1)
+  self.page.evaluate("__emit({admin:{signedIn:true,authorized:false,uid:'unapproved_staff_uid'}})")
+  self.assertTrue(self.page.locator('#classpassLogOut').is_visible())
+  self.page.locator('#classpassLogOut').click();self.idle()
+  self.assertEqual(len(self.calls('logOut')),2)
+  self.page.evaluate("""async()=>{
+   __ui.close();__emit({admin:{signedIn:true,authorized:true,uid:'approved_staff_uid'}});
+   await __ui.logOut();
+  }""")
+  self.idle();self.assertEqual(len(self.calls('logOut')),3)
+  self.assertEqual(self.calls('listClasses'),[], 'Opening options to log out must not start a competing teacher-list request')
+
+ def test_partial_logout_failure_keeps_an_explicit_retry_after_profile_disappears(self):
+  self.page.evaluate("""()=>{
+   window.__logoutFails=true;
+   __service.logOut=async()=>{__record('logOut');__emit({profile:null,admin:{signedIn:false,authorized:false}});return __logoutFails?{ok:false,code:'logout-unavailable'}:{ok:true};};
+   __emit({profile:{classId:'class-blue',profileId:'profile-one',alias:'Amber Fox 14',picture:'fox'}});
+  }""")
+  self.page.locator('#classpassLogOut').click();self.idle()
+  self.assertIsNone(self.page.evaluate('__state.profile'))
+  self.assertIn('try Log out again',self.page.locator('#classpassStatus').inner_text())
+  self.assertTrue(self.page.locator('#classpassLogOut').is_visible())
+  self.assertEqual(self.page.get_by_role('alertdialog').count(),0, 'Logout failures must not offer silent progress discard')
+  self.page.evaluate('__logoutFails=false');self.page.locator('#classpassLogOut').click();self.idle()
+  self.assertEqual(len(self.calls('logOut')),2)
+  self.assertIn('logged out',self.page.locator('#classpassStatus').inner_text())
+
  def test_student_uses_one_paste_field_and_never_sees_names_or_raw_errors(self):
   self.assertEqual(self.page.locator('input').count(),1)
   self.assertEqual(self.page.locator('input[type=password]').count(),0)

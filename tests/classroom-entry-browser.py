@@ -28,18 +28,18 @@ if(seed==='owner'){
  sessionStorage.setItem('codaClassroomActiveV1',JSON.stringify(marker));
  localStorage.setItem('codaClassroomWorkspaceV1',JSON.stringify(marker));
 }
-window.fixtureViews=[];window.fixtureJoins=[];window.fixtureResumeCalls=0;window.fixtureSignInCalls=0;
+window.fixtureViews=[];window.fixtureJoins=[];window.fixtureResumeCalls=0;window.fixtureSignInCalls=0;window.fixtureLogoutCalls=0;
 window.fixtureState={profile:seed==='owner'?{classId:'class-entry-0001',profileId:'profile-entry-0001',alias:'Blue Otter 27'}:null,locked:false,waitingTakeover:false,loading:true};
-window.fixturePending=new Promise(resolve=>window.fixtureFinish=result=>{fixtureState.loading=false;resolve(result);});
-window.CodaClassroom={...CodaClassroom,create:options=>{window.fixtureIdentityChange=options.onIdentityChange;return {
+window.fixturePending=new Promise((resolve,reject)=>{window.fixtureFinish=result=>{fixtureState.loading=false;resolve(result);};window.fixtureFail=()=>{fixtureState.loading=false;reject(Error('Unavailable'));};});
+window.CodaClassroom={...CodaClassroom,create:options=>{window.fixtureIdentityChange=options.onIdentityChange;window.fixtureLock=options.onLock;return {
  getState:()=>fixtureState,subscribe:()=>()=>{},isWritable:()=>true,
  resume:()=>{fixtureResumeCalls++;return fixturePending;},
  join:pass=>{fixtureJoins.push(pass);return fixturePending;},
  adminSignIn:()=>{fixtureSignInCalls++;return {ok:true};},leave:async()=>({ok:true})
 };}};
-window.createCodaClassroomUI=()=>({open:(view='student')=>fixtureViews.push(view),close(){}});
+window.createCodaClassroomUI=()=>({open:(view='student')=>fixtureViews.push(view),logOut:()=>{fixtureLogoutCalls++;return {ok:true};},close(){}});
 </script><script src="/classroom-boot.js"></script>
-<body><script>
+<body><div id="worldStage">Protected gameplay</div><script>
 window.fixtureRuntime=CodaClassroomBoot.start();window.fixtureReady=true;
 </script></body>'''
 
@@ -139,6 +139,95 @@ class ClassroomEntryTests(unittest.TestCase):
         self.finish()
         self.assertEqual(self.page.evaluate('fixtureViews'), ['admin'])
         self.assertFalse(self.page.evaluate('CodaClassroomBoot.getState().preparing'))
+
+    def test_profile_loading_is_only_status_and_finishes_without_profile_choices(self):
+        self.load('/entry-fixture.html?seed=owner')
+        loading = self.page.locator('#classroom-session-notice')
+        self.assertTrue(loading.is_visible())
+        self.assertEqual(loading.get_attribute('role'), 'status')
+        self.assertEqual(loading.get_attribute('aria-busy'), 'true')
+        self.assertIn('Loading', loading.inner_text())
+        self.assertEqual(loading.locator('button,a,input,select').count(), 0)
+        self.assertFalse(self.page.locator('#worldStage').is_visible())
+        self.assertEqual(self.page.evaluate('fixtureViews'), [])
+        self.finish()
+        self.assertTrue(loading.is_hidden())
+        self.assertTrue(self.page.locator('#worldStage').is_visible())
+        self.assertFalse(self.page.evaluate('CodaClassroomBoot.getState().recovering'))
+        self.assertTrue(self.page.evaluate('fixtureRuntime.canPlay()'))
+
+    def test_failed_loading_opens_game_profile_ui_and_keeps_gameplay_protected(self):
+        self.load('/entry-fixture.html?seed=owner')
+        self.page.evaluate('''()=>{
+          fixtureState.profile=null;
+          fixtureFinish({ok:false,code:'connection-unavailable'});
+        }''')
+        self.page.wait_for_function('CodaClassroomBoot.getState().recovering')
+        self.assertFalse(self.page.evaluate('CodaClassroomBoot.getState().preparing'))
+        self.assertTrue(self.page.locator('#classroom-session-notice').is_hidden())
+        self.assertFalse(self.page.locator('#worldStage').is_visible())
+        self.assertFalse(self.page.evaluate('fixtureRuntime.canPlay()'))
+        self.assertEqual(self.page.evaluate('fixtureViews'), ['student'])
+        self.page.evaluate('fixtureRuntime.logOut()')
+        self.assertEqual(self.page.evaluate('fixtureLogoutCalls'), 1)
+
+    def test_rejected_loading_and_device_takeover_use_game_profile_recovery(self):
+        self.load('/entry-fixture.html?seed=owner')
+        self.page.evaluate('fixtureFail()')
+        self.page.wait_for_function('CodaClassroomBoot.getState().recovering')
+        self.assertTrue(self.page.locator('#classroom-session-notice').is_hidden())
+        self.assertFalse(self.page.evaluate('fixtureRuntime.canPlay()'))
+        self.assertEqual(self.page.evaluate('fixtureViews'), ['student'])
+        self.page.reload(); self.page.wait_for_function('window.fixtureReady')
+        self.page.evaluate('''()=>{
+          fixtureState.waitingTakeover=true;
+          fixtureFinish({ok:false,code:'profile-in-use'});
+        }''')
+        self.page.wait_for_function('CodaClassroomBoot.getState().recovering')
+        self.assertTrue(self.page.locator('#classroom-session-notice').is_hidden())
+        self.assertFalse(self.page.locator('#worldStage').is_visible())
+        self.assertFalse(self.page.evaluate('fixtureRuntime.canPlay()'))
+        self.assertEqual(self.page.evaluate('fixtureViews'), ['student'])
+
+    def test_lock_uses_profile_recovery_and_success_clears_its_privacy_mask(self):
+        self.load('/entry-fixture.html?seed=owner')
+        self.finish()
+        self.page.evaluate('''()=>{
+          fixtureState.locked=true;
+          fixtureLock({reason:'workspace-lost',reloadNeeded:false});
+        }''')
+        self.assertTrue(self.page.evaluate('CodaClassroomBoot.getState().recovering'))
+        self.assertTrue(self.page.locator('#classroom-session-notice').is_hidden())
+        self.assertFalse(self.page.locator('#worldStage').is_visible())
+        self.assertEqual(self.page.evaluate('fixtureViews'), ['student'])
+        self.page.evaluate('''()=>{
+          fixtureState.locked=false;
+          fixtureIdentityChange({reason:'joined',reloadNeeded:false});
+        }''')
+        self.assertFalse(self.page.evaluate('CodaClassroomBoot.getState().recovering'))
+        self.assertTrue(self.page.locator('#worldStage').is_visible())
+        self.assertTrue(self.page.evaluate('fixtureRuntime.canPlay()'))
+
+    def test_initial_lock_and_failed_resume_open_the_profile_options_once(self):
+        self.load('/entry-fixture.html?seed=owner')
+        self.page.evaluate('''()=>{
+          fixtureState.locked=true;
+          fixtureLock({reason:'workspace-lost',reloadNeeded:false});
+          fixtureFinish({ok:false,code:'workspace-lost'});
+        }''')
+        self.page.wait_for_function('!fixtureState.loading')
+        self.page.evaluate('()=>new Promise(resolve=>setTimeout(resolve,0))')
+        self.assertEqual(self.page.evaluate('fixtureViews'), ['student'])
+        self.assertTrue(self.page.evaluate('CodaClassroomBoot.getState().recovering'))
+        self.assertTrue(self.page.locator('#classroom-session-notice').is_hidden())
+
+    def test_reduced_motion_keeps_a_static_loading_indicator(self):
+        self.page.emulate_media(reduced_motion='reduce')
+        self.load('/entry-fixture.html?seed=owner')
+        self.assertEqual(self.page.locator('.classroom-loading-spinner').evaluate(
+            'node=>getComputedStyle(node).animationName'), 'none')
+        self.assertEqual(self.page.locator('#classroom-session-notice button').count(), 0)
+        self.finish()
 
     def test_requested_teacher_view_survives_only_boots_identity_reload(self):
         self.load('/entry-fixture.html?seed=owner&profile=admin&keep=1')

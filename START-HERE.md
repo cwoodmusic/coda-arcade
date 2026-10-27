@@ -29,6 +29,12 @@ arcade normally. Developer test mode preserves the real tab's login even when
 the preview is reloaded; it does not copy authentication into the test player
 or require new cookies.
 
+A saved profile opens through a brief loading screen. Profile choices live in
+**Settings → Profile options**, or **Profile → Classroom profile**.
+Choose **Log out** in Settings or the profile options to save progress, end the
+student/teacher session, and return to the title screen. If saving cannot finish,
+the game keeps your profile open and offers another try.
+
 The **Motion** setting uses the same saved animation preference as the original
 arcade and respects the device's reduced-motion setting. The title screen loads
 existing arcade artwork without starting gameplay, music, or Firebase SDKs.
