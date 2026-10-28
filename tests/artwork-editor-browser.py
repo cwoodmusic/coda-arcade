@@ -235,6 +235,49 @@ class ArtworkEditorBrowserTests(unittest.TestCase):
             Math.floor((x-camera.x)*camera.zoom),Math.floor((y-camera.y)*camera.zoom),1,1).data);
         }''', [x, y])
 
+    def test_eyedropper_returns_to_each_previous_tool_and_never_continues_the_sample_as_paint(self):
+        self.load_fixture()
+        self.zoom(16)
+        self.center(30, 20)
+        expected = '#' + ''.join(f'{value:02x}' for value in self.page.evaluate(
+            'fixturePixel("background.fixture",30,20)'))
+        for previous in ['pencil', 'line', 'erase', 'restore', 'fill', 'select', 'pan', 'stamp']:
+            with self.subTest(previous=previous):
+                self.control('tool').select_option(previous)
+                self.control('picker').click()
+                self.control('canvas').focus()
+                self.page.keyboard.press('i')
+                self.page.mouse.move(**self.point(30, 20))
+                self.page.mouse.down()
+                self.page.mouse.move(**self.point(31, 21))
+                self.page.mouse.up()
+                self.assertEqual(self.state()['tool'], previous)
+                self.assertEqual(self.control('tool').input_value(), previous)
+                self.assertEqual(self.control('picker').get_attribute('aria-pressed'), 'false')
+                self.assertEqual(self.control('hex').input_value(), expected)
+                self.assertEqual(self.page.evaluate('artworkChanges.length'), 0)
+        self.control('tool').select_option('fill')
+        self.control('canvas').focus()
+        self.page.keyboard.press('i')
+        self.page.keyboard.down('Enter')
+        self.page.keyboard.down('Enter')
+        self.assertEqual(self.state()['tool'], 'fill')
+        self.assertEqual(self.page.evaluate('artworkChanges.length'), 0,
+                         'Holding the sample key must not paint after the picker returns')
+        self.page.keyboard.up('Enter')
+        self.control('tool').select_option('erase')
+        self.control('canvas').focus()
+        self.page.keyboard.press('i')
+        self.page.keyboard.press('Space')
+        self.assertEqual(self.state()['tool'], 'erase')
+        self.control('tool').select_option('pan')
+        self.page.keyboard.down('Alt')
+        self.paint(30, 20)
+        self.page.keyboard.up('Alt')
+        self.assertEqual(self.state()['tool'], 'pan')
+        self.assertEqual(self.control('hex').input_value(), expected)
+        self.assertEqual(self.page.evaluate('artworkChanges.length'), 0)
+
     def test_eyedropper_copies_exact_rgba_and_line_replaces_preview_with_one_commit(self):
         self.load_fixture()
         self.zoom(16)

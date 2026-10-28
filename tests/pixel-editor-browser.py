@@ -93,6 +93,37 @@ class PixelEditorTests(unittest.TestCase):
           return {background,backgroundLeft,jumped,animated:signature(.1)!==signature(1.6),pixel:framePixel('player',40,45),base:framePixel('player',40,45,{base:true})};
         }''')
         self.assertEqual(result['background'],[0,0,255,255]);self.assertEqual(result['backgroundLeft'],[0,0,255,255]);self.assertEqual(result['pixel'][3],0);self.assertEqual(result['base'][3],255);self.assertTrue(result['animated']);self.assertEqual(result['jumped'],[255,0,255,255],'Pixel details must rise with the character during a jump')
+    def test_eyedropper_returns_to_previous_tool_for_pointer_and_keyboard_without_editing(self):
+        self.page.get_by_label('Animate sprite preview',exact=True).uncheck()
+        self.page.evaluate("data=CodaPixelEditor.changePixels({},'player','down',[[40,45]],'#12345680');renderer.setPixelEdits(data);editor.refresh();changes=[]")
+        expected = '#' + ''.join(f'{value:02x}' for value in self.page.evaluate("framePixel('player',40,45)"))
+        for previous in ['pencil','erase','restore','fill','select','pan','stamp']:
+            with self.subTest(previous=previous):
+                self.page.get_by_label('Pixel tool',exact=True).select_option(previous)
+                self.page.get_by_role('button',name='Eyedropper',exact=True).click()
+                self.page.locator('#pixelEditCanvas').focus()
+                self.page.keyboard.press('i')
+                self.paint(40,45)
+                self.assertEqual(self.page.evaluate('editor.getState().tool'),previous)
+                self.assertEqual(self.page.get_by_label('Pixel tool',exact=True).input_value(),previous)
+                self.assertEqual(self.page.get_by_label('Pixel exact hex colour',exact=True).input_value(),expected)
+                self.assertEqual(self.page.evaluate('changes.length'),0)
+        self.page.get_by_label('Pixel tool',exact=True).select_option('fill')
+        canvas=self.page.locator('#pixelEditCanvas');canvas.focus()
+        self.page.keyboard.press('i')
+        self.page.keyboard.down('Space')
+        self.page.keyboard.down('Space')
+        self.assertEqual(self.page.evaluate('editor.getState().tool'),'fill')
+        self.assertEqual(self.page.evaluate('changes.length'),0)
+        self.page.keyboard.up('Space')
+        self.page.get_by_label('Pixel tool',exact=True).select_option('erase')
+        canvas.focus();self.page.keyboard.press('i');self.page.keyboard.press('Enter')
+        self.assertEqual(self.page.evaluate('editor.getState().tool'),'erase')
+        self.page.get_by_label('Pixel tool',exact=True).select_option('pan')
+        self.page.keyboard.down('Alt');self.paint(40,45);self.page.keyboard.up('Alt')
+        self.assertEqual(self.page.evaluate('editor.getState().tool'),'pan')
+        self.assertEqual(self.page.evaluate('changes.length'),0)
+
     def test_picker_fill_restore_and_cancel_do_not_leave_half_committed_strokes(self):
         self.page.get_by_label('Pixel tool',exact=True).select_option('picker');self.paint(40,45)
         self.assertEqual(self.page.evaluate('changes.length'),0);self.assertEqual(self.page.get_by_label('Pixel colour',exact=True).input_value(),'#e5ad75')

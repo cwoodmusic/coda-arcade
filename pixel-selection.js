@@ -47,6 +47,18 @@
   }
   return points;
  }
+ function resizeClip(clip,width,height){
+  if(!validClip(clip)||!dimensions(width,height))return null;
+  const pixels=new Uint8ClampedArray(width*height*4),source=clip.pixels;
+  for(let y=0;y<height;y++){
+   const sourceY=Math.floor(y*clip.height/height);
+   for(let x=0;x<width;x++){
+    const from=(sourceY*clip.width+Math.floor(x*clip.width/width))*4,to=(y*width+x)*4;
+    for(let channel=0;channel<4;channel++)pixels[to+channel]=source[from+channel];
+   }
+  }
+  return {width,height,pixels};
+ }
  let saved=null;
  const cloneClip=clip=>({width:clip.width,height:clip.height,pixels:new Uint8ClampedArray(clip.pixels)});
  const clipboard=Object.freeze({
@@ -55,5 +67,5 @@
   clear(){saved=null;},
   has(){return saved!==null;}
  });
- return Object.freeze({MAX_DIMENSION,MAX_AREA,rectangle,copyPixels,stampPixels,clipboard});
+ return Object.freeze({MAX_DIMENSION,MAX_AREA,rectangle,copyPixels,resizeClip,stampPixels,clipboard});
 });

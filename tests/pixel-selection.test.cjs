@@ -39,6 +39,29 @@ test('pasting clips each destination edge and preserves transparent coloured pix
  assert.deepEqual(Array.from(clip.pixels),before);
 });
 
+test('stamp resizing repeats exact nearest pixels, including their transparent RGBA values',()=>{
+ const clip={width:2,height:2,pixels:new Uint8ClampedArray([
+  10,20,30,255, 40,50,60,0,
+  70,80,90,128, 100,110,120,64
+ ])},original=Array.from(clip.pixels),large=selection.resizeClip(clip,4,4);
+ assert.deepEqual({width:large.width,height:large.height},{width:4,height:4});
+ const sample=(value,x,y)=>Array.from(value.pixels.slice((y*value.width+x)*4,(y*value.width+x+1)*4));
+ for(let y=0;y<4;y++)for(let x=0;x<4;x++)assert.deepEqual(sample(large,x,y),sample(clip,Math.floor(x/2),Math.floor(y/2)));
+ assert.deepEqual(Array.from(selection.resizeClip(large,2,2).pixels),original);
+ assert.deepEqual(Array.from(selection.resizeClip(clip,1,1).pixels),[10,20,30,255]);
+ assert.deepEqual(Array.from(clip.pixels),original,'Repeated sizing keeps the captured source unchanged');
+ large.pixels.fill(0);assert.deepEqual(Array.from(clip.pixels),original,'Resized pixels cannot mutate the capture');
+ const same=selection.resizeClip(clip,2,2);assert.notStrictEqual(same.pixels,clip.pixels);assert.deepEqual(Array.from(same.pixels),original);
+});
+
+test('stamp resizing supports uneven output dimensions and rejects malformed or excessive sizes',()=>{
+ const clip={width:3,height:1,pixels:new Uint8ClampedArray([1,2,3,4, 5,6,7,8, 9,10,11,12])};
+ assert.deepEqual(Array.from(selection.resizeClip(clip,2,1).pixels),[1,2,3,4,5,6,7,8]);
+ assert.deepEqual(Array.from(selection.resizeClip(clip,5,1).pixels),[1,2,3,4,1,2,3,4,5,6,7,8,5,6,7,8,9,10,11,12]);
+ for(const [width,height]of [[0,1],[-1,1],[1,0],[1.5,2],[NaN,1],[Infinity,1],[8193,1],[8192,8192],[Number.MAX_SAFE_INTEGER,1]])assert.equal(selection.resizeClip(clip,width,height),null);
+ for(const bad of [null,{},[],{...clip,pixels:[]},{...clip,pixels:new Int8Array(12)}])assert.equal(selection.resizeClip(bad,2,2),null);
+});
+
 test('malformed or oversized clips are rejected before allocating copies or paste output',()=>{
  const good={width:1,height:1,pixels:new Uint8ClampedArray([1,2,3,4])};
  for(const clip of [null,{},[],{...good,width:8193},{...good,width:8192,height:8192},{...good,pixels:new Uint8ClampedArray(3)},{...good,pixels:new Int8Array([1,2,3,4])},{...good,pixels:[1,2,3,256]},{...good,pixels:[1,2,-1,4]},{...good,pixels:new Array(4)},{...good,pixels:[1,2,3,NaN]}]){
@@ -64,6 +87,7 @@ test('the shared clipboard isolates caller mutations and retains its prior copy 
 test('browser and CommonJS exports share the API and accept cross-realm RGBA bytes',()=>{
  const context={window:{}};vm.createContext(context);vm.runInContext(fs.readFileSync(require.resolve('../pixel-selection.js'),'utf8'),context);
  assert.equal(typeof context.window.CodaPixelSelection.rectangle,'function');
+ assert.equal(typeof context.window.CodaPixelSelection.resizeClip,'function');
  assert.equal(context.window.CodaPixelSelection.clipboard.set({width:1,height:1,pixels:new Uint8ClampedArray([5,6,7,8])}),true);
  const clip=context.window.CodaPixelSelection.clipboard.get();
  assert.deepEqual(selection.stampPixels(clip,1,1,0,0),[[0,0,'#05060708']]);

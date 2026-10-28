@@ -38,6 +38,12 @@
    if(id.startsWith('asset.')){const asset=assets().find(a=>a.id===id.slice(6));return asset?sourceAsset(asset):null;}
    return null;
   }
+  function previewRoom(id){return rooms().find(room=>room.hasArtworkAssetPreview?.(id));}
+  function hasAssetPreview(id){return id==='background.world'?typeof api.drawAssetPreview==='function':!!previewRoom(id);}
+  function drawAssetPreview(context,options){
+   if(options.target==='background.world')return api.drawAssetPreview?.(context,options);
+   return previewRoom(options.target)?.drawArtworkAssetPreview?.(context,options);
+  }
   function applyData(next){
    if(api.canEdit?.()===false||!pixels.validate(next))return false;
    const previous=getData(),keys=new Set([...Object.keys(previous),...Object.keys(next)]),changed=[...keys].filter(key=>JSON.stringify(previous[key])!==JSON.stringify(next[key]));
@@ -53,7 +59,7 @@
    return api.applyRootData(next,changed)!==false;
   }
   function mount(host){
-   editor=pixels.mount({host,getTargets,getSource,getData,onChange:applyData,canEdit:api.canEdit,onUndo:api.onUndo,onRedo:api.onRedo,getHistory:api.getHistory,onExit:api.onExit,fitOnFirstExpand:true,initialId:'background.world'});return editor;
+   editor=pixels.mount({host,getTargets,getSource,getData,onChange:applyData,canEdit:api.canEdit,hasAssetPreview,drawAssetPreview,onUndo:api.onUndo,onRedo:api.onRedo,getHistory:api.getHistory,onExit:api.onExit,fitOnFirstExpand:true,initialId:'background.world'});return editor;
   }
   function fragment(source,x,y){
    const patch=texture('background.world');if(!source||!patch)return source;

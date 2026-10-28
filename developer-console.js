@@ -113,7 +113,7 @@ window.createCodaDeveloperConsole = function (api) {
   if(window.CodaArtworkEditor&&window.createCodaWorldArtworkTools){
     artworkTools=window.createCodaWorldArtworkTools({width:W,height:H,catalog,getAssets:()=>studio.assets,getRootData:()=>artwork,
       getObjectSource:name=>{const part=catalog.find(p=>p.name===name);return part?sourcePicture({name,bounds:part.bounds}):null;},
-      getAssetSource:api.getAssetArtworkSource,getBackgroundSource:()=>baseCache||worldArt,getClassroomSource:api.getClassroomArtworkSource,
+      getAssetSource:api.getAssetArtworkSource,getBackgroundSource:()=>baseCache||worldArt,getClassroomSource:api.getClassroomArtworkSource,drawAssetPreview:api.drawArtworkAssetPreview,
       getRoomEditors:api.getArtworkRooms,characters:characterArtwork,canEdit:canEditArtwork,onExit:()=>setTab('objects'),onUndo:()=>undoRedo(true),onRedo:()=>undoRedo(false),getHistory:()=>({undo:studio.undo.length,redo:studio.redo.length}),applyRootData:applyArtworkData});
     artworkEditor=artworkTools.mount(artworkPane);
     const editPixels=document.createElement('button');editPixels.type='button';editPixels.id='devEditPixels';editPixels.textContent='Edit selected asset pixels';

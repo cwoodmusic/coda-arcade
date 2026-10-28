@@ -2,6 +2,11 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaChangelog=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
  const entries=[
+  {date:'2026-10-28',title:'Background preview and pixel tools',changes:[
+   'Show or hide placed assets as a guide while editing a background.',
+   'The eyedropper returns to your previous tool after picking a color.',
+   'Capture selected pixels with Ctrl/Command-click, resize the stamp, and click to place repeated copies.'
+  ]},
   {date:'2026-10-28',title:'Updated classroom lessons',changes:[
    'Published updated teaching text and practice questions for the musical alphabet, piano landmarks, treble staff, steps and skips, and ledger lines.',
    'Updated the bass introduction and Middle C note illustrations.'

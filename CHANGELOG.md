@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-28 — Background preview and pixel tools
+
+- Show or hide placed assets while editing a background, with background-only painting, sampling, and export.
+- The eyedropper returns to the previous tool after picking a color.
+- Capture a selected rectangle with Ctrl/Command-click, resize its stamp, and place repeated copies.
+
 ## 2026-10-28 — Updated classroom lessons
 
 - Published the uploaded lesson edits for the musical alphabet, piano landmarks, treble staff, steps and skips, ledger lines, bass introduction, and Middle C.
