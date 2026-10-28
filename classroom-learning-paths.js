@@ -88,6 +88,7 @@
  }
  function renderVisual(figure,value){
   if(!figure?.ownerDocument||!object(value))return false;const win=figure.ownerDocument.defaultView,tutorial=win?.CodaClassroomTutorials||tutorialModule;
+  if(value.kind==='keyboard'&&win?.CodaClassroomKeyboard){const checked=win.CodaClassroomKeyboard.validateVisual(value);if(!checked.ok)return false;figure.innerHTML=win.CodaClassroomKeyboard.toSVG(checked.data);return true;}
   if(value.kind==='staff'&&quizModule?.staffSVG){
    figure.innerHTML=quizModule.staffSVG(value.position,value).replace(/H320/g,'H250');const svg=figure.querySelector('svg'),ns='http://www.w3.org/2000/svg';
    const label=(text,x,y,kind,index)=>{const item=figure.ownerDocument.createElementNS(ns,'text');item.textContent=text;item.setAttribute('x',x);item.setAttribute('y',y);item.setAttribute('font-family','system-ui,sans-serif');item.setAttribute('font-size',kind?'14':'10');item.setAttribute('fill',kind==='space'?'#21695f':'#49345c');item.setAttribute('text-anchor','middle');if(kind)item.setAttribute('data-staff-'+kind,index);svg.append(item);};

@@ -60,6 +60,15 @@ test('staff reminders explicitly use the requested words and bottom-to-top order
  }
 });
 
+test('pitch lessons show piano keys when teaching keyboard landmarks and neighboring pitches',()=>{
+ for(const id of ['treble-musical-alphabet','treble-keyboard-landmarks','treble-half-step','treble-sharp-sign','treble-flat-sign','treble-natural-sign'])assert.equal(find(id).visual.kind,'keyboard',id);
+ assert.deepEqual(find('treble-musical-alphabet').visual.notes,[]);
+ assert.deepEqual(find('treble-keyboard-landmarks').visual.notes,[],'The landmark diagram must not single out the correct answer');
+ assert.deepEqual(find('treble-sharp-sign').visual.notes,['F','F-sharp']);
+ assert.deepEqual(find('treble-flat-sign').visual.notes,['E','E-flat']);
+ assert.deepEqual(find('treble-natural-sign').visual.notes,['F-sharp','F']);
+});
+
 test('the browser exposes the same immutable teaching data without storage or network',()=>{
  const window={};vm.runInNewContext(fs.readFileSync(require.resolve('../classroom-curriculum-staff.js'),'utf8'),{window});
  assert.deepEqual(JSON.parse(JSON.stringify(window.CodaClassroomCurriculumStaff)),JSON.parse(JSON.stringify(lessons)));

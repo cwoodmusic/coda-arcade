@@ -7,6 +7,16 @@ const study=require('../classroom-exam-study.js');
 const ids=cards=>cards.map(card=>card.id);
 const flat=category=>category.sections.flatMap(section=>section.cards);
 
+test('piano-key location checks retain a neutral keyboard reference without replacing their own figures',()=>{
+ const card=paths.getCards('note-naming').find(card=>card.id==='treble-keyboard-landmarks');
+ const checks=paths.getChecks('note-naming',card);
+ assert.equal(checks.length,3);
+ for(const check of checks)assert.deepEqual(check.visual,{kind:'keyboard',notes:[]});
+ const steps=paths.getCards('major-minor-keys').find(card=>card.id==='major-minor-keys-key-steps');
+ const scale=paths.getChecks('major-minor-keys',steps).find(check=>check.visual?.kind==='scale');
+ assert.ok(scale?.visual.notes.includes('?'),'A missing-note question keeps its own scale picture.');
+});
+
 test('all nine categories have named basic and advanced chapters and complete canonical teaching coverage',()=>{
  assert.deepEqual(paths.CATEGORIES.map(item=>item.id),[...curriculum.IDS,'accidentals-key-signatures']);
  assert.deepEqual(paths.validate(),{ok:true,errors:[]});

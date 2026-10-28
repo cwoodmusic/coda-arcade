@@ -248,7 +248,8 @@
    if(!value||!notation)return;
    const figure=element('div','classroom-quiz-visual');
    if(typeof api.renderVisual==='function'&&api.renderVisual(figure,value)===true){parent.append(figure);notation.load?.(doc);return;}
-   if(value.kind==='notation'&&win?.CodaEducationNotation){const checked=win.CodaEducationNotation.validate(value.score);if(checked.ok)figure.innerHTML=win.CodaEducationNotation.toSVG(checked.data);}
+   if(value.kind==='keyboard'&&win?.CodaClassroomKeyboard){const checked=win.CodaClassroomKeyboard.validateVisual(value);if(checked.ok)figure.innerHTML=win.CodaClassroomKeyboard.toSVG(checked.data);}
+   else if(value.kind==='notation'&&win?.CodaEducationNotation){const checked=win.CodaEducationNotation.validate(value.score);if(checked.ok)figure.innerHTML=win.CodaEducationNotation.toSVG(checked.data);}
    else if(value.kind==='middle-c-pair'){figure.classList.add('classroom-quiz-middle-pair');figure.innerHTML=staffSVG(-2,{clef:'treble',label:'Middle C below treble'})+staffSVG(10,{clef:'bass',label:'Middle C above bass'});}
    else if(value.kind==='staff')figure.innerHTML=staffSVG(value.position,value);
    else if(value.kind==='note'){figure.setAttribute('role','img');figure.setAttribute('aria-label','The note shown in the question');figure.innerHTML=notation.glyphSVG(value.beats,{colour:'#fff0cf'});}

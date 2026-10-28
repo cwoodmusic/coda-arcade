@@ -35,7 +35,7 @@
     example:'C-sharp is the next piano key above C. E-flat is the next key below E. Include black keys when finding the next key.',
     prompt:'What does D-sharp mean?',answers:['A louder D','The next key below D','The next key above D'],correct:2,
     hint:'Sharp means the next piano key higher, not a change in loudness.',
-    visual:{kind:'scale',notes:['C','C-sharp','D']},
+    visual:{kind:'keyboard',notes:['C','C-sharp','E','E-flat']},
     covers:keys(cycle(6),88,97)
    },
    {
@@ -44,7 +44,7 @@
     example:'C → C-sharp is a half step. C → C-sharp → D is a whole step. E → F is a half step: no black key sits between them.',
     prompt:'How many half steps make one whole step?',answers:['1','2','3'],correct:1,
     hint:'Take two next-key moves to make a whole step.',
-    visual:{kind:'scale',notes:['C','C-sharp','D','E','F']},
+    visual:{kind:'keyboard',notes:['C','C-sharp','D','E','F']},
     covers:keys(cycle(6),88)
    },
    {

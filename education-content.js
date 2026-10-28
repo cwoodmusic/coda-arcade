@@ -55,8 +55,10 @@
   }return copy(defaults);
  }
  function notationModule(){if(root?.CodaEducationNotation)return root.CodaEducationNotation;if(requireModule)try{return requireModule('./education-notation.js');}catch{}return null;}
+ function keyboardModule(){if(root?.CodaClassroomKeyboard)return root.CodaClassroomKeyboard;if(requireModule)try{return requireModule('./classroom-keyboard.js');}catch{}return null;}
  function visual(value){
   if(value===null||value===undefined)return null;if(!object(value))fail('A music picture must be a supported notation object.');
+  if(value.kind==='keyboard'){const checked=keyboardModule()?.validateVisual?.(value);if(!checked?.ok)fail(checked?.error||'The piano keyboard picture is still loading.');return checked.data;}
   if(value.kind==='key-signature'){const module=accidentalsModule(),checked=module?.validateVisual?.(value);if(!checked?.ok)fail(checked?.error||'The key-signature lesson is still loading.');return checked.data;}
   if(value.kind==='notation'){
    const module=notationModule(),checked=module?.validate?.(value.score);if(!checked?.ok)fail(checked?.error||'The notation editor is still loading.');

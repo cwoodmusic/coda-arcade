@@ -12,6 +12,7 @@
  const grand=(...groups)=>questions('grand-staff',...groups);
  const staff=(clef,position,isGrand=false)=>({kind:'staff',clef,position,...(isGrand?{grand:true}:{})});
  const letters=notes=>({kind:'scale',notes});
+ const keyboard=(...notes)=>({kind:'keyboard',notes});
  const lessons={
   'note-naming':[
    {
@@ -20,7 +21,7 @@
     example:'Up: F → G → A → B. Down: B → A → G → F. Fill gaps by moving one letter at a time. The next C keeps its letter but sounds higher.',
     prompt:'Which music letter comes just before A?',answers:['G','B','H'],correct:0,
     hint:'Go backward around A B C D E F G. Before A comes G.',
-    visual:letters(['A','B','C','D','E','F','G','A']),
+    visual:keyboard(),
     covers:treble(span(49,69),93,98)
    },
    {
@@ -88,7 +89,7 @@
     example:'Around two black keys, the white keys go C D E: C is left of the group, E is right. Around three, they go F G A B: F is left, B is right.',
     prompt:'Which white key is just right of a group of three black keys?',answers:['B','F','E'],correct:0,
     hint:'The four white keys around that group go F G A B.',
-    visual:letters(['C','D','E','F','G','A','B']),covers:treble(span(88,92))
+    visual:keyboard(),covers:treble(span(88,92))
    },
    {
     id:'treble-half-step',title:'The very next piano key',
@@ -96,6 +97,7 @@
     example:'White and black keys both make pitches. C to C-sharp is one half step right. E to F is also one half step: there is no black key between them.',
     prompt:'When counting half steps, do black keys count?',answers:['Yes, count every next key','No, only white keys count','Only when the music is loud'],correct:0,
     hint:'Both colours make pitches. Move to the very next key.',
+    visual:keyboard('C','C-sharp','E','F'),
     covers:treble(94,95,96)
    },
    {
@@ -103,21 +105,21 @@
     teach:'A sharp (♯) raises a note by one half step.',
     example:'F-sharp is the next piano key higher than F. Move right, including a black key if it is next. The note’s length does not change.',
     prompt:'What does a sharp do?',answers:['Raises pitch by one half step','Lowers pitch by one half step','Makes the note twice as long'],correct:0,
-    hint:'Sharp goes to the next key higher.',covers:treble(95)
+    hint:'Sharp goes to the next key higher.',visual:keyboard('F','F-sharp'),covers:treble(95)
    },
    {
     id:'treble-flat-sign',title:'Flat means one key lower',
     teach:'A flat (♭) lowers a note by one half step.',
     example:'E-flat is the next piano key lower than E. Move left, including a black key if it is next. A flat changes pitch, not loudness.',
     prompt:'What does a flat do?',answers:['Lowers pitch by one half step','Raises pitch by one half step','Always makes music softer'],correct:0,
-    hint:'Flat goes to the next key lower.',covers:treble(96)
+    hint:'Flat goes to the next key lower.',visual:keyboard('E','E-flat'),covers:treble(96)
    },
    {
     id:'treble-natural-sign',title:'Natural cancels the change',
     teach:'A natural (♮) cancels a sharp or flat for that note.',
     example:'F-sharp changes back to F when F has a natural sign. F-flat changes back to F too. A natural does not always move up or always move down.',
     prompt:'An F-sharp is followed by F-natural. Which note do you play?',answers:['F','F-sharp again','G'],correct:0,
-    hint:'The natural cancels the sharp and restores F.',covers:treble(97)
+    hint:'The natural cancels the sharp and restores F.',visual:keyboard('F-sharp','F'),covers:treble(97)
    },
    {
     id:'treble-ledger-middle-c',title:'Little lines outside the staff',

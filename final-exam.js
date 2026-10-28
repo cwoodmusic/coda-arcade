@@ -128,7 +128,8 @@
   function showQuestion(index){review=false;intro=false;if(session.goTo(index)){render();focusHeading();}}
   function visual(parent,stimulus){
    if(!stimulus)return;const figure=node('div','final-exam-visual');figure.setAttribute('role','img');
-   if(stimulus.kind==='notation'&&editedNotation?.()){const renderer=editedNotation(),checked=renderer.validate(stimulus.score);if(!checked.ok)return;figure.innerHTML=renderer.toSVG(checked.data,{color:'#fff0cf'});}
+   if(stimulus.kind==='keyboard'&&win?.CodaClassroomKeyboard){const checked=win.CodaClassroomKeyboard.validateVisual(stimulus);if(!checked.ok)return;figure.innerHTML=win.CodaClassroomKeyboard.toSVG(checked.data);}
+   else if(stimulus.kind==='notation'&&editedNotation?.()){const renderer=editedNotation(),checked=renderer.validate(stimulus.score);if(!checked.ok)return;figure.innerHTML=renderer.toSVG(checked.data,{color:'#fff0cf'});}
    else if(stimulus.kind==='staff'&&quiz?.staffSVG){figure.innerHTML=quiz.staffSVG(stimulus.position,{clef:stimulus.clef,grand:stimulus.grand,label:stimulus.label||'Read the highlighted note.'});}
    else if(stimulus.kind==='rhythm'&&notation){figure.setAttribute('aria-label','The notes and rests in this question.');for(const note of stimulus.notes||[]){const mark=node('span');mark.innerHTML=notation.glyphSVG(note.beats,{rest:note.rest===true,color:'#fff0cf'});figure.append(mark);}}
    else if(stimulus.kind==='meter'){const parts=String(stimulus.meter).split('/');figure.classList.add('final-exam-meter');figure.setAttribute('aria-label',stimulus.meter+' time signature');figure.append(node('span','',parts[0]),node('span','',parts[1]));}

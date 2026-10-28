@@ -19,11 +19,11 @@ test('every new category foundation is editable while canonical assessments stay
 
 test('safe teaching diagrams round trip and reject unknown executable fields or unsupported choices',()=>{
  const store=content.createStore({storage:disk(),canEdit:()=>true}),document=store.getDocument(),card=document.lessons['rhythm-tree'].study[0];
- for(const visual of [{kind:'note-parts',focus:'head',beats:4},{kind:'note-parts',focus:'flag',beats:.5},{kind:'clef-intro',clef:'bass',page:'spaces'},{kind:'rhythm-tree',level:3}]){
+ for(const visual of [{kind:'note-parts',focus:'head',beats:4},{kind:'note-parts',focus:'flag',beats:.5},{kind:'clef-intro',clef:'bass',page:'spaces'},{kind:'rhythm-tree',level:3},{kind:'keyboard',notes:['E-flat','E'],label:'Compare neighboring keys'}]){
   card.visual=visual;const result=store.saveDocument(document);assert.equal(result.ok,true,result.error);assert.deepEqual(store.getStudyCards('rhythm-tree')[0].visual,visual);
  }
  const saved=store.exportDocument();
- for(const visual of [{kind:'note-parts',focus:'html',beats:.5},{kind:'note-parts',focus:'head',beats:.25},{kind:'note-parts',focus:'all',beats:1,onclick:'alert(1)'},{kind:'clef-intro',clef:'alto',page:'staff'},{kind:'clef-intro',clef:'treble',page:'<script>'},{kind:'clef-intro',clef:'bass',page:'clef',svg:'<script>'},{kind:'rhythm-tree',level:4},{kind:'rhythm-tree',level:2,html:'<script>'}]){
+ for(const visual of [{kind:'note-parts',focus:'html',beats:.5},{kind:'note-parts',focus:'head',beats:.25},{kind:'note-parts',focus:'all',beats:1,onclick:'alert(1)'},{kind:'clef-intro',clef:'alto',page:'staff'},{kind:'clef-intro',clef:'treble',page:'<script>'},{kind:'clef-intro',clef:'bass',page:'clef',svg:'<script>'},{kind:'rhythm-tree',level:4},{kind:'rhythm-tree',level:2,html:'<script>'},{kind:'keyboard',notes:['H']},{kind:'keyboard',notes:[],onclick:'alert(1)'}]){
   card.visual=visual;assert.equal(store.saveDocument(document).ok,false);assert.equal(store.exportDocument(),saved);
  }
 });

@@ -13,7 +13,7 @@ ORIGIN = 'https://cwoodmusic.github.io'
 PREFIX = '/coda-arcade/'
 URL = ORIGIN + PREFIX + 'education-editor-fixture'
 HTML = '''<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="music-notation.css"><link rel="stylesheet" href="education-notation.css"><link rel="stylesheet" href="education-editor.css"></head><body><main id="host"></main>
-<script src="music-notation.js"></script><script src="time-signature-lesson.js"></script><script src="classroom-quiz.js"></script><script src="classroom-tutorials.js"></script><script src="final-exam-bank.js"></script><script src="education-notation.js"></script><script src="education-content.js"></script><script src="education-editor.js"></script><script>
+<script src="music-notation.js"></script><script src="time-signature-lesson.js"></script><script src="classroom-quiz.js"></script><script src="classroom-tutorials.js"></script><script src="final-exam-bank.js"></script><script src="education-notation.js"></script><script src="classroom-keyboard.js"></script><script src="education-content.js"></script><script src="education-editor.js"></script><script>
 window.__canEdit=true;window.__exit=0;window.__store=CodaEducationContent.createStore({storage:localStorage,canEdit:()=>__canEdit});CodaEducationContent.setStore(__store);window.__editor=CodaEducationEditor.mount({host:document.querySelector('#host'),store:__store,canEdit:()=>__canEdit,onExit:()=>__exit++});
 </script></body></html>'''
 

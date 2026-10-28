@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-28 — Piano keyboards in pitch lessons
+
+- Pitch lessons now show a labeled piano keyboard with black keys in groups of two and three.
+- Piano-key practice questions keep the keyboard visible. Half-step, sharp, and flat examples show the keys being compared.
+
 ## 2026-10-28 — Guest entry fix
 
 - **Play as guest** opens the arcade even when another tab or a leftover profile marker is present.

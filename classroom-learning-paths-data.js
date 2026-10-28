@@ -172,6 +172,9 @@
   const basicRhythm=lessonId==='rhythm-tree'&&definition(lessonId).sections.some(section=>section.tier==='basic'&&section.ids.includes(base.id));
   for(const source of candidates){
    const check=copy(source);numberStaffCard(check,lessonId);
+   // Keep a neutral keyboard reference beside key-location questions. Preserve
+   // a check's own diagram when it asks about a particular score or scale.
+   if(!check.visual&&base.visual?.kind==='keyboard')check.visual={kind:'keyboard',notes:[]};
    if(basicRhythm&&/sixteenth|16th|dotted|1 e & a/i.test(JSON.stringify(check)))continue;
    const key=signature(check);if(seen.has(key))continue;seen.add(key);result.push(check);if(result.length===3)break;
   }

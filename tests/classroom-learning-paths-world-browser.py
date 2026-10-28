@@ -139,6 +139,54 @@ class ClassroomLearningPathsWorldTests(_world.WorldBrowserCase):
         self.assertEqual(panel.locator('[data-study-answer]').count(), 0)
         self.assertEqual(self.xp(), 0)
 
+    def test_pitch_keyboard_teaching_and_key_location_checks_show_a_real_keyboard_on_phones(self):
+        self.page.set_viewport_size({'width': 390, 'height': 844})
+        self.open_category('note-naming')
+        section = self.category('note-naming')['sections'][0]
+        self.assertEqual(section['id'], 'alphabet-and-keys')
+        self.page.locator('[data-path-section="alphabet-and-keys"]').click()
+        panel = self.page.locator('.classroom-exam-study')
+
+        def assert_keyboard():
+            keyboard = panel.locator('svg.lesson-piano-keyboard')
+            self.assertEqual(keyboard.count(), 1, 'Piano-key teaching needs a keyboard picture')
+            self.assertTrue(keyboard.is_visible())
+            self.assertEqual(keyboard.get_attribute('role'), 'img')
+            self.assertIn('keyboard', keyboard.get_attribute('aria-label').lower())
+            self.assertEqual(keyboard.locator('[data-keyboard-white-label]').all_text_contents(),
+                             ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C'])
+            self.assertEqual(keyboard.locator('[data-keyboard-black-key]').count(), 5)
+            self.assertEqual(keyboard.locator('[data-keyboard-group="2"]').count(), 1)
+            self.assertEqual(keyboard.locator('[data-keyboard-group="3"]').count(), 1)
+            bounds = keyboard.bounding_box()
+            self.assertGreater(bounds['width'], 180)
+            self.assertGreaterEqual(bounds['x'], 0)
+            self.assertLessEqual(bounds['x'] + bounds['width'], self.page.viewport_size['width'] + 1)
+            self.assertFalse(self.page.locator('#musicClassroom').evaluate('node=>node.scrollWidth>innerWidth'))
+            return keyboard
+
+        for card in section['cards']:
+            self.assertEqual(panel.locator('.exam-study-title').inner_text(), card['title'])
+            assert_keyboard()
+            if card['id'] == 'treble-keyboard-landmarks':
+                panel.screenshot(path='/tmp/classroom-pitch-keyboard-world-phone.png')
+            checks = self.page.evaluate('''card=>CodaClassroomLearningPathsData.getChecks(
+              'note-naming',card)''', card)
+            panel.locator('[data-study-try]').click()
+            for index, check in enumerate(checks):
+                if card['id'] == 'treble-keyboard-landmarks':
+                    self.page.set_viewport_size({'width': 320 if index == 1 else 390, 'height': 844})
+                    keyboard = assert_keyboard()
+                    self.assertEqual(keyboard.locator('[data-piano-highlight="true"]').count(), 0,
+                                     'A key-location check must not highlight only its correct answer')
+                    if index == 1:
+                        panel.screenshot(path='/tmp/classroom-pitch-keyboard-world-320.png')
+                panel.locator('[data-study-answer="' + str(check['correct']) + '"]').click()
+                panel.locator('[data-study-next]').click()
+        self.assertEqual(self.path_state()['phase'], 'menu')
+        self.assertTrue(self.path_state()['sections'][0]['completed'])
+        self.assertEqual(self.xp(), 0)
+
     def test_treble_clef_and_both_reminders_precede_the_first_staff_naming_question(self):
         self.open_category('note-naming')
         self.finish_section('note-naming', 'alphabet-and-keys')
