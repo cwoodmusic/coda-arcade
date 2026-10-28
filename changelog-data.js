@@ -2,6 +2,11 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaChangelog=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
  const entries=[
+  {date:'2026-10-28',title:'Pitch Race mistake freezes',changes:[
+   'Every three mistakes freezes your notes and locks answers for three seconds in every Pitch Race mode.',
+   'Race timers and opponents keep going during the freeze.',
+   'Endless resumes after each freeze. Select Finish run to collect your result.'
+  ]},
   {date:'2026-10-28',title:'Background preview and pixel tools',changes:[
    'Show or hide placed assets as a guide while editing a background.',
    'The eyedropper returns to your previous tool after picking a color.',

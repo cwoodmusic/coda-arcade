@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-28 — Pitch Race mistake freezes
+
+- Every three mistakes freezes the player's notes in place and locks answers for three seconds in all four modes, including multiplayer with speed penalties off.
+- Race timers and opponents keep going during the freeze.
+- Endless resumes after each freeze. **Finish run** completes the run and collects results.
+
 ## 2026-10-28 — Background preview and pixel tools
 
 - Show or hide placed assets while editing a background, with background-only painting, sampling, and export.
