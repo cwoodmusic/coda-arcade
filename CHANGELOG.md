@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-28 — Updated classroom lessons
+
+- Published the uploaded lesson edits for the musical alphabet, piano landmarks, treble staff, steps and skips, ledger lines, bass introduction, and Middle C.
+- Included the updated practice questions and note illustrations.
+
 ## 2026-10-28 — Lesson authoring controls
 
 - Developer mode opens the lesson-card editor with editable teaching text, examples, answers, hints, and every follow-up check.

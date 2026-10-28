@@ -2,6 +2,10 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaChangelog=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
  const entries=[
+  {date:'2026-10-28',title:'Updated classroom lessons',changes:[
+   'Published updated teaching text and practice questions for the musical alphabet, piano landmarks, treble staff, steps and skips, and ledger lines.',
+   'Updated the bass introduction and Middle C note illustrations.'
+  ]},
   {date:'2026-10-28',title:'Lesson authoring controls',changes:[
    'Developer mode opens the lesson-card editor with editable teaching text, examples, answers, hints, and follow-up checks.',
    'Rename lessons and sections, edit introductions, and add, remove, reorder, or move teaching cards.',

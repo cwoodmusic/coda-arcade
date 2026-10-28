@@ -36,3 +36,4 @@
 
 .classroom-exam-study .exam-study-audio-status{font-size:17px;color:#d0e2e6}.classroom-exam-study .exam-study-audio-status:empty{display:none}.classroom-exam-study [data-study-listen]{font-size:18px;background:#263e57}
 .classroom-exam-study .exam-study-check-count{font-size:18px;font-weight:700;color:#b9f4d2;margin:0}
+.classroom-exam-study :is(.exam-study-teach,.exam-study-example,.exam-study-feedback){white-space:pre-line}
