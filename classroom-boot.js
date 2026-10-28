@@ -3,9 +3,10 @@
  'use strict';
  const config=win.ARCADE_ACCOUNTS_CONFIG||{},privacy=config.mode==='classroom'||config.classroom?.privacy===true||config.classroom?.enabled===true;
  const ENTRY_KEY='codaClassroomEntryV1';
- let requestedView=null;
+ let requestedView=null,requestedGuest=false;
  try{
    const entry=new URL(win.location.href),view=entry.searchParams.get('profile');
+   requestedGuest=entry.searchParams.get('guest')==='1'&&view!=='student'&&view!=='admin';
    if(view==='student'||view==='admin'){
      entry.searchParams.delete('profile');
      win.history.replaceState(win.history.state,'',entry.pathname+entry.search+entry.hash);
@@ -19,15 +20,18 @@
    win.CodaClassroomStorageInstance=scope;
    notice=win.sessionStorage.getItem('codaClassroomNoticeV1')||'';win.sessionStorage.removeItem('codaClassroomNoticeV1');
  }catch{error=true;}
- const initial=scope?.getState();
+ // A guest in a second tab gets its own tab-local save, never the profile's
+ // origin-wide stores. Restore that isolation before any game module reads.
+ try{if(requestedGuest&&incoming===null&&scope?.getState().blocked)scope.enterGuest();}catch{error=true;}
+ const initial=scope?.getState(),guestEntry=initial?.isolatedGuest===true&&incoming===null;
  // Only a reload requested by this boot may carry an unopened title action.
  // Session storage can be copied into a new tab, so bind it to this tab ID.
  try{
    const pending=JSON.parse(win.sessionStorage.getItem(ENTRY_KEY)||'null');
    win.sessionStorage.removeItem(ENTRY_KEY);
-   if(!requestedView&&scope?.tabId&&pending?.version===1&&pending.tabId===scope.tabId&&['student','admin'].includes(pending.view))requestedView=pending.view;
+   if(!requestedGuest&&!requestedView&&scope?.tabId&&pending?.version===1&&pending.tabId===scope.tabId&&['student','admin'].includes(pending.view))requestedView=pending.view;
  }catch{}
- let preparing=incoming!==null||initial?.mode==='owner'||initial?.blocked===true,recovering=false;
+ let preparing=incoming!==null||initial?.mode==='owner'||initial?.blocked===true&&!guestEntry,recovering=false;
  if(preparing)win.document.documentElement.classList.add('classroom-preparing');
  const style=win.document.createElement('style');style.textContent=
    'html:is(.classroom-preparing,.classroom-protected) :is(#worldStage,#pianoroom,#musicClassroom,#rhythmFishing,#gameoverlay,#room){visibility:hidden!important}'+
@@ -89,11 +93,11 @@
    const openEntry=()=>{ui.open(entryView||'student');entryView=null;};
    function openRecovery(){const alreadyRecovering=recovering;finishLoading(true);options.onState?.(service.getState());if(!alreadyRecovering||entryView)openEntry();}
    if(preparing)showGate(current!==null?'Opening your card…':initial?.blocked?'Another arcade tab is using this browser.':'Opening your profile…');
-   Promise.resolve(current!==null?service.join(current):service.resume()).then(result=>{
+   Promise.resolve(current!==null?service.join(current):guestEntry?{ok:true,guest:true}:service.resume()).then(result=>{
      if(identityReloading)return;
      const value=service.getState();
      if(result.ok&&value.profile&&!value.locked&&!value.waitingTakeover){hideGate();if(entryView)openEntry();return;}
-     if(!result.ok||value.locked||value.waitingTakeover||notice||initial?.blocked){openRecovery();return;}
+     if(!result.ok||value.locked||value.waitingTakeover||!guestEntry&&(notice&&(!requestedGuest||initial?.mode==='owner')||initial?.blocked)){openRecovery();return;}
      hideGate();if(entryView)openEntry();
    }).catch(()=>{if(!identityReloading)openRecovery();});
    return {service,ui,open:view=>ui.open(view),logOut:()=>ui.logOut?.(),canPlay:()=>{const value=service.getState();return !preparing&&!recovering&&!value.loading&&!value.locked&&!value.waitingTakeover&&(!value.profile||service.isWritable());},getState:()=>({preparing,recovering,privacy,...service.getState()})};

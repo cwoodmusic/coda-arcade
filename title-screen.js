@@ -2,7 +2,7 @@
 (function(win){
  'use strict';
  const doc=win.document,$=id=>doc.getElementById(id),config=win.ARCADE_ACCOUNTS_CONFIG||{};
- const world=new URL('world-preview.html?v=world-94',win.location.href);
+ const world=new URL('world-preview.html?v=guest-98',win.location.href),guestWorld=new URL(world);guestWorld.searchParams.set('guest','1');
  const incoming=win.CodaClassroom?.consumeFragment(win.location,win.history);
  if(incoming!==null&&incoming!==undefined){world.hash=new URLSearchParams({'classroom-pass':incoming}).toString();win.location.replace(world.href);return;}
  let scope=null,storage=null;
@@ -30,7 +30,7 @@
    }else{
      $('startTitle').textContent='Let’s play.';$('titleGreeting').textContent='Your adventure starts here.';
      profile.querySelector('strong').textContent='Open my profile';profile.querySelector('small').textContent='Use your picture card';profile.href=profileOptions('student');
-     guest.querySelector('strong').textContent='Play as guest';guest.querySelector('small').textContent='Jump in and explore';guest.href=world.href;
+     guest.querySelector('strong').textContent='Play as guest';guest.querySelector('small').textContent='Jump in and explore';guest.href=guestWorld.href;
      setSessionStatus(blocked?'blocked':'guest',blocked?'Another arcade tab is open':'Playing as guest');
      hint.textContent=blocked?'Close your other arcade tab before changing players.':enabled?'No card yet? Your teacher can help.':'Profiles are being set up. Guest play is ready.';
      if(!enabled){profile.setAttribute('aria-disabled','true');profile.querySelector('small').textContent='Cards coming soon';}

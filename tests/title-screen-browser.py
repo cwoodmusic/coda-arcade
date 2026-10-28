@@ -186,7 +186,10 @@ class TitleScreenTests(unittest.TestCase):
         self.assertEqual(self.page.url, before)
 
     def test_guest_button_enters_the_real_world_with_working_keyboard_movement(self):
-        self.title();self.page.locator('#titleGuest').tap()
+        self.enabled=True
+        self.title()
+        self.assertEqual(parse_qs(urlparse(self.page.locator('#titleGuest').get_attribute('href')).query).get('guest'), ['1'])
+        self.page.locator('#titleGuest').tap()
         self.page.wait_for_function('window.CodaDeveloperConsole?.ready()&&window.CodaArcadeQA?.characters().spriteState.ready')
         self.assertTrue(self.page.locator('#view').is_visible())
         self.assertTrue(self.page.evaluate('CodaArcadeQA.classroomSession().canPlay'))
@@ -196,6 +199,15 @@ class TitleScreenTests(unittest.TestCase):
         self.page.keyboard.down('d')
         try:self.page.wait_for_function('before=>CodaArcadeQA.characters().player.x>before+10', arg=before)
         finally:self.page.keyboard.up('d')
+
+    def test_guest_with_no_profile_ignores_an_old_recovery_notice(self):
+        self.enabled=True;self.title()
+        self.page.evaluate('sessionStorage.setItem("codaClassroomNoticeV1","session-ended")')
+        self.page.locator('#titleGuest').tap()
+        self.page.wait_for_function('window.CodaDeveloperConsole?.ready()')
+        self.assertFalse(self.page.evaluate('CodaClassroomUIInstance.getState().open'))
+        self.assertTrue(self.page.evaluate('CodaArcadeQA.classroomSession().canPlay'))
+        self.assertIsNone(self.page.evaluate('sessionStorage.getItem("codaClassroomNoticeV1")'))
 
     def test_teacher_entry_opens_teacher_ui_without_signing_in_and_is_consumed_once(self):
         self.title()
@@ -257,6 +269,80 @@ class TitleScreenTests(unittest.TestCase):
         self.assertEqual(other.evaluate('__titleScopedWrites'), [])
         self.assertEqual(self.page.locator('#startTitle').inner_text(), 'Welcome back.')
         self.assert_quiet_title(other)
+
+    def test_guest_in_another_tab_enters_world_without_login_or_touching_profile_saves(self):
+        self.seed_owner();self.enabled=True;self.title()
+        owner_values=self.page.evaluate('keys=>keys.map(key=>__titleNative.getItem(key))', SCOPED)
+        owner_marker=self.page.evaluate('__titleNative.getItem("codaClassroomWorkspaceV1")')
+        with self.page.expect_popup() as event:
+            self.page.evaluate('url=>window.open(url,"_blank")', self.base+'/')
+        guest=event.value
+        guest.wait_for_function('document.querySelector("#titleMotion")?.hidden===false')
+        self.assertEqual(guest.locator('#titleGuest strong').inner_text(), 'Play as guest')
+        guest.locator('#titleGuest').tap()
+        guest.wait_for_function('window.CodaDeveloperConsole?.ready()&&window.CodaArcadeQA?.characters().spriteState.ready')
+        self.assertFalse(guest.evaluate('CodaClassroomUIInstance.getState().open'),
+                         'Explicit guest play must not open the profile login')
+        self.assertTrue(guest.evaluate('CodaArcadeQA.classroomSession().canPlay'))
+        self.assertFalse(guest.evaluate('CodaClassroomStorageInstance.getState().owned'))
+        self.assertIsNone(guest.evaluate('localStorage.getItem("musicArcadeV1")'))
+        self.assertTrue(guest.evaluate('CodaArcadeQA.place(950,420)'))
+        guest.locator('#view').focus()
+        before=guest.evaluate('CodaArcadeQA.characters().player.x')
+        guest.keyboard.down('d')
+        try:guest.wait_for_function('before=>CodaArcadeQA.characters().player.x>before+10', arg=before)
+        finally:guest.keyboard.up('d')
+        guest.evaluate('localStorage.setItem("musicArcadeV1",JSON.stringify({name:"Local guest"}))')
+        self.assertEqual(self.page.evaluate('keys=>keys.map(key=>__titleNative.getItem(key))', SCOPED), owner_values)
+        self.assertEqual(self.page.evaluate('__titleNative.getItem("codaClassroomWorkspaceV1")'), owner_marker)
+        guest.reload(wait_until='load')
+        guest.wait_for_function('window.CodaDeveloperConsole?.ready()')
+        self.assertFalse(guest.evaluate('CodaClassroomUIInstance.getState().open'))
+        self.assertTrue(guest.evaluate('CodaArcadeQA.classroomSession().canPlay'))
+        self.assertEqual(self.page.evaluate('keys=>keys.map(key=>__titleNative.getItem(key))', SCOPED), owner_values)
+        self.assertEqual(self.page.evaluate('__titleNative.getItem("codaClassroomWorkspaceV1")'), owner_marker)
+        # The other tab can end its session while this guest is still playing.
+        # That must not expose its old native values or make guest writes native.
+        self.page.evaluate('__titleNative.removeItem("codaClassroomWorkspaceV1")')
+        guest.wait_for_function('localStorage.getItem("codaClassroomWorkspaceV1")===null')
+        self.assertNotIn('PRIVATE CHILD', guest.evaluate('localStorage.getItem("musicArcadeV1")||""'))
+        guest.evaluate('localStorage.setItem("musicArcadeV1",JSON.stringify({name:"Still a guest"}))')
+        self.assertEqual(self.page.evaluate('keys=>keys.map(key=>__titleNative.getItem(key))', SCOPED), owner_values)
+        self.assertFalse(guest.evaluate('CodaClassroomUIInstance.getState().open'))
+        self.assertTrue(guest.evaluate('CodaArcadeQA.classroomSession().canPlay'))
+        guest.reload(wait_until='load')
+        guest.wait_for_function('window.CodaDeveloperConsole?.ready()')
+        self.assertFalse(guest.evaluate('CodaClassroomUIInstance.getState().open'))
+        self.assertTrue(guest.evaluate('CodaArcadeQA.classroomSession().canPlay'))
+        self.assertNotIn('PRIVATE CHILD', guest.evaluate('localStorage.getItem("musicArcadeV1")||""'))
+        self.assertEqual(self.page.evaluate('keys=>keys.map(key=>__titleNative.getItem(key))', SCOPED), owner_values)
+
+    def test_guest_ignores_a_closed_tabs_workspace_and_old_login_recovery_intent(self):
+        self.enabled=True
+        self.context.add_init_script('''(()=>{
+          if(sessionStorage.getItem('orphanGuestSeeded'))return;
+          sessionStorage.setItem('orphanGuestSeeded','yes');
+          localStorage.setItem('codaClassroomWorkspaceV1',JSON.stringify({version:1,
+            tabId:'closed-profile-tab',epoch:'closed-profile-epoch',
+            classId:'closed-profile-class',profileId:'closed-profile-player'}));
+          localStorage.setItem('musicArcadeV1',JSON.stringify({name:'PRIVATE CLOSED PROFILE'}));
+        })()''')
+        self.title()
+        self.assertEqual(self.page.locator('#titleSessionStatus').get_attribute('data-session-state'), 'blocked')
+        self.assertEqual(self.page.locator('#titleGuest strong').inner_text(), 'Play as guest')
+        self.page.evaluate('''()=>{
+          sessionStorage.setItem('codaClassroomNoticeV1','session-ended');
+          sessionStorage.setItem('codaClassroomEntryV1',JSON.stringify({version:1,
+            tabId:sessionStorage.getItem('codaClassroomTabV1'),view:'student'}));
+        }''')
+        self.page.locator('#titleGuest').tap()
+        self.page.wait_for_function('window.CodaDeveloperConsole?.ready()')
+        self.assertFalse(self.page.evaluate('CodaClassroomUIInstance.getState().open'))
+        self.assertTrue(self.page.evaluate('CodaArcadeQA.classroomSession().canPlay'))
+        self.assertNotIn('PRIVATE CLOSED PROFILE',self.page.locator('body').inner_text())
+        self.assertIsNone(self.page.evaluate('localStorage.getItem("musicArcadeV1")'))
+        self.assertEqual(self.page.evaluate('CodaClassroomStorageInstance.nativeStorage.getItem("musicArcadeV1")'),
+                         '{"name":"PRIVATE CLOSED PROFILE"}')
 
     def test_a_saved_profile_waits_for_verification_before_showing_any_alias(self):
         self.seed_owner()

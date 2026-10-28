@@ -118,3 +118,117 @@ test('disposed ownership handles fail closed and no late callback gets native st
  assert.equal(a.win.localStorage.musicArcadeV1,'studentA');a.win.localStorage.musicArcadeV1='late';assert.equal(native.getItem('musicArcadeV1'),'studentB');
  assert.ok(a.sessions.getItem(TAB_KEY));
 });
+
+test('explicit guest play stays separate from a profile after its owner leaves',()=>{
+ const native=memory(),owner=tab(native),marker=owner.workspace.claim(profileA);
+ owner.win.localStorage.musicArcadeV1='private student';owner.win.localStorage.codaNotesWalletV1='250';
+ const guest=tab(native),store=guest.win.localStorage;
+ guest.workspace.enterGuest();
+ assert.equal(guest.workspace.getState().mode,'guest');assert.equal(guest.workspace.getState().isolatedGuest,true);
+ assert.equal(guest.workspace.getState().owned,false);assert.equal(guest.workspace.owns(marker),false);
+ assert.equal(store.musicArcadeV1,null);assert.equal(store.codaNotesWalletV1,null);
+ store.musicArcadeV1='guest avatar';store.codaPlayerProgressV1='guest XP';
+ assert.equal(native.getItem('musicArcadeV1'),'private student');assert.equal(native.getItem('codaPlayerProgressV1'),null);
+ assert.equal(owner.workspace.owns(marker),true);
+ owner.win.localStorage.musicArcadeV1='restored ordinary guest';owner.workspace.release();
+ assert.equal(store.musicArcadeV1,'guest avatar');assert.equal(store.codaNotesWalletV1,null);
+ store.codaNotesWalletV1='10';assert.equal(native.getItem('codaNotesWalletV1'),'250');
+ assert.equal(guest.workspace.getState().isolatedGuest,true);
+});
+
+test('isolated guest saves reload only in the same browsing context',()=>{
+ const native=memory(),owner=tab(native);owner.workspace.claim(profileA);owner.win.localStorage.musicArcadeV1='private student';
+ const guest=tab(native);guest.workspace.enterGuest();guest.win.localStorage.musicArcadeV1='guest avatar';guest.win.localStorage.codaPlayerProgressV1='guest XP';
+ const reloaded=tab(native,guest.sessions,guest.win.name);
+ assert.equal(reloaded.workspace.tabId,guest.workspace.tabId);assert.equal(reloaded.workspace.getState().isolatedGuest,true);
+ assert.equal(reloaded.win.localStorage.musicArcadeV1,'guest avatar');assert.equal(reloaded.win.localStorage.codaPlayerProgressV1,'guest XP');
+ const clone=tab(native,memory(guest.sessions.dump()),'');
+ assert.notEqual(clone.workspace.tabId,guest.workspace.tabId);assert.notEqual(clone.workspace.getState().isolatedGuest,true);
+ clone.workspace.enterGuest();assert.equal(clone.win.localStorage.musicArcadeV1,null);assert.equal(clone.win.localStorage.codaPlayerProgressV1,null);
+ clone.win.localStorage.musicArcadeV1='different guest';assert.equal(reloaded.win.localStorage.musicArcadeV1,'guest avatar');
+ assert.equal(native.getItem('musicArcadeV1'),'private student');
+});
+
+test('isolated guest enumeration and clear cannot read or erase private profile saves',()=>{
+ const native=memory({camera:'2'}),owner=tab(native),marker=owner.workspace.claim(profileA);
+ owner.win.localStorage.musicArcadeV1='private student';owner.win.localStorage.codaNotesWalletV1='250';
+ const guest=tab(native);guest.workspace.enterGuest();const store=guest.win.localStorage;
+ store.codaPlayerProgressV1='guest XP';
+ assert.equal(Object.keys(store).includes('musicArcadeV1'),false);assert.equal('codaNotesWalletV1' in store,false);
+ assert.equal(Object.keys(store).includes('codaPlayerProgressV1'),true);
+ store.clear();
+ assert.equal(owner.workspace.owns(marker),true);assert.equal(native.getItem('musicArcadeV1'),'private student');assert.equal(native.getItem('codaNotesWalletV1'),'250');
+ assert.equal(store.codaPlayerProgressV1,null);assert.equal(store.musicArcadeV1,null);
+ const reloaded=tab(native,guest.sessions,guest.win.name);assert.equal(reloaded.workspace.getState().isolatedGuest,true);
+ assert.equal(reloaded.win.localStorage.codaPlayerProgressV1,null);
+});
+
+test('owned profiles cannot become isolated guests without leaving their workspace',()=>{
+ const native=memory(),owner=tab(native),marker=owner.workspace.claim(profileA);
+ owner.win.localStorage.musicArcadeV1='private student';
+ assert.throws(()=>owner.workspace.enterGuest());assert.equal(owner.workspace.owns(marker),true);
+ assert.equal(owner.win.localStorage.musicArcadeV1,'private student');
+ assert.notEqual(owner.workspace.getState().isolatedGuest,true);
+});
+
+test('a successful explicit profile claim exits guest isolation and invalidates its saved guest mode',()=>{
+ const native=memory(),owner=tab(native);owner.workspace.claim(profileA);owner.win.localStorage.musicArcadeV1='private student';
+ const guest=tab(native);guest.workspace.enterGuest();guest.win.localStorage.musicArcadeV1='guest avatar';
+ const marker=guest.workspace.claim(profileB),guard=guest.workspace.guardedStorage(marker);
+ assert.notEqual(guest.workspace.getState().isolatedGuest,true);assert.equal(guest.workspace.getState().mode,'owner');
+ guard.setItem('musicArcadeV1','second private student');assert.equal(native.getItem('musicArcadeV1'),'second private student');
+ assert.equal(guest.sessions.getItem('codaClassroomGuestTabV1'),null);
+ const reloaded=tab(native,guest.sessions,guest.win.name);
+ assert.equal(reloaded.workspace.owns(marker),true);assert.equal(reloaded.win.localStorage.musicArcadeV1,'second private student');
+ assert.notEqual(reloaded.workspace.getState().isolatedGuest,true);
+});
+
+test('a failed profile claim leaves the isolated guest and original owner intact',()=>{
+ const native=memory(),owner=tab(native),marker=owner.workspace.claim(profileA);owner.win.localStorage.musicArcadeV1='private student';
+ const guest=tab(native);guest.workspace.enterGuest();guest.win.localStorage.musicArcadeV1='guest avatar';
+ const set=native.setItem;native.setItem=(key,value)=>{if(key===WORKSPACE_KEY)throw Error('quota');return set(key,value);};
+ assert.throws(()=>guest.workspace.claim(profileB),/quota/);
+ assert.equal(guest.workspace.getState().isolatedGuest,true);assert.equal(guest.win.localStorage.musicArcadeV1,'guest avatar');
+ assert.equal(owner.workspace.owns(marker),true);assert.equal(native.getItem('musicArcadeV1'),'private student');
+ const reloaded=tab(native,guest.sessions,guest.win.name);assert.equal(reloaded.win.localStorage.musicArcadeV1,'guest avatar');
+});
+
+test('malformed or unreadable guest snapshots stay isolated after profile ownership ends',()=>{
+ const rawValues=['not-json','null','{}','{"tabId":"!"}'];
+ for(const broken of [...rawValues,'matching-invalid-values','unreadable']){
+  const native=memory(),owner=tab(native);owner.workspace.claim(profileA);owner.win.localStorage.musicArcadeV1='private student';
+  const guest=tab(native);guest.workspace.enterGuest();guest.win.localStorage.musicArcadeV1='guest avatar';
+  owner.workspace.release();
+  const guestKey='codaClassroomGuestTabV1';
+  if(broken==='unreadable'){
+   const read=guest.sessions.getItem;guest.sessions.getItem=key=>{if(key===guestKey)throw Error('storage denied');return read(key);};
+  }else guest.sessions.setItem(guestKey,broken==='matching-invalid-values'?JSON.stringify({version:1,tabId:guest.workspace.tabId,values:{musicArcadeV1:42}}):broken);
+  const reloaded=tab(native,guest.sessions,guest.win.name);
+  assert.equal(reloaded.workspace.getState().isolatedGuest,true,broken);
+  assert.equal(reloaded.win.localStorage.musicArcadeV1,null,broken);
+  reloaded.win.localStorage.musicArcadeV1='fresh guest';
+  assert.equal(native.getItem('musicArcadeV1'),'private student',broken);
+ }
+});
+
+test('a lingering guest snapshot cannot override a rightful same-tab profile owner',()=>{
+ const native=memory(),guest=tab(native);guest.workspace.enterGuest();guest.win.localStorage.musicArcadeV1='guest avatar';
+ const guestKey='codaClassroomGuestTabV1',remove=guest.sessions.removeItem;
+ guest.sessions.removeItem=key=>{if(key===guestKey)throw Error('storage denied');return remove(key);};
+ const marker=guest.workspace.claim(profileA);guest.workspace.guardedStorage(marker).setItem('musicArcadeV1','private student');
+ assert.notEqual(guest.sessions.getItem(guestKey),null);
+ const reloaded=tab(native,guest.sessions,guest.win.name);
+ assert.equal(reloaded.workspace.owns(marker),true);assert.equal(reloaded.workspace.getState().mode,'owner');
+ assert.notEqual(reloaded.workspace.getState().isolatedGuest,true);assert.equal(reloaded.win.localStorage.musicArcadeV1,'private student');
+});
+
+test('denied guest saves report failure without changing guest progress or native profile data',()=>{
+ const native=memory(),owner=tab(native);owner.workspace.claim(profileA);owner.win.localStorage.musicArcadeV1='private student';
+ const guest=tab(native);guest.workspace.enterGuest();guest.win.localStorage.musicArcadeV1='saved guest';
+ const guestKey='codaClassroomGuestTabV1',before=guest.sessions.getItem(guestKey),set=guest.sessions.setItem;
+ guest.sessions.setItem=(key,value)=>{if(key===guestKey)throw Error('quota');return set(key,value);};
+ assert.throws(()=>guest.win.localStorage.setItem('musicArcadeV1','unsaved guest'),/quota/);
+ assert.throws(()=>guest.win.localStorage.removeItem('musicArcadeV1'),/quota/);
+ assert.equal(guest.win.localStorage.musicArcadeV1,'saved guest');assert.equal(guest.sessions.getItem(guestKey),before);
+ assert.equal(native.getItem('musicArcadeV1'),'private student');
+});

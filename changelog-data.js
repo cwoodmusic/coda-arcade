@@ -2,6 +2,10 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaChangelog=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
  const entries=[
+  {date:'2026-10-28',title:'Guest entry fix',changes:[
+   'Play as guest opens the arcade even when another tab or a leftover profile marker is present.',
+   'Guest play alongside a saved profile keeps separate progress for that tab, including refreshes. The saved profile stays untouched.'
+  ]},
   {date:'2026-10-27',title:'Play notes, classroom practice, and dance controls',changes:[
    'Press P to open your play notes. Notes save in this browser and can be downloaded as a text file.',
    'DJ Line Dance arrows use a directional pad, with Up above Left and Right and Down below.',

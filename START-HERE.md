@@ -4,6 +4,9 @@
 **Open my profile** opens the student's picture-card screen, and **For teachers**
 opens the teacher tools. The classroom buttons never start Google sign-in
 automatically. Student profiles use private cards; Google sign-in is for staff.
+Guest entry also works when another tab or a leftover profile marker owns the
+shared saves. That guest keeps separate progress for the lifetime of its tab,
+including refreshes; it cannot read or change the saved profile's progress.
 Returning through the title screen in the same tab restores an active teacher
 sign-in and rechecks account approval before showing class tools.
 

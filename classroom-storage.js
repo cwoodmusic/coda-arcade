@@ -3,7 +3,7 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaClassroomStorage=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
  const WORKSPACE_KEY='codaClassroomWorkspaceV1',ACTIVE_KEY='codaClassroomActiveV1',TAB_KEY='codaClassroomTabV1';
- const NAME_PREFIX='__codaClassroomTabV1:';
+ const NAME_PREFIX='__codaClassroomTabV1:',GUEST_KEY='codaClassroomGuestTabV1';
  const id=value=>typeof value==='string'&&/^[A-Za-z0-9_-]{8,128}$/.test(value);
  const copy=value=>value?JSON.parse(JSON.stringify(value)):null;
  function validMarker(value){return !!value&&value.version===1&&id(value.tabId)&&id(value.epoch)&&id(value.classId)&&id(value.profileId);}
@@ -15,7 +15,7 @@
   const scopedKeys=options.keys||win?.CodaClassroomProfileData?.SCOPED_KEYS;
   if(!Array.isArray(scopedKeys)||!scopedKeys.length||scopedKeys.some(key=>typeof key!=='string'||!key))throw Error('The classroom profile storage keys are required.');
   const keys=new Set(scopedKeys),shadow=new Map(),listeners=new Set();
-  let installed=false,destroyed=false,lastSignature='',pendingNotification=false,originalDescriptor=null;
+  let installed=false,destroyed=false,lastSignature='',pendingNotification=false,originalDescriptor=null,isolatedGuest=false;
   const randomId=()=>{
    const crypto=win?.crypto||(typeof globalThis==='undefined'?null:globalThis.crypto);
    if(crypto?.randomUUID)return crypto.randomUUID();
@@ -34,31 +34,47 @@
   const tabId=id(storedId)&&namedId===storedId?storedId:randomId();
   sessions.setItem(TAB_KEY,tabId);
   if(win)try{win.name=NAME_PREFIX+tabId;}catch{/* A unique fresh tabId still prevents accidental adoption. */}
-  function state(){
+  if(!workspaceState().owned)try{
+   const raw=sessions.getItem(GUEST_KEY),saved=JSON.parse(raw||'null');
+   // A malformed snapshot stays isolated; only a valid foreign tab binding
+   // can be ignored. A successful profile claim takes priority over old data.
+   if(raw!==null&&(saved?.version!==1||!id(saved?.tabId)||saved.tabId===tabId))isolatedGuest=true;
+   if(isolatedGuest&&saved?.version===1&&saved.values&&typeof saved.values==='object'&&!Array.isArray(saved.values)&&Object.entries(saved.values).every(([key,value])=>keys.has(key)&&typeof value==='string')){
+    for(const [key,value]of Object.entries(saved.values))shadow.set(key,value);
+   }
+  }catch{isolatedGuest=true;}
+  function workspaceState(){
    const shared=readMarker(native,WORKSPACE_KEY),local=readMarker(sessions,ACTIVE_KEY),marker=shared.marker,active=local.marker,owned=!!marker&&marker.tabId===tabId&&equal(marker,active);
    const blocked=!owned&&(shared.exists||local.exists),mode=owned?'owner':blocked?'blocked':'guest';
    return {tabId,mode,owned,blocked,marker:copy(marker),active:copy(active),installed,destroyed};
   }
+  function state(){const current=workspaceState();return isolatedGuest?{...current,mode:'guest',owned:false,marker:null,active:null,isolatedGuest:true}:current;}
+  function persistGuest(values){sessions.setItem(GUEST_KEY,JSON.stringify({version:1,tabId,values:Object.fromEntries(values)}));}
+  function enterGuest(){
+   if(destroyed||workspaceState().owned)throw ownershipError();
+   if(!isolatedGuest){persistGuest(new Map());shadow.clear();isolatedGuest=true;notify();}
+   return state();
+  }
   function notify(){
-   if(destroyed)return;const current=state(),signature=JSON.stringify([current.mode,current.marker,current.active]);
+   if(destroyed)return;const current=state(),signature=JSON.stringify([current.mode,current.marker,current.active,current.isolatedGuest]);
    if(signature===lastSignature)return;lastSignature=signature;
    if(pendingNotification)return;pendingNotification=true;
    const run=()=>{pendingNotification=false;if(destroyed)return;const latest=state();for(const fn of listeners)try{fn(latest);}catch{}};
    if(typeof win?.queueMicrotask==='function')win.queueMicrotask(run);else Promise.resolve().then(run);
   }
-  const allowed=()=>{const current=state();notify();return !current.blocked;};
+  const allowed=()=>{const current=state();notify();return !isolatedGuest&&!current.blocked;};
   function observe(key,value){if(keys.has(key)){if(value===null)shadow.delete(key);else shadow.set(key,value);}return value;}
   function getItem(input){const key=String(input);if(!keys.has(key))return native.getItem(key);return allowed()?observe(key,native.getItem(key)):shadow.get(key)??null;}
-  function setItem(input,value){const key=String(input),text=String(value);if(!keys.has(key)){native.setItem(key,text);if(key===WORKSPACE_KEY)notify();return;}if(allowed())native.setItem(key,text);observe(key,text);}
-  function removeItem(input){const key=String(input);if(!keys.has(key)){native.removeItem(key);if(key===WORKSPACE_KEY)notify();return;}if(allowed())native.removeItem(key);observe(key,null);}
+  function setItem(input,value){const key=String(input),text=String(value);if(!keys.has(key)){native.setItem(key,text);if(key===WORKSPACE_KEY)notify();return;}if(isolatedGuest)persistGuest(new Map(shadow).set(key,text));else if(allowed())native.setItem(key,text);observe(key,text);}
+  function removeItem(input){const key=String(input);if(!keys.has(key)){native.removeItem(key);if(key===WORKSPACE_KEY)notify();return;}if(isolatedGuest){const next=new Map(shadow);next.delete(key);persistGuest(next);}else if(allowed())native.removeItem(key);observe(key,null);}
   function visibleKeys(){
-   const current=state(),all=[];
-   for(let index=0;index<native.length;index++){const key=native.key(index);if(key!==null&&(!current.blocked||!keys.has(key)))all.push(key);}
-   if(current.blocked)for(const key of shadow.keys())if(!all.includes(key))all.push(key);
+   const current=state(),all=[],privateStores=isolatedGuest||current.blocked;
+   for(let index=0;index<native.length;index++){const key=native.key(index);if(key!==null&&(!privateStores||!keys.has(key)))all.push(key);}
+   if(privateStores)for(const key of shadow.keys())if(!all.includes(key))all.push(key);
    return all;
   }
   function clear(){
-   const blocked=state().blocked;
+   const blocked=isolatedGuest||state().blocked;
    for(const key of visibleKeys()){
     // A background tab's generic clear() must not release someone else's lock.
     if(blocked&&key===WORKSPACE_KEY)continue;
@@ -85,6 +101,8 @@
    sessions.setItem(ACTIVE_KEY,JSON.stringify(marker));
    try{native.setItem(WORKSPACE_KEY,JSON.stringify(marker));}
    catch(error){try{if(previous===null)sessions.removeItem(ACTIVE_KEY);else sessions.setItem(ACTIVE_KEY,previous);}catch{}throw error;}
+   if(!equal(workspaceState().marker,marker))throw ownershipError();
+   if(isolatedGuest){isolatedGuest=false;shadow.clear();try{sessions.removeItem(GUEST_KEY);}catch{}}
    notify();if(!owns(marker))throw ownershipError();return copy(marker);
   }
   function release(){
@@ -116,7 +134,7 @@
    // from falling back to another student's native storage after disposal.
   }
   notify();
-  return Object.freeze({storage,nativeStorage:native,tabId,install,getState:state,owns,claim,release,guardedStorage,withLock,
+  return Object.freeze({storage,nativeStorage:native,tabId,install,getState:state,owns,claim,release,guardedStorage,withLock,enterGuest,
    subscribe(fn){if(typeof fn!=='function')throw TypeError('A classroom workspace listener is required.');listeners.add(fn);fn(state());return()=>listeners.delete(fn);},destroy});
  }
  return Object.freeze({WORKSPACE_KEY,ACTIVE_KEY,TAB_KEY,create});

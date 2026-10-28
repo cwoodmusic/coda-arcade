@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-28 — Guest entry fix
+
+- **Play as guest** opens the arcade even when another tab or a leftover profile marker is present.
+- Guest play alongside a saved profile uses separate saves that survive refreshes in that tab. The saved profile remains untouched.
+
 ## 2026-10-27 — Play notes, classroom practice, and dance controls
 
 - Press **P** to open a notepad for bugs and future changes. It autosaves in this browser and exports a text copy. The **Changelog** tab shows bundled release notes.
