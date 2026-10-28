@@ -2,6 +2,10 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaChangelog=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
  const entries=[
+  {date:'2026-10-28',title:'Reliable guest button',changes:[
+   'Play as guest stays in the same position while the title screen loads, including when a login is remembered.',
+   'Guest play skips saved-login restoration. Guest and saved profile progress stay separate.'
+  ]},
   {date:'2026-10-28',title:'Piano keyboards in pitch lessons',changes:[
    'Pitch lessons show a labeled piano keyboard with black keys in groups of two and three.',
    'Piano-key practice keeps the keyboard visible. Half-step, sharp, and flat examples show the keys being compared.'

@@ -232,3 +232,34 @@ test('denied guest saves report failure without changing guest progress or nativ
  assert.equal(guest.win.localStorage.musicArcadeV1,'saved guest');assert.equal(guest.sessions.getItem(guestKey),before);
  assert.equal(native.getItem('musicArcadeV1'),'private student');
 });
+
+test('intentional guest play over this tab\'s profile preserves its saved player and survives refresh',()=>{
+ const native=memory(),owner=tab(native),marker=owner.workspace.claim(profileA);
+ owner.win.localStorage.musicArcadeV1='private student';owner.win.localStorage.codaNotesWalletV1='250';
+ const nativeBefore=native.dump(),activeBefore=owner.sessions.getItem(ACTIVE_KEY);
+ owner.workspace.enterGuest({keepProfile:true});
+ assert.equal(owner.workspace.getState().isolatedGuest,true);assert.equal(owner.workspace.owns(marker),false);
+ assert.equal(owner.win.localStorage.musicArcadeV1,null);assert.equal(owner.win.localStorage.codaNotesWalletV1,null);
+ owner.win.localStorage.musicArcadeV1='guest avatar';owner.win.localStorage.codaNotesWalletV1='10';
+ assert.deepEqual(native.dump(),nativeBefore);assert.equal(owner.sessions.getItem(ACTIVE_KEY),activeBefore);
+ assert.deepEqual(JSON.parse(owner.sessions.getItem('codaClassroomGuestTabV1')).profile,marker);
+ const reloaded=tab(native,owner.sessions,owner.win.name);
+ assert.equal(reloaded.workspace.getState().isolatedGuest,true);assert.equal(reloaded.workspace.getState().mode,'guest');
+ assert.equal(reloaded.win.localStorage.musicArcadeV1,'guest avatar');assert.equal(reloaded.win.localStorage.codaNotesWalletV1,'10');
+ reloaded.win.localStorage.codaPlayerProgressV1='guest XP';
+ assert.deepEqual(native.dump(),nativeBefore);assert.equal(reloaded.sessions.getItem(ACTIVE_KEY),activeBefore);
+});
+
+test('an old intentional guest overlay cannot override a newly claimed profile epoch',()=>{
+ const native=memory(),owner=tab(native),firstMarker=owner.workspace.claim(profileA);
+ owner.win.localStorage.musicArcadeV1='private student';owner.workspace.enterGuest({keepProfile:true});
+ owner.win.localStorage.musicArcadeV1='guest avatar';
+ const guestKey='codaClassroomGuestTabV1',remove=owner.sessions.removeItem;
+ owner.sessions.removeItem=key=>{if(key===guestKey)throw Error('storage denied');return remove(key);};
+ const nextMarker=owner.workspace.claim(profileA);assert.notEqual(nextMarker.epoch,firstMarker.epoch);
+ owner.workspace.guardedStorage(nextMarker).setItem('musicArcadeV1','reopened private student');
+ assert.deepEqual(JSON.parse(owner.sessions.getItem(guestKey)).profile,firstMarker);
+ const reloaded=tab(native,owner.sessions,owner.win.name);
+ assert.equal(reloaded.workspace.owns(nextMarker),true);assert.notEqual(reloaded.workspace.getState().isolatedGuest,true);
+ assert.equal(reloaded.win.localStorage.musicArcadeV1,'reopened private student');
+});

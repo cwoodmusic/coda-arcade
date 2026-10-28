@@ -2,7 +2,7 @@
 (function(win){
  'use strict';
  const doc=win.document,$=id=>doc.getElementById(id),config=win.ARCADE_ACCOUNTS_CONFIG||{};
- const world=new URL('world-preview.html?v=guest-98',win.location.href),guestWorld=new URL(world);guestWorld.searchParams.set('guest','1');
+ const world=new URL('world-preview.html?v=guest-100',win.location.href),guestWorld=new URL(world);guestWorld.searchParams.set('guest','1');
  const incoming=win.CodaClassroom?.consumeFragment(win.location,win.history);
  if(incoming!==null&&incoming!==undefined){world.hash=new URLSearchParams({'classroom-pass':incoming}).toString();win.location.replace(world.href);return;}
  let scope=null,storage=null;
@@ -13,16 +13,17 @@
  function profileOptions(view){const open=new URL(world);open.searchParams.set('profile',view);return open.href;}
  function setSessionStatus(state,text){if(!sessionStatus)return;sessionStatus.dataset.sessionState=state;sessionStatus.textContent=text;}
  function renderIdentity(){
-   const state=scope?.getState(),owned=state?.owned===true,blocked=state?.blocked===true,enabled=config.classroom?.enabled===true,saved=savedSession(),remembered=!blocked&&(owned||saved.teacher);
+   const state=scope?.getState(),owned=state?.owned===true,blocked=state?.blocked===true,enabled=config.classroom?.enabled===true,saved=savedSession(),remembered=!state?.isolatedGuest&&!blocked&&(owned||saved.teacher);
    profile.classList.toggle('is-primary',remembered||enabled);guest.classList.toggle('is-primary',!remembered&&!enabled);
    profile.classList.toggle('is-unavailable',!remembered&&!enabled);profile.removeAttribute('aria-disabled');
    $('titleTeacher').innerHTML='<span aria-hidden="true">♧</span> '+(inspection?.signedIn&&inspection.kind==='teacher'?'Teacher tools':'For teachers')+' <span aria-hidden="true">↗</span>';
+   guest.querySelector('strong').textContent='Play as guest';guest.querySelector('small').textContent='Jump in and explore';guest.href=guestWorld.href;
    if(remembered){
      $('startTitle').textContent='Welcome back.';$('titleGreeting').textContent='Ready for more music?';
      const alias=inspection?.signedIn&&typeof inspection.alias==='string'?inspection.alias.trim().slice(0,40):'';
      profile.querySelector('strong').textContent=alias?'Continue as '+alias:owned?'Continue profile':'Continue to arcade';
      profile.querySelector('small').textContent=inspecting?'Checking your saved sign-in…':inspection?.signedIn?'Pick up your adventure':'Reopen your saved sign-in';profile.href=world.href;
-     const view=saved.teacher?'admin':'student';guest.querySelector('strong').textContent='Profile options';guest.querySelector('small').textContent='Change player or log out';guest.href=profileOptions(view);
+     const view=saved.teacher?'admin':'student';
      if(inspecting){setSessionStatus('checking','Checking sign-in…');hint.textContent='Your profile will be checked before the game opens.';}
      else if(inspection?.signedIn){setSessionStatus('signed-in',alias?'Signed in as '+alias:inspection.kind==='teacher'?'Signed in · Teacher account':'Signed in · Student profile');hint.textContent='Your sign-in stays ready when you refresh this tab.';}
      else if(inspection?.ok===false){setSessionStatus('unavailable','Profile saved · Sign-in check unavailable');hint.textContent='Continue to try again. Your profile will be checked in the arcade.';}
@@ -30,7 +31,6 @@
    }else{
      $('startTitle').textContent='Let’s play.';$('titleGreeting').textContent='Your adventure starts here.';
      profile.querySelector('strong').textContent='Open my profile';profile.querySelector('small').textContent='Use your picture card';profile.href=profileOptions('student');
-     guest.querySelector('strong').textContent='Play as guest';guest.querySelector('small').textContent='Jump in and explore';guest.href=guestWorld.href;
      setSessionStatus(blocked?'blocked':'guest',blocked?'Another arcade tab is open':'Playing as guest');
      hint.textContent=blocked?'Close your other arcade tab before changing players.':enabled?'No card yet? Your teacher can help.':'Profiles are being set up. Guest play is ready.';
      if(!enabled){profile.setAttribute('aria-disabled','true');profile.querySelector('small').textContent='Cards coming soon';}
@@ -41,7 +41,7 @@
    const state=scope?.getState(),saved=savedSession(),signature=JSON.stringify([state?.tabId,state?.owned,state?.blocked,state?.marker,saved]);
    if(!force&&signature===identitySignature){renderIdentity();return;}
    identitySignature=signature;const generation=++inspectionGeneration;closeInspection();inspection=null;
-   if(state?.blocked||(!state?.owned&&!saved.teacher)){inspecting=false;renderIdentity();return;}
+   if(state?.isolatedGuest||state?.blocked||(!state?.owned&&!saved.teacher)){inspecting=false;renderIdentity();return;}
    inspecting=true;renderIdentity();
    try{
      const currentService=win.CodaClassroom.create({window:win,config,storageScope:scope});service=currentService;

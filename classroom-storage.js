@@ -15,7 +15,7 @@
   const scopedKeys=options.keys||win?.CodaClassroomProfileData?.SCOPED_KEYS;
   if(!Array.isArray(scopedKeys)||!scopedKeys.length||scopedKeys.some(key=>typeof key!=='string'||!key))throw Error('The classroom profile storage keys are required.');
   const keys=new Set(scopedKeys),shadow=new Map(),listeners=new Set();
-  let installed=false,destroyed=false,lastSignature='',pendingNotification=false,originalDescriptor=null,isolatedGuest=false;
+  let installed=false,destroyed=false,lastSignature='',pendingNotification=false,originalDescriptor=null,isolatedGuest=false,guestProfile=null;
   const randomId=()=>{
    const crypto=win?.crypto||(typeof globalThis==='undefined'?null:globalThis.crypto);
    if(crypto?.randomUUID)return crypto.randomUUID();
@@ -34,25 +34,28 @@
   const tabId=id(storedId)&&namedId===storedId?storedId:randomId();
   sessions.setItem(TAB_KEY,tabId);
   if(win)try{win.name=NAME_PREFIX+tabId;}catch{/* A unique fresh tabId still prevents accidental adoption. */}
-  if(!workspaceState().owned)try{
+  try{
    const raw=sessions.getItem(GUEST_KEY),saved=JSON.parse(raw||'null');
+   const workspace=workspaceState(),keptProfile=workspace.owned&&equal(saved?.profile,workspace.marker);
    // A malformed snapshot stays isolated; only a valid foreign tab binding
    // can be ignored. A successful profile claim takes priority over old data.
-   if(raw!==null&&(saved?.version!==1||!id(saved?.tabId)||saved.tabId===tabId))isolatedGuest=true;
+   if(raw!==null&&(!workspace.owned||keptProfile)&&(saved?.version!==1||!id(saved?.tabId)||saved.tabId===tabId))isolatedGuest=true;
+   if(isolatedGuest&&keptProfile)guestProfile=copy(workspace.marker);
    if(isolatedGuest&&saved?.version===1&&saved.values&&typeof saved.values==='object'&&!Array.isArray(saved.values)&&Object.entries(saved.values).every(([key,value])=>keys.has(key)&&typeof value==='string')){
     for(const [key,value]of Object.entries(saved.values))shadow.set(key,value);
    }
-  }catch{isolatedGuest=true;}
+  }catch{isolatedGuest=!workspaceState().owned;}
   function workspaceState(){
    const shared=readMarker(native,WORKSPACE_KEY),local=readMarker(sessions,ACTIVE_KEY),marker=shared.marker,active=local.marker,owned=!!marker&&marker.tabId===tabId&&equal(marker,active);
    const blocked=!owned&&(shared.exists||local.exists),mode=owned?'owner':blocked?'blocked':'guest';
    return {tabId,mode,owned,blocked,marker:copy(marker),active:copy(active),installed,destroyed};
   }
   function state(){const current=workspaceState();return isolatedGuest?{...current,mode:'guest',owned:false,marker:null,active:null,isolatedGuest:true}:current;}
-  function persistGuest(values){sessions.setItem(GUEST_KEY,JSON.stringify({version:1,tabId,values:Object.fromEntries(values)}));}
-  function enterGuest(){
-   if(destroyed||workspaceState().owned)throw ownershipError();
-   if(!isolatedGuest){persistGuest(new Map());shadow.clear();isolatedGuest=true;notify();}
+  function persistGuest(values,profile=guestProfile){sessions.setItem(GUEST_KEY,JSON.stringify({version:1,tabId,values:Object.fromEntries(values),...(profile?{profile}: {})}));}
+  function enterGuest(options={}){
+   const workspace=workspaceState();
+   if(destroyed||workspace.owned&&options.keepProfile!==true)throw ownershipError();
+   if(!isolatedGuest){const profile=workspace.owned?workspace.marker:null;persistGuest(new Map(),profile);guestProfile=copy(profile);shadow.clear();isolatedGuest=true;notify();}
    return state();
   }
   function notify(){
@@ -102,7 +105,7 @@
    try{native.setItem(WORKSPACE_KEY,JSON.stringify(marker));}
    catch(error){try{if(previous===null)sessions.removeItem(ACTIVE_KEY);else sessions.setItem(ACTIVE_KEY,previous);}catch{}throw error;}
    if(!equal(workspaceState().marker,marker))throw ownershipError();
-   if(isolatedGuest){isolatedGuest=false;shadow.clear();try{sessions.removeItem(GUEST_KEY);}catch{}}
+   if(isolatedGuest){isolatedGuest=false;guestProfile=null;shadow.clear();try{sessions.removeItem(GUEST_KEY);}catch{}}
    notify();if(!owns(marker))throw ownershipError();return copy(marker);
   }
   function release(){

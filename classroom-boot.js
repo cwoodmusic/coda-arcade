@@ -20,10 +20,10 @@
    win.CodaClassroomStorageInstance=scope;
    notice=win.sessionStorage.getItem('codaClassroomNoticeV1')||'';win.sessionStorage.removeItem('codaClassroomNoticeV1');
  }catch{error=true;}
- // A guest in a second tab gets its own tab-local save, never the profile's
- // origin-wide stores. Restore that isolation before any game module reads.
- try{if(requestedGuest&&incoming===null&&scope?.getState().blocked)scope.enterGuest();}catch{error=true;}
- const initial=scope?.getState(),guestEntry=initial?.isolatedGuest===true&&incoming===null;
+ // Explicit guest play never restores saved authentication. If profile stores
+ // are present, isolate guest saves before any game module reads them.
+ try{if(requestedGuest&&incoming===null){const value=scope?.getState();if(value?.blocked||value?.owned)scope.enterGuest({keepProfile:true});}}catch{error=true;}
+ const initial=scope?.getState(),guestEntry=incoming===null&&(requestedGuest||initial?.isolatedGuest===true)&&!error;
  // Only a reload requested by this boot may carry an unopened title action.
  // Session storage can be copied into a new tab, so bind it to this tab ID.
  try{

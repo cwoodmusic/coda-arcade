@@ -45,6 +45,8 @@ class TitleScreenTests(unittest.TestCase):
     def setUp(self):
         self.enabled = False
         self.qr_fixture = False
+        self.defer_title_script = False
+        self.held_title_route = None
         self.errors, self.failed_assets, self.external, self.requests = [], [], [], []
         self.context = self.browser.new_context(viewport={'width': 1440, 'height': 1000}, has_touch=True)
         self.context.route('**/*', self.route)
@@ -93,6 +95,9 @@ class TitleScreenTests(unittest.TestCase):
                     'authDomain':'demo-title-screen.firebaseapp.com'}}
             return route.fulfill(body='window.ARCADE_ACCOUNTS_CONFIG='+json.dumps(config),
                 content_type='text/javascript')
+        if url.path == '/title-screen.js' and self.defer_title_script:
+            self.held_title_route = route
+            return
         if url.path == '/classroom-service.js':
             source = (ROOT/'classroom-service.js').read_text()
             stub = r"""
@@ -242,15 +247,84 @@ class TitleScreenTests(unittest.TestCase):
         self.page.wait_for_function('document.querySelector("#titleSessionStatus").dataset.sessionState==="signed-in"')
         self.assertEqual(self.page.locator('#titleProfile strong').inner_text(), 'Continue as Blue Fox 14')
         self.assertEqual(self.page.locator('#titleSessionStatus').inner_text(), 'Signed in as Blue Fox 14')
-        self.assertEqual(self.page.locator('#titleGuest strong').inner_text(), 'Profile options')
+        self.assertEqual(self.page.locator('#titleGuest strong').inner_text(), 'Play as guest')
         self.assertNotIn('profile=', self.page.locator('#titleProfile').get_attribute('href'))
-        self.assertIn('profile=student', self.page.locator('#titleGuest').get_attribute('href'))
+        self.assertEqual(parse_qs(urlparse(self.page.locator('#titleGuest').get_attribute('href')).query).get('guest'), ['1'])
         self.assertNotIn('PRIVATE CHILD', self.page.locator('body').inner_text())
         self.assertEqual(urlparse(self.page.url).path, '/')
         self.assertEqual(self.page.evaluate('keys=>keys.map(key=>__titleNative.getItem(key))', SCOPED),
                          self.page.evaluate('__titleBefore'))
         self.assertEqual(self.page.evaluate('__titleScopedWrites'), [])
         self.assert_quiet_title()
+
+    def test_same_tab_returning_owner_can_click_guest_without_loading_or_changing_profile(self):
+        self.seed_owner();self.enabled=True;self.title()
+        self.page.wait_for_function('document.querySelector("#titleSessionStatus").dataset.sessionState==="signed-in"')
+        self.assertEqual(self.page.locator('#titleGuest strong').inner_text(), 'Play as guest')
+        self.page.locator('#titleGuest').tap()
+        self.page.wait_for_function('window.CodaDeveloperConsole?.ready()&&window.CodaArcadeQA?.characters().spriteState.ready')
+        self.assertFalse(self.page.evaluate('CodaClassroomUIInstance.getState().open'))
+        self.assertTrue(self.page.evaluate('CodaArcadeQA.classroomSession().canPlay'))
+        self.assertFalse(self.page.evaluate('CodaClassroomStorageInstance.getState().owned'))
+        self.assertIsNone(self.page.evaluate('localStorage.getItem("musicArcadeV1")'))
+        self.assertEqual(self.page.evaluate('keys=>keys.map(key=>__titleNative.getItem(key))', SCOPED),
+                         self.page.evaluate('__titleBefore'))
+        self.assertFalse(any('firebasejs/' in url for url in self.requests))
+        self.page.evaluate('localStorage.setItem("musicArcadeV1",JSON.stringify({name:"Own-tab guest"}))')
+        self.page.reload(wait_until='load')
+        self.page.wait_for_function('window.CodaDeveloperConsole?.ready()')
+        self.assertFalse(self.page.evaluate('CodaClassroomUIInstance.getState().open'))
+        self.assertTrue(self.page.evaluate('CodaArcadeQA.classroomSession().canPlay'))
+        self.assertEqual(self.page.evaluate('JSON.parse(localStorage.getItem("musicArcadeV1")).name'),'Own-tab guest')
+        self.assertIn('PRIVATE CHILD',self.page.evaluate('__titleNative.getItem("musicArcadeV1")'))
+
+    def test_teacher_only_remembered_session_keeps_a_real_guest_route(self):
+        self.enabled=True
+        self.context.add_init_script('''(()=>{
+          window.__titleInspectionFixture={ok:true,signedIn:true,kind:'teacher'};
+          if(!sessionStorage.getItem('teacherTitleSeeded')){
+            const tabId='title-teacher-fixture';window.name='__codaClassroomTabV1:'+tabId;
+            sessionStorage.setItem('codaClassroomTabV1',tabId);
+            sessionStorage.setItem('codaClassroomAdminTabV1',JSON.stringify({version:1,tabId,uid:'teacher-title-0001'}));
+            sessionStorage.setItem('teacherTitleSeeded','yes');
+          }
+        })()''')
+        self.title()
+        self.page.wait_for_function('document.querySelector("#titleSessionStatus").dataset.sessionState==="signed-in"')
+        self.assertEqual(self.page.locator('#titleGuest strong').inner_text(),'Play as guest')
+        self.page.locator('#titleGuest').tap()
+        self.page.wait_for_function('window.CodaDeveloperConsole?.ready()')
+        self.assertFalse(self.page.evaluate('CodaClassroomUIInstance.getState().open'))
+        self.assertTrue(self.page.evaluate('CodaArcadeQA.classroomSession().canPlay'))
+        self.assertFalse(self.page.evaluate('CodaClassroomSession.getState().admin.signedIn'))
+        self.assertFalse(any('firebasejs/' in url for url in self.requests))
+
+    def assert_delayed_guest_button_does_not_move(self, expected_session):
+        self.enabled=True;self.defer_title_script=True
+        self.page.goto(self.base+'/',wait_until='commit')
+        self.page.locator('#titleGuest').wait_for(state='visible')
+        self.page.wait_for_function('document.styleSheets.length>0&&getComputedStyle(document.querySelector("#titleGuest")).display==="flex"')
+        before=self.page.locator('#titleGuest').bounding_box()
+        self.assertIsNotNone(self.held_title_route)
+        self.held_title_route.continue_()
+        self.page.wait_for_function('document.querySelector("#titleMotion")?.hidden===false')
+        self.page.wait_for_function('state=>document.querySelector("#titleSessionStatus").dataset.sessionState===state',
+                                    arg=expected_session)
+        after=self.page.locator('#titleGuest').bounding_box()
+        self.assertAlmostEqual(after['y'],before['y'],delta=1,
+                               msg='The visible guest button must not swap places while a click is underway')
+        self.page.mouse.click(before['x']+before['width']/2,before['y']+before['height']/2)
+        self.page.wait_for_function('window.CodaDeveloperConsole?.ready()')
+        self.assertEqual(parse_qs(urlparse(self.page.url).query).get('guest'),['1'])
+        self.assertFalse(self.page.evaluate('CodaClassroomUIInstance.getState().open'))
+        self.assertTrue(self.page.evaluate('CodaArcadeQA.classroomSession().canPlay'))
+
+    def test_guest_click_position_stays_guest_when_delayed_title_script_enables_profiles(self):
+        self.assert_delayed_guest_button_does_not_move('guest')
+
+    def test_saved_profile_guest_click_position_stays_guest_after_delayed_title_script(self):
+        self.seed_owner()
+        self.assert_delayed_guest_button_does_not_move('signed-in')
 
     def test_cloned_tab_does_not_greet_or_read_another_childs_profile(self):
         self.seed_owner();self.enabled=True;self.title()

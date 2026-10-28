@@ -23,9 +23,10 @@ nickname**. Save a nickname of 1–40 characters. Only the teacher-owned nicknam
 metadata changes; game progress and student picture-card aliases stay intact.
 
 When this tab already has a classroom profile, the title screen offers
-**Continue profile** and **Change player**. Changing players opens the existing
-profile options, where the player can save and leave the device before using a
-different card or playing as a guest. The title screen does not reset progress.
+**Continue profile** alongside **Play as guest**. Guest play uses separate
+tab-local saves without restoring the saved login or resetting its progress.
+Use profile options inside the arcade to save and leave a profile before
+choosing a different card.
 Signing out, saving and leaving a classroom profile, or losing an established
 login returns to the title screen. Choosing **Play as guest** still opens the
 arcade normally. Developer test mode preserves the real tab's login even when

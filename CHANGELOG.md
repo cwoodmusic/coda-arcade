@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-28 — Reliable guest button
+
+- **Play as guest** stays in the same position while the title screen loads and remains available with a remembered login.
+- Guest play skips saved-login restoration, including same-tab profiles and teacher sessions. Saved profile progress stays separate.
+
 ## 2026-10-28 — Piano keyboards in pitch lessons
 
 - Pitch lessons now show a labeled piano keyboard with black keys in groups of two and three.

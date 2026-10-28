@@ -21,20 +21,24 @@ FIXTURE = b'''<!doctype html><meta charset="utf-8"><title>Classroom entry fixtur
 <script>
 window.ARCADE_ACCOUNTS_CONFIG={mode:'classroom',classroom:{privacy:true,enabled:false}};
 const seed=new URL(location.href).searchParams.get('seed');
-if(seed==='owner'){
+if(seed==='owner'||seed==='teacher'){
  const tabId='entry-tab-0001',marker={version:1,tabId,epoch:'entry-epoch-0001',classId:'class-entry-0001',profileId:'profile-entry-0001'};
  window.name='__codaClassroomTabV1:'+tabId;
  sessionStorage.setItem('codaClassroomTabV1',tabId);
- sessionStorage.setItem('codaClassroomActiveV1',JSON.stringify(marker));
- localStorage.setItem('codaClassroomWorkspaceV1',JSON.stringify(marker));
+ if(seed==='owner'){
+  sessionStorage.setItem('codaClassroomActiveV1',JSON.stringify(marker));
+  localStorage.setItem('codaClassroomWorkspaceV1',JSON.stringify(marker));
+  localStorage.setItem('musicArcadeV1','PRIVATE OWNER SAVE');
+ }else sessionStorage.setItem('codaClassroomAdminTabV1',JSON.stringify({version:1,tabId,uid:'teacher-entry-0001'}));
 }
 window.fixtureViews=[];window.fixtureJoins=[];window.fixtureResumeCalls=0;window.fixtureSignInCalls=0;window.fixtureLogoutCalls=0;
-window.fixtureState={profile:seed==='owner'?{classId:'class-entry-0001',profileId:'profile-entry-0001',alias:'Blue Otter 27'}:null,locked:false,waitingTakeover:false,loading:true};
+window.fixtureSavedProfile=seed==='owner'?{classId:'class-entry-0001',profileId:'profile-entry-0001',alias:'Blue Otter 27'}:null;
+window.fixtureState={profile:null,locked:false,waitingTakeover:false,loading:false};
 window.fixturePending=new Promise((resolve,reject)=>{window.fixtureFinish=result=>{fixtureState.loading=false;resolve(result);};window.fixtureFail=()=>{fixtureState.loading=false;reject(Error('Unavailable'));};});
 window.CodaClassroom={...CodaClassroom,create:options=>{window.fixtureIdentityChange=options.onIdentityChange;window.fixtureLock=options.onLock;return {
  getState:()=>fixtureState,subscribe:()=>()=>{},isWritable:()=>true,
- resume:()=>{fixtureResumeCalls++;return fixturePending;},
- join:pass=>{fixtureJoins.push(pass);return fixturePending;},
+ resume:()=>{fixtureResumeCalls++;fixtureState.loading=true;fixtureState.profile=fixtureSavedProfile;return fixturePending;},
+ join:pass=>{fixtureState.loading=true;fixtureJoins.push(pass);return fixturePending;},
  adminSignIn:()=>{fixtureSignInCalls++;return {ok:true};},leave:async()=>({ok:true})
 };}};
 window.createCodaClassroomUI=()=>({open:(view='student')=>fixtureViews.push(view),logOut:()=>{fixtureLogoutCalls++;return {ok:true};},close(){}});
@@ -120,6 +124,26 @@ class ClassroomEntryTests(unittest.TestCase):
         self.page.evaluate('fixtureRuntime.open("admin")')
         self.assertEqual(self.page.evaluate('fixtureViews'), ['student', 'admin'])
         self.assertEqual(self.page.evaluate('fixtureSignInCalls'), 0)
+
+    def test_explicit_guest_does_not_restore_a_teacher_only_session(self):
+        self.load('/entry-fixture.html?seed=teacher&guest=1')
+        self.assertEqual(self.page.evaluate('fixtureResumeCalls'), 0,
+                         'Guest intent must not restore a saved teacher sign-in')
+        self.assertEqual(self.page.evaluate('fixtureViews'), [])
+        self.assertTrue(self.page.evaluate('fixtureRuntime.canPlay()'))
+        self.assertIsNone(self.page.evaluate('fixtureState.profile'))
+
+    def test_explicit_guest_does_not_restore_or_read_a_same_tab_saved_profile(self):
+        self.load('/entry-fixture.html?seed=owner&guest=1')
+        self.assertEqual(self.page.evaluate('fixtureResumeCalls'), 0,
+                         'Guest intent must not resume the old profile')
+        self.assertEqual(self.page.evaluate('fixtureViews'), [])
+        self.assertTrue(self.page.evaluate('fixtureRuntime.canPlay()'))
+        self.assertIsNone(self.page.evaluate('fixtureState.profile'))
+        self.assertFalse(self.page.evaluate('CodaClassroomStorageInstance.getState().owned'))
+        self.assertIsNone(self.page.evaluate('localStorage.getItem("musicArcadeV1")'))
+        self.assertEqual(self.page.evaluate('CodaClassroomStorageInstance.nativeStorage.getItem("musicArcadeV1")'),
+                         'PRIVATE OWNER SAVE')
 
     def test_teacher_entry_opens_admin_once_and_never_signs_in_automatically(self):
         self.load('/entry-fixture.html?profile=admin&room=piano')
