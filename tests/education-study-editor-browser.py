@@ -41,6 +41,9 @@ class EducationStudyEditorTests(unittest.TestCase):
         self.field('mode').select_option('study')
         self.field('category').select_option('tempo')
 
+    def visual_field(self, name):
+        return self.page.locator('[data-visual-editor="main"] [data-visual-field="' + name + '"]')
+
     def test_edit_teaching_answers_coverage_and_notation_roundtrip_without_changing_core(self):
         before = self.data()
         self.study()
@@ -50,9 +53,9 @@ class EducationStudyEditorTests(unittest.TestCase):
         self.field('prompt').fill('How long do four beats last at 120 BPM?')
         self.field('covers').fill('tempo-084, tempo-087\ntempo-089')
         self.page.get_by_label('Answer 2 is correct', exact=True).check()
-        self.field('notation').check()
-        self.page.locator('[data-notation-control="staff"]').select_option('bass')
-        self.page.locator('[data-notation-action="add"]').click()
+        self.visual_field('type').select_option('notation')
+        self.page.locator('[data-visual-editor="main"] [data-notation-control="staff"]').select_option('bass')
+        self.page.locator('[data-visual-editor="main"] [data-notation-action="add"]').click()
         self.action('save').click()
         saved = self.data()
         card = saved['lessons']['tempo']['study'][0]

@@ -12,8 +12,8 @@ ROOT = Path(__file__).resolve().parents[1]
 ORIGIN = 'https://cwoodmusic.github.io'
 PREFIX = '/coda-arcade/'
 URL = ORIGIN + PREFIX + 'education-editor-fixture'
-HTML = '''<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="music-notation.css"><link rel="stylesheet" href="education-notation.css"><link rel="stylesheet" href="education-editor.css"></head><body><main id="host"></main>
-<script src="music-notation.js"></script><script src="time-signature-lesson.js"></script><script src="classroom-quiz.js"></script><script src="classroom-tutorials.js"></script><script src="final-exam-bank.js"></script><script src="education-notation.js"></script><script src="classroom-keyboard.js"></script><script src="education-content.js"></script><script src="education-editor.js"></script><script>
+HTML = '''<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="music-notation.css"><link rel="stylesheet" href="education-notation.css"><link rel="stylesheet" href="education-editor.css"><link rel="stylesheet" href="education-visual-editor.css"></head><body><main id="host"></main>
+<script src="music-notation.js"></script><script src="time-signature-lesson.js"></script><script src="classroom-quiz.js"></script><script src="classroom-tutorials.js"></script><script src="final-exam-bank.js"></script><script src="education-notation.js"></script><script src="classroom-keyboard.js"></script><script src="education-visual-editor.js"></script><script src="education-content.js"></script><script src="education-editor.js"></script><script>
 window.__canEdit=true;window.__exit=0;window.__store=CodaEducationContent.createStore({storage:localStorage,canEdit:()=>__canEdit});CodaEducationContent.setStore(__store);window.__editor=CodaEducationEditor.mount({host:document.querySelector('#host'),store:__store,canEdit:()=>__canEdit,onExit:()=>__exit++});
 </script></body></html>'''
 
@@ -201,7 +201,8 @@ class EducationEditorTests(unittest.TestCase):
         self.assertNotIn('answerNotes', question, 'Old picture answers must not hide edited answer text')
 
     def test_notation_mount_fullscreen_escape_mobile_and_edit_permission(self):
-        self.field('notation').check()
+        self.page.locator('[data-visual-editor="main"] [data-visual-field="type"]').select_option('notation')
+        self.page.locator('[data-visual-editor="main"] [data-notation-action="add"]').click()
         self.assertTrue(self.page.locator('[data-education-preview] svg').is_visible())
         self.action('save').click()
         self.assertEqual(self.data()['exam']['questions'][0]['visual']['kind'], 'notation')

@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-28 — Lesson authoring controls
+
+- Developer mode opens the lesson-card editor with editable teaching text, examples, answers, hints, and every follow-up check.
+- Rename lessons and sections, edit introductions, and add, remove, reorder, or move teaching cards.
+- Add notes, clefs, and piano keyboards to lessons and practice checks. Multiple pictures can appear on one step.
+- Saved lesson settings, checks, and visuals are included in content JSON export and import.
+
 ## 2026-10-28 — Reliable guest button
 
 - **Play as guest** stays in the same position while the title screen loads and remains available with a remembered login.

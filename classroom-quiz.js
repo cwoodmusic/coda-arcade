@@ -247,8 +247,10 @@
   function visual(parent,value){
    if(!value||!notation)return;
    const figure=element('div','classroom-quiz-visual');
-   if(typeof api.renderVisual==='function'&&api.renderVisual(figure,value)===true){parent.append(figure);notation.load?.(doc);return;}
+   const shared=api.renderVisual||(['keyboard','clef-intro','note-parts','rhythm-tree'].includes(value.kind)?win?.CodaClassroomLearningPaths?.renderVisual:null);
+   if(typeof shared==='function'&&shared(figure,value)===true){parent.append(figure);notation.load?.(doc);return;}
    if(value.kind==='keyboard'&&win?.CodaClassroomKeyboard){const checked=win.CodaClassroomKeyboard.validateVisual(value);if(checked.ok)figure.innerHTML=win.CodaClassroomKeyboard.toSVG(checked.data);}
+   else if(value.kind==='clef-intro'&&win?.CodaClassroomTutorials?.clefReminderSVG&&['treble','bass'].includes(value.clef)&&['clef','staff','lines','spaces'].includes(value.page))figure.innerHTML=win.CodaClassroomTutorials.clefReminderSVG(value.clef,value.page);
    else if(value.kind==='notation'&&win?.CodaEducationNotation){const checked=win.CodaEducationNotation.validate(value.score);if(checked.ok)figure.innerHTML=win.CodaEducationNotation.toSVG(checked.data);}
    else if(value.kind==='middle-c-pair'){figure.classList.add('classroom-quiz-middle-pair');figure.innerHTML=staffSVG(-2,{clef:'treble',label:'Middle C below treble'})+staffSVG(10,{clef:'bass',label:'Middle C above bass'});}
    else if(value.kind==='staff')figure.innerHTML=staffSVG(value.position,value);
@@ -284,7 +286,7 @@
    if(state.phase==='result'){renderResult(panel,state);return;}
    const question=state.question||model.questions[state.index],answered=state.answers.length>state.index;
    const correct=answered&&state.answers[state.index]===question.correct;
-   const heading=element('h3','classroom-quiz-question',answered?(correct?'Yes!':'Let’s learn this one.'):question.prompt);heading.tabIndex=-1;panel.append(heading);visual(panel,question.visual);
+   const heading=element('h3','classroom-quiz-question',answered?(correct?'Yes!':'Let’s learn this one.'):question.prompt);heading.tabIndex=-1;panel.append(heading);visual(panel,question.visual);for(const item of question.visuals||[])visual(panel,item);
    if(!answered){
     const answers=element('div','classroom-quiz-answers');answers.setAttribute('role','group');answers.setAttribute('aria-label','Choose one answer');
     (state.answerOrder||question.answers.map((_,i)=>i)).forEach(index=>{const text=question.answers[index],choose=button(text,()=>{if(!session.answer(index))return;render();target.querySelector('[data-quiz-next]')?.focus({preventScroll:true});});choose.dataset.quizAnswer=index;if(question.answerNotes?.[index]){choose.setAttribute('aria-label',text);choose.textContent='';const group=element('span','classroom-quiz-choice-notes');group.setAttribute('aria-hidden','true');group.innerHTML=question.answerNotes[index].map(beats=>notation.glyphSVG(beats)).join('');choose.append(group);}answers.append(choose);});panel.append(answers);saveHelp(panel,state);return;

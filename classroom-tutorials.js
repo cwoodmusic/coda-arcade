@@ -473,10 +473,23 @@
   }
   function appendFeedback(section){const feedbackNode=element('p','tutorial-feedback',message);feedbackNode.setAttribute('role','status');feedbackNode.setAttribute('aria-live','polite');feedbackNode.dataset.correct=String(correct);section.append(feedbackNode);}
   function renderAuthoredPicture(section){
-   const value=authored&&!complete&&!quizzing&&!studying&&!noteReminder?lessonSteps?.[step]?.visual:null,module=win.CodaEducationNotation;
-   if(value?.kind!=='notation'||!module)return;const checked=module.validate(value.score);if(!checked.ok)return;
-   const picture=element('figure','lesson-authored-notation');picture.innerHTML=module.toSVG(checked.data);const original=section.querySelector('.lesson-naming-example,.lesson-staff-wrap,.lesson-rhythm-example,.lesson-split-picture,.lesson-keys-picture,.lesson-expression-picture');
-   if(original)original.replaceWith(picture);else section.querySelector('.lesson-action-cue')?.after(picture);notation.load?.(doc);
+   if(!authored||complete||quizzing||studying||noteReminder)return;
+   const model=lessonSteps?.[step];if(!model)return;const values=[model.visual,...(model.visuals||[])].filter(Boolean);
+   if(!values.length&&!model.hideVisual)return;
+   const pictures=element('div','lesson-authored-visuals');pictures.style.width='100%';
+   for(const value of values){
+    const picture=element('figure','lesson-authored-notation lesson-note-reminder-picture'),module=win.CodaEducationNotation;
+    let rendered=win.CodaClassroomLearningPaths?.renderVisual?.(picture,value)===true;
+    if(!rendered&&value.kind==='notation'&&module){const checked=module.validate(value.score);if(checked.ok){picture.innerHTML=module.toSVG(checked.data);rendered=true;}}
+    else if(!rendered&&value.kind==='keyboard'&&win.CodaClassroomKeyboard){const checked=win.CodaClassroomKeyboard.validateVisual(value);if(checked.ok){picture.innerHTML=win.CodaClassroomKeyboard.toSVG(checked.data);rendered=true;}}
+    else if(!rendered&&value.kind==='clef-intro'&&['treble','bass'].includes(value.clef)&&['clef','staff','lines','spaces'].includes(value.page)){picture.innerHTML=clefReminderSVG(value.clef,value.page);rendered=true;}
+    else if(!rendered&&value.kind==='staff'){picture.innerHTML=staffSVG(value.position,value);rendered=true;}
+    if(rendered)pictures.append(picture);
+   }
+   const original=section.querySelector('.lesson-naming-example,.lesson-staff-wrap,.lesson-rhythm-example,.lesson-split-picture,.lesson-keys-picture,.lesson-expression-picture,.signature-visual'),caption=original?.querySelector('figcaption')?.cloneNode(true);
+   if(model.visual||model.hideVisual){if(original){if(caption)pictures.append(caption);if(pictures.childElementCount)original.replaceWith(pictures);else if(model.hideVisual)original.remove();}else if(pictures.childElementCount)section.querySelector('.lesson-action-cue,.signature-main-prompt')?.after(pictures);}
+   else if(pictures.childElementCount){if(original)original.after(pictures);else section.querySelector('.lesson-action-cue,.signature-main-prompt')?.after(pictures);}
+   notation.load?.(doc);
   }
   function renderComplete(section){
    actionCue(section,'You did it!');

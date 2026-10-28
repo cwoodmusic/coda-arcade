@@ -40,3 +40,21 @@ test('the browser exposes the same keyboard renderer without storage, audio or n
  assert.equal(window.CodaClassroomKeyboard.toSVG({kind:'keyboard'}),keyboard.toSVG({kind:'keyboard'}));
  assert.ok(Object.isFrozen(window.CodaClassroomKeyboard));
 });
+
+test('authors can hide key names and captions while retaining the piano geometry and highlights',()=>{
+ const svg=keyboard.toSVG({kind:'keyboard',notes:['F-sharp'],showLabels:false,showGroups:false,showDirections:false});
+ assert.equal((svg.match(/data-piano-white=/g)||[]).length,8);
+ assert.equal((svg.match(/data-piano-black=/g)||[]).length,5);
+ assert.equal((svg.match(/data-piano-highlight=/g)||[]).length,1);
+ assert.doesNotMatch(svg,/data-keyboard-white-label|data-piano-group|data-keyboard-direction|>F♯<|Lower sounds|Higher sounds/);
+ assert.match(svg,/unlabeled white keys/);
+});
+
+test('custom image captions survive validation, escape markup and reject unbounded or unknown fields',()=>{
+ const visual={kind:'keyboard',notes:[],groupLabels:{two:'Pair <two>',three:'Triple & three'},directionLabels:{lower:'Left "low"',higher:'Right > high'}};
+ const checked=keyboard.validateVisual(visual);assert.equal(checked.ok,true);assert.deepEqual(checked.data,visual);
+ const svg=keyboard.toSVG(visual);assert.match(svg,/>Pair &lt;two&gt;<\/text>/);assert.match(svg,/>Triple &amp; three<\/text>/);assert.match(svg,/>Left &quot;low&quot;<\/text>/);
+ assert.doesNotMatch(svg,/<two>/);
+ for(const bad of [{showLabels:0},{showGroups:'false'},{showDirections:null},{groupLabels:{two:'Only one'}},{groupLabels:{two:'Two',three:'Three',html:'unsafe'}},{directionLabels:{lower:'x'.repeat(81),higher:'High'}},{directionLabels:[]}])assert.equal(keyboard.validateVisual({kind:'keyboard',...bad}).ok,false);
+ checked.data.groupLabels.two='Changed';assert.equal(visual.groupLabels.two,'Pair <two>');
+});

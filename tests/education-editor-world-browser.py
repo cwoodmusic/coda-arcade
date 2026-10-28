@@ -33,7 +33,7 @@ class EducationEditorWorldTests(_world.WorldBrowserCase):
     def action(self, name):
         return self.editor().locator('[data-education-action="' + name + '"]')
 
-    def open_editor(self, room=None):
+    def open_editor(self, room=None, mode='exam'):
         if room:
             self.page.locator('#pianoRoomCanvas' if room == 'piano' else '#fishingLakeCanvas').focus()
             self.page.keyboard.press('F2')
@@ -44,6 +44,8 @@ class EducationEditorWorldTests(_world.WorldBrowserCase):
                 self.page.keyboard.press('F2')
             self.page.locator('#devTab-education').click()
         self.editor().wait_for(state='visible')
+        if mode is not None:
+            self.field('mode').select_option(mode)
 
     def close_editor(self):
         self.action('exit').click()
@@ -72,10 +74,11 @@ class EducationEditorWorldTests(_world.WorldBrowserCase):
             self.field('list').select_option(str(selected))
 
     def add_notation(self, clef='bass'):
-        self.field('notation').check()
-        self.editor().locator('[data-notation-control="staff"]').select_option(clef)
-        self.editor().locator('[data-notation-control="meter"]').select_option('6/8')
-        self.editor().locator('[data-notation-action="add"]').click()
+        visual = self.visual_editor('main')
+        visual.locator('[data-visual-field="type"]').select_option('notation')
+        visual.locator('[data-notation-control="staff"]').select_option(clef)
+        visual.locator('[data-notation-control="meter"]').select_option('6/8')
+        visual.locator('[data-notation-action="add"]').click()
         self.assertEqual(self.editor().locator('[data-education-preview] .education-score').get_attribute('data-score-clef'), clef)
 
     def talk_to_haydn(self):
@@ -95,6 +98,95 @@ class EducationEditorWorldTests(_world.WorldBrowserCase):
 
     def exam_state(self):
         return self.page.evaluate('CodaArcadeQA.classroom().finalExam')
+
+    def visual_editor(self, prefix):
+        return self.editor().locator('[data-visual-editor="' + prefix + '"]')
+
+    def test_authored_pitch_text_questions_and_all_three_visual_types_reach_the_live_lesson(self):
+        self.open_editor(mode=None)
+        self.assertEqual(self.field('mode').input_value(), 'study')
+        self.choose_content('study', selected='treble-musical-alphabet')
+        before = self.document()
+        self.editor().locator('.education-editor-lesson-settings > summary').click()
+        self.field('lesson-title').fill('Our editable pitch course')
+        self.field('lesson-intro').fill('Learn these keys with our own examples.')
+        self.field('section-title-0').fill('Our first piano chapter')
+        self.action('save-lesson-settings').click()
+        self.field('title').fill('Our piano pitch lesson')
+        self.field('teach').fill('Find the named white keys and their black-key neighbors.')
+        self.field('example').fill('The highlighted black key is C-sharp. The bass clef and note picture are our other examples.')
+        self.field('hint').fill('Follow the labeled keys from left to right.')
+        keyboard = self.visual_editor('main')
+        keyboard.locator('[data-visual-field="type"]').select_option('keyboard')
+        keyboard.locator('[data-visual-key="C-sharp"]').click()
+        keyboard.locator('[data-visual-field="keyboard-label"]').fill('Our editable piano picture')
+        keyboard.locator('[data-visual-action="keyboard-text-options"]').click()
+        keyboard.locator('[data-visual-field="keyboard-two-label"]').fill('Pair of black keys')
+        keyboard.locator('[data-visual-field="keyboard-lower-label"]').fill('Lower pitches')
+        self.action('add-visual').click()
+        clef = self.visual_editor('extra-0')
+        clef.locator('[data-visual-field="type"]').select_option('clef')
+        clef.locator('[data-visual-field="clef"]').select_option('bass')
+        clef.locator('[data-visual-field="clef-page"]').select_option('clef')
+        self.action('add-visual').click()
+        notes = self.visual_editor('extra-1')
+        notes.locator('[data-visual-field="type"]').select_option('notation')
+        notes.locator('[data-notation-control="staff"]').select_option('treble')
+        notes.locator('[data-notation-action="add"]').click()
+        check = self.editor().locator('[data-education-check-index="0"]')
+        check.locator('[data-education-field$="prompt"]').fill('Our follow-up: name the note after G.')
+        check.locator('[data-education-field$="hint"]').fill('Our explanation: the seven music letters start again at A.')
+        for index, answer in enumerate(['B', 'A', 'H']):
+            check.locator('.education-editor-answer input[type="text"]').nth(index).fill(answer)
+        check.locator('.education-editor-answer input[type="radio"]').nth(1).check()
+        self.visual_editor('check-0').locator('[data-visual-field="type"]').select_option('keyboard')
+        preview = self.editor().locator('[data-education-preview]')
+        self.assertTrue(preview.locator('.lesson-piano-keyboard').first.is_visible())
+        self.assertTrue(preview.locator('.education-score').first.is_visible())
+        self.action('save').click()
+        saved = self.document()
+        card = next(item for item in saved['lessons']['note-naming']['study'] if item['id'] == 'treble-musical-alphabet')
+        self.assertEqual(card['title'], 'Our piano pitch lesson')
+        self.assertEqual(card['visual']['notes'], ['C-sharp'])
+        self.assertEqual(card['visual']['label'], 'Our editable piano picture')
+        self.assertEqual(card['visual']['groupLabels']['two'], 'Pair of black keys')
+        self.assertEqual(card['visual']['directionLabels']['lower'], 'Lower pitches')
+        self.assertEqual([visual['kind'] for visual in card['visuals']], ['clef-intro', 'notation'])
+        self.assertEqual(card['checks'][0]['prompt'], 'Our follow-up: name the note after G.')
+        self.assertEqual(card['checks'][0]['answers'], ['B', 'A', 'H'])
+        self.assertEqual(card['checks'][0]['correct'], 1)
+        self.assertEqual(saved['exam'], before['exam'])
+        self.assertEqual(saved['quizzes'], before['quizzes'])
+        with self.page.expect_download() as exported:
+            self.action('export').click()
+        self.assertEqual(json.loads(Path(exported.value.path()).read_text()), saved)
+        self.close_editor()
+        self.load()
+        self.assertEqual(self.document(), saved, 'Every authored picture and follow-up survives a reload.')
+        self.talk_to_haydn()
+        self.page.locator('[data-start-lesson="note-naming"]').click()
+        self.assertIn('Our editable pitch course', self.page.locator('.classroom-learning-paths').inner_text())
+        self.assertIn('Learn these keys with our own examples.', self.page.locator('.classroom-learning-paths').inner_text())
+        self.assertIn('Our first piano chapter', self.page.locator('[data-path-section="alphabet-and-keys"]').inner_text())
+        self.page.locator('[data-path-section="alphabet-and-keys"]').click()
+        panel = self.page.locator('.classroom-exam-study')
+        self.assertEqual(panel.locator('.exam-study-title').inner_text(), 'Our piano pitch lesson')
+        self.assertIn(card['teach'], panel.inner_text())
+        self.assertIn(card['example'], panel.inner_text())
+        self.assertEqual(panel.locator('.exam-study-visual').count(), 3)
+        self.assertIn('Our editable piano picture', panel.locator('.lesson-piano-keyboard').get_attribute('aria-label'))
+        self.assertEqual(panel.locator('[data-piano-group="2"]').text_content(), 'Pair of black keys')
+        self.assertIn('Lower pitches', panel.locator('.lesson-piano-keyboard').text_content())
+        self.assertEqual(panel.locator('[data-piano-black="C-sharp"][data-piano-highlight]').count(), 1)
+        self.assertEqual(panel.locator('.education-score').get_attribute('data-score-clef'), 'treble')
+        panel.locator('[data-study-try]').click()
+        panel.locator('[data-study-answer="' + str(card['correct']) + '"]').click()
+        self.assertIn(card['hint'], panel.locator('.exam-study-feedback').inner_text())
+        panel.locator('[data-study-next]').click()
+        self.assertEqual(panel.locator('.exam-study-title').inner_text(), card['checks'][0]['prompt'])
+        self.assertTrue(panel.locator('.lesson-piano-keyboard').is_visible())
+        panel.locator('[data-study-answer="' + str(card['checks'][0]['correct']) + '"]').click()
+        self.assertIn(card['checks'][0]['hint'], panel.locator('.exam-study-feedback').inner_text())
 
     def test_real_console_question_crud_preview_reload_and_keyboard_exit(self):
         before = self.scoped_bytes()
@@ -233,6 +325,7 @@ class EducationEditorWorldTests(_world.WorldBrowserCase):
           quizzes:localStorage.getItem(CodaClassroomQuiz.KEY)})''')
         self.talk_to_haydn()
         self.page.locator('[data-start-lesson="note-naming"]').click()
+        self.page.locator('[data-path-practice]').click()
         tutorial = self.page.locator('.classroom-tutorial')
         self.assertIn('Teacher says: find C beside the two black keys.', tutorial.inner_text())
         self.assertEqual(tutorial.locator('.education-score').get_attribute('data-score-clef'), 'treble')

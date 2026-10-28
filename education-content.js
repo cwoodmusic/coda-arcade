@@ -27,7 +27,11 @@
  function accidentalsModule(){if(root?.CodaAccidentalsLesson)return root.CodaAccidentalsLesson;if(requireModule)try{return requireModule('./classroom-accidentals-lesson.js');}catch{}return null;}
  function curriculumModule(){if(root?.CodaExamCurriculum)return root.CodaExamCurriculum;if(requireModule)try{return requireModule('./classroom-exam-curriculum.js');}catch{}return null;}
  function pathsModule(){if(root?.CodaClassroomLearningPathsData)return root.CodaClassroomLearningPathsData;if(requireModule)try{return requireModule('./classroom-learning-paths-data.js');}catch{}return null;}
- function defaultStudy(id,fallback){const cards=pathsModule()?.getCards?.(id);return Array.isArray(cards)?cards:fallback;}
+ function defaultStudy(id,fallback){
+  const paths=pathsModule(),cards=paths?.getCards?.(id);if(!Array.isArray(cards))return fallback;
+  return cards.map(card=>{const checks=paths.getChecks?.(id,card);return {...card,...(Array.isArray(checks)?{checks:checks.slice(1).map(check=>({prompt:check.prompt,answers:copy(check.answers),correct:check.correct,hint:check.hint,visual:copy(check.visual||null),...(check.visuals?{visuals:copy(check.visuals)}:{})}))}:{})};});
+ }
+ function lessonMetadata(id,title){const path=pathsModule()?.getCategory?.(id);return path?{title:path.title,intro:path.intro,sections:path.sections.map(section=>({id:section.id,title:section.title,tier:section.tier,cardIds:section.cards.map(card=>card.id)}))}:{title};}
  function getSources(){
   if(!sources){sources=requireModule?{bank:requireModule('./final-exam-bank.js'),quiz:requireModule('./classroom-quiz.js'),tutorials:requireModule('./classroom-tutorials.js'),time:requireModule('./time-signature-lesson.js')}:{bank:root?.CodaFinalExamBank,quiz:root?.CodaClassroomQuiz,tutorials:root?.CodaClassroomTutorials,time:root?.CodaTimeSignatureLesson};}
   if(!sources.bank||!sources.quiz||!sources.tutorials||!sources.time){sources=null;fail('The classroom content is still loading. Please try again.');}return sources;
@@ -45,11 +49,11 @@
     const meta=tutorials.LESSONS.find(item=>item.id===id);
     let steps=tutorials.NOTE_LESSONS[id]||tutorials.EXPRESSION_LESSONS[id]||(id==='major-minor-keys'?tutorials.KEY_STEPS:id==='time-signatures'?time.STEPS:RHYTHM_STEPS);
     steps=copy(steps).map((step,index)=>{const simple=tutorials.SIMPLE_NOTE_COPY[id]?.[index];return {...step,...(simple?{teach:simple[0],example:simple[1],prompt:simple[2],hint:simple[3]}:{}),visual:null};});
-    lessons[id]={title:meta.title,steps,study:cleanStudy(id,defaultStudy(id,curriculumModule()?.forLesson?.(id)||[]))};
+    lessons[id]={...lessonMetadata(id,meta.title),steps,study:cleanStudy(id,defaultStudy(id,curriculumModule()?.forLesson?.(id)||[]))};
     quizzes[id]={title:quiz.QUIZZES[id].title,questions:copy(quiz.QUIZZES[id].questions).map(question=>{const result={...question,category:id,visual:question.visual||null};if(result.answerNotes===null)delete result.answerNotes;return result;})};
    }
    const extra=accidentalsModule(),title=extra?.TITLE||'Accidentals & key signatures';
-   lessons[SUPPLEMENTAL_ID]={title,steps:[],study:cleanStudy(SUPPLEMENTAL_ID,defaultStudy(SUPPLEMENTAL_ID,extra?.CARDS||[]))};
+   lessons[SUPPLEMENTAL_ID]={...lessonMetadata(SUPPLEMENTAL_ID,title),steps:[],study:cleanStudy(SUPPLEMENTAL_ID,defaultStudy(SUPPLEMENTAL_ID,extra?.CARDS||[]))};
    const extraQuiz=extra?.QUIZ;quizzes[SUPPLEMENTAL_ID]={title:extraQuiz?.title||title,questions:(extraQuiz?.questions||[]).map(item=>question(item,SUPPLEMENTAL_ID))};
    defaults={version:VERSION,learningPathsVersion:LEARNING_PATHS_VERSION,exam:{questions:bank.QUESTIONS.map(question=>({id:question.id,category:question.category,prompt:question.prompt,answers:question.choices.map(choice=>choice.text),correct:question.choices.findIndex(choice=>choice.id===question.answer),explanation:question.explanation||'',visual:copy(question.stimulus||null)}))},quizzes,lessons};
   }return copy(defaults);
@@ -102,14 +106,22 @@
   if(!Array.isArray(value.answers)||value.answers.length<2||value.answers.length>6||!integer(value.correct,0,value.answers.length-1))fail('A question needs 2 to 6 answers and one correct answer.');
   const answers=value.answers.map(answer=>text(answer,'Answer',400));if(new Set(answers.map(answer=>answer.trim().toLowerCase())).size!==answers.length)fail('Give each answer different text.');
   const result={id:value.id,category,prompt:text(value.prompt,'Question'),answers,correct:value.correct,explanation:text(value.explanation??'','Explanation',2000,true),visual:visual(value.visual)};
+  if(own(value,'visuals'))result.visuals=visualList(value.visuals);
   if(value.answerNotes!==undefined&&value.answerNotes!==null){if(!Array.isArray(value.answerNotes)||value.answerNotes.length!==answers.length||value.answerNotes.some(notes=>!Array.isArray(notes)||notes.length>16||notes.some(note=>![.25,.5,.75,1,1.5,2,3,4].includes(note))))fail('Answer-note pictures must match the answer list.');result.answerNotes=copy(value.answerNotes);}
   return result;
+ }
+ function visualList(input){if(!Array.isArray(input)||input.length>6)fail('Use at most six additional lesson pictures.');return input.map(value=>{const checked=visual(value);if(!checked)fail('Choose a picture or remove the empty picture.');return checked;});}
+ function practiceCheck(value,id){
+  if(!object(value)||Object.keys(value).some(key=>!['prompt','answers','correct','hint','visual','visuals'].includes(key)))fail('Use supported practice-check fields.');
+  const checked=question({...value,id:'practice-check'},id);return {prompt:checked.prompt,answers:checked.answers,correct:checked.correct,hint:text(value.hint??'','Practice hint',2000,true),visual:checked.visual,...(own(checked,'visuals')?{visuals:checked.visuals}:{})};
  }
  function cleanStudy(id,input){
   if(!Array.isArray(input)||input.length>100)fail('An exam lesson needs at most 100 teaching cards.');
   const cards=input.map(value=>{
-   if(!object(value)||Object.keys(value).some(key=>!['id','category','title','teach','example','prompt','answers','correct','hint','visual','covers'].includes(key)))fail('Use supported teaching-card fields.');
+   if(!object(value)||Object.keys(value).some(key=>!['id','category','title','teach','example','prompt','answers','correct','hint','visual','visuals','checks','covers'].includes(key)))fail('Use supported teaching-card fields.');
    const checked=question(value,id),result={id:checked.id,title:text(value.title,'Card title',120),teach:text(value.teach,'Teaching idea',2000),example:text(value.example??'','Worked example',2000,true),prompt:checked.prompt,answers:checked.answers,correct:checked.correct,hint:text(value.hint??'','Card hint',2000,true),visual:checked.visual};
+   if(own(checked,'visuals'))result.visuals=checked.visuals;
+   if(own(value,'checks')){if(!Array.isArray(value.checks)||value.checks.length>9)fail('Use at most nine additional practice checks.');result.checks=value.checks.map(check=>practiceCheck(check,id));}
    if(own(value,'covers')){if(!Array.isArray(value.covers)||value.covers.length>200||value.covers.some(item=>!safeId(item))||new Set(value.covers).size!==value.covers.length)fail('Use unique exam question IDs for teaching coverage.');result.covers=[...value.covers];}
    return result;
   });
@@ -131,7 +143,7 @@
   if(!Array.isArray(input)||input.length!==base.length)fail('Keep the '+base.length+' activities in '+id+'; edit their words, answers, and notation.');
   return input.map((step,index)=>{
    const original=base[index];if(!object(step)||step.kind!==original.kind)fail('Keep this lesson activity type.');
-   const allowed=new Set([...Object.keys(original),'visual']),result=copy(original);for(const key of Object.keys(step))if(!allowed.has(key))fail('Unsupported lesson field: '+key+'.');
+   const allowed=new Set([...Object.keys(original),'visual','visuals','hideVisual']),result=copy(original);for(const key of Object.keys(step))if(!allowed.has(key))fail('Unsupported lesson field: '+key+'.');
    for(const key of ['prompt','teach','guide','example','caption','hint','success','noteLabel'])if(own(step,key))result[key]=text(step[key],key,2000,true);
    if(own(step,'answers')){if(!Array.isArray(step.answers)||step.answers.length<2||step.answers.length>6)fail('An activity needs 2 to 6 answer choices.');result.answers=step.answers.map(answer=>text(answer,'Activity answer',400));}
    for(const key of ['answer','correct'])if(own(step,key)){
@@ -144,8 +156,24 @@
    if(own(step,'grand')){if(typeof step.grand!=='boolean')fail('Grand staff must be true or false.');result.grand=step.grand;}
    // The activity's audio, recipes and layout stay coherent. Only known
    // teaching fields above and the separately validated picture are mutable.
-   for(const key of Object.keys(original))if(!['prompt','teach','guide','example','caption','hint','success','noteLabel','answers','answer','correct','position','pitch','clef','grand','visual'].includes(key)&&!same(step[key],original[key]))fail('Keep the activity’s '+key+' setting.');
-   result.visual=visual(step.visual);return result;
+   for(const key of Object.keys(original))if(!['prompt','teach','guide','example','caption','hint','success','noteLabel','answers','answer','correct','position','pitch','clef','grand','visual','visuals','hideVisual'].includes(key)&&!same(step[key],original[key]))fail('Keep the activity’s '+key+' setting.');
+   result.visual=visual(step.visual);if(own(step,'visuals'))result.visuals=visualList(step.visuals);if(own(step,'hideVisual')){if(typeof step.hideVisual!=='boolean')fail('Choose whether to hide the built-in lesson picture.');result.hideVisual=step.hideVisual;}return result;
+  });
+ }
+ function cleanSections(input){
+  if(!Array.isArray(input)||input.length>40)fail('Use at most forty lesson sections.');const sections=new Set(),cards=new Set();let advanced=false;
+  return input.map(value=>{
+   if(!object(value)||Object.keys(value).some(key=>!['id','title','tier','cardIds'].includes(key))||!safeId(value.id)||sections.has(value.id)||!['basic','advanced'].includes(value.tier)||!Array.isArray(value.cardIds)||value.cardIds.length>100||value.cardIds.some(id=>!safeId(id)||cards.has(id)))fail('Use unique sections, a basics or advanced level, and unique teaching-card IDs.');
+   if(value.tier==='advanced')advanced=true;else if(advanced)fail('Place basic lesson sections before advanced sections.');
+   if(new Set(value.cardIds).size!==value.cardIds.length)fail('A teaching card can appear only once in the lesson sections.');sections.add(value.id);value.cardIds.forEach(id=>cards.add(id));
+   return {id:value.id,title:text(value.title,'Section title',120),tier:value.tier,cardIds:[...value.cardIds]};
+  });
+ }
+ function inheritChecks(cards,base){
+  return cards.map(card=>{
+   const original=base.find(item=>item.id===card.id);
+   if(own(card,'checks')||!original?.checks||['teach','example','prompt','answers','correct','hint','visual','visuals'].some(key=>!same(card[key]??null,original[key]??null)))return card;
+   return {...card,checks:copy(original.checks)};
   });
  }
  function validate(input){
@@ -160,7 +188,20 @@
      if(section==='quizzes'){
       if(Object.keys(value).some(key=>!['title','questions'].includes(key))||!Array.isArray(value.questions)||value.questions.length>200)fail('A quiz needs a list of at most 200 questions.');
       const questions=value.questions.map(item=>question(item,id));if(new Set(questions.map(item=>item.id)).size!==questions.length)fail('Quiz question IDs must be unique.');result.quizzes[id]={title,questions};
-     }else{if(Object.keys(value).some(key=>!['title','steps','study'].includes(key)))fail('A lesson needs its title, activities, and exam teaching cards.');const baseStudy=result.lessons[id].study;let study=own(value,'study')?cleanStudy(id,value.study):baseStudy;if(!own(input,'learningPathsVersion')&&own(value,'study'))study=migrateStudy(id,study,baseStudy);result.lessons[id]={title,steps:cleanSteps(id,id===SUPPLEMENTAL_ID?value.steps??[]:value.steps,result.lessons[id].steps),study};}
+     }else{
+      if(Object.keys(value).some(key=>!['title','intro','sections','steps','study'].includes(key)))fail('A lesson needs its title, activities, sections, and teaching cards.');
+      const baseLesson=result.lessons[id],baseStudy=baseLesson.study;let study=own(value,'study')?cleanStudy(id,value.study):baseStudy;if(!own(input,'learningPathsVersion')&&own(value,'study'))study=migrateStudy(id,study,baseStudy);study=inheritChecks(study,baseStudy);
+      const legacyTitle=getSources().tutorials.LESSONS.find(item=>item.id===id)?.title,topicTitle=!own(value,'intro')&&!own(value,'sections')&&title===legacyTitle?baseLesson.title:title;
+      result.lessons[id]={...baseLesson,title:topicTitle,steps:cleanSteps(id,id===SUPPLEMENTAL_ID?value.steps??[]:value.steps,baseLesson.steps),study};
+      if(own(value,'intro'))result.lessons[id].intro=text(value.intro,'Lesson introduction',2000,true);
+      if(own(value,'sections'))result.lessons[id].sections=cleanSections(value.sections);
+      // Older editors ordered cards through the study list. Preserve that
+      // intent until an author explicitly changes the section's own order.
+      if(result.lessons[id].sections&&(!own(value,'sections')||same(value.sections,baseLesson.sections))){
+       const order=new Map(study.map((card,index)=>[card.id,index]));
+       result.lessons[id].sections=result.lessons[id].sections.map(section=>({...section,cardIds:[...section.cardIds].sort((first,second)=>(order.get(first)??1e6)-(order.get(second)??1e6))}));
+      }
+     }
     }
    }
    return {ok:true,data:result};
@@ -187,7 +228,7 @@
   }
   function getExamBank(){
    const document=effective();if(document.exam===bankSource)return bankCache;bankSource=document.exam;if(same(document.exam,base.exam))return bankCache=getSources().bank;
-   const questions=document.exam.questions.map(question=>({id:question.id,category:question.category,prompt:question.prompt,choices:question.answers.map((text,index)=>({id:'choice-'+index,text})),answer:'choice-'+question.correct,explanation:question.explanation,stimulus:copy(question.visual)}));
+   const questions=document.exam.questions.map(question=>({id:question.id,category:question.category,prompt:question.prompt,choices:question.answers.map((text,index)=>({id:'choice-'+index,text})),answer:'choice-'+question.correct,explanation:question.explanation,stimulus:copy(question.visual),...(question.visuals?{visuals:copy(question.visuals)}:{})}));
    const byId=new Map(questions.map(question=>[question.id,question])),pools=Object.fromEntries(IDS.map(id=>[id,freeze(questions.filter(question=>question.category===id))]));return bankCache=freeze({VERSION:1,version:1,custom:true,revision:revision(document.exam),CATEGORIES:copy(CATEGORIES),QUESTIONS:questions,pool:id=>pools[id]||Object.freeze([]),getQuestion:id=>byId.get(id)||null});
   }
   function getQuiz(id){if(!LESSON_IDS.includes(id))return null;const value=effective().quizzes[id],cached=quizCache.get(id);if(cached?.source===value)return cached.model;const model=EXAM_IDS.includes(id)&&same(value,base.quizzes[id])?getSources().quiz.QUIZZES[id]:freeze({...copy(value),version:1,custom:true,revision:revision(value),passScore:Math.ceil(value.questions.length*.8)});quizCache.set(id,{source:value,model});return model;}

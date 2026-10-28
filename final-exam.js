@@ -128,7 +128,9 @@
   function showQuestion(index){review=false;intro=false;if(session.goTo(index)){render();focusHeading();}}
   function visual(parent,stimulus){
    if(!stimulus)return;const figure=node('div','final-exam-visual');figure.setAttribute('role','img');
+   if(['keyboard','clef-intro','note-parts','rhythm-tree'].includes(stimulus.kind)&&win?.CodaClassroomLearningPaths?.renderVisual?.(figure,stimulus)===true){parent.append(figure);notation?.load?.(doc);return;}
    if(stimulus.kind==='keyboard'&&win?.CodaClassroomKeyboard){const checked=win.CodaClassroomKeyboard.validateVisual(stimulus);if(!checked.ok)return;figure.innerHTML=win.CodaClassroomKeyboard.toSVG(checked.data);}
+   else if(stimulus.kind==='clef-intro'&&win?.CodaClassroomTutorials?.clefReminderSVG&&['treble','bass'].includes(stimulus.clef)&&['clef','staff','lines','spaces'].includes(stimulus.page))figure.innerHTML=win.CodaClassroomTutorials.clefReminderSVG(stimulus.clef,stimulus.page);
    else if(stimulus.kind==='notation'&&editedNotation?.()){const renderer=editedNotation(),checked=renderer.validate(stimulus.score);if(!checked.ok)return;figure.innerHTML=renderer.toSVG(checked.data,{color:'#fff0cf'});}
    else if(stimulus.kind==='staff'&&quiz?.staffSVG){figure.innerHTML=quiz.staffSVG(stimulus.position,{clef:stimulus.clef,grand:stimulus.grand,label:stimulus.label||'Read the highlighted note.'});}
    else if(stimulus.kind==='rhythm'&&notation){figure.setAttribute('aria-label','The notes and rests in this question.');for(const note of stimulus.notes||[]){const mark=node('span');mark.innerHTML=notation.glyphSVG(note.beats,{rest:note.rest===true,color:'#fff0cf'});figure.append(mark);}}
@@ -156,7 +158,7 @@
    const question=session.question();if(!question){panel.append(node('p','','This question could not open. Close the exam and try again.'));return;}
    const top=node('div','final-exam-topline');top.append(node('span','',state.categories.find(category=>category.id===question.category)?.title||''),node('strong','','Question '+(state.index+1)+' / '+state.total));panel.append(top);
    const progress=node('progress');progress.max=state.total;progress.value=state.answered;progress.setAttribute('aria-label','Exam questions answered');panel.append(progress);
-   const heading=node('h2','final-exam-question',question.prompt);heading.tabIndex=-1;heading.setAttribute('data-exam-heading','');panel.append(heading);visual(panel,question.stimulus);
+   const heading=node('h2','final-exam-question',question.prompt);heading.tabIndex=-1;heading.setAttribute('data-exam-heading','');panel.append(heading);visual(panel,question.stimulus);for(const item of question.visuals||[])visual(panel,item);
    const choices=node('div','final-exam-choices');choices.setAttribute('role','group');choices.setAttribute('aria-label','Choose your answer');for(const choice of question.displayChoices){const pick=button(choice.text,()=>session.answer(choice.displayIndex));pick.dataset.examAnswer=choice.displayIndex;pick.setAttribute('aria-pressed',String(choice.selected));choices.append(pick);}panel.append(choices);
    if(state.answers[state.index]>=0)panel.append(node('p','final-exam-choice-status','Choice saved. You can change it before finishing.'));
    const actions=node('div','final-exam-actions'),back=button('← Back',()=>showQuestion(state.index-1),'data-exam-back');back.disabled=state.index===0;actions.append(back,button('Review answers',()=>{review=true;render();focusHeading();},'data-exam-review'));

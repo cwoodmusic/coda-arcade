@@ -14,7 +14,7 @@
  function createSession(api={}){
   const lessonId=api.lessonId,cards=copy(api.cards||[]);if(!LESSONS.includes(lessonId)||cards.length>100||cards.some(card=>!validCard(card))||new Set(cards.map(card=>card.id)).size!==cards.length)throw Error('Choose a valid lesson and its study cards.');
   const checks=cards.map(card=>{
-   const values=typeof api.getChecks==='function'?api.getChecks(copy(card)):[card];
+   const values=typeof api.getChecks==='function'?api.getChecks(copy(card)):Array.isArray(card.checks)?[card,...card.checks]:[card];
    if(!Array.isArray(values)||!values.length||values.length>10||values.some(value=>!object(value)||typeof value.prompt!=='string'||!Array.isArray(value.answers)||value.answers.length<2||value.answers.length>6||value.answers.some(answer=>typeof answer!=='string'||!answer.trim())||!Number.isInteger(value.correct)||value.correct<0||value.correct>=value.answers.length||typeof value.hint!=='string'))throw Error('Choose valid practice checks for each study card.');
    return copy(values);
   });
@@ -122,9 +122,9 @@
    const progress=node('progress');progress.max=state.total;progress.value=state.passed.length;progress.setAttribute('aria-label','Exam lesson practice completed');panel.append(progress);
    if(state.stage!=='look'&&state.checkTotal>1){const count=node('p','exam-study-check-count','Check '+(state.checkIndex+1)+' of '+state.checkTotal);count.dataset.studyCheck=state.checkIndex;panel.append(count);}
    const title=node('h3','exam-study-title',state.stage==='look'?card.title:check.prompt);title.tabIndex=-1;title.dataset.studyHeading='';panel.append(title);
-   if(state.stage==='look'){panel.append(node('p','exam-study-teach',card.teach));drawVisual(panel,card.visual);if(card.example){const example=node('p','exam-study-example');example.append(node('strong','','Example: '),doc.createTextNode(card.example));panel.append(example);}panel.append(button('Try it',()=>{session.tryIt();render();focus();},'try'));}
+   if(state.stage==='look'){panel.append(node('p','exam-study-teach',card.teach));drawVisual(panel,card.visual);for(const visual of card.visuals||[])drawVisual(panel,visual);if(card.example){const example=node('p','exam-study-example');example.append(node('strong','','Example: '),doc.createTextNode(card.example));panel.append(example);}panel.append(button('Try it',()=>{session.tryIt();render();focus();},'try'));}
    else{
-    drawVisual(panel,check.visual);
+    drawVisual(panel,check.visual);for(const visual of check.visuals||[])drawVisual(panel,visual);
     if(state.stage==='try'){const answers=node('div','exam-study-answers');answers.setAttribute('role','group');answers.setAttribute('aria-label','Choose an answer');const offset=(state.index+state.checkIndex)%check.answers.length;check.answers.map((_,at)=>(at+offset)%check.answers.length).forEach(index=>{const answer=check.answers[index],choose=button(answer,()=>{session.answer(index);render();target.querySelector('[data-study-next]')?.focus({preventScroll:true});});choose.dataset.studyAnswer=index;answers.append(choose);});panel.append(answers);}
     if(state.feedback){const feedback=node('p','exam-study-feedback',state.feedback);feedback.setAttribute('role','status');feedback.dataset.correct=String(state.correct);panel.append(feedback);}
     if(state.answered){const next=button(state.checkIndex<state.checkTotal-1?'Next question':state.index===state.total-1?'Finish study':'Next',()=>{const before=session.getState();if(!session.next()){render();changed();return;}if(before.index===before.total-1&&before.checkIndex===before.checkTotal-1&&session.getState().completed)finish();else{render();focus();}changed();},'next');next.disabled=!state.saved;panel.append(next);}

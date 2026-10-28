@@ -161,7 +161,9 @@
  const questionById=new Map((examBank?.QUESTIONS||[]).map(question=>[question.id,question]));
  const supplemental={...(basicsChecks?.CHECKS||{}),...(staffChecks?.CHECKS||{})};
  function getChecks(lessonId,card){
-  const base=copy(card),original=getCards(lessonId).find(value=>value.id===card?.id);
+  const base=copy(card);
+  if(Array.isArray(base.checks))return [base,...copy(base.checks)];
+  const original=getCards(lessonId).find(value=>value.id===card?.id);
   // Teacher-written or edited steps keep their own check. Never append material
   // merely because an authored card reused a built-in identifier.
   if(!original||['teach','example','prompt','answers','correct','hint','visual'].some(key=>JSON.stringify(base[key]??null)!==JSON.stringify(original[key]??null)))return [base];
@@ -185,16 +187,16 @@
   // Pick from across the whole basic path, rather than quizzing only its first lesson.
   const count=Math.min(5,basicCards.length),picked=[];
   for(let index=0;index<count;index++){const at=count===1?0:Math.round(index*(basicCards.length-1)/(count-1));picked.push(basicCards[at]);}
-  const questions=picked.map(card=>({id:'basics-'+card.id,prompt:card.prompt,answers:copy(card.answers),correct:card.correct,explanation:card.hint,visual:card.visual?copy(card.visual):null}));
-  const questionPools=picked.map((card,index)=>getChecks(category.id,card).filter(check=>check.answers.length===questions[index].answers.length).map((check,at)=>({id:at===0?questions[index].id:questions[index].id+'-check-'+(at+1),prompt:check.prompt,answers:copy(check.answers),correct:check.correct,explanation:check.hint,visual:check.visual?copy(check.visual):null})));
+  const questions=picked.map(card=>({id:'basics-'+card.id,prompt:card.prompt,answers:copy(card.answers),correct:card.correct,explanation:card.hint,visual:card.visual?copy(card.visual):null,...(card.visuals?{visuals:copy(card.visuals)}:{})}));
+  const questionPools=picked.map((card,index)=>getChecks(category.id,card).filter(check=>check.answers.length===questions[index].answers.length).map((check,at)=>({id:at===0?questions[index].id:questions[index].id+'-check-'+(at+1),prompt:check.prompt,answers:copy(check.answers),correct:check.correct,explanation:check.hint,visual:check.visual?copy(check.visual):null,...(check.visuals?{visuals:copy(check.visuals)}:{})})));
   return {version:1,title:category.title+' — Basics quiz',custom:true,passScore:Math.ceil(count*.8),questions,questionPools};
  }
  function getCategory(id,options={}){
   const model=definition(id);if(!model)return null;
-  const authored=options.content?.getStudyCards?.(id),cards=Array.isArray(authored)?copy(authored):getCards(id),known=new Set(model.sections.flatMap(section=>section.ids));
-  const sections=model.sections.map(section=>({id:section.id,title:section.title,tier:section.tier,cards:cards.filter(card=>section.ids.includes(card.id))})).filter(section=>section.cards.length);
-  const extras=cards.filter(card=>!known.has(card.id));if(extras.length)sections.push({id:'additional-practice',title:'Additional practice',tier:'advanced',cards:extras});
-  const result={id:model.id,title:model.title,intro:model.intro,sections};result.basicsQuiz=quizFor(result);return result;
+  const authored=options.content?.getStudyCards?.(id),metadata=options.content?.getLesson?.(id),cards=Array.isArray(authored)?copy(authored):getCards(id),definitions=Array.isArray(metadata?.sections)?metadata.sections:null,known=new Set((definitions||model.sections).flatMap(section=>section.cardIds||section.ids));
+  const sections=(definitions||model.sections).map(section=>({id:section.id,title:section.title,tier:section.tier,cards:definitions?(section.cardIds||[]).flatMap(cardId=>{const card=cards.find(card=>card.id===cardId);return card?[card]:[];}):cards.filter(card=>section.ids.includes(card.id))})).filter(section=>section.cards.length);
+  const extras=cards.filter(card=>!known.has(card.id));if(extras.length){let extraId='additional-practice';while(sections.some(section=>section.id===extraId))extraId+='-extra';sections.push({id:extraId,title:'Additional practice',tier:'advanced',cards:extras});}
+  const result={id:model.id,title:typeof metadata?.title==='string'?metadata.title:model.title,intro:typeof metadata?.intro==='string'?metadata.intro:model.intro,sections};result.basicsQuiz=quizFor(result);return result;
  }
  function basicsQuiz(value,options={}){const category=typeof value==='string'?getCategory(value,options):value;return category?quizFor(category):null;}
  function validate(){

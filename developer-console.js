@@ -101,7 +101,7 @@ window.createCodaDeveloperConsole = function (api) {
   function mountEducation(){
     if(educationEditor||!studio.active||playtest||tab!=='education')return;
     if(!window.CodaEducationEditor||!window.CodaEducationContent?.getStore?.()){educationPane.textContent='Lesson editing tools could not load. Reload the page to try again.';return;}
-    educationPane.replaceChildren();educationEditor=window.CodaEducationEditor.mount({host:educationPane,canEdit:canEditArtwork,onExit:()=>{setTab('objects');c.focus({preventScroll:true});}});
+    educationPane.replaceChildren();educationEditor=window.CodaEducationEditor.mount({host:educationPane,initialKind:'study',canEdit:canEditArtwork,onExit:()=>{setTab('objects');c.focus({preventScroll:true});}});
   }
   const pixelPane=pane('pixels','');
   if(window.CodaPixelEditor&&api.renderer)pixelEditor=window.CodaPixelEditor.mount({host:pixelPane,renderer:api.renderer,getData:()=>sprites,getProfile:api.getPixelProfile,getTargets:api.getPixelTargets,canEdit:canEditArtwork,openArtwork:id=>{open('artwork');artworkEditor?.selectTarget(id);},

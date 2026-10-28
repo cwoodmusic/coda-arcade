@@ -15,7 +15,10 @@ def finish_exam_study(page, lesson):
             ||window.CodaExamCurriculum?.forLesson(lesson)||[];
           const heading=document.querySelector('.classroom-exam-study .exam-study-top').textContent;
           const index=Number(heading.match(/Card (\\d+) of/)[1])-1;
-          return cards[index]?.correct;
+          const card=cards[index],checkIndex=Number(document.querySelector('.classroom-exam-study [data-study-check]')?.dataset.studyCheck||0);
+          const checks=window.CodaClassroomLearningPathsData?.getChecks?.(lesson,card)
+            ||[card,...(card?.checks||[])];
+          return checks[checkIndex]?.correct;
         }''', lesson)
         if panel.locator('[data-study-answer]').count():
             panel.locator('[data-study-answer="' + str(current) + '"]').click()

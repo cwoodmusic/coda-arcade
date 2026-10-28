@@ -14,16 +14,17 @@
  const fail=message=>{throw Error(message);};
  function revisionOf(category,quiz,contentRevision=''){return studyModule.revisionOf({category,quiz,contentRevision});}
  function validateCategory(category){
-  if(!object(category)||!IDS.includes(category.id)||typeof category.title!=='string'||!Array.isArray(category.sections)||!category.sections.length||category.sections.length>40)return false;
+  if(!object(category)||!IDS.includes(category.id)||typeof category.title!=='string'||!Array.isArray(category.sections)||category.sections.length>40)return false;
   const ids=new Set();let advanced=false;
   return category.sections.every(section=>{
-   if(!object(section)||!safeId(section.id)||ids.has(section.id)||typeof section.title!=='string'||!['basic','advanced'].includes(section.tier)||!Array.isArray(section.cards)||!section.cards.length||section.cards.length>100||section.cards.some(card=>!studyModule.validCard(card))||new Set(section.cards.map(card=>card.id)).size!==section.cards.length)return false;
+   if(!object(section)||!safeId(section.id)||ids.has(section.id)||typeof section.title!=='string'||!['basic','advanced'].includes(section.tier)||!Array.isArray(section.cards)||section.cards.length>100||section.cards.some(card=>!studyModule.validCard(card))||new Set(section.cards.map(card=>card.id)).size!==section.cards.length)return false;
    ids.add(section.id);if(section.tier==='advanced')advanced=true;else if(advanced)return false;return true;
-  })&&category.sections.some(section=>section.tier==='basic');
+  });
  }
  function createSession(api={}){
   const category=copy(api.category);if(!validateCategory(category))fail('Choose a classroom category and its short lessons.');
   const id=category.id,revision=api.revision||revisionOf(category,category.basicsQuiz),sections=new Map(category.sections.map(section=>[section.id,section]));
+  const hasCards=category.sections.some(section=>section.cards.length>0),hasBasics=category.sections.some(section=>section.tier==='basic'&&section.cards.length>0);
   let storage=api.storage;if(storage===undefined)try{storage=window.localStorage;}catch{}
   const blank=()=>({revision,sections:{},basicsQuiz:null,basicsPassedAt:0,completedAt:0});
   let record=blank(),expected='null',error='',saved=true,stale=false,destroyed=false;
@@ -53,12 +54,12 @@
   function sectionComplete(sectionId){
    const section=sections.get(sectionId),entry=record.sections[sectionId];return !!section&&validSection(entry,sectionId)&&section.cards.every(card=>entry.passed.includes(card.id));
   }
-  const basicsReady=()=>category.sections.filter(section=>section.tier==='basic').every(section=>sectionComplete(section.id));
-  const allReady=()=>category.sections.every(section=>sectionComplete(section.id));
+  const basicsReady=()=>hasCards&&category.sections.filter(section=>section.tier==='basic'&&section.cards.length).every(section=>sectionComplete(section.id));
+  const allReady=()=>hasCards&&category.sections.filter(section=>section.cards.length).every(section=>sectionComplete(section.id));
   function canOpenSection(sectionId){
    const index=category.sections.findIndex(section=>section.id===sectionId);if(index<0)return false;
-   const section=category.sections[index];if(section.tier==='advanced'&&!(record.basicsPassedAt>0))return false;
-   return category.sections.slice(0,index).every(previous=>sectionComplete(previous.id));
+   const section=category.sections[index];if(!section.cards.length||section.tier==='advanced'&&hasBasics&&!(record.basicsPassedAt>0))return false;
+   return category.sections.slice(0,index).filter(previous=>previous.cards.length).every(previous=>sectionComplete(previous.id));
   }
   const sectionStorage=sectionId=>({
    getItem(key){if(key!==studyModule.KEY)return null;return JSON.stringify({version:1,lessons:record.sections[sectionId]?{[id]:copy(record.sections[sectionId])}:{}});},
@@ -81,8 +82,8 @@
   return {
    canRecord,sectionStorage,basicsStorage,sectionRevision,sectionComplete,basicsReady,allReady,canOpenSection,
    markBasicsPassed(){if(!basicsReady())return false;return write(next=>{next.basicsPassedAt=next.basicsPassedAt||Math.max(1,Date.now());});},
-   markCompleted(){if(!allReady()||!record.basicsPassedAt)return false;return write(next=>{next.completedAt=next.completedAt||Math.max(1,Date.now());});},
-   getState:()=>({...copy(record),lessonId:id,saved,error,stale,basicsReady:basicsReady(),allReady:allReady(),sections:category.sections.map(section=>({id:section.id,title:section.title,tier:section.tier,total:section.cards.length,passed:Array.isArray(record.sections[section.id]?.passed)?record.sections[section.id].passed.length:0,completed:sectionComplete(section.id),available:canOpenSection(section.id)}))}),
+   markCompleted(){if(!allReady()||hasBasics&&!record.basicsPassedAt)return false;return write(next=>{next.completedAt=next.completedAt||Math.max(1,Date.now());});},
+   getState:()=>({...copy(record),lessonId:id,saved,error,stale,hasCards,hasBasics,basicsReady:basicsReady(),allReady:allReady(),sections:category.sections.map(section=>({id:section.id,title:section.title,tier:section.tier,total:section.cards.length,passed:Array.isArray(record.sections[section.id]?.passed)?record.sections[section.id].passed.length:0,completed:sectionComplete(section.id),available:canOpenSection(section.id)}))}),
    destroy(){destroyed=true;}
   };
  }
@@ -116,7 +117,7 @@
   const doc=host.ownerDocument,win=doc.defaultView,data=api.data||win.CodaClassroomLearningPathsData,content=api.content||win.CodaEducationContent;
   const category=copy(api.category||data?.getCategory?.(api.lessonId,{content}));if(!validateCategory(category))fail('This category could not load its short lessons.');
   const id=category.id,fullModel=copy(content?.getQuiz?.(id)||quizModule.QUIZZES[id]||win.CodaAccidentalsLesson?.QUIZ),basicModel=copy(category.basicsQuiz||data?.basicsQuiz?.(id,{content}));
-  if(!fullModel?.questions?.length||!basicModel?.questions?.length)fail('This category could not load its quiz.');
+  if(!Array.isArray(fullModel?.questions)||!Array.isArray(basicModel?.questions))fail('This category could not load its quiz.');
   let storage=api.storage;if(storage===undefined)try{storage=win.localStorage;}catch{}
   const currentRevision=()=>revisionOf(api.category||data.getCategory(id,{content}),content?.getQuiz?.(id)||quizModule.QUIZZES[id]||win.CodaAccidentalsLesson?.QUIZ,content?.getLessonRevision?.(id)||'');
   const getChecks=card=>data?.getChecks?.(id,card)||[card];
@@ -135,19 +136,20 @@
   function showError(parent){const state=session.getState();if(!error&&!state.error)return;const message=node('p','learning-path-status',error||state.error);message.setAttribute('role','status');parent.append(message);}
   function renderMenu(){
    if(destroyed)return;phase='menu';sectionId=null;cleanActive();host.replaceChildren();host.classList.add('classroom-learning-paths');host.dataset.learningPath=id;host.dataset.pathPhase='menu';
-   const heading=node('h3','learning-path-title',category.title+' lessons');heading.tabIndex=-1;host.append(heading,node('p','learning-path-intro','One small lesson at a time. Learn, try, then take a little quiz.'));showError(host);
+   const heading=node('h3','learning-path-title',category.title+' lessons');heading.tabIndex=-1;host.append(heading,node('p','learning-path-intro',category.intro||''));showError(host);
    const state=session.getState(),completed=new Map(state.sections.map(section=>[section.id,section]));
+   if(!state.hasCards){host.append(node('p','learning-path-help','No teaching cards yet. Open the lesson editor to add a card.'));if(api.onExit)host.append(button('All categories',api.onExit,'exit'));changed();focus();return;}
    for(const tier of ['basic','advanced']){
-    const sections=category.sections.filter(section=>section.tier===tier);if(!sections.length)continue;
+    const sections=category.sections.filter(section=>section.tier===tier&&section.cards.length);if(!sections.length)continue;
     const group=node('section','learning-path-group');group.dataset.pathTier=tier;group.setAttribute('aria-label',tier==='basic'?'Basics':'Advanced lessons');group.append(node('h4','',tier==='basic'?'Start here':'Advanced lessons'));
-    if(tier==='advanced'&&!state.basicsPassedAt)group.append(node('p','learning-path-help','Finish the basics quiz first.'));
+    if(tier==='advanced'&&state.hasBasics&&!state.basicsPassedAt)group.append(node('p','learning-path-help','Finish the basics quiz first.'));
     const list=node('ol','learning-path-list');
     sections.forEach(section=>{const saved=completed.get(section.id),row=node('li'),item=button('',()=>openSection(section.id),'section',section.id);item.disabled=!saved.available;item.className='learning-path-section';item.dataset.completed=String(saved.completed);item.append(node('strong','',section.title),node('span','',saved.completed?'✓ Complete':saved.passed?String(saved.passed)+' / '+saved.total+' steps':'About '+section.cards.length+' small steps'));row.append(item);list.append(row);});
     group.append(list);
-    const isBasic=tier==='basic',ready=isBasic?state.basicsReady:state.allReady&&state.basicsPassedAt>0,passed=isBasic?state.basicsPassedAt>0:state.completedAt>0;
+    const isBasic=tier==='basic',ready=isBasic?state.basicsReady&&basicModel.questions.length>0:state.allReady&&(!state.hasBasics||state.basicsPassedAt>0)&&fullModel.questions.length>0,passed=isBasic?state.basicsPassedAt>0:state.completedAt>0;
     const quizButton=button((passed?'✓ ':'')+(isBasic?'Basics quiz':'Full category quiz'),()=>openQuiz(isBasic?'basic':'full'),'quiz',isBasic?'basic':'full');quizButton.disabled=!ready;quizButton.className='learning-path-quiz';group.append(quizButton);host.append(group);
    }
-   if(!category.sections.some(section=>section.tier==='advanced')){const full=button(state.completedAt?'✓ Full category quiz':'Full category quiz',()=>openQuiz('full'),'quiz','full');full.disabled=!state.allReady||!state.basicsPassedAt;host.append(full);}
+   if(!category.sections.some(section=>section.tier==='advanced'&&section.cards.length)){const full=button(state.completedAt?'✓ Full category quiz':'Full category quiz',()=>openQuiz('full'),'quiz','full');full.disabled=!state.allReady||state.hasBasics&&!state.basicsPassedAt||!fullModel.questions.length;host.append(full);}
    if(state.completedAt)host.append(node('p','learning-path-success','Category complete! You can review any lesson.'));
    if(api.onPractice&&(id!=='rhythm-tree'||state.basicsPassedAt>0))host.append(button(['note-naming','bass-clef','grand-staff'].includes(id)?'Piano and staff practice':'Guided practice',api.onPractice,'practice'));
    if(api.onExit)host.append(button('All categories',api.onExit,'exit'));changed();focus();
@@ -170,7 +172,8 @@
    }};
   }
   function openQuiz(kind){
-   if(destroyed||!session.canRecord()||kind==='basic'&&!session.basicsReady()||kind==='full'&&(!session.allReady()||!session.getState().basicsPassedAt))return false;
+   const current=session.getState();
+   if(destroyed||!session.canRecord()||kind==='basic'&&(!current.hasBasics||!basicModel.questions.length||!session.basicsReady())||kind==='full'&&(!fullModel.questions.length||!session.allReady()||current.hasBasics&&!current.basicsPassedAt))return false;
    cleanActive();phase=kind==='basic'?'basics-quiz':'category-quiz';sectionId=null;frame(kind==='basic'?'A little basics quiz':'Full category quiz');const mount=node('div','learning-path-activity');host.append(mount);
    const basic=kind==='basic';quiz=quizModule.create({host:mount,lessonId:id,attemptStorage:storage,model:basic?{...basicModel,custom:true}:fullModel,custom:basic||customFull,contentRevision:basic?revision:contentRevision,content,storage:basic?session.basicsStorage:guardedQuizStorage(),canRecord:()=>session.canRecord()&&(basic?session.basicsReady():session.allReady()),renderVisual,onPassed:()=>{
     if(basic){if(session.markBasicsPassed()){error='';renderMenu();}else{error=session.getState().error;renderResult();}}

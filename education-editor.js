@@ -3,27 +3,28 @@
  'use strict';
  const copy=value=>JSON.parse(JSON.stringify(value));
  const CATEGORY_TITLES={'note-naming':'Treble & note names','bass-clef':'Bass clef','grand-staff':'Grand staff & Middle C','rhythm-tree':'Note lengths & rhythm','time-signatures':'Time signatures','major-minor-keys':'Major & minor keys',dynamics:'Dynamics',tempo:'Tempo','accidentals-key-signatures':'Accidentals & key signatures'};
- const textFields=['prompt','teach','guide','example','caption','hint','success','explanation'];
+ const textFields=['prompt','teach','guide','example','caption','hint','success','noteLabel','explanation'];
  function mount(api={}){
   const host=api.host;if(!host?.ownerDocument)throw Error('A lesson editor needs a host.');
   const doc=host.ownerDocument,win=doc.defaultView,library=win.CodaEducationContent,store=api.store||library?.getStore?.();
   if(!store?.getDocument||!store?.saveDocument)throw Error('The lesson content store could not load.');
-  let data=copy(store.getDocument()),kind='exam',category=Object.keys(CATEGORY_TITLES)[0],selected='',draft=null,notationEditor=null,dirty=false,destroyed=false,expanded=false,previewAnswer=null;
+  let data=copy(store.getDocument()),kind=['exam','quiz','lesson','study'].includes(api.initialKind)?api.initialKind:'exam',category=Object.keys(CATEGORY_TITLES)[0],selected='',draft=null,notationEditor=null,dirty=false,destroyed=false,expanded=false,previewAnswer=null,visualEditors=[];
   let priorFocus=null,portal=null,priorOverflow='',serial=0,statusText='',confirmation=null,formPermission=null,coverageSource=null,coverageReport=null;
-  const drafts=new Map(),draftBases=new Map(),undo=[],redo=[];
+  const drafts=new Map(),draftBases=new Map(),sectionTargets=new Map(),lessonDrafts=new Map(),undo=[],redo=[];
   const node=(tag,className,text)=>{const element=doc.createElement(tag);if(className)element.className=className;if(text!==undefined)element.textContent=text;return element;};
   const button=(text,action,name)=>{const element=node('button','',text);element.type='button';if(name)element.dataset.educationAction=name;element.onclick=action;return element;};
   const root=node('section','education-editor');root.dataset.educationEditor='';root.setAttribute('aria-label','Lessons and exams editor');host.append(root);
   const heading=node('header','education-editor-heading'),headingCopy=node('div');
-  const title=node('h2','','Lessons & exams');title.id='education-editor-heading-'+Math.random().toString(36).slice(2);headingCopy.append(title,node('p','','Change questions, answers, instructions, and staff notation.'));
+  const title=node('h2','','Lessons & exams');title.id='education-editor-heading-'+Math.random().toString(36).slice(2);headingCopy.append(title,node('p','','Edit lesson text, practice checks, notes, clefs, and piano keyboards.'));
   const expandButton=button('Full screen',()=>setExpanded(!expanded),'expand'),exitButton=button('Exit editor',exit,'exit');heading.append(headingCopy,expandButton,exitButton);root.append(heading);
   const note=node('p','education-editor-note','Save applies edits in this browser for developer preview. Export a content JSON backup to share or publish your changes. Edited assessments use a separate attempt record, preserving the existing saved results.');root.append(note);
   const toolbar=node('div','education-editor-toolbar'),modeLabel=node('label','','Editing'),mode=node('select');mode.dataset.educationField='mode';mode.setAttribute('aria-label','Content type');
-  for(const [value,text]of [['exam','Final exam questions'],['quiz','Lesson quiz questions'],['lesson','Lesson instructions'],['study','Lesson cards']]){const option=node('option','',text);option.value=value;mode.append(option);}modeLabel.append(mode);
+  for(const [value,text]of [['exam','Final exam questions'],['quiz','Lesson quiz questions'],['lesson','Interactive activity instructions'],['study','Lesson cards · teaching & practice']]){const option=node('option','',text);option.value=value;mode.append(option);}mode.value=kind;modeLabel.append(mode);
   const categoryLabel=node('label','','Topic'),categorySelect=node('select');categorySelect.dataset.educationField='category';categorySelect.setAttribute('aria-label','Lesson or exam category');
   function syncCategories(preferred=category){const topics=Object.entries(CATEGORY_TITLES).filter(([id])=>!['exam','lesson'].includes(kind)||id!=='accidentals-key-signatures');categorySelect.replaceChildren();for(const [value,text]of topics){const option=node('option','',text);option.value=value;categorySelect.append(option);}category=topics.some(([id])=>id===preferred)?preferred:topics[0][0];categorySelect.value=category;}
   syncCategories();categoryLabel.append(categorySelect);
   const searchLabel=node('label','','Find a question or step'),search=node('input');search.type='search';search.placeholder='Search this topic';search.dataset.educationField='search';searchLabel.append(search);toolbar.append(modeLabel,categoryLabel,searchLabel);root.append(toolbar);
+  const lessonSettings=node('details','education-editor-lesson-settings');lessonSettings.dataset.educationLessonSettings='';root.append(lessonSettings);
   const workspace=node('div','education-editor-workspace'),browser=node('aside','education-editor-browser'),count=node('p','education-editor-count'),list=node('select','education-editor-list');list.size=10;list.setAttribute('aria-label','Questions and lesson steps');list.dataset.educationField='list';
   const listActions=node('div','education-editor-actions'),addButton=button('Add question',addQuestion,'add'),duplicateButton=button('Duplicate',duplicate,'duplicate'),deleteButton=button('Delete question',()=>request(kind==='study'?'Delete this teaching card? It may cover material on the exam.':'Delete this question?',removeQuestion),'delete');listActions.append(addButton,duplicateButton,deleteButton);const coverage=node('p','education-editor-note');coverage.dataset.educationCoverage='';coverage.hidden=true;browser.append(count,coverage,list,listActions);
   const form=node('section','education-editor-form');form.setAttribute('aria-label','Selected content');workspace.append(browser,form);root.append(workspace);
@@ -43,7 +44,7 @@
   function labelFor(item,index){return kind==='lesson'?'Step '+(index+1)+' · '+(item.prompt||item.guide||item.teach||item.caption||item.kind||'Instruction'):'#'+String(index+1).padStart(3,'0')+' · '+(kind==='study'?item.title||'Untitled teaching card':item.prompt||'Untitled question');}
   function saveDraft(){if(draft&&dirty)drafts.set(key(),copy(draft));}
   function loadDraft(){const items=collection(),index=kind==='lesson'?Number(selected):items.findIndex(item=>item.id===selected),source=items[index];draft=source?copy(drafts.get(key())||source):null;dirty=!!drafts.get(key());previewAnswer=null;}
-  function markDirty(){if(!draft)return;if(!draftBases.has(key()))draftBases.set(key(),copy(itemIn(data)));dirty=true;drafts.set(key(),copy(draft));message('Unsaved changes. Use Save question or Save step to apply this draft.');updateSaveState();}
+  function markDirty(){if(!draft)return;if(!draftBases.has(key()))draftBases.set(key(),copy(itemIn(data)));dirty=true;drafts.set(key(),copy(draft));message('Unsaved changes. Use '+(kind==='study'?'Save teaching card':kind==='lesson'?'Save step':'Save question')+' to apply this draft.');updateSaveState();}
   function selectItem(value){saveDraft();selected=value;loadDraft();renderForm();renderList();}
   function renderList(){
    const items=collection(),term=search.value.trim().toLocaleLowerCase();list.replaceChildren();let visible=0;
@@ -64,32 +65,62 @@
   }
   function field(label,value,onInput,options={}){
    const wrapper=node('label','education-editor-field',label),input=node(options.multiline?'textarea':'input');if(input.tagName==='INPUT')input.type=options.type||'text';else input.rows=options.rows||3;
-   input.value=value??'';input.maxLength=options.maxLength||2000;if(options.name)input.dataset.educationField=options.name;if(options.min!==undefined)input.min=String(options.min);if(options.max!==undefined)input.max=String(options.max);input.disabled=!canEdit();input.oninput=()=>{onInput(input.type==='number'?Number(input.value):input.value);markDirty();renderPreview();};wrapper.append(input);return wrapper;
+   input.value=value??'';input.maxLength=options.maxLength||2000;if(options.name)input.dataset.educationField=options.name;if(options.min!==undefined)input.min=String(options.min);if(options.max!==undefined)input.max=String(options.max);input.disabled=!canEdit();input.oninput=()=>{if(!canEdit())return;onInput(input.type==='number'?Number(input.value):input.value);markDirty();renderPreview();};wrapper.append(input);return wrapper;
   }
   function updateSaveState(){const save=form.querySelector('[data-education-action="save"]');if(save)save.disabled=!canEdit()||!dirty;const discard=form.querySelector('[data-education-action="discard"]');if(discard)discard.disabled=!dirty;}
+  function lessonMetadata(documentData){const lesson=documentData.lessons[category];return {title:lesson.title,intro:lesson.intro||'',sections:copy(lesson.sections||[]),quizTitle:documentData.quizzes[category].title};}
+  function renderLessonSettings(){
+   lessonSettings.hidden=!['study','lesson','quiz'].includes(kind);lessonSettings.replaceChildren();if(lessonSettings.hidden)return;
+   lessonSettings.append(node('summary','','Lesson title, introduction & sections'));
+   let entry=lessonDrafts.get(category);if(!entry||!entry.dirty){const value=lessonMetadata(data);entry={value:copy(value),base:copy(value),dirty:false};lessonDrafts.set(category,entry);}
+   const panel=node('div','education-editor-settings-fields');lessonSettings.append(panel);
+   const changed=()=>{entry.dirty=true;message('Unsaved lesson settings. Use Save lesson settings to apply them.');save.disabled=!canEdit();};
+   function metaField(parent,label,name,value,apply,multiline=false){const wrap=node('label','education-editor-field',label),control=node(multiline?'textarea':'input');if(multiline)control.rows=3;else control.type='text';control.value=value;control.maxLength=multiline?2000:120;control.dataset.educationField=name;control.disabled=!canEdit();control.oninput=()=>{if(!canEdit())return;apply(control.value);changed();};wrap.append(control);parent.append(wrap);}
+   metaField(panel,'Lesson title','lesson-title',entry.value.title,value=>entry.value.title=value);metaField(panel,'Lesson introduction','lesson-intro',entry.value.intro,value=>entry.value.intro=value,true);metaField(panel,'End-of-lesson quiz title','quiz-title',entry.value.quizTitle,value=>entry.value.quizTitle=value);
+   entry.value.sections.forEach((section,index)=>{
+    const box=node('section','education-editor-section-settings');box.dataset.educationSectionIndex=index;metaField(box,'Section '+(index+1)+' title','section-title-'+index,section.title,value=>section.title=value);
+    const label=node('label','education-editor-field','Level'),select=node('select');select.dataset.educationField='section-tier-'+index;select.disabled=!canEdit();for(const tier of ['basic','advanced']){const option=node('option','',tier==='basic'?'Basics':'Advanced');option.value=tier;select.append(option);}select.value=section.tier;select.onchange=()=>{if(!canEdit())return;section.tier=select.value;entry.value.sections.sort((a,b)=>Number(a.tier==='advanced')-Number(b.tier==='advanced'));changed();renderLessonSettings();};label.append(select);box.append(label);
+    const actions=node('div','education-editor-actions');for(const [delta,text]of [[-1,'Move section up'],[1,'Move section down']]){const target=index+delta,move=button(text,()=>{if(!canEdit())return;[entry.value.sections[index],entry.value.sections[target]]=[entry.value.sections[target],entry.value.sections[index]];changed();renderLessonSettings();});move.disabled=!canEdit()||target<0||target>=entry.value.sections.length||entry.value.sections[target]?.tier!==section.tier;actions.append(move);}
+    const remove=button('Remove section',()=>{if(!canEdit())return;entry.value.sections.splice(index,1);changed();renderLessonSettings();},'remove-section');remove.disabled=!canEdit()||entry.value.sections.length<=1;actions.append(remove);box.append(actions);panel.append(box);
+   });
+   const add=button('Add section',()=>{if(!canEdit()||entry.value.sections.length>=40)return;entry.value.sections.push({id:newId(),title:'New lesson section',tier:'advanced',cardIds:[]});changed();renderLessonSettings();},'add-section');add.disabled=!canEdit()||entry.value.sections.length>=40;panel.append(add);
+   const save=button('Save lesson settings',()=>{
+    if(!canEdit())return;const latest=copy(store.getDocument());if(!same(lessonMetadata(latest),entry.base)){message('Lesson settings changed in another editor. Your settings draft was kept.');return;}const next=copy(latest);Object.assign(next.lessons[category],{title:entry.value.title,intro:entry.value.intro,sections:copy(entry.value.sections)});next.quizzes[category].title=entry.value.quizTitle;
+    if(applyDocument(next,'Saved lesson titles, introduction, and sections. Reopen the lesson to see them.',latest)){lessonDrafts.delete(category);loadDraft();renderList();renderForm();}
+   },'save-lesson-settings');save.disabled=!canEdit()||!entry.dirty;
+   const discard=button('Discard lesson settings',()=>{lessonDrafts.delete(category);renderLessonSettings();},'discard-lesson-settings');discard.disabled=!entry.dirty;panel.append(save,discard);
+  }
+  function renderCardSection(){
+   const sections=data.lessons[category].sections||[],current=sections.find(section=>section.cardIds.includes(draft.id))?.id||'';
+   const label=node('label','education-editor-field','Lesson section'),select=node('select');select.dataset.educationField='card-section';select.disabled=!canEdit();const extra=node('option','','Additional practice');extra.value='';select.append(extra);for(const section of sections){const option=node('option','',(section.tier==='basic'?'Basics · ':'Advanced · ')+section.title);option.value=section.id;select.append(option);}select.value=sectionTargets.has(key())?sectionTargets.get(key()):current;select.onchange=()=>{if(!canEdit())return;sectionTargets.set(key(),select.value);markDirty();};label.append(select);form.append(label);
+   const order=node('div','education-editor-actions'),section=sections.find(section=>section.id===current),ids=(section?.cardIds||data.lessons[category].study.map(card=>card.id)).filter(id=>data.lessons[category].study.some(card=>card.id===id)),index=ids.indexOf(draft.id);
+   for(const [delta,text]of [[-1,'Move card up'],[1,'Move card down']]){const move=button(text,()=>{
+    if(!canEdit()||dirty)return;const at=index+delta;if(at<0||at>=ids.length)return;const latest=copy(store.getDocument());if(!same(latest,data)){message('The lesson changed. Reopen this card before moving it.');return;}const next=copy(latest),cards=next.lessons[category].study,first=cards.findIndex(card=>card.id===ids[index]),second=cards.findIndex(card=>card.id===ids[at]);[cards[first],cards[second]]=[cards[second],cards[first]];const target=next.lessons[category].sections?.find(value=>value.id===current);if(target){const a=target.cardIds.indexOf(ids[index]),b=target.cardIds.indexOf(ids[at]);[target.cardIds[a],target.cardIds[b]]=[target.cardIds[b],target.cardIds[a]];}if(applyDocument(next,'Moved the teaching card.',latest)){loadDraft();renderList();renderForm();}
+   },delta<0?'move-card-up':'move-card-down');move.disabled=!canEdit()||dirty||index+delta<0||index+delta>=ids.length;order.append(move);}form.append(order);
+  }
   function renderForm(){
-   formPermission=canEdit();notationEditor?.destroy();notationEditor=null;form.replaceChildren();if(!draft){form.append(node('p','education-editor-empty','Choose a question or step to edit.'));return;}
+   formPermission=canEdit();notationEditor?.destroy();notationEditor=null;visualEditors.forEach(editor=>editor.destroy());visualEditors=[];renderLessonSettings();form.replaceChildren();if(!draft){form.append(node('p','education-editor-empty','Choose a question or step to edit.'));return;}
    const top=node('div','education-editor-selected');top.append(node('h3','',kind==='lesson'?'Step '+(Number(selected)+1):kind==='study'?'Teaching card':'Question'),node('small','',kind==='lesson'?CATEGORY_TITLES[category]:draft.id));form.append(top);
    if(kind==='lesson')renderStep();else if(kind==='study')renderStudy();else{
     if(kind==='exam'){const links=(data.lessons?.[category]?.study||[]).filter(card=>card.covers?.includes(draft.id)),linked=node('p','education-editor-note',links.length?'Linked teaching cards: '+links.map(card=>card.title).join('; ')+'. Review these lessons after changing the question or its answers.':'This question still needs teaching coverage. Add its ID to an exam lesson card before publishing.');linked.dataset.educationLinks='';form.append(linked);}
     form.append(field('Question',draft.prompt,value=>draft.prompt=value,{multiline:true,name:'prompt'}));renderAnswers();
     form.append(field('Answer explanation',draft.explanation,value=>draft.explanation=value,{multiline:true,name:'explanation'}));
    }
-   renderNotation();
+   renderVisuals(form,draft,'main');if(kind==='study')renderChecks();
    const actions=node('div','education-editor-actions');actions.append(button(kind==='lesson'?'Save step':kind==='study'?'Save teaching card':'Save question',saveSelected,'save'),button('Discard draft',discard,'discard'),button('Restore default',restoreDefault,'reset'));form.append(actions);
    const preview=node('section','education-editor-preview');preview.setAttribute('aria-label','Question preview');preview.dataset.educationPreview='';form.append(preview);updateSaveState();renderPreview();
   }
-  function renderAnswers(correctKey='correct'){
-   const group=node('fieldset','education-editor-answers'),legend=node('legend','','Answers · select the correct answer');group.append(legend);
-   draft.answers.forEach((answer,index)=>{
-    const row=node('div','education-editor-answer'),radio=node('input');radio.type='radio';radio.name='education-correct-'+title.id;radio.checked=draft[correctKey]===index;radio.setAttribute('aria-label','Answer '+(index+1)+' is correct');radio.disabled=!canEdit();radio.onchange=()=>{draft[correctKey]=index;markDirty();renderPreview();};
-    const input=node('input');input.type='text';input.value=answer;input.maxLength=500;input.setAttribute('aria-label','Answer '+(index+1));input.disabled=!canEdit();input.oninput=()=>{if(draft.answers[index]!==input.value&&draft.answerNotes)delete draft.answerNotes;draft.answers[index]=input.value;markDirty();renderPreview();};
-    const remove=button('×',()=>{if(!canEdit()||draft.answers.length<=2)return;draft.answers.splice(index,1);if(draft[correctKey]===index)draft[correctKey]=0;else if(draft[correctKey]>index)draft[correctKey]--;if(Array.isArray(draft.answerNotes))draft.answerNotes.splice(index,1);markDirty();renderForm();},'remove-answer');remove.setAttribute('aria-label','Remove answer '+(index+1));remove.disabled=!canEdit()||draft.answers.length<=2;row.append(radio,input,remove);group.append(row);
+  function renderAnswers(correctKey='correct',target=draft,parent=form,prefix=''){
+   const group=node('fieldset','education-editor-answers'),legend=node('legend','',prefix?'Practice answers · select the correct answer':'Answers · select the correct answer');group.append(legend);
+   target.answers.forEach((answer,index)=>{
+    const row=node('div','education-editor-answer'),radio=node('input');radio.type='radio';radio.name='education-correct-'+title.id+'-'+prefix;radio.checked=target[correctKey]===index;radio.setAttribute('aria-label',(prefix?'Check '+(Number(prefix.match(/\d+/)?.[0])+2)+' ':'')+'Answer '+(index+1)+' is correct');radio.disabled=!canEdit();radio.onchange=()=>{if(!canEdit())return;target[correctKey]=index;markDirty();renderPreview();};
+    const input=node('input');input.type='text';input.value=answer;input.maxLength=400;input.setAttribute('aria-label',(prefix?prefix+' ':'')+'Answer '+(index+1));input.disabled=!canEdit();input.oninput=()=>{if(!canEdit())return;if(target.answers[index]!==input.value&&target.answerNotes)delete target.answerNotes;target.answers[index]=input.value;markDirty();renderPreview();};
+    const remove=button('×',()=>{if(!canEdit()||target.answers.length<=2)return;target.answers.splice(index,1);if(target[correctKey]===index)target[correctKey]=0;else if(target[correctKey]>index)target[correctKey]--;if(Array.isArray(target.answerNotes))target.answerNotes.splice(index,1);markDirty();renderForm();},prefix+'remove-answer');remove.setAttribute('aria-label','Remove '+(prefix?prefix+' ':'')+'answer '+(index+1));remove.disabled=!canEdit()||target.answers.length<=2;row.append(radio,input,remove);group.append(row);
    });
-   const add=button('Add answer',()=>{if(!canEdit()||draft.answers.length>=6)return;draft.answers.push('New answer');if(Array.isArray(draft.answerNotes))delete draft.answerNotes;markDirty();renderForm();form.querySelectorAll('.education-editor-answer input[type="text"]')[draft.answers.length-1]?.focus();},'add-answer');add.disabled=!canEdit()||draft.answers.length>=6;group.append(add);form.append(group);
+   const add=button('Add answer',()=>{if(!canEdit()||target.answers.length>=6)return;target.answers.push('New answer');if(Array.isArray(target.answerNotes))delete target.answerNotes;markDirty();renderForm();},prefix+'add-answer');add.disabled=!canEdit()||target.answers.length>=6;group.append(add);parent.append(group);
   }
   function renderStep(){
-   const summary=node('p','education-editor-step-help','This keeps the existing interactive activity. Edit the teaching text, expected answer, or its notation picture below.');form.append(summary);
+   const summary=node('p','education-editor-step-help','Edit this activity’s instructions, answers, and pictures below.');form.append(summary);
    for(const key of textFields){if(key==='explanation'||!(key in draft))continue;form.append(field(key[0].toUpperCase()+key.slice(1),draft[key],value=>draft[key]=value,{multiline:true,name:key}));}
    if(Array.isArray(draft.answers))renderAnswers(Number.isInteger(draft.answer)?'answer':'correct');
    else if(typeof draft.answer==='string')form.append(field('Expected answer',draft.answer,value=>draft.answer=value,{name:'answer',maxLength:100}));
@@ -99,29 +130,10 @@
    form.append(node('p','education-editor-step-help','Teach one idea, show an example, then let the student try. Removing a covered card can leave exam material untaught.'));
    const path=win.CodaClassroomLearningPathsData?.getCategory?.(category,{content:{getStudyCards:id=>copy(data.lessons?.[id]?.study||[])}}),section=path?.sections?.find(item=>item.cards.some(card=>card.id===draft.id));
    if(section){const location=node('p','education-editor-note',(section.tier==='advanced'?'Advanced':'Basics')+' · '+section.title);location.dataset.educationLessonSection=section.id;form.append(location);}
-   for(const [name,label]of [['title','Card title'],['teach','Teaching idea'],['example','Worked example'],['prompt','Practice question']])form.append(field(label,draft[name],value=>draft[name]=value,{multiline:name!=='title',name,maxLength:name==='title'?120:2000}));
-   renderAnswers();form.append(field('Hint after a mistake',draft.hint,value=>draft.hint=value,{multiline:true,name:'hint'}));
+   for(const [name,label]of [['title','Card title'],['teach','Teaching idea'],['example','Worked example'],['prompt','Practice question']])form.append(field(label,draft[name],value=>draft[name]=value,{multiline:name!=='title',name,maxLength:name==='title'?120:name==='prompt'?1200:2000}));
+   renderCardSection();renderAnswers();form.append(field('Hint after a mistake',draft.hint,value=>draft.hint=value,{multiline:true,name:'hint'}));
    form.append(field('Exam question IDs taught by this card',Array.isArray(draft.covers)?draft.covers.join(', '):'',value=>draft.covers=value.split(/[\s,]+/).filter(Boolean),{multiline:true,name:'covers',maxLength:25000}));
    if(draft.covers?.length)form.append(node('p','education-editor-note','This card teaches material used by '+draft.covers.length+' built-in exam question'+(draft.covers.length===1?'':'s')+'. Check coverage after changing or deleting its teaching.'));
-  }
-  function renderLessonDiagram(){
-   const supported=['clef-intro','note-parts','rhythm-tree'],current=draft.visual?.kind;
-   if(kind!=='study'&&!supported.includes(current))return;
-   const group=node('fieldset','education-editor-answers');group.dataset.educationLessonDiagram='';group.append(node('legend','','Lesson diagram'));
-   function select(label,name,value,choices,apply){const wrapper=node('label','education-editor-field',label),input=node('select');input.dataset.educationField=name;input.disabled=!canEdit();for(const [id,text]of choices){const option=node('option','',text);option.value=id;input.append(option);}input.value=String(value);input.onchange=()=>{if(!canEdit())return;apply(input.value);markDirty();renderForm();};wrapper.append(input);group.append(wrapper);}
-   select('Picture type','lesson-diagram',supported.includes(current)?current:'existing',[['existing',draft.visual?'Keep current picture':'No picture'],['clef-intro','Staff and clef introduction'],['note-parts','Parts of a note'],['rhythm-tree','Basic rhythm tree']],value=>{
-    if(value==='clef-intro')draft.visual={kind:value,clef:category==='bass-clef'?'bass':'treble',page:'staff'};
-    else if(value==='note-parts')draft.visual={kind:value,focus:'all',beats:.5};
-    else if(value==='rhythm-tree')draft.visual={kind:value,level:3};
-   });
-   if(current==='clef-intro'){
-    select('Clef','diagram-clef',draft.visual.clef,[['treble','Treble clef'],['bass','Bass clef']],value=>draft.visual.clef=value);
-    select('Teaching picture','diagram-clef-page',draft.visual.page,[['staff','Five lines and four spaces'],['clef','Clef landmark'],['lines','Line-name reminder'],['spaces','Space-name reminder']],value=>draft.visual.page=value);
-   }else if(current==='note-parts'){
-    select('Highlight','diagram-note-part',draft.visual.focus,[['head','Notehead'],['stem','Stem'],['flag','Flag'],['all','All note parts']],value=>draft.visual.focus=value);
-    select('Note symbol','diagram-note-beats',draft.visual.beats,[['4','Whole note'],['2','Half note'],['1','Quarter note'],['0.5','Eighth note']],value=>draft.visual.beats=Number(value));
-   }else if(current==='rhythm-tree')select('Show tree through','diagram-tree-level',draft.visual.level,[['0','Whole note'],['1','Half notes'],['2','Quarter notes'],['3','Eighth notes']],value=>draft.visual.level=Number(value));
-   form.append(group);
   }
   function renderSignature(){
    const model=draft.visual,group=node('fieldset','education-editor-answers');group.dataset.educationSignature='';group.append(node('legend','','Key-signature diagram'));
@@ -135,23 +147,51 @@
    });
    const tools=node('div','education-editor-actions');for(const [type,label]of [['note','Add note'],['bar','Add bar line']]){const add=button(label,()=>{if(!canEdit()||model.items.length>=16)return;model.items.push(type==='note'?{type:'note',position:0,accidental:'none'}:{type:'bar'});markDirty();renderForm();},'signature-add-'+type);add.disabled=!canEdit()||model.items.length>=16;tools.append(add);}group.append(tools);form.append(group);
   }
-  function renderNotation(){
-   renderLessonDiagram();const component=win.CodaEducationNotation,hasNotation=draft.visual?.kind==='notation',hasSignature=draft.visual?.kind==='key-signature';if(hasSignature)renderSignature();
-   const label=node('label','education-editor-check'),toggle=node('input');toggle.type='checkbox';toggle.checked=hasNotation;toggle.disabled=!canEdit()||!component;toggle.dataset.educationField='notation';label.append(toggle,doc.createTextNode(hasSignature?'Replace diagram with a general music staff':'Use an editable music staff'));form.append(label);
-   if(!component){form.append(node('p','education-editor-note','The notation tools could not load. Reload to try again.'));return;}
-   toggle.onchange=()=>{if(!canEdit())return;if(toggle.checked){draft.visual={kind:'notation',score:component.fromVisual(draft.visual||((draft.kind==='staff')?{kind:'staff',position:draft.position,clef:draft.clef,grand:draft.grand}:null))};}else draft.visual=null;markDirty();renderForm();};
-   if(hasNotation){const notationHost=node('div','education-editor-notation');form.append(notationHost);notationEditor=component.mount({host:notationHost,value:draft.visual.score,canEdit,onChange:value=>{if(!canEdit())return;draft.visual={kind:'notation',score:copy(value)};markDirty();renderPreview();}});}
-   else if(draft.visual){const clear=button('Remove existing picture',()=>{if(!canEdit())return;draft.visual=null;markDirty();renderForm();},'remove-visual');clear.disabled=!canEdit();form.append(clear);}
+  function mountPicture(parent,value,prefix,label,changed){
+   const host=node('div','education-editor-picture');parent.append(host);const component=win.CodaEducationVisualEditor;
+   if(!component){host.append(node('p','','Visual tools are still loading. Reload the editor.'));return;}
+   visualEditors.push(component.mount({host,value,canEdit,prefix,label,onChange:value=>{if(!canEdit())return false;changed(copy(value));markDirty();renderPreview();return true;}}));
+  }
+  function renderVisuals(parent,target,prefix){
+   const group=node('section','education-editor-pictures');group.append(node('h4','',prefix==='main'&&['study','lesson'].includes(kind)?'Lesson visuals':'Question visuals'));
+   mountPicture(group,target.visual||null,prefix,'Main visual',value=>{target.visual=value;if(kind==='lesson'&&target===draft)target.hideVisual=value===null;});
+   if(target===draft&&target.visual?.kind==='key-signature')renderSignature();
+   (target.visuals||[]).forEach((value,index)=>{
+    const item=node('section','education-editor-additional-picture');item.dataset.educationVisualIndex=index;
+    item.append(node('h5','','Additional visual '+(index+1)));
+    mountPicture(item,value,prefix==='main'?'extra-'+index:prefix+'-extra-'+index,'Additional visual '+(index+1),next=>{if(next)target.visuals[index]=next;else{target.visuals.splice(index,1);win.queueMicrotask(()=>{if(!destroyed)renderForm();});}});
+    const actions=node('div','education-editor-actions');const remove=button('Remove visual',()=>{if(!canEdit())return;target.visuals.splice(index,1);markDirty();renderForm();},prefix==='main'?'remove-additional-visual':prefix+'-remove-visual');remove.disabled=!canEdit();actions.append(remove);
+    for(const [delta,label]of [[-1,'Move visual up'],[1,'Move visual down']]){const move=button(label,()=>{if(!canEdit())return;const at=index+delta;if(at<0||at>=target.visuals.length)return;[target.visuals[index],target.visuals[at]]=[target.visuals[at],target.visuals[index]];markDirty();renderForm();});move.disabled=!canEdit()||index+delta<0||index+delta>=target.visuals.length;actions.append(move);}item.append(actions);group.append(item);
+   });
+   const add=button('Add visual',()=>{if(!canEdit()||(target.visuals?.length||0)>=6)return;(target.visuals||=[]).push({kind:'keyboard',notes:[]});if(kind==='lesson'&&target===draft)target.hideVisual=false;markDirty();renderForm();},prefix==='main'?'add-visual':prefix+'-add-visual');add.disabled=!canEdit()||(target.visuals?.length||0)>=6;group.append(add);parent.append(group);
+  }
+  function renderChecks(){
+   const box=node('section','education-editor-checks');box.append(node('h4','','Follow-up checks'),node('p','education-editor-note','The practice question above is Check 1. Edit, add, or remove the questions that follow it.'));
+   (draft.checks||[]).forEach((check,index)=>{
+    const item=node('section','education-editor-followup');item.dataset.educationCheckIndex=index;item.append(node('h5','','Check '+(index+2)));
+    item.append(field('Practice question',check.prompt,value=>check.prompt=value,{multiline:true,name:'check-'+index+'-prompt',maxLength:1200}));renderAnswers('correct',check,item,'check-'+index+'-');
+    item.append(field('Feedback and hint',check.hint,value=>check.hint=value,{multiline:true,name:'check-'+index+'-hint'}));renderVisuals(item,check,'check-'+index);
+    const actions=node('div','education-editor-actions'),remove=button('Remove check',()=>{if(!canEdit())return;draft.checks.splice(index,1);markDirty();renderForm();},'remove-check');remove.disabled=!canEdit();actions.append(remove);
+    for(const [delta,label]of [[-1,'Move check up'],[1,'Move check down']]){const move=button(label,()=>{if(!canEdit())return;const at=index+delta;if(at<0||at>=draft.checks.length)return;[draft.checks[index],draft.checks[at]]=[draft.checks[at],draft.checks[index]];markDirty();renderForm();});move.disabled=!canEdit()||index+delta<0||index+delta>=draft.checks.length;actions.append(move);}item.append(actions);box.append(item);
+   });
+   const add=button('Add practice check',()=>{if(!canEdit()||(draft.checks?.length||0)>=9)return;(draft.checks||=[]).push({prompt:'Try this musical idea.',answers:['Answer 1','Answer 2','Answer 3'],correct:0,hint:'Look at the lesson example.',visual:null});markDirty();renderForm();},'add-check');add.disabled=!canEdit()||(draft.checks?.length||0)>=9;box.append(add);form.append(box);
+  }
+  function previewPicture(parent,visual){
+   if(!visual)return;const figure=node('div','education-editor-preview-staff');
+   if(win.CodaClassroomLearningPaths?.renderVisual?.(figure,visual)===true){parent.append(figure);return;}
+   if(visual.kind==='key-signature'&&win.CodaAccidentalsLesson){const checked=win.CodaAccidentalsLesson.validateVisual(visual);if(checked.ok)figure.innerHTML=win.CodaAccidentalsLesson.signatureSVG(checked.data);}
+   else if(visual.kind==='notation'&&win.CodaEducationNotation)figure.innerHTML=win.CodaEducationNotation.toSVG(visual.score);
+   else if(visual.kind==='staff'&&win.CodaClassroomQuiz)figure.innerHTML=win.CodaClassroomQuiz.staffSVG(visual.position,visual);
+   else if(visual.kind==='keyboard'&&win.CodaClassroomKeyboard)figure.innerHTML=win.CodaClassroomKeyboard.toSVG(visual);
+   else if(visual.kind==='clef-intro'&&win.CodaClassroomTutorials)figure.innerHTML=win.CodaClassroomTutorials.clefReminderSVG(visual.clef,visual.page);
+   else{figure.append(node('p','education-editor-preview-caption','Existing '+String(visual.kind||'lesson')+' picture.'));}parent.append(figure);
   }
   function renderPreview(){
    const preview=form.querySelector('[data-education-preview]');if(!preview||!draft)return;preview.replaceChildren();preview.append(node('h4','','Preview'),node('p','education-editor-preview-prompt',draft.prompt||draft.guide||draft.teach||''));
    if(kind==='lesson'||kind==='study')for(const key of ['teach','guide','example','caption','hint','success'])if(draft[key])preview.append(node('p','education-editor-preview-caption',key[0].toUpperCase()+key.slice(1)+': '+draft[key]));
-   const visual=draft.visual||(kind==='lesson'&&draft.kind==='staff'?{kind:'staff',position:draft.position,clef:draft.clef,grand:draft.grand}:null);
-   if(visual&&['keyboard','clef-intro','note-parts','rhythm-tree'].includes(visual.kind)&&win.CodaClassroomLearningPaths?.renderVisual){const figure=node('div','education-editor-preview-staff');if(win.CodaClassroomLearningPaths.renderVisual(figure,visual))preview.append(figure);}
-   else if(visual?.kind==='key-signature'&&win.CodaAccidentalsLesson){const checked=win.CodaAccidentalsLesson.validateVisual(visual);if(checked.ok){const figure=node('div','education-editor-preview-staff');figure.innerHTML=win.CodaAccidentalsLesson.signatureSVG(checked.data);preview.append(figure);}}
-   else if(visual?.kind==='notation'&&win.CodaEducationNotation){const figure=node('div','education-editor-preview-staff');figure.innerHTML=win.CodaEducationNotation.toSVG(visual.score);preview.append(figure);}
-   else if(visual?.kind==='staff'&&win.CodaClassroomQuiz){const figure=node('div','education-editor-preview-staff');figure.innerHTML=win.CodaClassroomQuiz.staffSVG(visual.position,visual);preview.append(figure);}
-   else if(visual)preview.append(node('p','education-editor-preview-caption','Existing '+String(visual.kind||'lesson')+' picture will appear with this question.'));
+   const visual=draft.visual||(!draft.hideVisual&&kind==='lesson'&&draft.kind==='staff'?{kind:'staff',position:draft.position,clef:draft.clef,grand:draft.grand}:null);
+   previewPicture(preview,visual);for(const value of draft.visuals||[])previewPicture(preview,value);
+   if(kind==='study')for(const [index,check]of (draft.checks||[]).entries()){const box=node('section','education-editor-preview-check');box.append(node('h5','','Check '+(index+2)),node('p','',check.prompt),node('p','',check.hint));previewPicture(box,check.visual);for(const value of check.visuals||[])previewPicture(box,value);preview.append(box);}
    if(Array.isArray(draft.answers)){
     const correct=kind==='lesson'?(Number.isInteger(draft.answer)?draft.answer:draft.correct):draft.correct,group=node('div','education-editor-preview-answers');draft.answers.forEach((text,index)=>{const answer=button(text,()=>{previewAnswer=index;renderPreview();});answer.dataset.previewAnswer=String(index);if(previewAnswer===index)answer.dataset.correct=String(index===correct);group.append(answer);});preview.append(group);
     if(previewAnswer!==null)preview.append(node('p','education-editor-preview-feedback',(previewAnswer===correct?'Correct. ':'Try again. ')+(draft.explanation||'')));
@@ -168,27 +208,27 @@
    if(!draft||!canEdit())return;const latest=copy(store.getDocument()),base=draftBases.get(key())||itemIn(data);if(!same(itemIn(latest),base)){message('This question or step changed in another editor. Your unsaved draft was kept. Use Discard draft to reload the saved version.');return;}const next=copy(latest),value=copy(draft);
    if(kind==='exam'){const index=next.exam.questions.findIndex(item=>item.id===selected);if(index<0)return;next.exam.questions[index]=value;}
    else if(kind==='quiz'){const index=next.quizzes[category].questions.findIndex(item=>item.id===selected);if(index<0)return;next.quizzes[category].questions[index]=value;}
-   else if(kind==='study'){const index=next.lessons[category].study.findIndex(item=>item.id===selected);if(index<0)return;next.lessons[category].study[index]=value;}else next.lessons[category].steps[Number(selected)]=value;
-   if(applyDocument(next,kind==='lesson'?'Saved lesson step. Reopen the lesson to see your changes.':kind==='study'?'Saved teaching card. Reopen the lesson to use your changes.':'Saved question. New practice attempts use your edited questions.',latest)){drafts.delete(key());draftBases.delete(key());dirty=false;loadDraft();renderList();renderForm();}
+   else if(kind==='study'){const index=next.lessons[category].study.findIndex(item=>item.id===selected);if(index<0)return;next.lessons[category].study[index]=value;if(sectionTargets.has(key())){const target=sectionTargets.get(key());for(const section of next.lessons[category].sections||[])section.cardIds=section.cardIds.filter(id=>id!==value.id);next.lessons[category].sections?.find(section=>section.id===target)?.cardIds.push(value.id);}}else next.lessons[category].steps[Number(selected)]=value;
+   if(applyDocument(next,kind==='lesson'?'Saved lesson step. Reopen the lesson to see your changes.':kind==='study'?'Saved teaching card. Reopen the lesson to use your changes.':'Saved question. New practice attempts use your edited questions.',latest)){drafts.delete(key());draftBases.delete(key());sectionTargets.delete(key());dirty=false;loadDraft();renderList();renderForm();}
   }
-  function discard(){drafts.delete(key());draftBases.delete(key());data=copy(store.getDocument());dirty=false;loadDraft();renderList();renderForm();message('Discarded this unsaved draft and loaded the latest saved content.');}
+  function discard(){drafts.delete(key());draftBases.delete(key());sectionTargets.delete(key());data=copy(store.getDocument());dirty=false;loadDraft();renderList();renderForm();message('Discarded this unsaved draft and loaded the latest saved content.');}
   function newId(){return library?.generateId?.()||'custom-'+Date.now().toString(36)+'-'+(++serial)+'-'+Math.random().toString(36).slice(2,8);}
-  function addQuestion(){if(!canEdit()||kind==='lesson')return;saveDraft();const value=kind==='study'?{id:newId(),title:'New teaching card',teach:'Explain one musical idea here.',example:'Show a short worked example.',prompt:'Try this idea.',answers:['Answer 1','Answer 2','Answer 3'],correct:0,hint:'Look at the worked example.',visual:null,covers:[]}:{id:newId(),category,prompt:'New question',answers:['Answer 1','Answer 2','Answer 3'],correct:0,explanation:'',visual:null},latest=copy(store.getDocument()),next=copy(latest);if(kind==='exam')next.exam.questions.push(value);else if(kind==='study')next.lessons[category].study.push(value);else next.quizzes[category].questions.push(value);if(applyDocument(next,kind==='study'?'Added a teaching card. Add its teaching idea and practice question, then save.':'Added a question. Edit it below and save when ready.',latest)){selected=value.id;search.value='';loadDraft();renderList();renderForm();form.querySelector('[data-education-field="prompt"]')?.focus();}}
+  function addQuestion(){if(!canEdit()||kind==='lesson')return;saveDraft();const value=kind==='study'?{id:newId(),title:'New teaching card',teach:'Explain one musical idea here.',example:'Show a short worked example.',prompt:'Try this idea.',answers:['Answer 1','Answer 2','Answer 3'],correct:0,hint:'Look at the worked example.',visual:null,checks:[],covers:[]}:{id:newId(),category,prompt:'New question',answers:['Answer 1','Answer 2','Answer 3'],correct:0,explanation:'',visual:null},latest=copy(store.getDocument()),next=copy(latest);if(kind==='exam')next.exam.questions.push(value);else if(kind==='study')next.lessons[category].study.push(value);else next.quizzes[category].questions.push(value);if(applyDocument(next,kind==='study'?'Added a teaching card. Add its teaching idea and practice question, then save.':'Added a question. Edit it below and save when ready.',latest)){selected=value.id;search.value='';loadDraft();renderList();renderForm();form.querySelector('[data-education-field="prompt"]')?.focus();}}
   function duplicate(){if(!canEdit()||kind==='lesson'||!draft)return;const value=copy(draft);value.id=newId();if(kind==='study')value.title+=' (copy)';else value.prompt+=' (copy)';const latest=copy(store.getDocument()),next=copy(latest);if(kind==='exam')next.exam.questions.push(value);else if(kind==='study')next.lessons[category].study.push(value);else next.quizzes[category].questions.push(value);if(applyDocument(next,kind==='study'?'Duplicated the teaching card.':'Duplicated the question.',latest)){saveDraft();selected=value.id;search.value='';loadDraft();renderList();renderForm();}}
   function request(text,action,verb='Delete'){if(!canEdit())return;confirmation=action;confirmText.textContent=text+' You can undo this saved edit.';confirmYes.textContent=verb;confirmBox.hidden=false;confirmYes.focus();}
   function removeQuestion(){if(!canEdit()||kind==='lesson'||!draft)return;const latest=copy(store.getDocument());if(!same(itemIn(latest),itemIn(data))){message('This question changed in another editor. Reload its saved version before deleting it.');return;}const next=copy(latest),oldKey=key();if(kind==='exam')next.exam.questions=next.exam.questions.filter(item=>item.id!==selected);else if(kind==='study')next.lessons[category].study=next.lessons[category].study.filter(item=>item.id!==selected);else next.quizzes[category].questions=next.quizzes[category].questions.filter(item=>item.id!==selected);if(applyDocument(next,kind==='study'?'Deleted the teaching card. Check exam coverage; Undo can restore it.':'Deleted the question. Undo saved edit can restore it.',latest)){drafts.delete(oldKey);draftBases.delete(oldKey);selected=collection()[0]?.id||'';loadDraft();renderList();renderForm();}}
   function defaults(){return store.getDefaults?.()||library?.getDefaults?.()||library?.BASE_DOCUMENT||null;}
-  function restoreAll(){const base=defaults();if(!base){message('Default content is unavailable. Your current content was kept.');return;}if(applyDocument(base,'Restored the original questions and lessons. Undo saved edit can recover your changes.')){drafts.clear();draftBases.clear();selected=kind==='lesson'?'0':collection()[0]?.id||'';loadDraft();renderList();renderForm();}}
+  function restoreAll(){const base=defaults();if(!base){message('Default content is unavailable. Your current content was kept.');return;}if(applyDocument(base,'Restored the original questions and lessons. Undo saved edit can recover your changes.')){drafts.clear();draftBases.clear();sectionTargets.clear();lessonDrafts.clear();selected=kind==='lesson'?'0':collection()[0]?.id||'';loadDraft();renderList();renderForm();}}
   function restoreDefault(){
    if(!canEdit()||!draft)return;const base=defaults();if(!base){message('Default content is unavailable. Your current edit was kept.');return;}let value;
    if(kind==='exam')value=base.exam?.questions.find(item=>item.id===selected);else if(kind==='quiz')value=base.quizzes?.[category]?.questions.find(item=>item.id===selected);else if(kind==='study')value=base.lessons?.[category]?.study?.find(item=>item.id===selected);else value=base.lessons?.[category]?.steps[Number(selected)];
    if(!value){message('This is a new question. Delete it to remove it from the content.');return;}draft=copy(value);markDirty();renderForm();message('Default restored in the draft. Save to apply it.');
   }
-  function travel(back){if(!canEdit())return;const from=back?undo:redo,to=back?redo:undo;if(!from.length)return;if(!same(store.getDocument(),data)){message('Content changed in another editor. Undo and Redo were paused to preserve those saved changes.');return;}if(dirty||drafts.size){message('Save or discard your unsaved drafts before using Undo or Redo. Your drafts were kept.');return;}const next=from.at(-1),result=store.saveDocument(next);if(!validateResult(result)){message(result?.error||'This content change could not be restored.');return;}to.push(copy(data));from.pop();data=copy(store.getDocument());const items=collection();if(kind==='lesson')selected=String(Math.min(Number(selected)||0,Math.max(0,items.length-1)));else if(!items.some(item=>item.id===selected))selected=items[0]?.id||'';loadDraft();renderList();renderForm();message(back?'Undid saved content change.':'Redid saved content change.');}
+  function travel(back){if(!canEdit())return;const from=back?undo:redo,to=back?redo:undo;if(!from.length)return;if(!same(store.getDocument(),data)){message('Content changed in another editor. Undo and Redo were paused to preserve those saved changes.');return;}if(dirty||drafts.size||[...lessonDrafts.values()].some(entry=>entry.dirty)){message('Save or discard your unsaved drafts before using Undo or Redo. Your drafts were kept.');return;}const next=from.at(-1),result=store.saveDocument(next);if(!validateResult(result)){message(result?.error||'This content change could not be restored.');return;}to.push(copy(data));from.pop();data=copy(store.getDocument());const items=collection();if(kind==='lesson')selected=String(Math.min(Number(selected)||0,Math.max(0,items.length-1)));else if(!items.some(item=>item.id===selected))selected=items[0]?.id||'';loadDraft();renderList();renderForm();message(back?'Undid saved content change.':'Redid saved content change.');}
   function exportContent(){
    const value=store.exportDocument?.()||JSON.stringify(data,null,2),encoded=typeof value==='string'?value:JSON.stringify(value,null,2),blob=new win.Blob([encoded],{type:'application/json'}),url=win.URL.createObjectURL(blob),link=node('a');link.href=url;link.download='coda-education-content.json';link.click();win.setTimeout(()=>win.URL.revokeObjectURL(url),1500);message('Exported saved content. Unsaved field drafts are not included.');
   }
-  file.onchange=async()=>{const chosen=file.files?.[0];file.value='';if(!chosen||!canEdit())return;const expected=copy(store.getDocument());try{if(chosen.size>4*1024*1024)throw Error('Choose a content JSON file no larger than 4 MB.');const next=JSON.parse(await chosen.text());if(!canEdit())return;if(applyDocument(next,'Imported content JSON and saved it in this browser.',expected)){drafts.clear();draftBases.clear();search.value='';selected=kind==='lesson'?'0':collection()[0]?.id||'';loadDraft();renderList();renderForm();}}catch(error){message(error.message||'This content file could not be read. Current content was kept.');}};
+  file.onchange=async()=>{const chosen=file.files?.[0];file.value='';if(!chosen||!canEdit())return;const expected=copy(store.getDocument());try{if(chosen.size>4*1024*1024)throw Error('Choose a content JSON file no larger than 4 MB.');const next=JSON.parse(await chosen.text());if(!canEdit())return;if(applyDocument(next,'Imported content JSON and saved it in this browser.',expected)){drafts.clear();draftBases.clear();sectionTargets.clear();lessonDrafts.clear();search.value='';selected=kind==='lesson'?'0':collection()[0]?.id||'';loadDraft();renderList();renderForm();}}catch(error){message(error.message||'This content file could not be read. Current content was kept.');}};
   function switchMode(){saveDraft();kind=mode.value;syncCategories(categorySelect.value);search.value='';selected=kind==='lesson'?'0':collection()[0]?.id||'';loadDraft();renderList();renderForm();}
   mode.onchange=switchMode;categorySelect.onchange=switchMode;search.oninput=renderList;list.onchange=()=>selectItem(list.value);
   function setExpanded(value){
@@ -205,8 +245,8 @@
   }
   win.addEventListener('keydown',keyDown,true);
   function refresh(){if(destroyed)return;if(!dirty&&drafts.size===0){const next=store.getDocument();if(JSON.stringify(next)!==JSON.stringify(data)){data=copy(next);loadDraft();renderList();renderForm();}}if(formPermission!==canEdit())renderForm();renderList();}
-  selected=collection()[0]?.id||'';loadDraft();renderList();renderForm();message('Choose content to edit. Saved changes remain local until exported and published.');
-  return {refresh,setExpanded,setActive(value){if(!value)setExpanded(false);else{refresh();renderForm();}},getState:()=>({kind,category,selected,dirty,draft:copy(draft),expanded,status:statusText,undo:undo.length,redo:redo.length}),dispose(){if(destroyed)return;setExpanded(false);destroyed=true;notationEditor?.destroy();win.removeEventListener('keydown',keyDown,true);root.remove();},destroy(){this.dispose();}};
+  selected=kind==='lesson'?'0':collection()[0]?.id||'';loadDraft();renderList();renderForm();message('Choose content to edit. Saved changes remain local until exported and published.');
+  return {refresh,setExpanded,setActive(value){if(!value)setExpanded(false);else{refresh();renderForm();}},getState:()=>({kind,category,selected,dirty,draft:copy(draft),expanded,status:statusText,undo:undo.length,redo:redo.length}),dispose(){if(destroyed)return;setExpanded(false);destroyed=true;notationEditor?.destroy();visualEditors.forEach(editor=>editor.destroy());win.removeEventListener('keydown',keyDown,true);root.remove();},destroy(){this.dispose();}};
  }
  return Object.freeze({mount});
 });

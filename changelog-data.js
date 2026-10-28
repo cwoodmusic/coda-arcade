@@ -2,6 +2,12 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaChangelog=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
  const entries=[
+  {date:'2026-10-28',title:'Lesson authoring controls',changes:[
+   'Developer mode opens the lesson-card editor with editable teaching text, examples, answers, hints, and follow-up checks.',
+   'Rename lessons and sections, edit introductions, and add, remove, reorder, or move teaching cards.',
+   'Add notes, clefs, and piano keyboards to lessons and practice checks, including multiple pictures on one step.',
+   'Lesson settings, checks, and visuals are included in content JSON export and import.'
+  ]},
   {date:'2026-10-28',title:'Reliable guest button',changes:[
    'Play as guest stays in the same position while the title screen loads, including when a login is remembered.',
    'Guest play skips saved-login restoration. Guest and saved profile progress stay separate.'

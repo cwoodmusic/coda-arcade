@@ -410,10 +410,12 @@
       if(focus){host.scrollTop=0;(view==='room'?canvas:el('classroomStart').hidden?el('classroomBook'):el('classroomStart')).focus({preventScroll:true});}
       api.onViewChange?.(view);
     }
+    function lessonTitle(topic){return win.CodaEducationContent?.getLesson?.(topic.tutorial||topic.supplemental)?.title||topic.title;}
     function listTopics(){
       const query=el('classroomSearch').value.trim().toLocaleLowerCase(),list=el('classroomTopics');list.replaceChildren();
-      const matches=TOPICS.filter(topic=>(topic.title+' '+topic.keywords+' '+topic.shelf).toLocaleLowerCase().includes(query));
-      for(const topic of matches){const button=doc.createElement('button');button.type='button';button.dataset.topic=topic.id;button.setAttribute('aria-current',String(topic.id===selected));const label=doc.createElement('span');label.textContent=topic.title;const shelf=doc.createElement('small');shelf.textContent=topic.shelf;button.append(label,shelf);button.onclick=()=>selectTopic(topic.id,true);list.append(button);}
+      const matches=TOPICS.filter(topic=>(lessonTitle(topic)+' '+topic.keywords+' '+topic.shelf).toLocaleLowerCase().includes(query));
+      for(const topic of matches){const button=doc.createElement('button');button.type='button';button.dataset.topic=topic.id;button.setAttribute('aria-current',String(topic.id===selected));const label=doc.createElement('span');label.textContent=lessonTitle(topic);const shelf=doc.createElement('small');shelf.textContent=topic.shelf;button.append(label,shelf);button.onclick=()=>selectTopic(topic.id,true);list.append(button);}
+      host.querySelectorAll('[data-start-lesson]').forEach((button,index)=>{const topic=topicFor(button.dataset.startLesson),label=button.querySelector('strong');if(label)label.textContent=(index+1)+'. '+lessonTitle(topic);});
       if(!matches.length){const p=doc.createElement('p');p.className='classroom-no-results';p.textContent='No matching books. Try another word.';list.append(p);}
     }
     function selectTopic(id,focus=false,options={}){
@@ -425,7 +427,7 @@
       if(topic.tutorial||topic.supplemental)el('classroomBookTitle').textContent=win.CodaEducationContent?.getLesson?.(topic.tutorial||topic.supplemental)?.title||topic.title;
       if((topic.tutorial||topic.supplemental)&&win.CodaClassroomLearningPaths&&!options.practice){
         const mount=doc.createElement('div');article.append(mount);
-        if(!win.CodaEducationContent?.isLessonEdited?.(topic.id))el('classroomBookTitle').textContent=win.CodaClassroomLearningPathsData?.CATEGORIES?.find(category=>category.id===topic.id)?.title||topic.title;
+        el('classroomBookTitle').textContent=lessonTitle(topic);
         learningPath=win.CodaClassroomLearningPaths.create({host:mount,lessonId:topic.tutorial||topic.supplemental,storage:api.storage,canRecord:api.canRecord,content:win.CodaEducationContent,onComplete:(id,details)=>api.onTutorialComplete?.(id,details),onExit:()=>selectTopic('welcome',true),onPractice:topic.tutorial?()=>selectTopic(topic.id,true,{practice:true}):undefined});
         learningPath.open(options);
         listTopics();status('Haydn: “One small lesson at a time. Start with the first one.”');
