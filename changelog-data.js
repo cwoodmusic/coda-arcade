@@ -2,6 +2,10 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaChangelog=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
  const entries=[
+  {date:'2026-10-29',title:'Updated arcade graphics and layout',changes:[
+   'Published the latest background pixel edits and trimmed the dance-room wall corner.',
+   'Included the latest world layout, walking areas, foreground layers, and fishing-room edits.'
+  ]},
   {date:'2026-10-29',title:'Selection masks the outside',changes:[
    'Select a rectangle or manual shape to protect everything outside it automatically.',
    'Paint, fill, smooth, paste, and stamp inside the selected shape. Clear selection removes the outside mask.'
