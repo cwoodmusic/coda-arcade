@@ -305,3 +305,12 @@ Musicians give the player room while walking and step aside during idle
 routines. Walking into an NPC no longer traps it in place. Conversations and
 explicitly placed characters keep their intended positions, and routes continue
 to respect the edited collision map.
+
+## Music History Journal
+
+Walk to a musician and choose **Tell me some music history** to discover a short
+fact. Open **Settings → Music History Journal** to browse your collection.
+All 540 entries start locked, with 30 for each of 18 characters. Undiscovered
+text stays hidden, including in search. Shop and boutique attendants and Captain
+Cadence are excluded. Discoveries save for the active player on this device;
+they do not sync across devices. See [the journal guide](docs/music-history.md).

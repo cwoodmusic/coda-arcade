@@ -84,3 +84,19 @@ test('profile visor lenses stay at the front with narrow temple arms',()=>{
     assert.notEqual(look.at(7,-34),bare.at(7,-34),eyewear+' must still have its visible front lens');
   }
 });
+
+
+test('expanded composers have distinct visible silhouettes even under the same palette',()=>{
+ const ids=['bach','mozart','beethoven','clara','joplin','ellington','ella','nina','miles','schoenberg','handel','vivaldi'];
+ const shared={skin:'#d8b495',hair:'#70615a',shirt:'#565565',lowerColor:'#3f4152'};
+ for(const facing of directions){
+  const pictures=ids.map(characterId=>picture({...renderer.appearanceFor(characterId),...shared,characterId},facing));
+  assert.equal(new Set(pictures.map(look=>look.signature())).size,ids.length,'Visible identity should survive recoloring in '+facing);
+ }
+ const schoenberg=picture({...renderer.appearanceFor('schoenberg'),characterId:'schoenberg'});
+ const handel=picture({...renderer.appearanceFor('handel'),characterId:'handel'});
+ const vivaldi=picture({...renderer.appearanceFor('vivaldi'),characterId:'vivaldi'});
+ const top=look=>Math.min(...[...look.pixels.keys()].map(point=>Number(point.split(',')[1])));
+ assert.ok(top(handel)<top(schoenberg),'Handel’s full wig must rise above Schoenberg’s bald crown');
+ assert.ok([...vivaldi.pixels.values()].includes('#ad5937'),'Vivaldi’s reddish hair must remain visibly painted');
+});

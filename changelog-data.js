@@ -2,6 +2,12 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaChangelog=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
  const entries=[
+  {date:'2026-10-28',title:'Music history journal and visiting composers',changes:[
+   'Meet Arnold Schoenberg, George Frideric Handel, and Antonio Vivaldi alongside the existing musicians.',
+   'At most six visitors share the arcade. New visitors enter after someone walks out through the exit.',
+   'Talk to musicians to discover 540 short history facts across 18 collections, with 30 facts per character.',
+   'Open Settings → Music History Journal to revisit discoveries. Undiscovered entries remain locked; discoveries save on this device.'
+  ]},
   {date:'2026-10-28',title:'Pitch Race mistake freezes',changes:[
    'Every three mistakes freezes your notes and locks answers for three seconds in every Pitch Race mode.',
    'Race timers and opponents keep going during the freeze.',

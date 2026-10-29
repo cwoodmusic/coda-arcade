@@ -6,10 +6,10 @@
  const KEYS=Object.freeze({avatar:'musicArcadeV1',progression:'codaPlayerProgressV1',wallet:'codaNotesWalletV1',missions:'codaMusicianMissionsV1',fishing:'codaRhythmFishingV1',piano:'codaPianoProgressV1',lessons:'codaClassroomLessonsV1',quizzes:'codaClassroomQuizzesV1',pitch:'pitchRaceLevelProgressV1',pitchTutorials:'pitchRaceTutorialsV1',finalExam:'codaHaydnFinalExamV1'});
  // Compositions and named/local educational records stay local. They must be
  // cleared between students and restored exactly with the guest's local work.
- const LOCAL_ONLY_KEYS=Object.freeze(['codaPianoTakeV1','codaDJLibraryV1','codaHallOfFameV1','rhythm-room-practice-v1','codaSongMachineDraftV1','codaAuthoredExamSessionV1','codaAuthoredQuizzesV1','codaAuthoredLessonsV1','codaClassroomExamStudyV1','codaClassroomLearningPathsV1','codaPlayNotebookV1','codaClassroomQuizAttemptsV1']);
+ const LOCAL_ONLY_KEYS=Object.freeze(['codaPianoTakeV1','codaDJLibraryV1','codaHallOfFameV1','rhythm-room-practice-v1','codaSongMachineDraftV1','codaAuthoredExamSessionV1','codaAuthoredQuizzesV1','codaAuthoredLessonsV1','codaClassroomExamStudyV1','codaClassroomLearningPathsV1','codaPlayNotebookV1','codaClassroomQuizAttemptsV1','codaMusicHistoryV1']);
  const SCOPED_KEYS=Object.freeze([...Object.values(KEYS),...LOCAL_ONLY_KEYS]);
  // Older guest backups remain restorable as local-only activity slots are added.
- const OPTIONAL_BACKUP_KEYS=new Set([KEYS.finalExam,'codaSongMachineDraftV1','codaAuthoredExamSessionV1','codaAuthoredQuizzesV1','codaAuthoredLessonsV1','codaClassroomExamStudyV1','codaClassroomLearningPathsV1','codaPlayNotebookV1','codaClassroomQuizAttemptsV1']);
+ const OPTIONAL_BACKUP_KEYS=new Set([KEYS.finalExam,'codaSongMachineDraftV1','codaAuthoredExamSessionV1','codaAuthoredQuizzesV1','codaAuthoredLessonsV1','codaClassroomExamStudyV1','codaClassroomLearningPathsV1','codaPlayNotebookV1','codaClassroomQuizAttemptsV1','codaMusicHistoryV1']);
  const split=value=>value.split(' ');
  const CATALOG={
   hairstyle:split('short bob long curly ponytail spiky bald buns pixie undercut braids locs afro slick pompadour mohawk powderwig'),

@@ -32,6 +32,9 @@ window.createCodaCharacterRenderer=function(api){
   // is not enough to identify a visitor at the world's small character scale.
   const historical={
     bach:{name:'J. S. Bach',skin:'#e5b88f',hair:'#dfd9ca',shirt:'#29384e',lowerColor:'#33384c',hairstyle:'powderwig',outfit:'coat',shoes:'oxfords',accessory:'score',hairDetail:'bach-wig',neckwear:'bands',coatStyle:'baroque',bodyScaleX:1.16,bodyScaleY:1.02,headWidth:21,faceDetail:'bach'},
+    schoenberg:{name:'Arnold Schoenberg',skin:'#e2b69a',hair:'#68636a',shirt:'#3b414e',lowerColor:'#343541',hairstyle:'bald',outfit:'suit',shoes:'oxfords',neckwear:'tie',bodyScaleX:.91,bodyScaleY:1.08,headWidth:18,faceDetail:'schoenberg'},
+    handel:{name:'George Frideric Handel',skin:'#ebbea0',hair:'#e5ddd0',shirt:'#48556c',lowerColor:'#3d4053',hairstyle:'powderwig',outfit:'coat',shoes:'loafers',hairDetail:'handel-wig',neckwear:'lace',coatStyle:'baroque',bodyScaleX:1.24,bodyScaleY:1.04,headWidth:23,faceDetail:'handel'},
+    vivaldi:{name:'Antonio Vivaldi',skin:'#e8b695',hair:'#ad5937',shirt:'#38313e',lowerColor:'#322e39',hairstyle:'long',outfit:'coat',shoes:'oxfords',accessory:'violin',hairDetail:'vivaldi-curls',neckwear:'bands',coatStyle:'clerical',bodyScaleX:.88,bodyScaleY:1.09,headWidth:17,faceDetail:'vivaldi'},
     mozart:{name:'Mozart',skin:'#efc2a0',hair:'#eee4cc',shirt:'#bf405d',lowerColor:'#e0d3b8',hairstyle:'powderwig',outfit:'coat',shoes:'loafers',hairDetail:'mozart-queue',neckwear:'lace',coatStyle:'embroidered',bodyScaleX:.94,bodyScaleY:.94,headWidth:18,faceDetail:'mozart'},
     beethoven:{name:'Beethoven',skin:'#d7aa87',hair:'#5d5a62',shirt:'#363847',lowerColor:'#353448',hairstyle:'spiky',outfit:'coat',shoes:'combat',hairDetail:'beethoven-mane',neckwear:'scarf',coatStyle:'storm',bodyScaleX:1.06,bodyScaleY:1.06,headWidth:21,faceDetail:'beethoven'},
     clara:{name:'Clara Schumann',skin:'#edc3a6',hair:'#493331',shirt:'#52678e',lowerColor:'#4d5379',hairstyle:'buns',outfit:'gown',shoes:'ballet',hairDetail:'single-bun',neckwear:'brooch',gownStyle:'victorian',bodyScaleX:.95,bodyScaleY:1.07,headWidth:18,faceDetail:'clara'},
@@ -43,7 +46,7 @@ window.createCodaCharacterRenderer=function(api){
     dj:{name:'DJ Coda',skin:'#a56d4b',hair:'#23192e',shirt:'#cf4aa5',lowerColor:'#253c66',hairstyle:'undercut',outfit:'tracksuit',shoes:'neon',eyewear:'cybervisor',accessory:'headphones',bodyScaleX:1.02,bodyScaleY:1.02,headWidth:19,faceDetail:'dj'}
   };
   const appearances=Object.fromEntries(Object.entries(historical).map(([id,p])=>[id,Object.freeze({...normalizeProfile(p),...p,id})]));
-  const aliases={'j. s. bach':'bach','johann sebastian bach':'bach','wolfgang amadeus mozart':'mozart','ludwig van beethoven':'beethoven','clara schumann':'clara','scott joplin':'joplin','duke ellington':'ellington','ella fitzgerald':'ella','nina simone':'nina','miles davis':'miles'};
+  const aliases={'arnold schoenberg':'schoenberg','arnold schönberg':'schoenberg','schönberg':'schoenberg','george frideric handel':'handel','georg friedrich händel':'handel','georg friedrich handel':'handel','händel':'handel','antonio vivaldi':'vivaldi','j. s. bach':'bach','johann sebastian bach':'bach','wolfgang amadeus mozart':'mozart','ludwig van beethoven':'beethoven','clara schumann':'clara','scott joplin':'joplin','duke ellington':'ellington','ella fitzgerald':'ella','nina simone':'nina','miles davis':'miles'};
   const fallback=Object.freeze({...DEFAULTS,id:'guest'});
   function appearanceFor(id){const key=String(id||'').toLowerCase(),known=appearances[aliases[key]||key];if(known)return known;const visitor=window.CodaNPCVisitors?.get?.(key);return visitor?{...normalizeProfile(visitor.appearance),...visitor.appearance,id:visitor.actorId||visitor.id||key,name:visitor.appearance?.name||visitor.name||visitor.label||key}:fallback;}
   const labels={none:'None',short:'Short',bob:'Bob',long:'Long',curly:'Curly',ponytail:'Ponytail',spiky:'Spiky',bald:'No hair',buns:'Space buns',pants:'Shirt and pants',shorts:'Shirt and shorts',dress:'Dress',overalls:'Overalls',suit:'Suit',coat:'Long coat',cap:'Baseball cap',beanie:'Beanie',bucket:'Bucket hat',crown:'Crown',headwrap:'Headwrap',glasses:'Everyday glasses',sunglasses:'Sunglasses',partyglasses:'Party glasses',bow:'Bow',headphones:'Headphones',bowtie:'Bow tie',starclip:'Neon star clip',halo:'Neon halo',earrings:'Earrings',pixelheadphones:'Pixel headphones',trumpet:'Trumpet',microphone:'Microphone',sneakers:'Sneakers',boots:'Boots',hightops:'High tops',neon:'Neon trainers',gold:'Gold shoes',wave:'Wave',dance:'Dance',spin:'Spin',robot:'Robot',disco:'Disco point'};
@@ -102,6 +105,16 @@ window.createCodaCharacterRenderer=function(api){
       r(-11,-48,22,8,c.hair);r(-8,-50,16,3,c.hairLight);
       for(const x of [-17,10])for(let j=0;j<4;j++){r(x,-43+j*6,8,6,j%2?c.hair:c.hairLight);r(x+1,-39+j*6,6,2,c.hairShade);}
       if(back){r(-11,-42,22,23,c.hair);r(-5,-20,10,5,c.hairShade);}return;
+    }
+    if(p.hairDetail==='handel-wig'){
+      r(-13,-49,26,8,c.hair);r(-9,-52,18,4,c.hairLight);
+      for(const x of [-20,11])for(let j=0;j<5;j++){r(x,-43+j*5,10,6,c.hair);r(x+1,-43+j*5,7,2,c.hairLight);r(x+2,-39+j*5,7,2,c.hairShade);}
+      if(back){r(-13,-42,26,24,c.hair);r(-9,-22,18,5,c.hairShade);for(const x of [-10,-3,4])r(x,-39,3,18,c.hairLight);}return;
+    }
+    if(p.hairDetail==='vivaldi-curls'){
+      r(-10,-47,20,6,c.hair);r(-6,-49,14,3,c.hairLight);r(-2,-47,2,7,c.skinShade);
+      for(const x of side?[-14]:[-14,9])for(let j=0;j<5;j++){r(x,-42+j*5,6,6,c.hair);r(x+1,-42+j*5,3,2,c.hairLight);r(x+1,-38+j*5,5,2,c.hairShade);}
+      if(back){r(-10,-41,21,23,c.hair);r(-7,-37,3,19,c.hairLight);r(4,-37,3,19,c.hairShade);r(-8,-18,17,3,c.hairShade);}return;
     }
     if(p.hairDetail==='mozart-queue'){
       r(-11,-45,22,6,c.hair);r(-7,-48,14,4,c.hairLight);r(-13,-41,6,9,c.hair);r(8,-41,6,9,c.hair);
@@ -505,7 +518,7 @@ window.createCodaCharacterRenderer=function(api){
     q(0,-2,w,4,'#655044');sole('#302938');q(1,-2,w-2,1,'#aa7b5a');
     if(back){q(1,-1,4,1,'#4b3a38');q(2,-2,2,3,'#8d6651');}else q(side?4:2,-1,side?4:3,1,'#e2ba76');
   }
-  const pixelTargets=['player','bach','mozart','beethoven','clara','joplin','ellington','ella','nina','miles','dj','chopin','captain-cadence','haydn','riff','pip','vee-jay','zizi','metronome'];
+  const pixelTargets=['player','bach','schoenberg','handel','vivaldi','mozart','beethoven','clara','joplin','ellington','ella','nina','miles','dj','chopin','captain-cadence','haydn','riff','pip','vee-jay','zizi','metronome'];
   let pixelEdits={},pixelTops={},pixelSurface=null;
   const pixelCopy=value=>JSON.parse(JSON.stringify(value));
   function validPixelEdits(data){
@@ -578,6 +591,7 @@ window.createCodaCharacterRenderer=function(api){
     }
     if(p.outfit==='tutu'){r(-9,-24,18,15,c.shirt);for(let j=0;j<5;j++)r(-16+j*6,-11+Math.abs(j-2),7,8,j%2?c.shirtLight:c.shirtShade);r(-10,-13,21,3,'#edb7d2');}
     if(p.coatStyle==='baroque'){r(-13,-23,7,22,c.shirtShade);r(7,-23,7,22,c.shirtShade);for(const yy of [-20,-15,-10]){r(-7,yy,2,2,'#d5bd82');r(6,yy,2,2,'#d5bd82');}}
+    if(p.coatStyle==='clerical'){r(-10,-25,20,3,c.shirtShade);r(-9,-8,18,9,c.shirtShade);r(-1,-20,2,20,c.shirtLight);if(!back)for(const yy of [-17,-12,-7,-2])r(0,yy,1,2,'#c9c4be');}
     if(p.coatStyle==='embroidered'){r(-10,-21,3,18,'#e4bb70');r(8,-21,3,18,'#e4bb70');for(const yy of [-21,-15,-9])r(5,yy,3,2,'#f3d28d');r(-11,-5,8,3,'#d3a160');r(4,-5,8,3,'#d3a160');}
     if(p.coatStyle==='storm'){r(-13,-24,6,21,c.shirtShade);r(8,-24,6,21,c.shirtShade);r(-9,-25,5,9,c.shirtLight);r(4,-25,6,9,c.shirtLight);}
     // Arms swing from the shoulders; raised gestures stay clear of the face.
@@ -634,6 +648,9 @@ window.createCodaCharacterRenderer=function(api){
       if(!side){
         const brows=p.faceDetail==='beethoven'?[[-7,-39,7,2],[2,-39,7,2]]:p.faceDetail==='bach'?[[-7,-39,6,1],[3,-39,6,1]]:p.faceDetail==='miles'?[[-7,-38,5,1],[3,-38,5,1]]:[];
         for(const box of brows)head(...box,c.hairShade);
+        if(p.faceDetail==='schoenberg'){head(-6,-40,12,1,c.skinShade);head(-7,-38,5,1,c.hairShade);head(3,-38,5,1,c.hairShade);head(1,-34,2,4,c.skinShade);head(-4,-28,7,1,'#805b55');}
+        if(p.faceDetail==='handel'){head(-8,-39,6,1,c.hairShade);head(3,-39,6,1,c.hairShade);head(-7,-30,3,3,c.skinLight);head(5,-30,3,3,c.skinLight);head(-5,-26,10,1,c.skinShade);}
+        if(p.faceDetail==='vivaldi'){head(-6,-39,4,1,c.hairShade);head(3,-39,4,1,c.hairShade);head(0,-34,2,4,c.skinShade);head(-2,-28,4,1,'#956454');}
         if(p.faceDetail==='mozart'){head(6,-30,1,1,c.hairShade);head(-3,-28,6,1,'#ad6c68');}
         if(p.faceDetail==='beethoven'){head(-4,-28,8,1,'#704e4a');head(-7,-30,2,4,c.skinShade);}
         if(p.faceDetail==='clara'){head(-7,-36,1,2,c.hair);head(7,-36,1,2,c.hair);head(-2,-28,4,1,'#a46c76');}

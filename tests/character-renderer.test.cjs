@@ -198,3 +198,22 @@ test('clef mastery pins and crowns have distinct art in every facing',()=>{
  }
  assert.ok(r.labelOffset({headwear:'grandstaffcrown'})>=70);
 });
+
+
+test('Schoenberg, Handel and Vivaldi retain stable identities, directional drawings and wardrobe previews',()=>{
+ const {value:r}=renderer({reducedMotion:()=>true});
+ const composers=[['schoenberg','Arnold Schoenberg'],['handel','George Frideric Handel'],['vivaldi','Antonio Vivaldi']];
+ for(const [id,name]of composers){
+  const base=r.appearanceFor(id);assert.equal(base.name,name);assert.ok(Object.isFrozen(base));assert.equal(r.appearanceFor(name),base);
+  const views=[];
+  for(const facing of directions){
+   const person={id,x:10,y:20,facing,walking:false},ctx=context();r.drawNPC(ctx,person,0);assert.equal(ctx.depth,0);assert.ok(rectangles(ctx).length>20);views.push(signature(ctx));
+   const preview=draw(r,{...base,characterId:id},{x:10,y:20,facing},0);assert.equal(signature(preview),signature(ctx),id+' wardrobe preview / '+facing);
+  }
+  assert.equal(new Set(views).size,4,id+' needs front, rear and both side views');
+ }
+ assert.equal(r.appearanceFor('Arnold Schönberg'),r.appearanceFor('schoenberg'));
+ assert.equal(r.appearanceFor('Georg Friedrich Händel'),r.appearanceFor('handel'));
+ assert.equal(r.appearanceFor('Johann Sebastian Bach'),r.appearanceFor('bach'),'The existing Bach identity remains shared by his name aliases');
+ const ctx=context();r.drawNPC(ctx,{id:'handel',facing:'down',appearance:{hairstyle:'bald',outfit:'tracksuit',shirt:'#123abc'}},0);assert.ok(colors(ctx).has('#123abc'));assert.equal(r.appearanceFor('handel').hairstyle,'powderwig');
+});

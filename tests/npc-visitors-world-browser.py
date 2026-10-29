@@ -49,8 +49,8 @@ class NPCVisitorsWorldTests(_world.WorldBrowserCase):
         self.page.keyboard.press('Escape');advance_world(self.page,32)
         self.assertFalse(self.page.locator('#panel').is_visible())
         self.assertTrue(self.page.evaluate("CodaArcadeQA.findMusician('vee-jay')"))
-        for _ in range(20):
-            advance_world(self.page,50)
+        for _ in range(240):
+            advance_world(self.page,250)
             if not self.visitor()['hidden']:break
         visitor=self.visitor();self.assertFalse(visitor['hidden'])
         self.assertLess(math.hypot(visitor['x']-1450,visitor['y']-752),86,'A purchased visitor arrives through the arcade entrance')

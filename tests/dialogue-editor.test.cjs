@@ -5,7 +5,7 @@ const defaults=JSON.parse(JSON.stringify(sandbox.window.CodaNPCDialogueDefaults)
 const clone=value=>JSON.parse(JSON.stringify(value));
 
 test('all authored musician defaults are editable and old projects may have no overrides',()=>{
- assert.equal(Object.keys(defaults).length,9);assert.equal(editor.validate({},defaults),true);
+ assert.equal(Object.keys(defaults).length,12);assert.equal(editor.validate({},defaults),true);
  assert.equal(editor.validate(defaults,defaults),true);assert.equal(editor.validate(undefined,defaults),false);
  for(const entry of Object.values(defaults))assert.equal(editor.validEntry(entry),true);
 });

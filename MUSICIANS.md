@@ -1,6 +1,6 @@
 # Musicians, movement, and wardrobe
 
-The connected world’s historical visitor pool includes J. S. Bach, Mozart, Beethoven, Clara Schumann, Scott Joplin, Duke Ellington, Ella Fitzgerald, Nina Simone, and Miles Davis. Walk nearby and press **E** to talk; the Profile can help you find musicians. Conversations offer musical background, a practice tip, their current activity, and preferred games.
+The connected world’s historical visitor pool includes J. S. Bach, Mozart, Beethoven, Clara Schumann, Scott Joplin, Duke Ellington, Ella Fitzgerald, Nina Simone, Miles Davis, Arnold Schoenberg, George Frideric Handel, and Antonio Vivaldi. Walk nearby and press **E** to talk; the Profile can help you find musicians. Conversations offer musical background, a practice tip, their current activity, and preferred games.
 
 These are original, imagined conversations with historically grounded musical facts, not quotations, recordings, or endorsements. The implementation does not establish likeness, publicity, trademark, or other rights clearance.
 
@@ -18,7 +18,7 @@ See [LEARNING-WORLD.md](LEARNING-WORLD.md) for Chopin, Professor Haydn, Notes, m
 
 ## Boutique and saving
 
-**Your avatar** or the boutique opens the wardrobe. **Customize** switches between the player, the nine musicians, and DJ Coda. The searchable wardrobe has 158 catalog choices: 17 hairstyles, 15 outfits, 26 hats, 16 glasses, 48 accessories, 18 shoes, and 18 emotes. Witch and wizard hats, clockwork goggles, heart glasses, wings, wands, roller skates, clown shoes, chic frames and formalwear are included. The four-direction preview shows draft choices in idle, walking, or selected-emote poses; taller hats fit the expanded preview. Hat and glasses colors are editable. **Plain base avatar** restores the bald gray draft; **Classic cap look** is optional. **Save my look** or **Save NPC look** applies it. Canceling, closing, or switching targets leaves the saved look intact. Names and gameplay progress are preserved.
+**Your avatar** or the boutique opens the wardrobe. **Customize** switches between the player, the twelve historical musicians, and DJ Coda. The searchable wardrobe has 158 catalog choices: 17 hairstyles, 15 outfits, 26 hats, 16 glasses, 48 accessories, 18 shoes, and 18 emotes. Witch and wizard hats, clockwork goggles, heart glasses, wings, wands, roller skates, clown shoes, chic frames and formalwear are included. The four-direction preview shows draft choices in idle, walking, or selected-emote poses; taller hats fit the expanded preview. Hat and glasses colors are editable. **Plain base avatar** restores the bald gray draft; **Classic cap look** is optional. **Save my look** or **Save NPC look** applies it. Canceling, closing, or switching targets leaves the saved look intact. Names and gameplay progress are preserved.
 
 Player cosmetics stay in `musicArcadeV1`; musician overrides stay in `codaNPCOutfitsV1`, keyed by cast ID. Explicit equipment remains equipped, while recognizable older automatic defaults migrate to the plain base. Unlocks do not automatically equip rewards. Local saves remain separate from account services and world-editor exports.
 
@@ -48,3 +48,14 @@ Image sprites and their build tools are retained but inactive. See [SPRITE-ASSET
 The main arcade keeps six regular visitors onsite at a time. They arrive and leave through the entrance using normal collision and paths. Conversation partners, authored placements, and active or ready-to-collect quest givers stay protected. Requested musicians return at the entrance rather than appearing beside the player.
 
 Riff’s Visitors collection sells three invitations: Vee Jay (TV-headed DJ, 6,000 Notes), Zizi (alien music explorer, 8,000), and Metronome (clockwork robot, 10,000). They are original fictional characters with their own appearances, greetings, and music tips. Locked visitors do not appear. Invitations persist with the Notes wallet and join future visitor rotations; they do not equip avatar costumes. Mission and trivia buttons only appear when that visitor has an activity implemented.
+
+## Rotating visitors
+
+At most **six visiting NPCs** are inside the arcade at once. The larger roster
+rotates: an outgoing visitor walks to the entrance/exit, leaves, and an incoming
+visitor enters through that doorway. Requested visitors queue for a free slot;
+conversations and active quest givers stay protected without increasing the cap.
+If an exit route is blocked, visitors wait and retry rather than fading away.
+Chopin, Professor Haydn, and the fixed service characters remain in their rooms.
+J. S. Bach remains a single existing character. Schoenberg, Handel, and Vivaldi
+each have their own appearance, conversation, and 30 music-history discoveries.
