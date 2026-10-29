@@ -110,7 +110,7 @@ class ComposerVisitorsBrowserTests(_world.WorldBrowserCase):
         conversation = self.page.locator('.music-history')
         self.assertIn('No new facts', conversation.inner_text())
         self.assertEqual(conversation.locator('[data-discovered-fact]').count(), 0)
-        self.assertTrue(conversation.get_by_role('button', name='Accept relationship quest').is_visible())
+        self.assertTrue(conversation.get_by_role('button', name='Accept friendship quest').is_visible())
         self.assertEqual(self.page.evaluate('CodaArcadeQA.history().count'), 0)
         self.page.screenshot(path='/tmp/coda-schoenberg-relationship.png')
 

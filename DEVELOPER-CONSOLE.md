@@ -130,11 +130,11 @@ The main world, Piano Lab, and cave consoles have **Show collision** and **Show 
 
 ## History progression
 
-Open **F2 → History progression** to inspect each musician's relationship,
+Open **F2 → History progression** to inspect each musician's friendship points,
 ready/carried/recorded facts, active quest and quiz eligibility. This view is
 read-only for a normal player. Choose **Open temporary progression test** to
 use the existing isolated test player; then use the same tab to unlock a fact,
-put it in the pouch, prepare a full record for a quiz, or reset that relationship.
+put it in the pouch, prepare a full record for a quiz, or reset that friendship.
 Test progress stays in memory and is excluded from world-project exports.
 
 ## Gradient smoothing and masks

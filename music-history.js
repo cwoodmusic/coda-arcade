@@ -22,15 +22,15 @@
   function relationship(person,result){
    if(!begin(person.name+' · Music history','conversation'))return false;
    const state=engine.conversation(person.id);if(!state?.ok){notice(state?.error||'History is unavailable. Try reopening this conversation.');return false;}
-   const line=node('p',state.relationship.name+' · '+state.relationship.count+' / 30 relationship progress');line.className='history-relationship';content.append(line);
+   const line=node('p',state.relationship.name+' · '+state.relationship.count+' / 30 friendship points');line.className='history-relationship';content.append(line);
    if(result?.fact){const fact=node('p',result.fact.text);fact.className='history-story';fact.dataset.discoveredFact=result.fact.id;content.append(fact);speak(fact);notice('New fact added to your pouch. Bring it to the scholar in the lounge to record it and collect your reward.');}
-   else speak(notice(result?.error||state.message||'No new facts unlocked yet. Complete a relationship quest, then come back.'));
+   else speak(notice(result?.error||state.message||'No new facts unlocked yet. Complete a friendship quest, then come back.'));
    if(state.hasNewFact&&!result?.fact){button('! Learn a new history fact',()=>learn(person.id));}
    const quest=state.quest;if(quest&&['available','active','blocked'].includes(quest.status)){
     const card=node('section');card.className='history-quest';card.dataset.historyQuest=quest.id;card.append(node('h3',quest.title),node('p',quest.goal));
     if(quest.status==='active'){notice('Quest in progress · '+quest.progress+' / '+quest.target,card);button('Go to '+({pitch:'Pitch Race',triad:'Music Triad',rhythm:'Rhythm Room',piano:'Piano Lab',fishing:'Rhythm Fishing'}[quest.game]||quest.game),()=>{close();api.openGame?.(quest.game);},card);}
-    else if(quest.status==='available')button('Accept relationship quest',()=>{const accepted=engine.acceptQuest(person.id);update();relationship(person,accepted);},card);
-    else notice('Finish your current relationship quest before accepting another.',card);
+    else if(quest.status==='available')button('Accept friendship quest',()=>{const accepted=engine.acceptQuest(person.id);update();relationship(person,accepted);},card);
+    else notice('Finish your current friendship quest before accepting another.',card);
     content.append(card);
    }
    if(state.readyCount===0&&state.learnedCount>=30)notice('You have learned all 30 facts from '+person.name+'. The scholar can check your completed collection.');
@@ -43,13 +43,13 @@
    if(!nearby()||!begin('The Scholar','scholar'))return false;scholarTabs();const state=engine.snapshot();speak(notice(feedback||'I keep the arcade’s music-history record. Bring me facts you earn by helping the musicians.'));
    if(!state.ok){notice(state.error);return false;}
    content.append(node('h3','Your fact pouch · '+state.carriedIDs.length));
-   if(!state.carriedIDs.length)notice('Your pouch is empty. Complete a musician’s relationship quest, then return to them to learn a new fact.');
+   if(!state.carriedIDs.length)notice('Your pouch is empty. Complete a musician’s friendship quest, then return to them to learn a new fact.');
    else{
     for(const person of state.people){const facts=person.facts.filter(fact=>fact.carried);if(!facts.length)continue;const section=node('section');section.className='history-quest';section.append(node('h3',person.name));for(const fact of facts){const p=node('p',fact.text);p.dataset.carriedFact=fact.id;section.append(p);}content.append(section);}
     button('Give carried facts to the scholar',()=>{const result=engine.deposit();update();showScholar(result.ok?'Facts recorded! '+(result.amount||0)+' Notes added.':result.error);});
    }
    if(state.pendingAmount>0)button('Retry scholar rewards',()=>{const result=engine.deposit();update();showScholar(result.ok?(result.amount||0)+' Notes added.':result.error);});
-   notice('Fact rewards grow from 50 to 125 Notes as your relationship grows. Collections earn bonuses at 10, 20, and 30 facts; passing a completed collection’s quiz earns 2,000 Notes once.');
+   notice('Fact rewards grow from 50 to 125 Notes as your friendship grows. Collections earn bonuses at 10, 20, and 30 facts; passing a completed collection’s quiz earns 2,000 Notes once.');
    notice(state.recordedCount+' / '+state.total+' facts in the historian’s record. Records save for this player on this device.');closeButton.focus({preventScroll:true});return true;
   }
   function showJournal(){
@@ -59,7 +59,7 @@
    function render(){list.replaceChildren();const term=query.trim().toLocaleLowerCase();let shown=0;
     for(const person of state.people){if(filter&&person.id!==filter)continue;const matches=person.name.toLocaleLowerCase().includes(term),facts=person.facts.filter(fact=>!term||matches||fact.recorded&&fact.text?.toLocaleLowerCase().includes(term));if(!facts.length)continue;
      const section=node('details');section.open=!!filter||!!term;section.dataset.historyPerson=person.id;section.append(node('summary',person.name+' · '+person.recordedCount+' / 30 recorded'));const grid=node('ol');grid.className='history-grid';
-     for(const fact of facts){const card=node('li');card.dataset.historyFact=fact.id;card.className=fact.recorded?'history-fact':'history-fact locked';card.append(node('strong',(fact.recorded?'Fact ':'🔒 Locked fact ')+String(fact.number).padStart(2,'0')),node('p',fact.recorded?fact.text:fact.carried?'Bring this fact from your pouch to the scholar.':'Build your relationship with '+person.name+' to earn this fact.'));grid.append(card);}section.append(grid);list.append(section);shown++;
+     for(const fact of facts){const card=node('li');card.dataset.historyFact=fact.id;card.className=fact.recorded?'history-fact':'history-fact locked';card.append(node('strong',(fact.recorded?'Fact ':'🔒 Locked fact ')+String(fact.number).padStart(2,'0')),node('p',fact.recorded?fact.text:fact.carried?'Bring this fact from your pouch to the scholar.':'Build your friendship with '+person.name+' to earn this fact.'));grid.append(card);}section.append(grid);list.append(section);shown++;
     }if(!shown)list.append(node('p','No recorded facts match your search. Locked facts remain hidden.'));
    }
    select.onchange=()=>{filter=select.value;render();};search.oninput=()=>{query=search.value;render();};render();closeButton.focus({preventScroll:true});return true;
@@ -86,13 +86,13 @@
   function renderDeveloper(host){
    let selected=host.dataset.historySelected||Object.keys(Progress.PEOPLE||{} )[0]||'bach',disposed=false;
    const canTest=()=>{try{return api.isDeveloperTest?.()===true;}catch{return false;}};
-   function render(){if(disposed||!host.isConnected)return;host.dataset.historySelected=selected;host.replaceChildren();const state=engine.snapshot();host.append(node('h3','Music history progression'),node('p','Inspect relationships, carried facts, records, and quizzes. Test controls use the temporary test player.'));
+   function render(){if(disposed||!host.isConnected)return;host.dataset.historySelected=selected;host.replaceChildren();const state=engine.snapshot();host.append(node('h3','Music history progression'),node('p','Inspect friendship points, carried facts, records, and quizzes. Test controls use the temporary test player.'));
     if(!state.ok){notice(state.error,host);return;}
     const label=node('label','Character '),select=node('select');select.setAttribute('aria-label','History progression character');for(const p of state.people)select.append(new Option(p.name,p.id));select.value=selected;select.onchange=()=>{selected=select.value;render();};label.append(select);host.append(label);
-    const p=state.people.find(p=>p.id===selected);if(!p)return;host.append(node('p',p.relationship.name+' · '+p.relationship.count+'/30 quests'),node('p',p.readyCount+' ready · '+p.facts.filter(f=>f.carried).length+' carried · '+p.recordedCount+'/30 recorded'),node('p',p.quiz.eligible?'Quiz unlocked'+(p.quiz.passed?' · Passed':''):'Quiz locked'));
+    const p=state.people.find(p=>p.id===selected);if(!p)return;host.append(node('p',p.relationship.name+' · '+p.relationship.count+'/30 friendship points'),node('p',p.readyCount+' ready · '+p.facts.filter(f=>f.carried).length+' carried · '+p.recordedCount+'/30 recorded'),node('p',p.quiz.eligible?'Quiz unlocked'+(p.quiz.passed?' · Passed':''):'Quiz locked'));
     if(state.active)host.append(node('p','Active quest: '+state.active.person+' · '+(state.active.progress||0)+' / '+(state.active.target||'?')));
     if(!canTest()){button('Open temporary progression test',()=>win.CodaDeveloperTestMode?.enter(),host);notice('Your real player is read-only here. Enter temporary test mode to change progression.',host);}
-    else{for(const [stage,label]of [['ready','Unlock next fact'],['carried','Add next fact to pouch'],['recorded','Set all 30 facts recorded'],['reset','Reset this relationship']])button(label,()=>{const result=engine.developerSet(selected,stage);render();if(!result.ok)notice(result.error,host);try{api.onChange?.(engine.snapshot());}catch{}},host);}
+    else{for(const [stage,label]of [['ready','Unlock next fact'],['carried','Add next fact to pouch'],['recorded','Set all 30 facts recorded'],['reset','Reset this friendship']])button(label,()=>{const result=engine.developerSet(selected,stage);render();if(!result.ok)notice(result.error,host);try{api.onChange?.(engine.snapshot());}catch{}},host);}
    }
    developerRefresh=render;render();return {refresh:render,dispose(){disposed=true;if(developerRefresh===render)developerRefresh=null;}};
   }

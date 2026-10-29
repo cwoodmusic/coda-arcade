@@ -317,8 +317,9 @@ to respect the edited collision map.
 ## The Scholar and music history
 
 Find **The Scholar** on the lounge couch, or choose **Settings → Find the
-scholar**. Musicians' **Music history & friendship** prompts offer relationship
-quests. Complete one to unlock one fact; a **!** marks a new fact ready to learn.
+scholar**. Musicians' **Music history & friendship** prompts offer friendship
+quests. Each completed quest earns one friendship point and unlocks one fact.
+A **!** marks a new fact ready to learn.
 Carry discoveries to the scholar for Notes and the historian's record.
 Record 30 facts from a character to unlock their 10-question quiz; 80% passes
 and earns a one-time 2,000-Note prize. Repeated clicks do not produce facts.

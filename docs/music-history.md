@@ -1,4 +1,4 @@
-# The Scholar and music-history relationships
+# The Scholar and friendship points
 
 The Scholar sits on the lounge couch. Walk to the couch and press **E** or use
 **Interact** on mobile. This is a fixed character, outside the six rotating
@@ -8,8 +8,8 @@ quizzes can only be opened while visiting the scholar.
 ## Earn, learn, and deliver
 
 Each of the 18 characters has a 30-fact collection. Choose **Music history &
-friendship** when talking to a musician, then accept their relationship quest.
-Only one relationship quest can be active at once. Start fresh gameplay after
+friendship** when talking to a musician, then accept their friendship quest.
+Only one friendship quest can be active at once. Start fresh gameplay after
 accepting: completed Pitch Race runs, Rhythm Room rounds, Music Triad matches,
 Piano Lab challenges, and real fishing catches provide verified progress.
 Quests repeat with increasing targets across six tiers; free play, practice
@@ -47,11 +47,11 @@ prizes are split into two saved installments to respect the existing wallet.
 
 ## Developer progression
 
-Press **F2 → History progression** to inspect each character's relationship,
+Press **F2 → History progression** to inspect each character's friendship points,
 ready fact, carried inventory, records, and quiz state. Normal players are
 read-only. **Open temporary progression test** uses the existing isolated test
 player; its controls can unlock a next fact, add it to the pouch, set a
-30-fact record for quiz preview, or reset a selected relationship. It uses
+30-fact record for quiz preview, or reset a selected friendship. It uses
 in-memory browser storage and never changes the original player's save.
 Progression is excluded from world-project JSON exports.
 

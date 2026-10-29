@@ -53,7 +53,7 @@ class MusicHistoryBrowserTests(world.WorldBrowserCase):
             self.assertIn('No new facts',journal.inner_text());self.assertEqual(journal.locator('[data-discovered-fact]').count(),0)
             self.assertEqual(journal.get_by_role('button',name='Tell me another fact').count(),0)
             self.close_history();self.page.locator('[data-history-owner-prompt="bach"]').click()
-        journal.get_by_role('button',name='Accept relationship quest',exact=True).click()
+        journal.get_by_role('button',name='Accept friendship quest',exact=True).click()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.history().active.game'),'pitch')
         self.close_history();open_cabinet(self.page,0)
         self.page.frame_locator('#gameiframe').locator('#finishHistoryRun').click()
