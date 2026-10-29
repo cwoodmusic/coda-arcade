@@ -3,6 +3,13 @@
 Open **Developer mode → Pixel artwork** to paint backgrounds and assets.
 Character sprite details use the same selection and color-picking workflow.
 
+The full-screen editor keeps its controls in a compact, scrolling sidebar.
+Use **Hide controls** to give the canvas the full width, then **Show controls**
+to bring them back. The image stays at the same zoom and position while the
+controls change. On phones in portrait orientation, controls start hidden and
+open as a drawer over the canvas. **Exit pixel editor** stays on the top bar.
+Long instructions are available under **Help** in the controls.
+
 For a background, **Show assets** displays placed objects as a guide. Turn it
 off to see the background by itself. This switch affects the editor view;
 painting, color sampling, copying, and PNG export use the background pixels.

@@ -55,6 +55,12 @@ window.fixturePixel=(id,x,y)=>{
 </script>'''
 
 
+def reveal_editor_controls(case):
+    if case.state().get('expanded') and case.state().get('controlsVisible') is False:
+        case.control('controls-toggle').click()
+        case.frames()
+
+
 class Handler(SimpleHTTPRequestHandler):
     def log_message(self, *args):
         pass
@@ -161,17 +167,20 @@ class ArtworkEditorBrowserTests(unittest.TestCase):
         self.select(target)
 
     def select(self, target):
+        reveal_editor_controls(self)
         self.control('target').select_option(target)
         self.page.wait_for_function(
             f'()=>{{const s={self.editor()}.getState();return s.target==={json.dumps(target)}&&!s.loading;}}')
         self.frames()
 
     def zoom(self, value):
+        reveal_editor_controls(self)
         self.control('zoom').select_option(str(value))
         self.frames()
         self.assertEqual(self.state()['zoom'], value)
 
     def colour(self, value):
+        reveal_editor_controls(self)
         control = self.control('hex')
         bounds = control.bounding_box()
         host_bounds = self.host().bounding_box()
@@ -185,6 +194,11 @@ class ArtworkEditorBrowserTests(unittest.TestCase):
         self.assertEqual(self.state()['color'], value.lower() if len(value) == 9 else value.lower() + 'ff')
 
     def center(self, x, y):
+        viewport = self.page.viewport_size
+        if (self.state().get('expanded') and self.state().get('controlsVisible')
+                and viewport['width'] < 700 and viewport['height'] > viewport['width']):
+            self.control('controls-toggle').click()
+            self.frames()
         self.control('canvas').scroll_into_view_if_needed()
         state = self.state()
         box = self.control('canvas').bounding_box()
@@ -463,7 +477,7 @@ class ArtworkEditorBrowserTests(unittest.TestCase):
         self.page.once('dialog', lambda dialog: dialog.accept())
         self.page.locator('#devReset').click()
         self.frames()
-        self.assertNotIn('artwork', self.project())
+        self.assertEqual(self.project(), original, 'Reset restores the published artwork as well as the layout')
         self.page.once('dialog', lambda dialog: dialog.accept())
         self.page.locator('#devImportFile').set_input_files({
             'name': 'painted-world.json', 'mimeType': 'application/json',
@@ -796,6 +810,7 @@ class ArtworkEditorBrowserTests(unittest.TestCase):
         self.paint(1252, 650)
         painted = self.project()
         self.assertNotEqual(painted, before)
+        reveal_editor_controls(self)
         self.control('undo').click()
         self.ready('background.world')
         self.assertEqual(self.project(), before,

@@ -2,6 +2,10 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaChangelog=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
  const entries=[
+  {date:'2026-10-29',title:'More room in the Pixel editor',changes:[
+   'Controls use a compact scrolling sidebar. Hide them to give the artwork the full screen.',
+   'Phone portrait controls start hidden and open as a drawer. Zoom, selection, and edits stay in place.'
+  ]},
   {date:'2026-10-29',title:'Updated arcade graphics and layout',changes:[
    'Published the latest background pixel edits and trimmed the dance-room wall corner.',
    'Included the latest world layout, walking areas, foreground layers, and fishing-room edits.'
