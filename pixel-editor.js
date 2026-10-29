@@ -112,7 +112,7 @@
    const placement=paste&&pastePosition?{...paste,position:pastePosition}:tool==='stamp'&&stamp&&stampPosition?{...stamp,position:stampPosition}:null;if(!placement)return source;
    pasteCanvas??=doc.createElement('canvas');pasteCanvas.width=WIDTH;pasteCanvas.height=HEIGHT;const g=pasteCanvas.getContext('2d',{willReadFrequently:true});g.drawImage(source,0,0);
    const image=g.getImageData(0,0,WIDTH,HEIGHT),clip=placement.clip,position=placement.position,left=Math.max(0,position.x),top=Math.max(0,position.y),right=Math.min(WIDTH,position.x+clip.width),bottom=Math.min(HEIGHT,position.y+clip.height);
-   for(let y=top;y<bottom;y++)if(right>left){const from=((y-position.y)*clip.width+left-position.x)*4;image.data.set(clip.pixels.subarray(from,from+(right-left)*4),(y*WIDTH+left)*4);}
+   for(let y=top;y<bottom;y++)for(let x=left;x<right;x++){const index=(y-position.y)*clip.width+x-position.x;if(clip.mask&&!clip.mask[index])continue;const from=index*4;image.data.set(clip.pixels.subarray(from,from+4),(y*WIDTH+x)*4);}
    g.putImageData(image,0,0);return pasteCanvas;
   }
   function drawGrid(){

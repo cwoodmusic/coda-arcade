@@ -136,3 +136,11 @@ read-only for a normal player. Choose **Open temporary progression test** to
 use the existing isolated test player; then use the same tab to unlock a fact,
 put it in the pouch, prepare a full record for a quiz, or reset that relationship.
 Test progress stays in memory and is excluded from world-project exports.
+
+## Gradient smoothing and masks
+
+In **Pixel editor**, choose **Smooth gradients** (**U**) for a soft brush with
+radius and strength controls. Paint **Mask protected areas** to preserve detail,
+or use **Select → Manual shape** and **Protect selection** for a precise mask.
+Clear the active selection to smooth around it. See
+[the pixel artwork guide](docs/pixel-artwork.md) for masking and custom outlines.

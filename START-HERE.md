@@ -316,3 +316,8 @@ Record 30 facts from a character to unlock their 10-question quiz; 80% passes
 and earns a one-time 2,000-Note prize. Repeated clicks do not produce facts.
 Use **F2 → History progression** to inspect progress and enter an isolated
 preview for testing. See [the scholar guide](docs/music-history.md).
+
+The **Pixel editor** now includes **Smooth gradients** (**U**) with radius and
+strength controls, protection masks, and **Select → Manual shape** for custom
+outlines. Choose **Clear selection** after protecting a shape to smooth around
+it. See [Pixel artwork tools](docs/pixel-artwork.md).

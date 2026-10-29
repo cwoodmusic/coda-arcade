@@ -2,6 +2,11 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaChangelog=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
  const entries=[
+  {date:'2026-10-29',title:'Smoothing brushes, masks, and custom selections',changes:[
+   'Smooth gradients with a soft round brush and adjustable radius and strength.',
+   'Protect details with a paintable mask, unmask areas, and undo mask edits.',
+   'Use Select → Manual shape to outline precise areas for smoothing, protection, copying, or stamps.'
+  ]},
   {date:'2026-10-29',title:'The Scholar and earned music history',changes:[
    'Meet the Scholar seated on the lounge couch. Bring discoveries to the historian’s record and collect Notes.',
    'Complete relationship quests to earn new facts. An exclamation mark shows when a musician has one ready; repeated clicks do not reveal more.',

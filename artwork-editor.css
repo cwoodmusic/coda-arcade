@@ -14,3 +14,27 @@
 .artwork-editor [hidden]{display:none!important}.artwork-editor .artwork-selection-tools{grid-template-columns:repeat(5,minmax(0,1fr))}.artwork-editor [data-artwork-stamp-controls]{display:grid;grid-template-columns:minmax(60px,1fr) minmax(60px,1fr) minmax(80px,1fr);gap:7px;margin:8px 0;max-width:700px}.artwork-editor [data-artwork-stamp-controls] input{width:100%;min-width:0}.artwork-editor [data-artwork-stamp-controls] button{align-self:end;font-size:12px;padding:6px}.artwork-editor.is-expanded [data-artwork-stamp-controls]{width:min(50%,700px)}
 @media(max-width:650px){.artwork-editor.is-expanded [data-artwork-stamp-controls]{width:auto;max-width:none}}
 @media(max-height:500px){.artwork-editor.is-expanded:has([data-artwork-stamp-controls]:not([hidden])){grid-template-rows:repeat(7,auto)}.artwork-editor.is-expanded [data-artwork-stamp-controls]{grid-column:1;grid-row:5;width:auto;max-width:none;margin:0}.artwork-editor.is-expanded:has([data-artwork-stamp-controls]:not([hidden])) .artwork-view-tools{grid-row:6}.artwork-editor.is-expanded:has([data-artwork-stamp-controls]:not([hidden])) .artwork-stage{grid-row:1/7}.artwork-editor.is-expanded:has([data-artwork-stamp-controls]:not([hidden])) .artwork-status,.artwork-editor.is-expanded:has([data-artwork-stamp-controls]:not([hidden])) .artwork-actions{grid-row:7}}
+/* Keep brush and shape controls usable beside the canvas. */
+.artwork-editor [data-artwork-brush-controls] input[type=number]{width:100%;min-width:0}
+.artwork-editor [data-artwork-protection-tools]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;max-width:700px}
+.artwork-editor [data-artwork-protection-tools] .artwork-check{grid-column:1/-1;white-space:normal}
+.artwork-editor [data-artwork-protection-tools] button{min-width:0;overflow-wrap:anywhere}
+.artwork-editor [data-artwork-selection-shape-controls] button{align-self:end}
+@media(max-height:500px){
+ .artwork-editor.is-expanded{--artwork-sidebar:min(260px,40vw);display:block;padding:7px;overflow:auto}
+ .artwork-editor.is-expanded>:not(.artwork-stage):not(.artwork-status){position:static;box-sizing:border-box;width:var(--artwork-sidebar);max-width:var(--artwork-sidebar);margin:0 0 7px;grid-column:auto;grid-row:auto}
+ .artwork-editor.is-expanded>.artwork-heading{position:sticky;top:0;z-index:2}
+ .artwork-editor.is-expanded>.artwork-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .artwork-editor.is-expanded>.artwork-selection-tools{display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
+ .artwork-editor.is-expanded>.artwork-protection-tools{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .artwork-editor.is-expanded>.artwork-selection-tools button{font-size:10px;min-width:0;padding:4px;overflow-wrap:anywhere}
+ .artwork-editor.is-expanded>.artwork-view-tools{display:grid;grid-template-columns:minmax(0,1fr) auto}
+ .artwork-editor.is-expanded>.artwork-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .artwork-editor.is-expanded>.artwork-stage{position:fixed;left:calc(var(--artwork-sidebar) + 21px);right:16px;top:7px;bottom:57px;width:auto;height:auto;min-height:0;grid-column:auto;grid-row:auto}
+ .artwork-editor.is-expanded>.artwork-status{position:fixed;left:calc(var(--artwork-sidebar) + 21px);right:16px;bottom:7px;max-height:40px;min-height:0;overflow:auto;margin:0;grid-column:auto;grid-row:auto}
+ .artwork-editor.is-expanded:has([data-artwork-stamp-controls]:not([hidden]))>.artwork-stage{grid-row:auto}
+ .artwork-editor.is-expanded:has([data-artwork-stamp-controls]:not([hidden]))>.artwork-status,.artwork-editor.is-expanded:has([data-artwork-stamp-controls]:not([hidden]))>.artwork-actions{grid-row:auto}
+}
+.artwork-editor .artwork-selection-tools:not(.artwork-protection-tools){grid-template-columns:repeat(6,minmax(0,1fr))}
+@media(max-width:600px){.artwork-editor .artwork-selection-tools:not(.artwork-protection-tools){grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-height:500px){.artwork-editor.is-expanded>.artwork-selection-tools:not(.artwork-protection-tools){grid-template-columns:repeat(3,minmax(0,1fr))}}
