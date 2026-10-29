@@ -2,6 +2,10 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaChangelog=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
  const entries=[
+  {date:'2026-10-29',title:'Selection masks the outside',changes:[
+   'Select a rectangle or manual shape to protect everything outside it automatically.',
+   'Paint, fill, smooth, paste, and stamp inside the selected shape. Clear selection removes the outside mask.'
+  ]},
   {date:'2026-10-29',title:'Larger dialogue and adjustable text speed',changes:[
    'Read larger dialogue and response buttons when chatting with musicians, Chopin, the historian, and Captain Cadence.',
    'Dialogue appears letter by letter. Choose Slow, Normal, Fast, or Instant in Settings → Text speed.',

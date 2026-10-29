@@ -1,7 +1,9 @@
 """Smooth actual gradient pixels, protect details, and select/paste custom shapes."""
 import importlib.util
 from pathlib import Path
+import sys
 import unittest
+sys.dont_write_bytecode=True
 spec=importlib.util.spec_from_file_location('smooth_art_fixture',Path(__file__).with_name('artwork-editor-browser.py'))
 art=importlib.util.module_from_spec(spec);spec.loader.exec_module(art)
 
@@ -82,6 +84,7 @@ class ArtworkSmoothingTests(unittest.TestCase):
         self.control('copy').click();clip=self.page.evaluate('()=>{const c=CodaPixelSelection.clipboard.get();return {width:c.width,height:c.height,mask:Array.from(c.mask)}}')
         self.assertEqual(clip['mask'][-1],0);self.assertEqual(clip['mask'][0],1)
         outer_before=self.pixel(59,44)
+        self.page.get_by_role('button',name='Clear selection',exact=True).click()
         self.control('paste').click();self.click(35,20)
         self.assertEqual(self.pixel(59,44),outer_before,'Outside the custom shape must not be erased')
         self.assertIsNone(self.state()['selection'],'A pasted shape must not become a rectangular selection')

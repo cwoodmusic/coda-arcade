@@ -16,7 +16,8 @@ To use **Stamp**:
 2. Choose **Stamp**, then **Ctrl-click** (**Command-click** on Mac) to capture
    that selection.
 3. Adjust **Stamp width** and **Stamp height** for the copies you want to place.
-4. Click to stamp. Keep clicking to place more copies of the captured pixels.
+4. Use **Clear selection** to place copies outside the captured source area.
+5. Click to stamp. Keep clicking to place more copies of the captured pixels.
 
 On touch screens, use **Capture selection** instead of Ctrl-click.
 
@@ -32,6 +33,22 @@ soft, round brush. **Brush radius** uses source-image pixels; **Strength %**
 controls how much each stroke blends. The selected paint color is not used.
 Transparency is preserved. Each complete stroke is one artwork Undo step;
 Escape cancels a stroke before applying it.
+
+## Mask everything outside a selection
+
+Draw a rectangle, or finish a **Manual shape**, to make its inside the editable
+area. Everything outside is dimmed and protected automatically. Pencil, lines,
+eraser, restore, fill, smoothing, paste, and stamps stay inside the exact shape.
+The selection remains active when you switch tools.
+
+Use **Clear selection** to remove the outside mask and edit the whole image.
+Escape also clears a selection after cancelling any active stroke or paste.
+The mask is temporary and does not change artwork, PNG exports, or project saves.
+**Show protection mask** controls the separately painted protection overlay;
+the active selection's outside mask stays visible.
+
+After copying pixels, use **Clear selection** before pasting them elsewhere.
+You can also select a new destination shape to keep the paste inside that area.
 
 ## Protect details with a mask
 
@@ -50,7 +67,7 @@ The overlay is not part of PNG exports or saved world-project pixels.
 1. Choose **Select**, then set **Selection shape → Manual shape**.
 2. Click or tap points around the desired outline.
 3. Choose **Finish selection**, press Enter, or double-click to close the shape.
-4. Copy/paste, capture a stamp, or smooth inside the finished shape.
+4. Paint, fill, paste, or smooth inside the finished shape; its outside is masked.
 
 **Rectangle** remains available for drag selections. Copied manual shapes keep
 their outline when pasted or resized as stamps; transparent pixels inside the
