@@ -219,7 +219,7 @@ function djState(){
 function scholarState(){
  const object=worldObjects?.state('lounge_sofa');
  if(!object)return {id:'scholar',name:'The Scholar',visible:false,approaches:[]};
- const point=worldObjects.point(object,210,213),approach=worldObjects.point(object,210,263);
+ const point=worldObjects.point(object,298,213),approach=worldObjects.point(object,298,302);
  const turn=((Math.round(Math.atan2(object.matrix[1],object.matrix[0])/(Math.PI/2))%4)+4)%4;
  const depth=object.asset?object.asset.y+object.asset.h/2+(object.asset.depthOffset||0):object.definition.sortY;
  return {id:'scholar',name:'The Scholar',x:point.x,y:point.y,approachX:approach.x,approachY:approach.y,approach:{...approach},approaches:[approach],visible:object.visible&&object.opacity>0,opacity:object.opacity,
