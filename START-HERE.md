@@ -43,6 +43,14 @@ The **Motion** setting uses the same saved animation preference as the original
 arcade and respects the device's reduced-motion setting. The title screen loads
 existing arcade artwork without starting gameplay, music, or Firebase SDKs.
 
+Conversations use larger text and reveal each line letter by letter. Choose
+**Settings → Text speed** (Slow, Normal, Fast, or Instant); the same preference
+is available in room menus and saves on this device. Click the dialogue to show
+the full line immediately. In arcade conversations, press **E** once to reveal
+the line and again to close; **Escape** always closes. Reduced motion defaults
+to instant text until you choose a speed. Journal entries and quizzes remain
+fully visible.
+
 The original arcade remains available at `classic-arcade.html`, linked from the
 title screen. In the connected world's **Settings**, **Title screen** returns
 to the front door. Direct world links and existing picture-card links still work.

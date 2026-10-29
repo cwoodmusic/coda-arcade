@@ -2,6 +2,12 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaChangelog=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
  const entries=[
+  {date:'2026-10-29',title:'Larger dialogue and adjustable text speed',changes:[
+   'Read larger dialogue and response buttons when chatting with musicians, Chopin, the historian, and Captain Cadence.',
+   'Dialogue appears letter by letter. Choose Slow, Normal, Fast, or Instant in Settings → Text speed.',
+   'Click the dialogue to reveal the full line. In the arcade, press E once to reveal it and again to close.',
+   'Long conversations scroll within the screen on desktop and phones.'
+  ]},
   {date:'2026-10-29',title:'Smoothing brushes, masks, and custom selections',changes:[
    'Smooth gradients with a soft round brush and adjustable radius and strength.',
    'Protect details with a paintable mask, unmask areas, and undo mask edits.',

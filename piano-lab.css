@@ -180,9 +180,9 @@
 #pianoroom.piano-lab #pianoSettingsPanel [data-room-dev-open]{min-height:44px;margin:0 0 12px;font-size:14px}
 #pianoroom.piano-lab .piano-dialogue-backdrop{z-index:25;align-items:flex-end}
 #pianoroom.piano-lab .piano-dialogue-panel{width:min(660px,100%);max-height:calc(100dvh - 48px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow:auto;padding:18px;border:2px solid #b0dbd4;border-radius:13px;background:linear-gradient(145deg,#223d46,#1c233a);box-shadow:0 18px 65px #000a;overscroll-behavior:contain}
-#pianoroom.piano-lab #pianoDialogueText{margin:0 0 16px;color:#effff9;font-size:17px;line-height:1.6;white-space:pre-line}
+#pianoroom.piano-lab #pianoDialogueText{margin:0 0 16px;color:#effff9;font-size:20px;line-height:1.6;white-space:pre-line}
 #pianoroom.piano-lab .piano-dialogue-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-#pianoroom.piano-lab .piano-dialogue-actions button{padding:10px 13px;text-align:left;line-height:1.4;font-size:15px;background:#2e4057;border-color:#8195ad;overflow-wrap:anywhere}
+#pianoroom.piano-lab .piano-dialogue-actions button{padding:10px 13px;text-align:left;line-height:1.4;font-size:18px;background:#2e4057;border-color:#8195ad;overflow-wrap:anywhere}
 #pianoroom.piano-lab .piano-dialogue-actions button:hover{background:#3b5964;border-color:#c3ffee}
 #pianoroom.piano-lab .piano-dialogue-actions button:only-child{grid-column:1/-1}
 #pianoroom.piano-lab.room-developer-open{overflow:auto}
@@ -209,8 +209,8 @@
  #pianoroom.piano-lab .piano-menu-heading h2,#pianoroom.piano-lab .piano-dialogue-heading h2{font-size:20px}
  #pianoroom.piano-lab .piano-menu-panel .piano-stage,#pianoroom.piano-lab .piano-menu-panel .piano-activities section{padding:12px}
  #pianoroom.piano-lab .piano-dialogue-panel{padding:14px;max-height:calc(100dvh - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
- #pianoroom.piano-lab #pianoDialogueText{font-size:16px;line-height:1.55}
- #pianoroom.piano-lab .piano-dialogue-actions button{font-size:14px;padding:10px}
+ #pianoroom.piano-lab #pianoDialogueText{font-size:20px;line-height:1.55}
+ #pianoroom.piano-lab .piano-dialogue-actions button{font-size:18px;padding:10px}
 }
 @media(pointer:coarse) and (orientation:landscape) and (max-height:550px){
  #pianoroom.piano-lab{padding-top:max(4px,env(safe-area-inset-top));padding-left:max(8px,env(safe-area-inset-left));padding-right:max(8px,env(safe-area-inset-right))}

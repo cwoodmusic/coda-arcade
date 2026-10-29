@@ -7,21 +7,24 @@
   const dialog=node('dialog');dialog.className='music-history';dialog.setAttribute('aria-labelledby','history-title');doc.body.append(dialog);
   const header=node('header'),title=node('h2','The Scholar'),closeButton=node('button','Close');closeButton.type='button';title.id='history-title';header.append(title,closeButton);dialog.append(header);const content=node('div');dialog.append(content);
   let opened=false,owner=null,previous=null,timer=null,filter='',query='',view='',developerRefresh=null;
+  const spoken=new Set();
+  function speak(target){if(win.CodaDialogueText){win.CodaDialogueText.show(target,target.textContent);spoken.add(target);}return target;}
+  function stopSpeech(){for(const target of spoken)win.CodaDialogueText?.cancel(target);spoken.clear();}
   const allowed=()=>{try{return api.canUse?.()!==false;}catch{return false;}};
   function nearby(){try{return allowed()&&api.canVisitScholar?.()===true;}catch{return false;}}
-  function close(){if(!opened)return;opened=false;win.clearInterval(timer);dialog.close();doc.body.classList.remove('music-history-open');doc.body.append(dialog);if(owner===api.getIdentity?.()){if(previous?.isConnected&&previous.getClientRects().length)previous.focus({preventScroll:true});else api.focusReturn?.();}api.onClose?.();content.replaceChildren();}
+  function close(){if(!opened)return;stopSpeech();opened=false;win.clearInterval(timer);dialog.close();doc.body.classList.remove('music-history-open');doc.body.append(dialog);if(owner===api.getIdentity?.()){if(previous?.isConnected&&previous.getClientRects().length)previous.focus({preventScroll:true});else api.focusReturn?.();}api.onClose?.();content.replaceChildren();}
   function mount(){const fs=doc.fullscreenElement||doc.webkitFullscreenElement;if(fs&&!/^(CANVAS|IFRAME|VIDEO)$/.test(fs.tagName))fs.append(dialog);else doc.body.append(dialog);}
   function open(){if(!allowed())return false;if(!opened){previous=doc.activeElement;owner=api.getIdentity?.();api.onOpen?.();mount();dialog.showModal();opened=true;doc.body.classList.add('music-history-open');timer=win.setInterval(()=>{if(owner!==api.getIdentity?.()||!allowed()||['scholar','record','quizzes','quiz'].includes(view)&&!nearby())close();},200);}return true;}
   function notice(text,parent=content){const p=node('p',text);p.setAttribute('role','status');parent.append(p);return p;}
   function button(text,run,parent=content){const b=node('button',text);b.type='button';b.onclick=run;parent.append(b);return b;}
-  function begin(name,mode){if(!open())return false;view=mode;title.textContent=name;content.replaceChildren();return true;}
+  function begin(name,mode){if(!open())return false;view=mode;stopSpeech();title.textContent=name;content.replaceChildren();dialog.scrollTop=0;return true;}
   function update(){try{api.onChange?.(engine.snapshot());}catch{}developerRefresh?.();}
   function relationship(person,result){
    if(!begin(person.name+' · Music history','conversation'))return false;
    const state=engine.conversation(person.id);if(!state?.ok){notice(state?.error||'History is unavailable. Try reopening this conversation.');return false;}
    const line=node('p',state.relationship.name+' · '+state.relationship.count+' / 30 relationship progress');line.className='history-relationship';content.append(line);
-   if(result?.fact){const fact=node('p',result.fact.text);fact.className='history-story';fact.dataset.discoveredFact=result.fact.id;content.append(fact);notice('New fact added to your pouch. Bring it to the scholar in the lounge to record it and collect your reward.');}
-   else notice(result?.error||state.message||'No new facts unlocked yet. Complete a relationship quest, then come back.');
+   if(result?.fact){const fact=node('p',result.fact.text);fact.className='history-story';fact.dataset.discoveredFact=result.fact.id;content.append(fact);speak(fact);notice('New fact added to your pouch. Bring it to the scholar in the lounge to record it and collect your reward.');}
+   else speak(notice(result?.error||state.message||'No new facts unlocked yet. Complete a relationship quest, then come back.'));
    if(state.hasNewFact&&!result?.fact){button('! Learn a new history fact',()=>learn(person.id));}
    const quest=state.quest;if(quest&&['available','active','blocked'].includes(quest.status)){
     const card=node('section');card.className='history-quest';card.dataset.historyQuest=quest.id;card.append(node('h3',quest.title),node('p',quest.goal));
@@ -37,7 +40,7 @@
   function discover(id){const state=engine.conversation(id);if(!state?.ok){if(begin('Music history','conversation'))notice(state?.error||'History is unavailable.');return false;}if(!open())return false;return state.hasNewFact?learn(id):relationship(state);}
   function scholarTabs(){const tabs=node('nav');tabs.className='history-actions';tabs.setAttribute('aria-label','Scholar pages');button('Fact pouch',()=>showScholar(),tabs);button('Historian’s record',()=>showJournal(),tabs);button('Music history quizzes',()=>showQuizzes(),tabs);content.append(tabs);}
   function showScholar(feedback){
-   if(!nearby()||!begin('The Scholar','scholar'))return false;scholarTabs();const state=engine.snapshot();notice(feedback||'I keep the arcade’s music-history record. Bring me facts you earn by helping the musicians.');
+   if(!nearby()||!begin('The Scholar','scholar'))return false;scholarTabs();const state=engine.snapshot();speak(notice(feedback||'I keep the arcade’s music-history record. Bring me facts you earn by helping the musicians.'));
    if(!state.ok){notice(state.error);return false;}
    content.append(node('h3','Your fact pouch · '+state.carriedIDs.length));
    if(!state.carriedIDs.length)notice('Your pouch is empty. Complete a musician’s relationship quest, then return to them to learn a new fact.');
