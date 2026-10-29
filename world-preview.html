@@ -1946,7 +1946,7 @@ function draw(){
   g.restore();
  }
  if(near&&!layerState.active){const promptY=near.y-(near.type==='npc'?98:93);g.globalAlpha=.91;r(near.x-62,promptY,124,25,'#18132e');g.globalAlpha=1;
-  t('E · '+(near.type==='game'?'PLAY':['piano','classroom','fishing'].includes(near.type)?'ENTER':'INTERACT'),near.x,promptY+17,11,'#c8fff6');}
+  t('E · '+(near.type==='game'?'PLAY':near.type==='npc'?'CHAT':['piano','classroom','fishing'].includes(near.type)?'ENTER':'INTERACT'),near.x,promptY+17,11,'#c8fff6');}
  drawEditorOverlay();
  if(!developerConsole||!developerConsole.isPlaytest())drawAssetEditorOverlay();
  developerConsole?.drawOverlay(g,cam);
@@ -2072,7 +2072,7 @@ function installMobileWorld(){
   const fishingControls=fishingRoom?.getControlState();if(fishingControls?.open){const state=fishingControls;return {id:'fishing',enabled:!state.blocked&&!state.editing&&!state.audioSettingsOpen&&!state.practiceSettingsOpen&&!state.pinching&&state.mobileView==='room'&&['shore','explore'].includes(state.phase),canJump:false,canEmote:false,interactLabel:state.near==='ladder'?'Climb':state.near==='captain'?'Talk':state.near==='boat'?'Board boat':state.phase==='shore'?'Interact':'Cast',move:(x,y)=>fishingRoom.controlMove(x,y),key:(key,down)=>fishingRoom.control(key,down),release:()=>fishingRoom.releaseControls()};}
   const pianoControls=pianoLab?.getControlState();if(pianoControls?.open){const state=pianoControls;return {id:'piano',enabled:!state.blocked&&!state.editing&&!state.pinching&&(!state.mobileView||state.mobileView==='room'),canJump:true,canEmote:false,interactLabel:state.challengeMode==='free'?'Talk':'Play note',move:(x,y)=>pianoLab.controlMove(x,y),key:(key,down)=>pianoLab.control(key,down),release:()=>pianoLab.releaseControls()};}
   if(musicClassroom?.getState().open){const state=musicClassroom.getState();return {id:'classroom',enabled:!state.blocked&&(!state.mobileView||state.mobileView==='room'),canJump:false,canEmote:false,interactLabel:state.near?.type==='exit'?'Exit':state.near?.type==='professor'?'Talk':'Read',move:(x,y)=>musicClassroom.controlMove(x,y),key:(key,down)=>musicClassroom.control(key,down),release:()=>musicClassroom.releaseControls()};}
-  return {id:'world',enabled:!danceScene?.isOpen()&&!gameOpen&&panel.hidden&&!developerConsole?.isEditing()&&!document.body.classList.contains('world-menu-open'),canJump:dialog.style.display!=='block',canEmote:dialog.style.display!=='block',interactLabel:dialog.style.display==='block'?'Continue':near?(near.type==='game'?'Play':['piano','classroom','fishing'].includes(near.type)?'Enter':'Interact'):'Interact',move:touchWorldMove,key:touchWorldKey,release:()=>{touchKeys.clear();worldStick={x:0,y:0};}};
+  return {id:'world',enabled:!danceScene?.isOpen()&&!gameOpen&&panel.hidden&&!developerConsole?.isEditing()&&!document.body.classList.contains('world-menu-open'),canJump:dialog.style.display!=='block',canEmote:dialog.style.display!=='block',interactLabel:dialog.style.display==='block'?'Continue':near?(near.type==='game'?'Play':near.type==='npc'?'Chat':['piano','classroom','fishing'].includes(near.type)?'Enter':'Interact'):'Interact',move:touchWorldMove,key:touchWorldKey,release:()=>{touchKeys.clear();worldStick={x:0,y:0};}};
  },onMobileChange:active=>{
   document.body.classList.toggle('coda-mobile-world',active);brand.textContent='♫ CODA ARCADE';
   pinchHint.hidden=!active;
