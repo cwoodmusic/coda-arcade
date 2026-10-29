@@ -1,34 +1,74 @@
-# Music History Journal
+# The Scholar and music-history relationships
 
-In **Coda Arcade**, walk to a musician and choose **Tell me some music history**.
-Each click discovers one short fact and saves its ID. The next click reveals the
-next undiscovered fact from that character. After 30 discoveries the collection
-is complete; reading the journal never unlocks entries or grants currency/XP.
+The Scholar sits on the lounge couch. Walk to the couch and press **E** or use
+**Interact** on mobile. This is a fixed character, outside the six rotating
+visitors. **Settings → Find the scholar** guides the player there; records and
+quizzes can only be opened while visiting the scholar.
 
-Open **Settings → Music History Journal**, or use **Open Music History Journal**
-from a history conversation. All 540 entries across 18 collections begin locked. Locked cards show an
-entry number and the character to visit; their factual text is absent from the
-journal DOM and store snapshots. Search covers discovered text and character
-names, and cannot reveal locked facts. These are gameplay locks, not a means of
-concealing static JavaScript assets from developer tools.
+## Earn, learn, and deliver
 
-The collections cover Bach, Mozart, Beethoven, Clara Schumann, Scott Joplin,
-Duke Ellington, Ella Fitzgerald, Nina Simone, Miles Davis, Chopin, Haydn,
-Arnold Schoenberg, George Frideric Handel, and Antonio Vivaldi.
-DJ Coda shares DJ/dance history. Unlockable visitors Vee Jay, Zizi, and Metronome
-share recording/video, global musical traditions, and rhythm/technology history.
-The Notes Shop attendant, boutique attendant, and Captain Cadence are excluded.
-Fictional hosts are identified as fictional, and the facts are authored summaries,
-not invented historical quotations. Historical characters discuss both their own
-work and musicians connected to their lifetime and influence.
+Each of the 18 characters has a 30-fact collection. Choose **Music history &
+friendship** when talking to a musician, then accept their relationship quest.
+Only one relationship quest can be active at once. Start fresh gameplay after
+accepting: completed Pitch Race runs, Rhythm Room rounds, Music Triad matches,
+Piano Lab challenges, and real fishing catches provide verified progress.
+Quests repeat with increasing targets across six tiers; free play, practice
+catches, stale runs, repeated result messages, and clicking conversations do not
+complete quests.
 
-The key `codaMusicHistoryV1` stores only versioned, known discovery IDs. It joins
-`LOCAL_ONLY_KEYS` and the optional backup-key list so guest/player changes clear
-or restore it with the other local educational records. It is not part of the
-Firebase profile payload. Discoveries persist for this player on this device;
-they do not sync across devices. Developer test mode uses its existing in-memory
-storage. Unavailable or damaged saves report an error without overwriting progress
-or claiming an entry was saved. No live Firebase rules or schema changes are needed.
+A completed quest unlocks one fact. The character's history prompt displays
+**! New history fact**. Return to that character to learn it; the fact enters
+your pouch. Further clicks say there are no new facts rather than replaying
+old information. Complete another quest to earn the next fact.
+
+Bring carried facts to the scholar and choose **Give carried facts to the
+scholar**. The historian's record holds deposited facts. All remaining slots
+stay locked, including learned facts not yet handed in. Search includes only
+recorded text. The pouch and record are separate views at the scholar.
+
+## Rewards and quizzes
+
+Fact hand-ins earn 50, 65, 80, 95, 110, then 125 Notes per fact across the six
+five-fact tiers. There are additional one-time bonuses of 500 Notes at 10
+recorded earned facts, 1,000 at 20, and 2,000 at 30. A complete earned fact
+collection pays 6,125 Notes before its quiz.
+
+Record all 30 facts from a character to unlock their 10-question history quiz.
+Questions and answer choices are shuffled. Eight correct answers passes; the
+first pass pays 2,000 Notes. Questions are explicitly linked to that character's
+readable facts. Review correct answers after finishing. Retakes keep the best
+score but do not repay the prize. Each fully earned collection plus its quiz
+therefore pays 8,125 Notes. No Artist's Dream room or associated prizes are
+introduced in this update.
+
+Awards use saved intents and stable wallet IDs. A failed Notes write can be
+retried at the scholar without paying again after a partial success. Larger
+prizes are split into two saved installments to respect the existing wallet.
+
+## Developer progression
+
+Press **F2 → History progression** to inspect each character's relationship,
+ready fact, carried inventory, records, and quiz state. Normal players are
+read-only. **Open temporary progression test** uses the existing isolated test
+player; its controls can unlock a next fact, add it to the pouch, set a
+30-fact record for quiz preview, or reset a selected relationship. It uses
+in-memory browser storage and never changes the original player's save.
+Progression is excluded from world-project JSON exports.
+
+## Storage and compatibility
+
+`codaMusicHistoryV1` now contains a version-2 record of earned, learned, and
+recorded fact IDs, the active quest, completed quizzes, and reward intents.
+Older discovered facts remain readable in the record without retroactive
+fact or collection prizes. Corrupt or unavailable saves produce a visible
+error and are not overwritten.
+
+History follows the existing local workspace boundary: it survives reloads
+within the active player workspace, is isolated between players, and is not
+included in Firebase profile data or synced across devices. Classroom profile
+changes clear these local educational records under the existing privacy
+rules. Notes rewards use the existing wallet and its normal save behavior.
+No live database rules or cloud profile schema are changed.
 
 ## Reference reading
 
@@ -58,10 +98,11 @@ requests are made by journal discovery, search, or storage.
 ## Validation
 
 ```sh
-node --test tests/music-history.test.cjs
+node --test tests/music-history.test.cjs tests/music-history-progress.test.cjs
 PYTHONDONTWRITEBYTECODE=1 python3 tests/music-history-browser.py
+PYTHONDONTWRITEBYTECODE=1 python3 tests/scholar-dev-console-browser.py
 ```
 
-The browser suite routes production-origin requests to this checkout and blocks
-external services. It exercises real NPC conversations and the assembled game,
-not a replacement implementation of the journal.
+Browser checks exercise real conversations, trusted test-served cabinet results,
+physical scholar interactions, phone layouts, developer isolation and quizzes.
+External services are blocked; tests do not change deployed data.

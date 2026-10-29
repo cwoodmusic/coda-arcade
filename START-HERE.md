@@ -306,11 +306,13 @@ routines. Walking into an NPC no longer traps it in place. Conversations and
 explicitly placed characters keep their intended positions, and routes continue
 to respect the edited collision map.
 
-## Music History Journal
+## The Scholar and music history
 
-Walk to a musician and choose **Tell me some music history** to discover a short
-fact. Open **Settings → Music History Journal** to browse your collection.
-All 540 entries start locked, with 30 for each of 18 characters. Undiscovered
-text stays hidden, including in search. Shop and boutique attendants and Captain
-Cadence are excluded. Discoveries save for the active player on this device;
-they do not sync across devices. See [the journal guide](docs/music-history.md).
+Find **The Scholar** on the lounge couch, or choose **Settings → Find the
+scholar**. Musicians' **Music history & friendship** prompts offer relationship
+quests. Complete one to unlock one fact; a **!** marks a new fact ready to learn.
+Carry discoveries to the scholar for Notes and the historian's record.
+Record 30 facts from a character to unlock their 10-question quiz; 80% passes
+and earns a one-time 2,000-Note prize. Repeated clicks do not produce facts.
+Use **F2 → History progression** to inspect progress and enter an isolated
+preview for testing. See [the scholar guide](docs/music-history.md).

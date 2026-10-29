@@ -2,6 +2,12 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaChangelog=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
  const entries=[
+  {date:'2026-10-29',title:'The Scholar and earned music history',changes:[
+   'Meet the Scholar seated on the lounge couch. Bring discoveries to the historian’s record and collect Notes.',
+   'Complete relationship quests to earn new facts. An exclamation mark shows when a musician has one ready; repeated clicks do not reveal more.',
+   'Record all 30 facts from a musician to unlock their history quiz. Collection milestones and a first quiz pass earn larger prizes.',
+   'Inspect relationships and test progression with F2 → History progression in the isolated developer preview.'
+  ]},
   {date:'2026-10-28',title:'Music history journal and visiting composers',changes:[
    'Meet Arnold Schoenberg, George Frideric Handel, and Antonio Vivaldi alongside the existing musicians.',
    'At most six visitors share the arcade. New visitors enter after someone walks out through the exit.',

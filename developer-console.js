@@ -17,7 +17,7 @@ window.createCodaDeveloperConsole = function (api) {
   let dialogue={}, sprites={}, artwork={}, dialogueEditor=null, pixelEditor=null, artworkEditor=null, artworkTools=null,educationEditor=null;
   let panTool=false, spaceHeld=false,collisionOverlay=false,layerOverlay=false,layerMaskSource=null,layerMaskTint=null,layerMaskKey='';
   const dialogueDefaults=api.dialogueDefaults||window.CodaNPCDialogueDefaults||{};
-  const TABS=['objects','collision','layers','artwork','dialogue','pixels','education','project'];
+  const TABS=['objects','collision','layers','artwork','dialogue','pixels','education','history','project'];
   const pictures = new Map();
   const maskedLayers = new WeakMap();
   const panel = $('assetStudio');
@@ -34,7 +34,7 @@ window.createCodaDeveloperConsole = function (api) {
   head.insertBefore(dock,$('assetClose'));
   dock.onclick=()=>{const right=panel.style.right!=='12px';panel.style.left=right?'auto':'12px';panel.style.right=right?'12px':'auto';};
   const nav = document.createElement('div'); nav.className = 'dev-tabs'; nav.setAttribute('role','tablist'); nav.setAttribute('aria-label','Developer tools');
-  nav.innerHTML = TABS.map(name => `<button type="button" role="tab" id="devTab-${name}" aria-controls="dev-${name}">${name==='education'?'Lessons & exams':name==='pixels'?'Sprites':name==='artwork'?'Pixel editor':name[0].toUpperCase()+name.slice(1)}</button>`).join('');
+  nav.innerHTML = TABS.map(name => `<button type="button" role="tab" id="devTab-${name}" aria-controls="dev-${name}">${name==='education'?'Lessons & exams':name==='history'?'History progression':name==='pixels'?'Sprites':name==='artwork'?'Pixel editor':name[0].toUpperCase()+name.slice(1)}</button>`).join('');
   head.after(nav);
   const cameraTools=document.createElement('div');cameraTools.className='dev-camera';
   cameraTools.setAttribute('role','group');cameraTools.setAttribute('aria-label','Editor camera');
@@ -103,6 +103,29 @@ window.createCodaDeveloperConsole = function (api) {
     if(!window.CodaEducationEditor||!window.CodaEducationContent?.getStore?.()){educationPane.textContent='Lesson editing tools could not load. Reload the page to try again.';return;}
     educationPane.replaceChildren();educationEditor=window.CodaEducationEditor.mount({host:educationPane,initialKind:'study',canEdit:canEditArtwork,onExit:()=>{setTab('objects');c.focus({preventScroll:true});}});
   }
+  const historyPane=pane('history','');historyPane.dataset.historyDeveloper='';
+  const historyToolbar=document.createElement('div');historyToolbar.className='dev-toolbar';
+  const historyRefresh=document.createElement('button');historyRefresh.type='button';historyRefresh.textContent='Refresh progression';historyRefresh.id='devHistoryRefresh';historyToolbar.append(historyRefresh);
+  const historyContent=document.createElement('div');historyContent.id='devHistoryContent';historyPane.append(historyToolbar,historyContent);
+  let historyController=null,historyView=null,historyMounted=false,historyNeedsRender=true;
+  function releaseHistory(){
+    try{historyView?.dispose?.();}catch{/* An optional preview cannot stop the console. */}
+    historyView=null;historyMounted=false;historyNeedsRender=true;
+  }
+  function mountHistory(force=false){
+    if(!studio.active||playtest||tab!=='history')return;
+    let controller=null;try{controller=api.historyProgress?.();}catch{}
+    if(!controller?.renderDeveloper){
+      if(historyMounted)releaseHistory();historyController=null;
+      if(historyContent.dataset.ready!=='false'){historyContent.replaceChildren();historyContent.textContent='History progression is loading. Reopen this tab or choose Refresh progression when the game is ready.';historyContent.dataset.ready='false';}
+      return;
+    }
+    if(!force&&historyMounted&&!historyNeedsRender&&historyController===controller)return;
+    releaseHistory();historyController=controller;historyContent.replaceChildren();historyContent.dataset.ready='true';
+    try{historyView=controller.renderDeveloper(historyContent)||null;historyMounted=true;historyNeedsRender=false;}
+    catch{historyController=null;historyContent.textContent='History progression could not open. Choose Refresh progression to try again.';historyContent.dataset.ready='false';}
+  }
+  historyRefresh.onclick=()=>mountHistory(true);
   const pixelPane=pane('pixels','');
   if(window.CodaPixelEditor&&api.renderer)pixelEditor=window.CodaPixelEditor.mount({host:pixelPane,renderer:api.renderer,getData:()=>sprites,getProfile:api.getPixelProfile,getTargets:api.getPixelTargets,canEdit:canEditArtwork,openArtwork:id=>{open('artwork');artworkEditor?.selectTarget(id);},
     onChange:next=>{if(!window.CodaPixelEditor.validate(next))return false;const before=snapshot();sprites=clone(next);api.renderer.setPixelEdits(sprites);changed(before);message('Applied pixel edits. Save or export the project to keep a backup.');return true;}});
@@ -211,6 +234,7 @@ window.createCodaDeveloperConsole = function (api) {
   function setTab(name) {
     name=name==='sprites'?'pixels':TABS.includes(name)?name:'objects';
     if(name!=='education'||!studio.active||playtest)educationEditor?.setActive(false);
+    if(tab==='history'&&(name!=='history'||!studio.active||playtest))releaseHistory();if(name==='history')historyNeedsRender=true;
     finishGesture();if(name!==tab){if(tab==='pixels')pixelEditor?.cancelGesture();artworkEditor?.cancelPaste?.(false);artworkEditor?.setExpanded(false);} tab=name; pickSample=false; studio.capturing=null;
     if(name==='collision')collisionOverlay=true;if(name==='layers')layerOverlay=true;
     for(const name of TABS) { $('dev-'+name).hidden=name!==tab; $('devTab-'+name).setAttribute('aria-selected',String(name===tab)); }
@@ -223,7 +247,7 @@ window.createCodaDeveloperConsole = function (api) {
   }
   function open(name='objects') { api.toggle(true); setTab(name); if(!artworkEditor?.getState().expanded&&!educationEditor?.getState().expanded)c.focus({preventScroll:true}); }
   function onToggle() {
-    if(!studio.active) { pixelEditor?.cancelGesture();artworkEditor?.cancelPaste?.(false);artworkEditor?.setExpanded(false); spaceHeld=false; playtest=false; panel.classList.remove('dev-playtest'); $('devPlaytest').textContent='▶ Playtest'; $('devPlaytest').setAttribute('aria-pressed','false'); }
+    if(!studio.active) { releaseHistory();pixelEditor?.cancelGesture();artworkEditor?.cancelPaste?.(false);artworkEditor?.setExpanded(false); spaceHeld=false; playtest=false; panel.classList.remove('dev-playtest'); $('devPlaytest').textContent='▶ Playtest'; $('devPlaytest').setAttribute('aria-pressed','false'); }
     setTab(tab); if(studio.active)message(loadFailed&&loadError?loadError:'Developer console active. Changes save locally; export a project backup.'+(publishedError?' '+publishedError:''));
   }
   function togglePlaytest() {
@@ -521,6 +545,7 @@ window.createCodaDeveloperConsole = function (api) {
   function refresh() {
     dialogueEditor?.refresh();pixelEditor?.refresh();if(tab==='artwork')artworkEditor?.refresh();
     if(tab==='education'&&studio.active&&!playtest)educationEditor?.refresh();
+    mountHistory();
     for(const [id,shown,label]of [['devShowCollision',collisionOverlay,'collision'],['devShowLayers',layerOverlay,'layers']]){$(id).setAttribute('aria-pressed',String(shown));$(id).textContent=(shown?'Hide ':'Show ')+label;$(id).disabled=playtest;}
     $('devOverlayLegend').hidden=playtest||!collisionOverlay&&!layerOverlay;$('devMasks').checked=layerOverlay;layer.maskView=layerOverlay;$('devMasks').disabled=playtest;
     const a=api.selected(); $('devUndo').disabled=!studio.undo.length;$('devRedo').disabled=!studio.redo.length;
@@ -612,6 +637,7 @@ window.createCodaDeveloperConsole = function (api) {
   };
   $('editorToggle').onclick=()=>open('layers');
   window.addEventListener('keydown',e=>{
+    if(e.target?.closest?.('[data-history-developer]')&&!['F2','Escape'].includes(e.key)){e.stopImmediatePropagation();return;}
     if(e.target?.closest?.('[data-education-editor]')&&e.key!=='F2')return;
     if(e.target?.closest?.('[data-artwork-editor]')&&e.key!=='F2')return;
     if(e.target?.closest?.('.pixel-editor')&&e.key!=='F2'&&(!(e.ctrlKey||e.metaKey)||!['z','y'].includes(e.key.toLowerCase())))return;

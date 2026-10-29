@@ -16,7 +16,7 @@ window.createCodaMusicianUI=function(api){
     for(const choice of data.choices){const button=document.createElement('button');button.type='button';button.textContent=choice.label;button.onclick=()=>{$('words').textContent=api.getBrain().say(selected,choice.id);};choices.append(button);}
     if(api.openMissions&&api.getMission?.(selected)){const mission=document.createElement('button');mission.type='button';const entry=api.getMission?.(selected);mission.textContent=entry?.status==='complete'?'I finished your mission · Collect reward':entry?.status==='active'?'My mission · Check progress':'Any missions for me? · Earn Notes';mission.onclick=()=>{const id=selected;closeConversation();api.openMissions(id);};choices.append(mission);}
     if(api.openTrivia&&(!api.hasTrivia||api.hasTrivia(selected))){const trivia=document.createElement('button');trivia.type='button';trivia.textContent='Ask me a music question · Earn Notes';trivia.onclick=()=>{const id=selected;closeConversation();api.openTrivia(id);};choices.append(trivia);}
-    if(api.openHistory){const history=document.createElement('button');history.type='button';history.textContent='Tell me some music history';history.onclick=()=>api.openHistory(selected);choices.append(history);}
+    if(api.openHistory){const history=document.createElement('button');history.type='button';history.dataset.historyOwnerPrompt=selected;history.textContent=api.historyState?.(selected)?.hasNewFact?'! New history fact':'Music history & friendship';history.onclick=()=>api.openHistory(selected);choices.append(history);}
     $('close').textContent='See you around · E';$('close').focus();
   }
   $('close').onclick=closeConversation;

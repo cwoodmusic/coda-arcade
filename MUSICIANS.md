@@ -59,3 +59,13 @@ If an exit route is blocked, visitors wait and retry rather than fading away.
 Chopin, Professor Haydn, and the fixed service characters remain in their rooms.
 J. S. Bach remains a single existing character. Schoenberg, Handel, and Vivaldi
 each have their own appearance, conversation, and 30 music-history discoveries.
+
+## The Scholar
+
+The fixed historian sits on the lounge couch and keeps the music-history record.
+Musician relationships advance through fresh, accepted quests rather than repeated
+fact clicks. A **! New history fact** prompt appears when a discovery is ready.
+Learn the fact, carry it to the scholar, and collect the hand-in reward.
+Collections, reward milestones, and 30-fact quizzes are described in the
+[scholar guide](docs/music-history.md). The scholar does not occupy a roaming
+visitor slot or have a separate fact collection.

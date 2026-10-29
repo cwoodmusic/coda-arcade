@@ -127,3 +127,12 @@ The art checks require Pillow and verify that pixels outside the 33 repair regio
 Learning rooms, Notes, missions, levels, the interactive dance floor, and the permanently repaired four-plant area are documented in [LEARNING-WORLD.md](LEARNING-WORLD.md). The permanent repair remains clear even in older editor projects containing the former passage-plant asset.
 
 The main world, Piano Lab, and cave consoles have **Show collision** and **Show layers** controls above the tool tabs. Collision shows the base walking boundary as well as painted overrides. Layer overlays tint foreground masks and outline background, actor-depth, and foreground assets with a color legend. They can stay visible independently while you select objects or pan. Room Layers also offers a straight Line tool and a pixel-exact brush preview. **C** toggles the Collision tool; **L** or **Shift+L** toggles Layers. Press the same shortcut again to return to Objects. Zoom and pan stay in place. Debug overlays disappear during Playtest and after closing the editor; authored collision and layer edits continue to work.
+
+## History progression
+
+Open **F2 → History progression** to inspect each musician's relationship,
+ready/carried/recorded facts, active quest and quiz eligibility. This view is
+read-only for a normal player. Choose **Open temporary progression test** to
+use the existing isolated test player; then use the same tab to unlock a fact,
+put it in the pouch, prepare a full record for a quiz, or reset that relationship.
+Test progress stays in memory and is excluded from world-project exports.
