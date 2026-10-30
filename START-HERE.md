@@ -51,6 +51,12 @@ the line and again to close; **Escape** always closes. Reduced motion defaults
 to instant text until you choose a speed. Journal entries and quizzes remain
 fully visible.
 
+The main arcade now uses a complete empty-room background with separate clean
+furniture and plants. The large curved lounge couch stays in place. Moving or
+hiding an object reveals finished floors and walls. Existing local editor
+projects keep their previous art; export a backup and choose **Project → Reset
+project** to adopt the refreshed environment. See [Environment artwork](ENVIRONMENT-ART.md).
+
 The original arcade remains available at `classic-arcade.html`, linked from the
 title screen. In the connected world's **Settings**, **Title screen** returns
 to the front door. Direct world links and existing picture-card links still work.

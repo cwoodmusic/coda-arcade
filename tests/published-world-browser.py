@@ -1,4 +1,4 @@
-"""Shared world defaults, local-save priority, and lifted-object layer masks.
+"""Legacy world compatibility, local-save priority, and lifted-object layer masks.
 
 Runs against disposable browser contexts and the checked-in project export.
 No account credentials, external services, or existing browser saves are used.
@@ -28,7 +28,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
 class PublishedWorldTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.published=json.loads((ROOT/'published-world-project.json').read_text())
+        cls.published=json.loads((ROOT/'assets/environment/legacy-world-project.json').read_text())
         cls.server=ThreadingHTTPServer(('127.0.0.1',0),
             functools.partial(QuietHandler,directory=str(ROOT)))
         threading.Thread(target=cls.server.serve_forever,daemon=True).start()
@@ -45,6 +45,8 @@ class PublishedWorldTests(unittest.TestCase):
     def setUp(self):
         self.context=self.browser.new_context(viewport={'width':1600,'height':1000})
         self.context.route('https://**/*',lambda route:route.abort())
+        self.context.route('**/published-world-project.json*',lambda route:route.fulfill(
+            status=200,content_type='application/json',body=json.dumps(self.published)))
         self.context.add_init_script('''(()=>{
           localStorage.setItem('codaArcadeFXV1','off');
           window.publishFrames=count=>new Promise(resolve=>{

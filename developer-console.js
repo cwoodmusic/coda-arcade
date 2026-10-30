@@ -14,14 +14,21 @@ window.createCodaDeveloperConsole = function (api) {
   let tab = 'objects', playtest = false, loading = true, strokeBefore = null, saveTimer, fullscreen = false;
   let pickSample = false, baseCache = null, baseKey = '', cleanupCache = null, loadFailed = false, pan = null;
   let publishedProject = null, publishedError = null, loadError = null, projectSource = 'base';
-  let dialogue={}, sprites={}, artwork={}, dialogueEditor=null, pixelEditor=null, artworkEditor=null, artworkTools=null,educationEditor=null;
+  let scenery, dialogue={}, sprites={}, artwork={}, dialogueEditor=null, pixelEditor=null, artworkEditor=null, artworkTools=null,educationEditor=null;
   const emptyHistoryContent=()=>({version:2,facts:{},quizzes:{}});
   let musicHistoryContent=emptyHistoryContent(),musicFactsEditor=null;
   let panTool=false, spaceHeld=false,collisionOverlay=false,layerOverlay=false,layerMaskSource=null,layerMaskTint=null,layerMaskKey='';
   const dialogueDefaults=api.dialogueDefaults||window.CodaNPCDialogueDefaults||{};
   const TABS=['objects','collision','layers','artwork','dialogue','pixels','education','facts','history','project'];
   const pictures = new Map();
-  const maskedLayers = new WeakMap();
+  let maskedLayers = new WeakMap();
+  const refreshedScenery=()=>scenery==='environment-v1';
+  function previousSceneryNotice(){return ['local','legacy'].includes(projectSource)&&!refreshedScenery()&&publishedProject?.scenery==='environment-v1'?' Your saved project uses the previous scenery. Export a backup, then Reset project to use the refreshed environment.':'';}
+  function environmentReady(){const environment=api.environmentArt;return !!environment&&environment.isReady?.()===true&&!!environment.background?.();}
+  function backgroundSource(){return refreshedScenery()?api.environmentArt?.background?.():baseCache||worldArt;}
+  // A new art set is optional for legacy local projects. Keep its rejection
+  // observed without replacing it: refreshed projects still await and reject it.
+  api.environmentArt?.ready?.catch?.(()=>{});
   const panel = $('assetStudio');
   panel.classList.add('dev-console');
   const head = panel.querySelector('.studioHead');
@@ -81,9 +88,9 @@ window.createCodaDeveloperConsole = function (api) {
     <div class="dev-toolbar"><button id="devReplace" type="button">Replace image</button><button id="devRestore" type="button">Restore original</button></div>
     <input type="file" id="devReplaceFile" accept="image/png,image/jpeg,image/webp,image/gif,image/apng" hidden>
     <div id="devDisco" hidden><label class="studioField">Disco ball spin speed<input id="devDiscoSpin" type="number" min="0" max="4" step="0.05"></label><label class="studioCheck"><input id="devDiscoRays" type="checkbox">Project disco light rays</label></div>
-    <div id="devSource" hidden><p class="studioTip">The room is a flattened PNG. A clone patch covers the old silhouette. Pick a clean floor sample to improve the patch; hidden artwork cannot be recovered automatically.</p>
-      <div class="studioGrid"><label class="studioField">Floor sample X<input type="number" id="devSampleX" min="0" step="1"></label><label class="studioField">Floor sample Y<input type="number" id="devSampleY" min="0" step="1"></label></div>
-      <button type="button" id="devPickSample">Pick floor sample on map</button>
+    <div id="devSource" hidden><p id="devSourceTip" class="studioTip">The room is a flattened PNG. A clone patch covers the old silhouette. Pick a clean floor sample to improve the patch; hidden artwork cannot be recovered automatically.</p>
+      <div id="devLegacyRepair"><div class="studioGrid"><label class="studioField">Floor sample X<input type="number" id="devSampleX" min="0" step="1"></label><label class="studioField">Floor sample Y<input type="number" id="devSampleY" min="0" step="1"></label></div>
+      <button type="button" id="devPickSample">Pick floor sample on map</button></div>
       <label class="studioCheck"><input id="devRelease" type="checkbox">Open collision at original position</label>
     </div>
     <label class="studioCheck"><input id="devSolid" type="checkbox">Solid collision footprint</label>
@@ -155,7 +162,7 @@ window.createCodaDeveloperConsole = function (api) {
   if(window.CodaArtworkEditor&&window.createCodaWorldArtworkTools){
     artworkTools=window.createCodaWorldArtworkTools({width:W,height:H,catalog,getAssets:()=>studio.assets,getRootData:()=>artwork,
       getObjectSource:name=>{const part=catalog.find(p=>p.name===name);return part?sourcePicture({name,bounds:part.bounds}):null;},
-      getAssetSource:api.getAssetArtworkSource,getBackgroundSource:()=>baseCache||worldArt,getClassroomSource:api.getClassroomArtworkSource,drawAssetPreview:api.drawArtworkAssetPreview,
+      getAssetSource:api.getAssetArtworkSource,getBackgroundSource:backgroundSource,getClassroomSource:api.getClassroomArtworkSource,drawAssetPreview:api.drawArtworkAssetPreview,
       getRoomEditors:api.getArtworkRooms,characters:characterArtwork,canEdit:canEditArtwork,onExit:()=>setTab('objects'),onUndo:()=>undoRedo(true),onRedo:()=>undoRedo(false),getHistory:()=>({undo:studio.undo.length,redo:studio.redo.length}),applyRootData:applyArtworkData});
     artworkEditor=artworkTools.mount(artworkPane);
     const editPixels=document.createElement('button');editPixels.type='button';editPixels.id='devEditPixels';editPixels.textContent='Edit selected asset pixels';
@@ -183,7 +190,7 @@ window.createCodaDeveloperConsole = function (api) {
     }
     changed(before);journalFallback();message('Applied artwork pixels. Undo or export your complete project.');return true;
   }
-  pane('project', `<h3 class="dev-heading">Complete world project</h3><p class="dev-note">Save or export objects, embedded images, floor patches, collision, foreground brush edits, musician dialogue and character sprite edits, pixel artwork, music facts and linked quiz questions together. Edits are local to this browser until you export and publish them.</p>
+  pane('project', `<h3 class="dev-heading">Complete world project</h3><p id="devSceneryNotice" class="dev-note" hidden></p><p class="dev-note">Save or export objects, embedded images, floor patches, collision, foreground brush edits, musician dialogue and character sprite edits, pixel artwork, music facts and linked quiz questions together. Edits are local to this browser until you export and publish them.</p>
     <div class="dev-toolbar"><button id="devSave" type="button">Save project</button><button id="devExport" type="button">Export project JSON</button></div>
     <div class="dev-toolbar"><button id="devImport" type="button">Import project JSON</button><button id="devReset" type="button">Reset project</button></div>
     <input id="devImportFile" type="file" accept="application/json,.json" hidden>
@@ -236,7 +243,7 @@ window.createCodaDeveloperConsole = function (api) {
     }
     return false;
   }
-  function snapshot() { const rooms=api.getRooms?.();return JSON.stringify({assets:studio.assets,collision:collision.get(),strokes:layer.actions,...(Object.keys(dialogue).length?{dialogue}:{}),...(Object.keys(sprites).length?{sprites}:{}),...(Object.keys(artwork).length?{artwork}:{}),...(Object.keys(musicHistoryContent.facts).length||Object.keys(musicHistoryContent.quizzes).length||Object.keys(musicHistoryContent.archivedQuizzes||{}).length?{musicHistoryContent}:{}),...(rooms&&Object.keys(rooms).length?{rooms}:{})}); }
+  function snapshot() { const rooms=api.getRooms?.();return JSON.stringify({...(scenery?{scenery}:{}),assets:studio.assets,collision:collision.get(),strokes:layer.actions,...(Object.keys(dialogue).length?{dialogue}:{}),...(Object.keys(sprites).length?{sprites}:{}),...(Object.keys(artwork).length?{artwork}:{}),...(Object.keys(musicHistoryContent.facts).length||Object.keys(musicHistoryContent.quizzes).length||Object.keys(musicHistoryContent.archivedQuizzes||{}).length?{musicHistoryContent}:{}),...(rooms&&Object.keys(rooms).length?{rooms}:{})}); }
   function documentData() { return {format:FORMAT,version:VERSION,world:{width:W,height:H},...JSON.parse(snapshot())}; }
   function changed(before) { api.record(before); }
   function recordRoomChange(id,before) {
@@ -259,7 +266,7 @@ window.createCodaDeveloperConsole = function (api) {
   function recordChange(before) {
     if (before !== snapshot()) { studio.undo.push(before); if(studio.undo.length>40)studio.undo.shift();studio.redo=[];projectSource='local'; }
     let layersChanged=true;
-    try {const previous=JSON.parse(before);layersChanged=JSON.stringify(previous.strokes)!==JSON.stringify(layer.actions)||JSON.stringify(previous.artwork||{})!==JSON.stringify(artwork);}catch{}
+    try {const previous=JSON.parse(before);layersChanged=previous.scenery!==scenery||JSON.stringify(previous.strokes)!==JSON.stringify(layer.actions)||JSON.stringify(previous.artwork||{})!==JSON.stringify(artwork);}catch{}
     studio.dirty=true; invalidate(layersChanged); api.refresh(); refresh(); scheduleSave();
   }
   function undoRedo(undo) {
@@ -270,6 +277,10 @@ window.createCodaDeveloperConsole = function (api) {
   }
   function applyState(data,options={}) {
     pixelEditor?.cancelGesture?.();artworkEditor?.cancelGesture?.();
+    if(scenery!==data.scenery){
+      scenery=data.scenery;pictures.clear();maskedLayers=new WeakMap();baseCache=null;baseKey='';cleanupCache=null;layerMaskSource=null;layerMaskTint=null;layerMaskKey='';
+      api.onSceneryChange?.(scenery);
+    }
     artwork=clone(data.artwork||{});
     musicHistoryContent=window.CodaMusicHistoryContent?.normalize(data.musicHistoryContent||emptyHistoryContent())||emptyHistoryContent();
     dialogue=clone(data.dialogue||{});sprites=clone(data.sprites||{});api.renderer?.setPixelEdits?.(sprites);
@@ -315,7 +326,19 @@ window.createCodaDeveloperConsole = function (api) {
     return [Math.min(W-16,Math.max(0,x)),Math.min(H-16,y+h+8)];
   }
   function sourcePicture(origin) {
-    const key=JSON.stringify([origin.name,origin.bounds]); if(pictures.has(key))return pictures.get(key);
+    const key=JSON.stringify([scenery||'legacy',origin.name,origin.bounds]); if(pictures.has(key))return pictures.get(key);
+    if(refreshedScenery()){
+      const environment=api.environmentArt;
+      if(/^region-/.test(origin.name)){
+        if(!environmentReady())return null;
+        const [x,y,width,height]=origin.bounds,background=artworkTools?.compose('background.world',environment.background())||environment.background();
+        const region=makeCanvas(width,height);region.getContext('2d').drawImage(background,x,y,width,height,0,0,width,height);pictures.set(key,region);return region;
+      }
+      const part=catalog.find(p=>p.name===origin.name);
+      const refreshed=environment?.object?.(origin.name)||part&&['wall','wall-mask'].includes(part.type)&&environment?.structural?.(part);
+      if(refreshed){pictures.set(key,refreshed);return refreshed;}
+      if(environment?.has?.(origin.name))return null;
+    }
     const native=api.getObjectPicture?.(origin.name);if(native){pictures.set(key,native);return native;}
     // PNG headers expose naturalWidth before loading and pixel decoding finish.
     if(!worldArt.complete||!worldArt.naturalWidth||!foregroundArt.complete||!foregroundArt.naturalWidth)return null;
@@ -347,13 +370,13 @@ window.createCodaDeveloperConsole = function (api) {
     const existing=studio.assets.find(a=>a.origin?.name===origin.name);
     if(existing) { studio.selected=existing.id;api.refresh();refresh();message('Selected '+existing.name);return existing; }
     const a=makeOriginalAsset(origin);
-    if(api.add(a)) { if(focus)api.focusWorld(a.x,a.y);refresh();message('Original object lifted. Tune the floor sample if its old position needs cleanup.');return a; }
+    if(api.add(a)) { if(focus)api.focusWorld(a.x,a.y);refresh();message(refreshedScenery()?(/^region-/.test(origin.name)?'Copied background artwork. The complete room background stays underneath.':'Original object lifted. Its previous position reveals the finished room background.'):'Original object lifted. Tune the floor sample if its old position needs cleanup.');return a; }
   }
   function makeOriginalAsset(origin){
     const part=catalog.find(p=>p.name===origin.name);
     const [x,y,w,h]=origin.bounds,a=api.prototype(part?.label || origin.name.replaceAll('_',' '),'builtin');
     a.ref='foreground'; a.crop=[0,0,w,h]; a.origin={...origin,sample:defaultSample(origin.bounds)};
-    a.x=x+w/2;a.y=y+h/2;a.w=w;a.h=h;a.anim='none';a.depthOffset=(part?.sortY??y+h)-(y+h);a.layer=part?.layer || 'world';
+    a.x=x+w/2;a.y=y+h/2;a.w=w;a.h=h;a.anim='none';a.depthOffset=((part?api.depthForPart?.(part):undefined)??part?.sortY??(y+h))-(y+h);a.layer=part?.layer || 'world';
     if(part?.sample)a.origin.sample=part.sample.slice();
     if(part?.collision){const [cx,cy,cw,ch]=part.collision;a.releaseCollision=true;a.collider={x:(cx-a.x)/w*100,y:(cy-a.y)/h*100,w:cw/w*100,h:ch/h*100};}
     if(part?.ballIndex!==undefined){a.discoSpin=part.spin;a.discoRays=true;}
@@ -384,6 +407,11 @@ window.createCodaDeveloperConsole = function (api) {
     return arcadeFloor.cabinet(bounds,bottom);
   }
   function renderBase(g) {
+    if(refreshedScenery()){
+      if(!environmentReady())return;
+      baseCache=api.environmentArt.background();baseKey='environment-v1';cleanupCache=null;
+      g.drawImage(artworkTools?.compose('background.world',baseCache)||baseCache,0,0,W,H);return;
+    }
     if(!worldArt.complete||!worldArt.naturalWidth)return;
     if(arcadeFloor?.isReady&&!arcadeFloor.isReady()){g.drawImage(worldArt,0,0,W,H);return;}
     const originals=studio.assets.filter(a=>a.origin&&!catalog.find(part=>part.name===a.origin.name)?.procedural);
@@ -428,7 +456,7 @@ window.createCodaDeveloperConsole = function (api) {
     }
     g.drawImage(artworkTools?.compose('background.world',baseCache)||baseCache,0,0);
   }
-  function renderCleanup(g) {if(cleanupCache&&studio.assets.some(a=>a.origin))g.drawImage(artworkTools?.fragment(cleanupCache,0,0)||cleanupCache,0,0);}
+  function renderCleanup(g) {if(!refreshedScenery()&&cleanupCache&&studio.assets.some(a=>a.origin))g.drawImage(artworkTools?.fragment(cleanupCache,0,0)||cleanupCache,0,0);}
   function validateOrigin(o) {
     if(!o||typeof o.name!=='string'||!Array.isArray(o.bounds)||o.bounds.length!==4||!o.bounds.every(Number.isInteger))return false;
     const [x,y,w,h]=o.bounds;if(x<0||y<0||w<3||h<3||x+w>W||y+h>H)return false;
@@ -448,7 +476,7 @@ window.createCodaDeveloperConsole = function (api) {
     return true;
   }
   function validate(data) {
-    return data?.format===FORMAT&&data.version===VERSION&&data.world?.width===W&&data.world?.height===H&&Array.isArray(data.assets)&&data.assets.length<=api.maxAssets&&data.assets.every(a=>api.validAsset(a)&&validateAssetExtension(a))&&new Set(data.assets.map(a=>a.id)).size===data.assets.length&&new Set(data.assets.filter(a=>a.origin).map(a=>a.origin.name)).size===data.assets.filter(a=>a.origin).length&&collision.validate(data.collision)&&Array.isArray(data.strokes)&&data.strokes.length<=1000&&data.strokes.every(api.validStroke)&&(data.dialogue===undefined||window.CodaDialogueEditor?.validate(data.dialogue,dialogueDefaults))&&(data.sprites===undefined||window.CodaPixelEditor?.validate(data.sprites))&&(data.rooms===undefined||api.validateRooms?.(data.rooms)===true)&&(data.artwork===undefined||validateArtwork(data.artwork))&&(data.musicHistoryContent===undefined||window.CodaMusicHistoryContent?.validate(data.musicHistoryContent)===true);
+    return data?.format===FORMAT&&data.version===VERSION&&(data.scenery===undefined||data.scenery==='environment-v1')&&data.world?.width===W&&data.world?.height===H&&Array.isArray(data.assets)&&data.assets.length<=api.maxAssets&&data.assets.every(a=>api.validAsset(a)&&validateAssetExtension(a))&&new Set(data.assets.map(a=>a.id)).size===data.assets.length&&new Set(data.assets.filter(a=>a.origin).map(a=>a.origin.name)).size===data.assets.filter(a=>a.origin).length&&collision.validate(data.collision)&&Array.isArray(data.strokes)&&data.strokes.length<=1000&&data.strokes.every(api.validStroke)&&(data.dialogue===undefined||window.CodaDialogueEditor?.validate(data.dialogue,dialogueDefaults))&&(data.sprites===undefined||window.CodaPixelEditor?.validate(data.sprites))&&(data.rooms===undefined||api.validateRooms?.(data.rooms)===true)&&(data.artwork===undefined||validateArtwork(data.artwork))&&(data.musicHistoryContent===undefined||window.CodaMusicHistoryContent?.validate(data.musicHistoryContent)===true);
   }
   function validateArtwork(data){
     if(!window.CodaArtworkEditor?.validate(data))return false;
@@ -526,6 +554,12 @@ window.createCodaDeveloperConsole = function (api) {
     return localValue&&(!databaseValue||(localValue.savedAt||0)>(databaseValue.savedAt||0))?localValue:databaseValue;
   }
   async function decodeProjectImages(data) {
+    if(data.scenery==='environment-v1'){
+      const environment=api.environmentArt;if(!environment)throw Error('The refreshed environment artwork is unavailable.');
+      await (typeof environment.ready==='function'?environment.ready():environment.ready);
+      const background=environment.background?.();
+      if(!environmentReady()||(background.naturalWidth||background.width)!==W||(background.naturalHeight||background.height)!==H)throw Error('The refreshed environment artwork is unavailable or has incorrect dimensions.');
+    }else await arcadeFloor?.ready?.();
     if(data.artwork?.['background.classroom']){const source=await api.getClassroomArtworkSource?.(),patch=data.artwork['background.classroom'];if(!source||!window.CodaArtworkEditor.validateTexture(patch,source.naturalWidth||source.width,source.naturalHeight||source.height))throw Error('Classroom pixel artwork dimensions do not match its background.');}
     for(const [id,room]of Object.entries(data.rooms||{})){const editor=(api.getArtworkRooms?.()||[]).find(editor=>editor.getArtworkTargets().some(target=>target.id==='background.'+id));if(editor?.validateArtworkProject&&await editor.validateArtworkProject(room)===false)throw Error('Room pixel artwork dimensions do not match its source.');}
     for(const asset of data.assets)if(asset.artwork){const source=await api.getAssetArtworkSource(asset);if(!source||!window.CodaArtworkEditor.validateTexture(asset.artwork,source.naturalWidth||source.width,source.naturalHeight||source.height))throw Error('Asset pixel artwork dimensions do not match its source.');}
@@ -546,37 +580,41 @@ window.createCodaDeveloperConsole = function (api) {
       if(!response.ok)throw Error('HTTP '+response.status);
       const data=await response.json();
       if(!validate(data))throw Error('Unsupported project data');
-      await decodeProjectImages(data);
+      // Metadata can load while an existing local project keeps its own art.
+      // Decode only the chosen project, or on an explicit Reset/import.
       return {project:clone(data),error:null};
     }catch(error){return {project:null,error:'Published layout could not load: '+(error.name==='AbortError'?'request timed out':error.message)+'.'};}
     finally{clearTimeout(timeout);}
   }
   async function load() {
     try {
-      const [publication,data]=await Promise.all([published(),stored(STORE),arcadeFloor?.ready?.()]);
+      const [publication,data]=await Promise.all([published(),stored(STORE)]);
       publishedProject=publication.project;publishedError=publication.error;
       if(data) {
         if(!validate(data))throw Error('Saved project is invalid; it has been preserved. Import a valid backup.');
         await decodeProjectImages(data);applyState(data);projectSource='local';
-        message('Restored complete world project.'+(publication.error?' '+publication.error+' Your saved edits are intact.':''));
+        message('Restored complete world project.'+(publication.error?' '+publication.error+' Your saved edits are intact.':'')+previousSceneryNotice());
       }else {
         const legacy=await stored(api.legacyStore),hasLegacy=legacy&&api.validLegacy(legacy);
         const hasLocalEdits=hasLegacy||studio.assets.length>0||layer.actions.length>0||(api.legacyCollision?.length||0)>0;
         if(hasLocalEdits){
+          await arcadeFloor?.ready?.();
           if(hasLegacy)studio.assets=clone(legacy.assets);
           collision.apply(api.legacyCollision||[]);invalidate();api.refresh();projectSource='legacy';
-          message('Ready. Existing assets, collision and foreground edits preserved.'+(publication.error?' '+publication.error:''));
+          message('Ready. Existing assets, collision and foreground edits preserved.'+(publication.error?' '+publication.error:'')+previousSceneryNotice());
         }else if(publishedProject){
+          await decodeProjectImages(publishedProject);
           applyState(publishedProject,{published:true});projectSource='published';
           message('Loaded the published world layout. New edits save only in this browser.');
         }else{
+          await arcadeFloor?.ready?.();
           collision.apply([]);invalidate();api.refresh();
           loadFailed=!!publication.error;
           loadError=publication.error?publication.error+' Showing the original map; export edits before reloading.':null;
           message(loadError||'Ready. Existing assets, collision and foreground edits preserved.');
         }
       }
-    }catch(err){loadFailed=true;loadError=err.message;message(loadError);}
+    }catch(err){loadFailed=true;loadError=err.message;if(!refreshedScenery())try{await arcadeFloor?.ready?.();}catch{}message(loadError);}
     loading=false;studio.ready=true; refresh();catalogPreview();
   }
   function exportProject() {
@@ -594,6 +632,9 @@ window.createCodaDeveloperConsole = function (api) {
     }catch(err){message('Import failed: '+err.message);}
   }
   function refresh() {
+    const sceneryNotice=previousSceneryNotice().trim();$('devSceneryNotice').textContent=sceneryNotice;$('devSceneryNotice').hidden=!sceneryNotice;
+    $('devLiftRegion').textContent=refreshedScenery()?'Copy background region':'Lift a region';$('devLegacyRepair').hidden=refreshedScenery();extra.querySelector('summary').textContent=refreshedScenery()?'Artwork & collision':'Artwork, source patch & collision';
+    $('devSourceTip').textContent=refreshedScenery()?'This scene has a complete background beneath its props. Moving a prop reveals that finished artwork.':'The room is a flattened PNG. A clone patch covers the old silhouette. Pick a clean floor sample to improve the patch; hidden artwork cannot be recovered automatically.';
     dialogueEditor?.refresh();pixelEditor?.refresh();if(tab==='artwork')artworkEditor?.refresh();
     if(tab==='education'&&studio.active&&!playtest)educationEditor?.refresh();
     mountMusicFacts();musicFactsEditor?.refresh();
@@ -664,7 +705,7 @@ window.createCodaDeveloperConsole = function (api) {
   $('devCatalog').onchange=catalogPreview;$('devLift').onclick=()=>{const part=catalog.find(p=>p.name===$('devCatalog').value);lift({name:part.name,bounds:part.bounds.slice()});};
   $('devDiscoSpin').onchange=()=>editSelected(a=>{a.discoSpin=api.bound($('devDiscoSpin').value,0,4,1);});
   $('devDiscoRays').onchange=()=>editSelected(a=>{a.discoRays=$('devDiscoRays').checked;});
-  $('devLiftRegion').onclick=()=>{studio.capturing={which:'lift',start:null,end:null};message('Drag a rectangle around existing artwork to lift it. Its old position receives a floor patch.');c.focus();};
+  $('devLiftRegion').onclick=()=>{studio.capturing={which:'lift',start:null,end:null};message(refreshedScenery()?'Drag a rectangle to copy finished background artwork. Select individual props to move them.':'Drag a rectangle around existing artwork to lift it. Its old position receives a floor patch.');c.focus();};
   $('devSampleX').max=W-16;$('devSampleY').max=H-16;
   for(const [id,index]of [['devSampleX',0],['devSampleY',1]])$(id).onchange=()=>editSelected(a=>{if(a.origin)a.origin.sample[index]=Math.round(api.bound($(id).value,0,index?H-16:W-16,a.origin.sample[index]));});
   $('devPickSample').onclick=()=>{pickSample=true;message('Click a clean floor area on the map to use as the source patch.');c.focus();};
@@ -681,8 +722,9 @@ window.createCodaDeveloperConsole = function (api) {
   $('devSave').onclick=save;$('devExport').onclick=exportProject;$('assetExport').onclick=exportProject;
   $('devImport').onclick=$('assetImport').onclick=()=>$('devImportFile').click();
   $('devImportFile').onchange=e=>{const file=e.target.files?.[0];e.target.value='';importFile(file);};
-  $('devReset').onclick=()=>{
+  $('devReset').onclick=async()=>{
     if(api.publishedProjectUrl&&!publishedProject){message('The published layout is unavailable. Your current project has been kept. Reload to retry before resetting.');return;}
+    if(publishedProject)try{await decodeProjectImages(publishedProject);}catch(error){message('Published layout could not load: '+error.message+'. Your current project has been kept.');return;}
     if(!confirm(publishedProject?'Reset your local project to the published world layout? Undo is available.':'Reset all objects, collision and local foreground edits? Published artwork stays intact. Undo is available.'))return;
     const before=snapshot();applyState({... (publishedProject||{assets:[],collision:[],strokes:[]}),...(api.getRooms?{rooms:publishedProject?.rooms||{}}:{})});loadFailed=false;loadError=null;changed(before);
     message(publishedProject?'Restored the published world layout. Undo is available.':'Restored the original world layout. Undo is available.');
@@ -734,9 +776,10 @@ window.createCodaDeveloperConsole = function (api) {
     if(fullscreen&&e.target.closest?.('#devPan,#devLiftRegion,#devPickSample,#assetCapture,#assetCaptureFG'))setFullscreen(false);
   },true);
   setTab('objects');load();
-  return {snapshot,recordChange,recordRoomChange,setSprites,undoRedo,save,refresh,refreshCamera,onToggle,open,renderBase,renderCleanup,suppressOriginal,drawUnliftedPixels,unliftedPicture,originalPicture:a=>a.origin?picture(a.origin):null,assetArtwork:(a,raw)=>artworkTools?.assetImage(a,raw)||raw,backgroundArtwork:(id,source)=>artworkTools?.compose(id,source)||source,objectArtwork:(name,source)=>artworkTools?.objectImage(name,source)||source,getArtworkEditor:()=>artworkEditor,objectEffectClip:name=>artworkTools?.effectClip(name)||null,validateAssetExtension,walkableOverride,pointerDown,pointerMove,pointerEnd,drawOverlay,liftedRegion,finishGesture,isPlaytest:()=>playtest,isEditing:()=>studio.active&&!playtest,exportProject,loadReady:()=>!loading&&(!arcadeFloor?.isReady||arcadeFloor.isReady()),validate,
+  return {snapshot,recordChange,recordRoomChange,setSprites,undoRedo,save,refresh,refreshCamera,onToggle,open,renderBase,renderCleanup,suppressOriginal,drawUnliftedPixels,unliftedPicture,originalPicture:a=>a.origin?picture(a.origin):null,assetArtwork:(a,raw)=>artworkTools?.assetImage(a,raw)||raw,backgroundArtwork:(id,source)=>artworkTools?.compose(id,source)||source,objectArtwork:(name,source)=>artworkTools?.objectImage(name,source)||source,getArtworkEditor:()=>artworkEditor,objectEffectClip:name=>artworkTools?.effectClip(name)||null,validateAssetExtension,walkableOverride,pointerDown,pointerMove,pointerEnd,drawOverlay,liftedRegion,finishGesture,isPlaytest:()=>playtest,isEditing:()=>studio.active&&!playtest,exportProject,loadReady:()=>!loading&&(refreshedScenery()?environmentReady():!arcadeFloor?.isReady||arcadeFloor.isReady()),validate,
     // Data-only inspection supports repeatable browser integration checks.
     floorGrid:()=>arcadeFloor?.snapshot()||null,
+    getScenery:()=>scenery,isRefreshedScenery:refreshedScenery,environmentReady,
     getProject:()=>clone(documentData()),getPublishedProject:()=>publishedProject?clone(publishedProject):null,getProjectSource:()=>projectSource,
-    getMusicHistoryContent:()=>clone(musicHistoryContent),getMusicFactsEditor:()=>musicFactsEditor,getDialogue:id=>id===undefined?clone(dialogue):dialogue[id]?clone(dialogue[id]):null,getSprites:()=>clone(sprites),getEducationEditor:()=>educationEditor,getState:()=>({artwork:artworkEditor?.getState()||null,education:educationEditor?.getState()||null,open:studio.active,editing:studio.active&&!playtest,playtest,tab,fullscreen,overlays:{collision:collisionOverlay,layers:layerOverlay,visible:studio.active&&!playtest}})};
+    getMusicHistoryContent:()=>clone(musicHistoryContent),getMusicFactsEditor:()=>musicFactsEditor,getDialogue:id=>id===undefined?clone(dialogue):dialogue[id]?clone(dialogue[id]):null,getSprites:()=>clone(sprites),getEducationEditor:()=>educationEditor,getState:()=>({scenery:scenery||null,artwork:artworkEditor?.getState()||null,education:educationEditor?.getState()||null,open:studio.active,editing:studio.active&&!playtest,playtest,tab,fullscreen,overlays:{collision:collisionOverlay,layers:layerOverlay,visible:studio.active&&!playtest}})};
 };
