@@ -2,6 +2,10 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaChangelog=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
  const entries=[
+  {date:'2026-10-29',title:'Full-screen developer console',changes:[
+   'Choose Fullscreen in the developer console to fill the browser window, including the Music facts editor.',
+   'Restore window or Escape returns to the floating console. Your selected tab and unsaved drafts stay in place.'
+  ]},
   {date:'2026-10-29',title:'Ten easy music-history facts per musician',changes:[
    'Each musician now has ten selected facts, written with simple words for students around fourth grade.',
    'The matching quiz covers those ten facts. Learn and record all ten to unlock it.',

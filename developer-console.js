@@ -11,7 +11,7 @@ window.createCodaDeveloperConsole = function (api) {
   const $ = id => document.getElementById(id);
   const clone = value => JSON.parse(JSON.stringify(value));
   const makeCanvas = (w,h) => Object.assign(document.createElement('canvas'), {width:w,height:h});
-  let tab = 'objects', playtest = false, loading = true, strokeBefore = null, saveTimer;
+  let tab = 'objects', playtest = false, loading = true, strokeBefore = null, saveTimer, fullscreen = false;
   let pickSample = false, baseCache = null, baseKey = '', cleanupCache = null, loadFailed = false, pan = null;
   let publishedProject = null, publishedError = null, loadError = null, projectSource = 'base';
   let dialogue={}, sprites={}, artwork={}, dialogueEditor=null, pixelEditor=null, artworkEditor=null, artworkTools=null,educationEditor=null;
@@ -26,6 +26,8 @@ window.createCodaDeveloperConsole = function (api) {
   panel.classList.add('dev-console');
   const head = panel.querySelector('.studioHead');
   head.querySelector('strong').textContent = '⌘ DEVELOPER CONSOLE';
+  panel.setAttribute('aria-label','Developer console');
+  $('assetClose').setAttribute('aria-label','Close developer console');
   $('assetToggle').textContent = '⌘ Developer';
   $('assetToggle').title = 'Open developer console (F2 or Shift+A)';
   const objects = document.createElement('section');
@@ -35,6 +37,9 @@ window.createCodaDeveloperConsole = function (api) {
   const dock=document.createElement('button');dock.type='button';dock.textContent='⇄';dock.title='Move console to the other side';dock.setAttribute('aria-label','Move console to the other side');
   head.insertBefore(dock,$('assetClose'));
   dock.onclick=()=>{const right=panel.style.right!=='12px';panel.style.left=right?'auto':'12px';panel.style.right=right?'12px':'auto';};
+  const fullscreenButton=document.createElement('button');fullscreenButton.type='button';fullscreenButton.id='devFullscreen';fullscreenButton.textContent='Fullscreen';fullscreenButton.setAttribute('aria-label','Make developer console fullscreen');fullscreenButton.setAttribute('aria-pressed','false');
+  head.insertBefore(fullscreenButton,$('assetClose'));
+  fullscreenButton.onclick=()=>setFullscreen(!fullscreen);
   const nav = document.createElement('div'); nav.className = 'dev-tabs'; nav.setAttribute('role','tablist'); nav.setAttribute('aria-label','Developer tools');
   nav.innerHTML = TABS.map(name => `<button type="button" role="tab" id="devTab-${name}" aria-controls="dev-${name}">${name==='education'?'Lessons & exams':name==='facts'?'Music facts':name==='history'?'History progression':name==='pixels'?'Sprites':name==='artwork'?'Pixel editor':name[0].toUpperCase()+name.slice(1)}</button>`).join('');
   head.after(nav);
@@ -103,7 +108,7 @@ window.createCodaDeveloperConsole = function (api) {
   function mountEducation(){
     if(educationEditor||!studio.active||playtest||tab!=='education')return;
     if(!window.CodaEducationEditor||!window.CodaEducationContent?.getStore?.()){educationPane.textContent='Lesson editing tools could not load. Reload the page to try again.';return;}
-    educationPane.replaceChildren();educationEditor=window.CodaEducationEditor.mount({host:educationPane,initialKind:'study',canEdit:canEditArtwork,onExit:()=>{setTab('objects');c.focus({preventScroll:true});}});
+    educationPane.replaceChildren();educationEditor=window.CodaEducationEditor.mount({host:educationPane,initialKind:'study',canEdit:canEditArtwork,onExit:()=>{setTab('objects');(fullscreen?fullscreenButton:c).focus({preventScroll:true});}});
   }
   const factsPane=pane('facts','');
   function canEditMusicFacts(){return canEditArtwork()&&!loadFailed;}
@@ -186,6 +191,11 @@ window.createCodaDeveloperConsole = function (api) {
   const bottom = document.createElement('div');
   bottom.innerHTML = `<div class="dev-toolbar"><button id="devUndo" type="button">↶ Undo</button><button id="devRedo" type="button">↷ Redo</button><button id="devPlaytest" type="button" aria-pressed="false">▶ Playtest</button></div><p class="dev-status" id="devStatus" role="status">Loading saved world project…</p>`;
   panel.append(bottom);
+  // Preserve the same controls and drafts while giving the full-window view
+  // its own scrolling workspace, below the always-visible header and tabs.
+  const content=document.createElement('div');content.className='dev-content';
+  for(const child of [...panel.children])if(child!==head&&child!==nav&&child!==bottom)content.append(child);
+  bottom.before(content);
   if(window.CodaDeveloperTestMode){
     const test=document.createElement('button');test.type='button';test.id='devTestUnlocks';test.textContent=window.CodaDeveloperTestMode.isEnabled()?'Exit test mode':'Test all unlocks';
     test.title='Try level 50 rewards in a temporary game. Your real player and world edits stay unchanged.';
@@ -203,6 +213,29 @@ window.createCodaDeveloperConsole = function (api) {
 
   function pane(name, html) { const el=document.createElement('section'); el.id='dev-'+name; el.className='dev-pane'; el.hidden=true; el.setAttribute('role','tabpanel');el.setAttribute('aria-labelledby','devTab-'+name);el.innerHTML=html; panel.append(el); return el; }
   function message(text) { $('devStatus').textContent=text; }
+  function childExpanded(){return artworkEditor?.getState().expanded||educationEditor?.getState().expanded;}
+  function setFullscreen(value,focus=true){
+    value=!!value&&studio.active&&!playtest;if(value===fullscreen)return;
+    finishGesture();spaceHeld=false;
+    const scroll=fullscreen?content.scrollTop:panel.scrollTop;
+    fullscreen=value;panel.classList.toggle('dev-fullscreen',value);document.documentElement.classList.toggle('coda-dev-fullscreen',value);
+    dock.hidden=value;fullscreenButton.textContent=value?'Restore window':'Fullscreen';fullscreenButton.setAttribute('aria-pressed',String(value));fullscreenButton.setAttribute('aria-label',value?'Restore developer console window':'Make developer console fullscreen');fullscreenButton.title=value?'Return to the floating console (Escape)':'Fill the browser window with the developer console';
+    if(value){panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.scrollTop=0;content.scrollTop=scroll;}
+    else{panel.removeAttribute('role');panel.removeAttribute('aria-modal');content.scrollTop=0;panel.scrollTop=scroll;}
+    if(focus&&!childExpanded()&&!panel.contains(document.activeElement))fullscreenButton.focus({preventScroll:true});
+    refreshCamera();
+  }
+  function fullscreenKey(event){
+    if(!fullscreen||childExpanded())return false;
+    if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();setFullscreen(false);return true;}
+    if(event.key!=='Tab')return false;
+    const targets=[...panel.querySelectorAll('button,input,select,textarea,a[href],summary,[tabindex]')].filter(element=>!element.disabled&&element.tabIndex>=0&&element.getClientRects().length&&getComputedStyle(element).visibility!=='hidden');
+    const first=targets[0],last=targets.at(-1),focused=document.activeElement;
+    if(first&&(!panel.contains(focused)||event.shiftKey&&focused===first||!event.shiftKey&&focused===last)){
+      event.preventDefault();event.stopImmediatePropagation();(event.shiftKey?last:first).focus();return true;
+    }
+    return false;
+  }
   function snapshot() { const rooms=api.getRooms?.();return JSON.stringify({assets:studio.assets,collision:collision.get(),strokes:layer.actions,...(Object.keys(dialogue).length?{dialogue}:{}),...(Object.keys(sprites).length?{sprites}:{}),...(Object.keys(artwork).length?{artwork}:{}),...(Object.keys(musicHistoryContent.facts).length||Object.keys(musicHistoryContent.quizzes).length||Object.keys(musicHistoryContent.archivedQuizzes||{}).length?{musicHistoryContent}:{}),...(rooms&&Object.keys(rooms).length?{rooms}:{})}); }
   function documentData() { return {format:FORMAT,version:VERSION,world:{width:W,height:H},...JSON.parse(snapshot())}; }
   function changed(before) { api.record(before); }
@@ -256,17 +289,20 @@ window.createCodaDeveloperConsole = function (api) {
     layer.active=studio.active&&tab==='layers'&&!playtest;if(layer.active)api.showForeground?.(); layer.preview=false;
     collision.setActive(studio.active&&tab==='collision'&&!playtest);
     studio.showGuides=tab==='objects'&&!playtest&&$('assetGuides').checked;
-    c.classList.toggle('layer-editing',layer.active);panel.scrollTop=0; refreshCamera();refresh();
+    c.classList.toggle('layer-editing',layer.active);panel.scrollTop=0;content.scrollTop=0; refreshCamera();refresh();
     if(tab==='artwork'&&studio.active&&!playtest)artworkEditor?.setExpanded(true);
     if(tab==='education'&&studio.active&&!playtest){mountEducation();educationEditor?.setActive(true);educationEditor?.setExpanded(true);}
   }
-  function open(name='objects') { api.toggle(true); setTab(name); if(!artworkEditor?.getState().expanded&&!educationEditor?.getState().expanded)c.focus({preventScroll:true}); }
+  function open(name='objects') { api.toggle(true); setTab(name); if(!childExpanded())(fullscreen?fullscreenButton:c).focus({preventScroll:true}); }
   function onToggle() {
-    if(!studio.active) { releaseHistory();pixelEditor?.cancelGesture();artworkEditor?.cancelPaste?.(false);artworkEditor?.setExpanded(false); spaceHeld=false; playtest=false; panel.classList.remove('dev-playtest'); $('devPlaytest').textContent='▶ Playtest'; $('devPlaytest').setAttribute('aria-pressed','false'); }
+    if(!studio.active) { releaseHistory();pixelEditor?.cancelGesture();artworkEditor?.cancelPaste?.(false);artworkEditor?.setExpanded(false);setFullscreen(false,false); spaceHeld=false; playtest=false; panel.classList.remove('dev-playtest'); $('devPlaytest').textContent='▶ Playtest'; $('devPlaytest').setAttribute('aria-pressed','false'); }
+    fullscreenButton.disabled=playtest;
     setTab(tab); if(studio.active)message(loadFailed&&loadError?loadError:'Developer console active. Changes save locally; export a project backup.'+(publishedError?' '+publishedError:''));
   }
   function togglePlaytest() {
+    if(!playtest)setFullscreen(false);
     finishGesture();pixelEditor?.cancelGesture();artworkEditor?.cancelPaste?.(false);if(!playtest)artworkEditor?.setExpanded(false); spaceHeld=false; playtest=!playtest; panel.classList.toggle('dev-playtest',playtest); $('devPlaytest').setAttribute('aria-pressed',String(playtest)); $('devPlaytest').textContent=playtest?'■ Stop playtest':'▶ Playtest';
+    fullscreenButton.disabled=playtest;
     api.invalidateRoutes(); setTab(tab); message(playtest?'Playtest: WASD or click the world to walk. Stop playtest to continue editing.':'Editing resumed.'); c.focus();
   }
   function defaultSample(bounds) {
@@ -653,6 +689,7 @@ window.createCodaDeveloperConsole = function (api) {
   };
   $('editorToggle').onclick=()=>open('layers');
   window.addEventListener('keydown',e=>{
+    if(fullscreenKey(e))return;
     if(e.target?.closest?.('[data-history-developer]')&&!['F2','Escape'].includes(e.key)){e.stopImmediatePropagation();return;}
     if(e.target?.closest?.('[data-education-editor]')&&e.key!=='F2')return;
     if(e.target?.closest?.('[data-artwork-editor]')&&e.key!=='F2')return;
@@ -660,7 +697,9 @@ window.createCodaDeveloperConsole = function (api) {
     const typing=['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)||e.target?.isContentEditable;
     if(e.key==='F2'&&!typing){e.preventDefault();e.stopImmediatePropagation();api.toggle(!studio.active);return;}
     if(!studio.active)return;
+    if(e.key==='Tab')return;
     if(typing){e.stopImmediatePropagation();return;}
+    if(panel.contains(e.target)&&e.target.closest?.('button,a,[role=button],summary')&&['Enter',' '].includes(e.key)){e.stopImmediatePropagation();return;}
     if(!playtest&&tab==='pixels'&&e.target?.id==='pixelEditCanvas'&&[' ','Enter','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;
     if(!playtest&&!e.ctrlKey&&!e.metaKey&&!e.altKey){
       const key=e.key.toLowerCase();
@@ -689,11 +728,15 @@ window.createCodaDeveloperConsole = function (api) {
   document.addEventListener('visibilitychange',()=>{if(document.hidden){spaceHeld=false;endPan();}});
   c.addEventListener('lostpointercapture',e=>{if(pan&&e.pointerId===pan.id){pan=null;refreshCamera();}});
   c.addEventListener('contextmenu',e=>{if(studio.active&&!playtest)e.preventDefault();});
-  panel.addEventListener('click',e=>{if(loading){e.preventDefault();e.stopImmediatePropagation();message('Wait for project restoration to finish.');}},true);
+  panel.addEventListener('click',e=>{
+    if(loading){e.preventDefault();e.stopImmediatePropagation();message('Wait for project restoration to finish.');return;}
+    // Actions that ask for a point or gesture on the map must reveal it first.
+    if(fullscreen&&e.target.closest?.('#devPan,#devLiftRegion,#devPickSample,#assetCapture,#assetCaptureFG'))setFullscreen(false);
+  },true);
   setTab('objects');load();
   return {snapshot,recordChange,recordRoomChange,setSprites,undoRedo,save,refresh,refreshCamera,onToggle,open,renderBase,renderCleanup,suppressOriginal,drawUnliftedPixels,unliftedPicture,originalPicture:a=>a.origin?picture(a.origin):null,assetArtwork:(a,raw)=>artworkTools?.assetImage(a,raw)||raw,backgroundArtwork:(id,source)=>artworkTools?.compose(id,source)||source,objectArtwork:(name,source)=>artworkTools?.objectImage(name,source)||source,getArtworkEditor:()=>artworkEditor,objectEffectClip:name=>artworkTools?.effectClip(name)||null,validateAssetExtension,walkableOverride,pointerDown,pointerMove,pointerEnd,drawOverlay,liftedRegion,finishGesture,isPlaytest:()=>playtest,isEditing:()=>studio.active&&!playtest,exportProject,loadReady:()=>!loading&&(!arcadeFloor?.isReady||arcadeFloor.isReady()),validate,
     // Data-only inspection supports repeatable browser integration checks.
     floorGrid:()=>arcadeFloor?.snapshot()||null,
     getProject:()=>clone(documentData()),getPublishedProject:()=>publishedProject?clone(publishedProject):null,getProjectSource:()=>projectSource,
-    getMusicHistoryContent:()=>clone(musicHistoryContent),getMusicFactsEditor:()=>musicFactsEditor,getDialogue:id=>id===undefined?clone(dialogue):dialogue[id]?clone(dialogue[id]):null,getSprites:()=>clone(sprites),getEducationEditor:()=>educationEditor,getState:()=>({artwork:artworkEditor?.getState()||null,education:educationEditor?.getState()||null,open:studio.active,editing:studio.active&&!playtest,playtest,tab,overlays:{collision:collisionOverlay,layers:layerOverlay,visible:studio.active&&!playtest}})};
+    getMusicHistoryContent:()=>clone(musicHistoryContent),getMusicFactsEditor:()=>musicFactsEditor,getDialogue:id=>id===undefined?clone(dialogue):dialogue[id]?clone(dialogue[id]):null,getSprites:()=>clone(sprites),getEducationEditor:()=>educationEditor,getState:()=>({artwork:artworkEditor?.getState()||null,education:educationEditor?.getState()||null,open:studio.active,editing:studio.active&&!playtest,playtest,tab,fullscreen,overlays:{collision:collisionOverlay,layers:layerOverlay,visible:studio.active&&!playtest}})};
 };
