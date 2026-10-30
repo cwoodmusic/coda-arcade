@@ -58,6 +58,10 @@ window.createCodaDeveloperConsole = function (api) {
   const overlays=document.createElement('div');overlays.className='dev-overlays';overlays.setAttribute('role','group');overlays.setAttribute('aria-label','Editor overlays');
   overlays.innerHTML='<button id="devShowCollision" type="button" aria-pressed="false">Show collision</button><button id="devShowLayers" type="button" aria-pressed="false">Show layers</button><p id="devOverlayLegend" class="dev-overlay-legend" hidden><span class="dev-key-blocked">Red: blocked</span> · <span class="dev-key-walkable">Green: walkable</span><br><span class="dev-key-background">Blue: background</span> · <span class="dev-key-depth">Gold: actor depth</span> · <span class="dev-key-foreground">Mint: foreground</span></p>';
   cameraTools.after(overlays);
+  const selectionOrder=document.createElement('div');selectionOrder.id='devSelectionOrder';selectionOrder.setAttribute('role','group');selectionOrder.setAttribute('aria-label','Selected object order');
+  selectionOrder.innerHTML='<strong id="devOrderSelection" aria-live="polite">Select an object or NPC</strong><div class="dev-toolbar"></div>';
+  selectionOrder.querySelector('.dev-toolbar').append($('assetBack'),$('assetFront'));overlays.after(selectionOrder);
+  $('assetBack').title='Move the selected object or NPC backward';$('assetFront').title='Move the selected object or NPC forward';
   function refreshCamera(){
     const camera=api.getCamera?.()||{targetZoom:1,min:1,max:8,step:.25};
     $('devZoomReset').textContent=Math.round(camera.targetZoom*100)+'%';
@@ -69,7 +73,7 @@ window.createCodaDeveloperConsole = function (api) {
   }
   function zoomBy(direction){const camera=api.getCamera?.();if(camera)api.setCameraZoom?.(direction===0?1:camera.targetZoom+direction*camera.step);refreshCamera();}
   $('devZoomOut').onclick=()=>zoomBy(-1);$('devZoomIn').onclick=()=>zoomBy(1);$('devZoomReset').onclick=()=>zoomBy(0);
-  $('devPan').onclick=()=>{finishGesture();panTool=!panTool;refreshCamera();c.focus({preventScroll:true});};
+  $('devPan').onclick=()=>{finishGesture({preserveLayerSelection:tab==='layers'&&layerSelecting});panTool=!panTool;refreshCamera();c.focus({preventScroll:true});};
   objects.id = 'dev-objects';
   objects.querySelector('.studioTip').textContent = 'Select an existing object, lift a region, or add artwork. Drag objects and gold handles to move, resize and rotate.';
   const catalogUI = document.createElement('div'); catalogUI.className = 'dev-original';
@@ -118,7 +122,7 @@ window.createCodaDeveloperConsole = function (api) {
     $('devLayerFillSelection').disabled=!editable||!selection||!!state.draft;
     $('devLayerFinishSelection').disabled=!editable||state?.shape!=='manual'||!state.draft?.length;
     $('devLayerClearSelection').disabled=!editable||!selection&&!state?.draft;
-    $('devLayerSelectionStatus').textContent=state?.draft?(state.shape==='manual'?state.draft.length+' corners · Finish selection or press Enter.':'Drag to select; release to finish.'):
+    $('devLayerSelectionStatus').textContent=state?.draft?(state.shape==='manual'?state.draft.length+' corners · Finish selection or press Enter. Right-drag pans without clearing corners.':'Drag to select; release to finish.'):
       selection?selection.width+' × '+selection.height+' pixels · Fill selection applies '+(layer.tool==='erase'?'Background':'Foreground')+'.':layerSelecting?'Drag a rectangle, or choose Manual shape and click its corners.':'Select an area to fill its foreground or background coverage.';
   }
   const dialoguePane=pane('dialogue','');
@@ -245,30 +249,58 @@ window.createCodaDeveloperConsole = function (api) {
   $('assetSelection').append(orderTools);$('devAssetDepth').min=-H;$('devAssetDepth').max=H;
   function arrangeSelected(inFront){
     if(!canEditArtwork())return;finishGesture();const a=api.selected(),value=$('devOrderTarget').value;if(!a||!value)return;
-    const before=snapshot();
-    if(value.startsWith('character.')){
-      const id=value.slice(10),person=api.getEditorCharacters?.().find(person=>person.id===id);if(!person)return;
-      if(person.layer!=='world'){message('Choose Actor depth for this NPC before arranging a prop beside it.');return;}
-      // Keep the prop at its position and put its sorting boundary beside the
-      // character. Using actor depth allows either side of a seated sprite.
-      const target=person.sortY;
-      const offset=target+(inFront?1:-1)-(a.y+a.h/2);
-      if(Math.abs(offset)>H){message('Choose Actor depth for this NPC before arranging a prop beside it.');return;}
-      a.layer='world';a.depthOffset=offset;
+    const key=value.startsWith('character.')?value:'asset.'+value,step=inFront?1:-1;
+    const entries=(api.getSceneOrderEntries?.(key)||[]).filter(entry=>entry.key!=='asset.'+a.id),target=entries.find(entry=>entry.key===key);
+    if(!target)return;let patch;
+    if(target.layer==='world'){
+      const offset=target.depth+step-(a.y+a.h/2);
+      if(Math.abs(offset)>H){message('The required depth exceeds this map. Choose a Background or Foreground layer.');return;}
+      patch={layer:'world',depthOffset:offset};
     }else{
-      const target=studio.assets.find(asset=>asset.id===value);if(!target)return;
-      if(target.layer==='world'){
-        const offset=target.y+target.h/2+(target.depthOffset||0)+(inFront?1:-1)-(a.y+a.h/2);
-        if(Math.abs(offset)>H){message('The required depth exceeds this map. Choose a Background or Foreground layer.');return;}
-        a.depthOffset=offset;
-      }
-      a.layer=target.layer;
-      studio.assets.splice(studio.assets.indexOf(a),1);const index=studio.assets.indexOf(target);studio.assets.splice(index+(inFront?1:0),0,a);
+      const peers=entries.filter(entry=>entry.layer===target.layer),index=peers.findIndex(entry=>entry.key===key);
+      const order=betweenOrder(peers,index,step);
+      if(Math.abs(order)>1000000){message('The layer order limit has been reached.');return;}
+      patch={layer:target.layer,layerOrder:order};
     }
-    changed(before);message('Updated asset order. Undo is available.');
+    const before=snapshot();Object.assign(a,patch);changed(before);message('Updated asset order. Undo is available.');
   }
   $('devOrderBehind').onclick=()=>arrangeSelected(false);$('devOrderInFront').onclick=()=>arrangeSelected(true);
   $('devAssetDepth').onchange=e=>{if(canEditArtwork())editSelected(a=>{a.depthOffset=api.bound(e.target.value,-H,H,0);});};
+  function orderSelection(){
+    const asset=api.selected();if(asset)return {key:'asset.'+asset.id,kind:'asset',id:asset.id,name:asset.name,layer:asset.layer,bottom:asset.y+asset.h/2,asset};
+    const id=characterEditor?.getSelected(),person=api.getEditorCharacters?.().find(person=>person.id===id);
+    return person?{key:'character.'+id,kind:'character',id,name:person.name,layer:person.layer,bottom:person.y}:null;
+  }
+  function betweenOrder(entries,index,step){
+    const target=entries[index],next=entries[index+step],value=target.order;
+    return next&&step*(next.order-value)>0?(value+next.order)/2:value+step;
+  }
+  function orderLayerEdge(selection,layer,step,entries){
+    const peers=entries.filter(entry=>entry.layer===layer&&entry.key!==selection.key);
+    if(layer==='world'){
+      const depths=peers.map(entry=>entry.depth),edge=depths.length?(step>0?Math.min(...depths)-1:Math.max(...depths)+1):selection.bottom;
+      return {layer,depthOffset:Math.max(-H,Math.min(H,edge-selection.bottom))};
+    }
+    const orders=peers.map(entry=>entry.order);return {layer,layerOrder:orders.length?(step>0?Math.min(...orders)-1:Math.max(...orders)+1):0};
+  }
+  function moveSelectionOrder(step){
+    if(![-1,1].includes(step)||!canEditArtwork()||tab!=='objects')return false;
+    finishGesture();const selected=orderSelection();if(!selected)return false;
+    const entries=api.getSceneOrderEntries?.(selected.key)||[],index=entries.findIndex(entry=>entry.key===selected.key),target=entries[index+step];
+    const layers=['back','world','front'],rank=layers.indexOf(selected.layer);let patch;
+    if(index>=0&&target?.layer===selected.layer){
+      if(selected.layer==='world'){
+        const next=entries[index+step*2],depth=target.depth+(next?.layer==='world'&&step*(next.depth-target.depth)>0?Math.min(1,Math.abs(next.depth-target.depth)/2):1)*step;
+        const offset=depth-selected.bottom;
+        patch=Math.abs(offset)<=H?{layer:'world',depthOffset:offset}:orderLayerEdge(selected,layers[rank+step],step,entries);
+      }else patch={layer:selected.layer,layerOrder:betweenOrder(entries,index+step,step)};
+    }else if(rank+step>=0&&rank+step<layers.length)patch=orderLayerEdge(selected,layers[rank+step],step,entries);
+    if(!patch){message('The selection is already at the '+(step>0?'front.':'back.'));return false;}
+    if(patch.layerOrder!==undefined&&Math.abs(patch.layerOrder)>1000000){message('The layer order limit has been reached.');return false;}
+    const before=snapshot();if(selected.kind==='asset')Object.assign(selected.asset,patch);else characters[selected.id]={...(characters[selected.id]||{}),...patch};
+    changed(before);message((step>0?'Brought forward: ':'Sent back: ')+selected.name+'. Undo is available.');return true;
+  }
+  $('assetBack').onclick=()=>moveSelectionOrder(-1);$('assetFront').onclick=()=>moveSelectionOrder(1);
 
   function pane(name, html) { const el=document.createElement('section'); el.id='dev-'+name; el.className='dev-pane'; el.hidden=true; el.setAttribute('role','tabpanel');el.setAttribute('aria-labelledby','devTab-'+name);el.innerHTML=html; panel.append(el); return el; }
   function message(text) { $('devStatus').textContent=text; }
@@ -339,7 +371,7 @@ window.createCodaDeveloperConsole = function (api) {
     if(data.rooms!==undefined||options.clearRooms)api.applyRooms?.(clone(data.rooms||{}),{published:options.published===true});
     studio.assets=clone(data.assets); layer.actions=clone(data.strokes); layer.redo=[]; layer.drawing=null; layer.dirty=true;
     collision.apply(data.collision); studio.nextId=Math.max(1,...studio.assets.map(a=>Number(a.id.match(/^asset-(\d+)$/)?.[1]||0)+1));
-    if(!studio.assets.some(a=>a.id===studio.selected))studio.selected=studio.assets.at(-1)?.id||null;
+    if(!studio.assets.some(a=>a.id===studio.selected))studio.selected=characterEditor?.getSelected()?null:studio.assets.at(-1)?.id||null;
     invalidate(); api.refresh(); refresh();
   }
   function setTab(name) {
@@ -524,6 +556,7 @@ window.createCodaDeveloperConsole = function (api) {
     if(a.discoSpin!==undefined&&(!Number.isFinite(a.discoSpin)||a.discoSpin<0||a.discoSpin>4))return false;
     if(a.discoRays!==undefined&&typeof a.discoRays!=='boolean')return false;
     if(a.depthOffset!==undefined&&(!Number.isFinite(a.depthOffset)||Math.abs(a.depthOffset)>H))return false;
+    if(a.layerOrder!==undefined&&(!Number.isFinite(a.layerOrder)||Math.abs(a.layerOrder)>1000000))return false;
     if(a.collider!==undefined) { const b=a.collider;if(!b||!['x','y','w','h'].every(k=>Number.isFinite(b[k])))return false;if(b.x< -100||b.x>100||b.y< -100||b.y>100||b.w<1||b.w>200||b.h<1||b.h>200)return false; }
     return true;
   }
@@ -686,6 +719,9 @@ window.createCodaDeveloperConsole = function (api) {
   function refresh() {
     syncLayerSelection();
     if(api.selected()&&characterEditor?.getSelected())characterEditor.clearSelection();characterEditor?.refresh();
+    const orderSelected=orderSelection();selectionOrder.hidden=!studio.active||playtest||tab!=='objects';
+    $('devOrderSelection').textContent=orderSelected?'Selected: '+orderSelected.name+' · '+({back:'Background',world:'Actor depth',front:'Foreground'}[orderSelected.layer]):'Select an object or NPC';
+    $('assetBack').disabled=$('assetFront').disabled=!orderSelected||!canEditArtwork()||tab!=='objects';
     const sceneryNotice=previousSceneryNotice().trim();$('devSceneryNotice').textContent=sceneryNotice;$('devSceneryNotice').hidden=!sceneryNotice;
     $('devLiftRegion').textContent=refreshedScenery()?'Copy background region':'Lift a region';$('devLegacyRepair').hidden=refreshedScenery();extra.querySelector('summary').textContent=refreshedScenery()?'Artwork & collision':'Artwork, source patch & collision';
     $('devSourceTip').textContent=refreshedScenery()?'This scene has a complete background beneath its props. Moving a prop reveals that finished artwork.':'The room is a flattened PNG. A clone patch covers the old silhouette. Pick a clean floor sample to improve the patch; hidden artwork cannot be recovered automatically.';
@@ -709,7 +745,7 @@ window.createCodaDeveloperConsole = function (api) {
     if(a?.collider)for(const [field,key]of [['X','x'],['Y','y'],['W','w'],['H','h']])$('devCol'+field).value=a.collider[key];
   }
   function editSelected(fn) {const a=api.selected();if(!a)return;const before=snapshot();fn(a);changed(before);api.refresh();refresh();}
-  function finishGesture() {artworkEditor?.finishGesture();layerSelection?.cancel();characterEditor?.finishGesture();
+  function finishGesture(options={}) {artworkEditor?.finishGesture();if(!options.preserveLayerSelection)layerSelection?.cancel();characterEditor?.finishGesture();
     pixelEditor?.finishGesture?.();
     endPan();
     if(studio.drag||studio.capturing?.start)api.assetPointerEnd();
@@ -724,7 +760,7 @@ window.createCodaDeveloperConsole = function (api) {
     if(!studio.active||playtest)return false;
     if(loading){message('Wait for the saved project to load.');return true;}
     if(pan)return true;
-    if(e.button===1||e.button===2||e.button===0&&(panTool||spaceHeld)){finishGesture();e.preventDefault();c.focus({preventScroll:true});pan={x:e.clientX,y:e.clientY,id:e.pointerId};try{c.setPointerCapture(e.pointerId);}catch{}refreshCamera();return true;}
+    if(e.button===1||e.button===2||e.button===0&&(panTool||spaceHeld)){finishGesture({preserveLayerSelection:tab==='layers'&&layerSelecting});e.preventDefault();c.focus({preventScroll:true});pan={x:e.clientX,y:e.clientY,id:e.pointerId};try{c.setPointerCapture(e.pointerId);}catch{}refreshCamera();return true;}
     if(tab==='collision')return collision.pointerDown(e);
     if(tab==='layers'){
       if(layerSelecting){if(e.button===0){e.preventDefault();c.focus({preventScroll:true});const p=api.toWorld(e.clientX,e.clientY);layerSelection?.down([p.x,p.y]);try{c.setPointerCapture(e.pointerId);}catch{}}return true;}
@@ -858,7 +894,7 @@ window.createCodaDeveloperConsole = function (api) {
     if(fullscreen&&e.target.closest?.('#devPan,#devLiftRegion,#devPickSample,#assetCapture,#assetCaptureFG'))setFullscreen(false);
   },true);
   setTab('objects');load();
-  return {snapshot,recordChange,recordRoomChange,setSprites,undoRedo,save,refresh,refreshCamera,onToggle,open,renderBase,renderCleanup,suppressOriginal,drawUnliftedPixels,unliftedPicture,originalPicture:a=>a.origin?picture(a.origin):null,assetArtwork:(a,raw)=>artworkTools?.assetImage(a,raw)||raw,backgroundArtwork:(id,source)=>artworkTools?.compose(id,source)||source,objectArtwork:(name,source)=>artworkTools?.objectImage(name,source)||source,getArtworkEditor:()=>artworkEditor,objectEffectClip:name=>artworkTools?.effectClip(name)||null,validateAssetExtension,walkableOverride,pointerDown,pointerMove,pointerEnd,drawOverlay,liftedRegion,finishGesture,isPlaytest:()=>playtest,isEditing:()=>studio.active&&!playtest,exportProject,loadReady:()=>!loading&&(refreshedScenery()?environmentReady():!arcadeFloor?.isReady||arcadeFloor.isReady()),validate,
+  return {snapshot,recordChange,recordRoomChange,setSprites,undoRedo,save,refresh,refreshCamera,onToggle,open,renderBase,renderCleanup,suppressOriginal,drawUnliftedPixels,unliftedPicture,originalPicture:a=>a.origin?picture(a.origin):null,assetArtwork:(a,raw)=>artworkTools?.assetImage(a,raw)||raw,backgroundArtwork:(id,source)=>artworkTools?.compose(id,source)||source,objectArtwork:(name,source)=>artworkTools?.objectImage(name,source)||source,getArtworkEditor:()=>artworkEditor,objectEffectClip:name=>artworkTools?.effectClip(name)||null,validateAssetExtension,walkableOverride,pointerDown,pointerMove,pointerEnd,drawOverlay,liftedRegion,finishGesture,moveSelectionOrder,isPlaytest:()=>playtest,isEditing:()=>studio.active&&!playtest,exportProject,loadReady:()=>!loading&&(refreshedScenery()?environmentReady():!arcadeFloor?.isReady||arcadeFloor.isReady()),validate,
     // Data-only inspection supports repeatable browser integration checks.
     floorGrid:()=>arcadeFloor?.snapshot()||null,
     getScenery:()=>scenery,isRefreshedScenery:refreshedScenery,environmentReady,

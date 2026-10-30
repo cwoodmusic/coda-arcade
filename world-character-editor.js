@@ -8,7 +8,7 @@
   riff:{id:'riff',name:'Riff · Notes Shop',x:1352,y:480,depthOffset:0,approaches:[[1352,430],[1352,610]]},
   pip:{id:'pip',name:'Pip · Avatar Boutique',x:513,y:418,depthOffset:0,approaches:[[525,485]]}
  };
- const IDS=Object.keys(DEFINITIONS),FIELDS=['x','y','facing','layer','depthOffset','visible'];
+ const IDS=Object.keys(DEFINITIONS),FIELDS=['x','y','facing','layer','depthOffset','layerOrder','visible'];
  const plain=value=>!!value&&typeof value==='object'&&!Array.isArray(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
  const finite=(value,min,max)=>Number.isFinite(value)&&value>=min&&value<=max;
  const dimensions=(width,height)=>Number.isInteger(width)&&Number.isInteger(height)&&width>0&&height>0&&width<=8192&&height<=8192;
@@ -19,6 +19,7 @@
    (!Object.hasOwn(patch,'facing')||['down','left','up','right'].includes(patch.facing))&&
    (!Object.hasOwn(patch,'layer')||['back','world','front'].includes(patch.layer))&&
    (!Object.hasOwn(patch,'depthOffset')||finite(patch.depthOffset,-height,height))&&
+   (!Object.hasOwn(patch,'layerOrder')||finite(patch.layerOrder,-1000000,1000000))&&
    (!Object.hasOwn(patch,'visible')||typeof patch.visible==='boolean'));
  }
  function defaults(){return copy(DEFINITIONS);}

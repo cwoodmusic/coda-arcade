@@ -9,6 +9,14 @@
 #assetStudio .dev-pane[hidden], #assetStudio .dev-original[hidden] { display:none; }
 #assetStudio .dev-toolbar { display:flex; gap:5px; flex-wrap:wrap; margin:8px 0; }
 #assetStudio .dev-toolbar button { flex:1; }
+#assetStudio #devSelectionOrder { position:sticky;top:198px;z-index:4;padding:8px;background:#171529;border:1px solid #746087;border-radius:6px;margin:8px 0; }
+#assetStudio #devSelectionOrder[hidden] { display:none; }
+#assetStudio #devOrderSelection { display:block;overflow-wrap:anywhere;font-size:12px; }
+#assetStudio #devSelectionOrder .dev-toolbar { margin:6px 0 0; }
+#assetStudio #devSelectionOrder button { min-height:44px; }
+@media(max-width:650px) and (orientation:portrait) { #assetStudio #devSelectionOrder { position:static; } }
+@media(max-height:550px) and (orientation:landscape) { #assetStudio #devSelectionOrder { top:150px;padding:5px; }#assetStudio #devSelectionOrder button { min-height:32px; } }
+#assetStudio.dev-fullscreen #devSelectionOrder { top:0;max-width:520px;margin:8px auto; }
 #assetStudio .dev-note { padding:8px; background:#282137; border-left:2px solid #c5a1e8; line-height:1.5; }
 #assetStudio .dev-status { color:#aaf5d4; min-height:2.5em; overflow-wrap:anywhere; }
 #assetStudio #devCatalog { max-width:100%; }

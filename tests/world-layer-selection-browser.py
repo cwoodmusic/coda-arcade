@@ -210,6 +210,32 @@ class WorldLayerSelectionTests(unittest.TestCase):
         self.assertEqual(self.project(), original)
         self.assertFalse(self.page.locator('#devLayerFillSelection').is_disabled())
 
+    def test_right_drag_pan_keeps_manual_corners_and_new_points_use_the_moved_camera(self):
+        original = self.project()
+        for _ in range(4):
+            self.page.locator('#devZoomIn').click()
+        self.page.locator('#devLayerSelectionShape').select_option('manual')
+        self.click_pixel(1000, 480)
+        self.click_pixel(1020, 480)
+        self.assertEqual(self.state()['draft'], [[1000, 480], [1020, 480]])
+        camera = self.page.evaluate('CodaArcadeQA.camera()')
+        self.drag((1100, 550), (1080, 530), button='right')
+        moved = self.page.evaluate('CodaArcadeQA.camera()')
+        self.assertGreater(abs(moved['x'] - camera['x']) + abs(moved['y'] - camera['y']), 5,
+                           'The gesture must actually pan the zoomed camera')
+        self.assertEqual(self.state()['draft'], [[1000, 480], [1020, 480]],
+                         'Panning must retain the unfinished manual selection')
+        self.assertEqual(self.project(), original)
+        self.click_pixel(1020, 500)
+        self.click_pixel(1000, 500)
+        self.page.locator('#devLayerFinishSelection').click()
+        selection = self.state()['selection']
+        self.assertEqual(selection['points'], [[1000, 480], [1020, 480], [1020, 500], [1000, 500]])
+        self.assertEqual((selection['x'], selection['y'], selection['width'], selection['height']), (1000, 480, 21, 21))
+        self.page.locator('#devLayerFillSelection').click()
+        self.assertEqual(self.project()['strokes'][-1]['selection'], selection)
+        self.assertGreaterEqual(self.owner(1010, 490), 0)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

@@ -3,6 +3,15 @@ const test=require('node:test'),assert=require('node:assert/strict');
 const editor=require('../world-character-editor.js');
 const W=1672,H=941;
 
+test('explicit layer order is portable and bounded for independent NPCs',()=>{
+ for(const layerOrder of [-1000000,-.5,0,12.25,1000000]){
+  const data={scholar:{layer:'front',layerOrder}};
+  assert.equal(editor.validate(data,W,H),true);
+  assert.equal(editor.resolve('scholar',JSON.parse(JSON.stringify(data)),W,H).layerOrder,layerOrder);
+ }
+ for(const layerOrder of [-1000001,1000001,NaN,Infinity,'2',null])assert.equal(editor.validate({riff:{layerOrder}},W,H),false);
+});
+
 test('independent NPC placements keep original sprite and interaction identities',()=>{
  const definitions=editor.defaults();assert.deepEqual(Object.keys(definitions),['scholar','riff','pip']);
  assert.deepEqual([definitions.scholar.x,definitions.scholar.y],[298,213]);

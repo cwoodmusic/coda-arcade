@@ -160,6 +160,38 @@ class RoomLayerSelectionTests(unittest.TestCase):
         self.assertEqual(self.state()['undo'],0)
         self.assertEqual(self.project(),before)
 
+    def test_right_middle_and_space_pan_preserve_selected_area_and_manual_corners(self):
+        for _ in range(4):self.action('zoom-in').click()
+        self.rectangle(170,130,220,170)
+        self.page.locator('[data-room-field="layer-selection-shape"]').select_option('manual')
+        before=self.project()
+        for button in ['right','middle','space']:
+            with self.subTest(button=button):
+                selected=self.state()['layerSelection']['selection']
+                for x,y in [(170,120),(210,120)]:self.page.mouse.click(**self.point(x,y))
+                draft=self.state()['layerSelection']['draft']
+                self.assertEqual(draft,[[170,120],[210,120]])
+                camera=self.state()['camera']
+                start=self.point(190,150)
+                self.page.mouse.move(**start)
+                if button=='space':self.page.keyboard.down('Space')
+                self.page.mouse.down(button='left' if button=='space' else button)
+                self.page.mouse.move(start['x']-20,start['y']-20,steps=4)
+                self.page.mouse.up(button='left' if button=='space' else button)
+                if button=='space':self.page.keyboard.up('Space')
+                self.assertNotEqual(self.state()['camera'],camera,'Pan moves the camera')
+                self.assertEqual(self.state()['layerSelection']['selection'],selected)
+                self.assertEqual(self.state()['layerSelection']['draft'],draft,'Panning keeps every authored corner')
+                self.assertEqual(self.project(),before)
+                self.assertEqual(self.state()['undo'],0)
+                for x,y in [(210,160),(170,160)]:self.page.mouse.click(**self.point(x,y))
+                self.action('layer-finish').click()
+                self.assertEqual(self.state()['layerSelection']['selection'],{
+                    'x':170,'y':120,'width':41,'height':41,
+                    'points':[[170,120],[210,120],[210,160],[170,160]]})
+                self.assertIsNone(self.state()['layerSelection']['draft'])
+                self.assertEqual(self.project(),before)
+
     def test_fill_is_disabled_for_playtest_and_revoked_edit_access(self):
         self.rectangle(180,130,220,170)
         before=self.project()
