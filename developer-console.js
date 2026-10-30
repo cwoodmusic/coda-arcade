@@ -15,9 +15,11 @@ window.createCodaDeveloperConsole = function (api) {
   let pickSample = false, baseCache = null, baseKey = '', cleanupCache = null, loadFailed = false, pan = null;
   let publishedProject = null, publishedError = null, loadError = null, projectSource = 'base';
   let dialogue={}, sprites={}, artwork={}, dialogueEditor=null, pixelEditor=null, artworkEditor=null, artworkTools=null,educationEditor=null;
+  const emptyHistoryContent=()=>({version:1,facts:{},quizzes:{}});
+  let musicHistoryContent=emptyHistoryContent(),musicFactsEditor=null;
   let panTool=false, spaceHeld=false,collisionOverlay=false,layerOverlay=false,layerMaskSource=null,layerMaskTint=null,layerMaskKey='';
   const dialogueDefaults=api.dialogueDefaults||window.CodaNPCDialogueDefaults||{};
-  const TABS=['objects','collision','layers','artwork','dialogue','pixels','education','history','project'];
+  const TABS=['objects','collision','layers','artwork','dialogue','pixels','education','facts','history','project'];
   const pictures = new Map();
   const maskedLayers = new WeakMap();
   const panel = $('assetStudio');
@@ -34,7 +36,7 @@ window.createCodaDeveloperConsole = function (api) {
   head.insertBefore(dock,$('assetClose'));
   dock.onclick=()=>{const right=panel.style.right!=='12px';panel.style.left=right?'auto':'12px';panel.style.right=right?'12px':'auto';};
   const nav = document.createElement('div'); nav.className = 'dev-tabs'; nav.setAttribute('role','tablist'); nav.setAttribute('aria-label','Developer tools');
-  nav.innerHTML = TABS.map(name => `<button type="button" role="tab" id="devTab-${name}" aria-controls="dev-${name}">${name==='education'?'Lessons & exams':name==='history'?'History progression':name==='pixels'?'Sprites':name==='artwork'?'Pixel editor':name[0].toUpperCase()+name.slice(1)}</button>`).join('');
+  nav.innerHTML = TABS.map(name => `<button type="button" role="tab" id="devTab-${name}" aria-controls="dev-${name}">${name==='education'?'Lessons & exams':name==='facts'?'Music facts':name==='history'?'History progression':name==='pixels'?'Sprites':name==='artwork'?'Pixel editor':name[0].toUpperCase()+name.slice(1)}</button>`).join('');
   head.after(nav);
   const cameraTools=document.createElement('div');cameraTools.className='dev-camera';
   cameraTools.setAttribute('role','group');cameraTools.setAttribute('aria-label','Editor camera');
@@ -103,6 +105,18 @@ window.createCodaDeveloperConsole = function (api) {
     if(!window.CodaEducationEditor||!window.CodaEducationContent?.getStore?.()){educationPane.textContent='Lesson editing tools could not load. Reload the page to try again.';return;}
     educationPane.replaceChildren();educationEditor=window.CodaEducationEditor.mount({host:educationPane,initialKind:'study',canEdit:canEditArtwork,onExit:()=>{setTab('objects');c.focus({preventScroll:true});}});
   }
+  const factsPane=pane('facts','');
+  function canEditMusicFacts(){return canEditArtwork()&&!loadFailed;}
+  function mountMusicFacts(){
+    if(musicFactsEditor||!studio.active||playtest||loading||tab!=='facts')return;
+    if(!window.CodaMusicHistoryEditor){factsPane.textContent='Music-facts tools could not load. Refresh to try again.';return;}
+    factsPane.replaceChildren();musicFactsEditor=window.CodaMusicHistoryEditor.mount({host:factsPane,getData:()=>musicHistoryContent,canEdit:canEditMusicFacts,
+      onApply:next=>{
+        if(!canEditMusicFacts())return false;
+        const normalized=window.CodaMusicHistoryContent?.normalize(next);if(!normalized)return false;
+        const before=snapshot();musicHistoryContent=normalized;changed(before);journalFallback();message('Applied music-history content. Save or export the project to keep these edits.');return true;
+      }});
+  }
   const historyPane=pane('history','');historyPane.dataset.historyDeveloper='';
   const historyToolbar=document.createElement('div');historyToolbar.className='dev-toolbar';
   const historyRefresh=document.createElement('button');historyRefresh.type='button';historyRefresh.textContent='Refresh progression';historyRefresh.id='devHistoryRefresh';historyToolbar.append(historyRefresh);
@@ -164,7 +178,7 @@ window.createCodaDeveloperConsole = function (api) {
     }
     changed(before);journalFallback();message('Applied artwork pixels. Undo or export your complete project.');return true;
   }
-  pane('project', `<h3 class="dev-heading">Complete world project</h3><p class="dev-note">Save or export objects, embedded images, floor patches, collision, foreground brush edits, musician dialogue and character sprite edits and pixel artwork together. Edits are local to this browser until you export and publish them.</p>
+  pane('project', `<h3 class="dev-heading">Complete world project</h3><p class="dev-note">Save or export objects, embedded images, floor patches, collision, foreground brush edits, musician dialogue and character sprite edits, pixel artwork, music facts and linked quiz questions together. Edits are local to this browser until you export and publish them.</p>
     <div class="dev-toolbar"><button id="devSave" type="button">Save project</button><button id="devExport" type="button">Export project JSON</button></div>
     <div class="dev-toolbar"><button id="devImport" type="button">Import project JSON</button><button id="devReset" type="button">Reset project</button></div>
     <input id="devImportFile" type="file" accept="application/json,.json" hidden>
@@ -189,7 +203,7 @@ window.createCodaDeveloperConsole = function (api) {
 
   function pane(name, html) { const el=document.createElement('section'); el.id='dev-'+name; el.className='dev-pane'; el.hidden=true; el.setAttribute('role','tabpanel');el.setAttribute('aria-labelledby','devTab-'+name);el.innerHTML=html; panel.append(el); return el; }
   function message(text) { $('devStatus').textContent=text; }
-  function snapshot() { const rooms=api.getRooms?.();return JSON.stringify({assets:studio.assets,collision:collision.get(),strokes:layer.actions,...(Object.keys(dialogue).length?{dialogue}:{}),...(Object.keys(sprites).length?{sprites}:{}),...(Object.keys(artwork).length?{artwork}:{}),...(rooms&&Object.keys(rooms).length?{rooms}:{})}); }
+  function snapshot() { const rooms=api.getRooms?.();return JSON.stringify({assets:studio.assets,collision:collision.get(),strokes:layer.actions,...(Object.keys(dialogue).length?{dialogue}:{}),...(Object.keys(sprites).length?{sprites}:{}),...(Object.keys(artwork).length?{artwork}:{}),...(Object.keys(musicHistoryContent.facts).length||Object.keys(musicHistoryContent.quizzes).length?{musicHistoryContent}:{}),...(rooms&&Object.keys(rooms).length?{rooms}:{})}); }
   function documentData() { return {format:FORMAT,version:VERSION,world:{width:W,height:H},...JSON.parse(snapshot())}; }
   function changed(before) { api.record(before); }
   function recordRoomChange(id,before) {
@@ -224,6 +238,7 @@ window.createCodaDeveloperConsole = function (api) {
   function applyState(data,options={}) {
     pixelEditor?.cancelGesture?.();artworkEditor?.cancelGesture?.();
     artwork=clone(data.artwork||{});
+    musicHistoryContent=window.CodaMusicHistoryContent?.normalize(data.musicHistoryContent||emptyHistoryContent())||emptyHistoryContent();
     dialogue=clone(data.dialogue||{});sprites=clone(data.sprites||{});api.renderer?.setPixelEdits?.(sprites);
     if(data.rooms!==undefined||options.clearRooms)api.applyRooms?.(clone(data.rooms||{}),{published:options.published===true});
     studio.assets=clone(data.assets); layer.actions=clone(data.strokes); layer.redo=[]; layer.drawing=null; layer.dirty=true;
@@ -397,7 +412,7 @@ window.createCodaDeveloperConsole = function (api) {
     return true;
   }
   function validate(data) {
-    return data?.format===FORMAT&&data.version===VERSION&&data.world?.width===W&&data.world?.height===H&&Array.isArray(data.assets)&&data.assets.length<=api.maxAssets&&data.assets.every(a=>api.validAsset(a)&&validateAssetExtension(a))&&new Set(data.assets.map(a=>a.id)).size===data.assets.length&&new Set(data.assets.filter(a=>a.origin).map(a=>a.origin.name)).size===data.assets.filter(a=>a.origin).length&&collision.validate(data.collision)&&Array.isArray(data.strokes)&&data.strokes.length<=1000&&data.strokes.every(api.validStroke)&&(data.dialogue===undefined||window.CodaDialogueEditor?.validate(data.dialogue,dialogueDefaults))&&(data.sprites===undefined||window.CodaPixelEditor?.validate(data.sprites))&&(data.rooms===undefined||api.validateRooms?.(data.rooms)===true)&&(data.artwork===undefined||validateArtwork(data.artwork));
+    return data?.format===FORMAT&&data.version===VERSION&&data.world?.width===W&&data.world?.height===H&&Array.isArray(data.assets)&&data.assets.length<=api.maxAssets&&data.assets.every(a=>api.validAsset(a)&&validateAssetExtension(a))&&new Set(data.assets.map(a=>a.id)).size===data.assets.length&&new Set(data.assets.filter(a=>a.origin).map(a=>a.origin.name)).size===data.assets.filter(a=>a.origin).length&&collision.validate(data.collision)&&Array.isArray(data.strokes)&&data.strokes.length<=1000&&data.strokes.every(api.validStroke)&&(data.dialogue===undefined||window.CodaDialogueEditor?.validate(data.dialogue,dialogueDefaults))&&(data.sprites===undefined||window.CodaPixelEditor?.validate(data.sprites))&&(data.rooms===undefined||api.validateRooms?.(data.rooms)===true)&&(data.artwork===undefined||validateArtwork(data.artwork))&&(data.musicHistoryContent===undefined||window.CodaMusicHistoryContent?.validate(data.musicHistoryContent)===true);
   }
   function validateArtwork(data){
     if(!window.CodaArtworkEditor?.validate(data))return false;
@@ -529,7 +544,7 @@ window.createCodaDeveloperConsole = function (api) {
     loading=false;studio.ready=true; refresh();catalogPreview();
   }
   function exportProject() {
-    finishGesture(); const blob=new Blob([JSON.stringify(documentData(),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='coda-world-project.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),5000);message('Exported the complete world, artwork pixels, musician dialogue and character sprite edits.');
+    finishGesture(); const blob=new Blob([JSON.stringify(documentData(),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='coda-world-project.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),5000);message('Exported the complete world, artwork pixels, musician dialogue, music facts, quiz questions and character sprite edits.');
   }
   async function importFile(file) {
     if(!file)return;
@@ -545,6 +560,7 @@ window.createCodaDeveloperConsole = function (api) {
   function refresh() {
     dialogueEditor?.refresh();pixelEditor?.refresh();if(tab==='artwork')artworkEditor?.refresh();
     if(tab==='education'&&studio.active&&!playtest)educationEditor?.refresh();
+    mountMusicFacts();musicFactsEditor?.refresh();
     mountHistory();
     for(const [id,shown,label]of [['devShowCollision',collisionOverlay,'collision'],['devShowLayers',layerOverlay,'layers']]){$(id).setAttribute('aria-pressed',String(shown));$(id).textContent=(shown?'Hide ':'Show ')+label;$(id).disabled=playtest;}
     $('devOverlayLegend').hidden=playtest||!collisionOverlay&&!layerOverlay;$('devMasks').checked=layerOverlay;layer.maskView=layerOverlay;$('devMasks').disabled=playtest;
@@ -679,5 +695,5 @@ window.createCodaDeveloperConsole = function (api) {
     // Data-only inspection supports repeatable browser integration checks.
     floorGrid:()=>arcadeFloor?.snapshot()||null,
     getProject:()=>clone(documentData()),getPublishedProject:()=>publishedProject?clone(publishedProject):null,getProjectSource:()=>projectSource,
-    getDialogue:id=>id===undefined?clone(dialogue):dialogue[id]?clone(dialogue[id]):null,getSprites:()=>clone(sprites),getEducationEditor:()=>educationEditor,getState:()=>({artwork:artworkEditor?.getState()||null,education:educationEditor?.getState()||null,open:studio.active,editing:studio.active&&!playtest,playtest,tab,overlays:{collision:collisionOverlay,layers:layerOverlay,visible:studio.active&&!playtest}})};
+    getMusicHistoryContent:()=>clone(musicHistoryContent),getMusicFactsEditor:()=>musicFactsEditor,getDialogue:id=>id===undefined?clone(dialogue):dialogue[id]?clone(dialogue[id]):null,getSprites:()=>clone(sprites),getEducationEditor:()=>educationEditor,getState:()=>({artwork:artworkEditor?.getState()||null,education:educationEditor?.getState()||null,open:studio.active,editing:studio.active&&!playtest,playtest,tab,overlays:{collision:collisionOverlay,layers:layerOverlay,visible:studio.active&&!playtest}})};
 };

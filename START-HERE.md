@@ -324,7 +324,10 @@ Carry discoveries to the scholar for Notes and the historian's record.
 Record 30 facts from a character to unlock their 10-question quiz; 80% passes
 and earns a one-time 2,000-Note prize. Repeated clicks do not produce facts.
 Use **F2 → History progression** to inspect progress and enter an isolated
-preview for testing. See [the scholar guide](docs/music-history.md).
+preview for testing. **Developer → Music facts** lets you browse and edit all
+540 facts, including locked entries, and their linked quiz questions. Apply edits,
+then use **Project → Export project JSON** to back them up for publication.
+See [the scholar guide](docs/music-history.md).
 
 The **Pixel editor** now includes **Smooth gradients** (**U**) with radius and
 strength controls, protection masks, and **Select → Manual shape** for custom

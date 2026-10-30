@@ -45,6 +45,24 @@ Awards use saved intents and stable wallet IDs. A failed Notes write can be
 retried at the scholar without paying again after a partial success. Larger
 prizes are split into two saved installments to respect the existing wallet.
 
+## Read and edit every fact
+
+Use **Developer → Music facts** to browse all 540 facts, including locked entries.
+Choose a musician and fact number, or search the whole catalog. Edit the text
+and choose **Apply fact**. **Revert draft** returns to the applied version;
+**Restore default fact** restores the original wording. Drafts remain available
+when moving between facts and musicians.
+
+Quiz questions linked to the selected fact are editable below it. Review the
+question, choices, and correct answer when changing the information in a fact,
+then choose **Apply quiz question**. The editor keeps the same fact and question
+identities, so existing player progress carries over.
+
+Applied edits save with the world project and support console Undo/Redo. Use
+**Project → Save project → Export project JSON** to back up the complete project
+and share edits for publication. Player discoveries and friendship points remain
+separate from authored facts. A quiz already underway keeps its starting content.
+
 ## Developer progression
 
 Press **F2 → History progression** to inspect each character's friendship points,

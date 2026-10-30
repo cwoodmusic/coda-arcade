@@ -128,6 +128,27 @@ Learning rooms, Notes, missions, levels, the interactive dance floor, and the pe
 
 The main world, Piano Lab, and cave consoles have **Show collision** and **Show layers** controls above the tool tabs. Collision shows the base walking boundary as well as painted overrides. Layer overlays tint foreground masks and outline background, actor-depth, and foreground assets with a color legend. They can stay visible independently while you select objects or pan. Room Layers also offers a straight Line tool and a pixel-exact brush preview. **C** toggles the Collision tool; **L** or **Shift+L** toggles Layers. Press the same shortcut again to return to Objects. Zoom and pan stay in place. Debug overlays disappear during Playtest and after closing the editor; authored collision and layer edits continue to work.
 
+## Music facts
+
+Open **F2 → Music facts** to read and edit all 540 facts across the 18 musicians.
+Locked discoveries are visible here for authoring. Choose a musician and fact
+number, or use **Search all facts** to search the entire catalog. The fact list
+shows the full text; selecting one opens its editor.
+
+Choose **Apply fact** to use edited text in this browser. **Revert draft** returns
+to the applied text; **Restore default fact** removes that fact's override. Drafts
+stay available when switching musicians. Linked quiz questions appear beneath
+the fact, with editable questions, answer choices, and the correct answer. Use
+**Apply quiz question** after reviewing those changes.
+
+Applied facts and quiz questions use the console's Undo/Redo and save with the
+complete world project. Choose **Project → Save project** and **Export project
+JSON** for a portable backup or publication. Reimporting an older project without
+music-history content restores the original facts and questions. Authored content
+uses the optional `musicHistoryContent` project field; player discoveries,
+friendship points, quiz eligibility, and reward records stay separate. An active
+quiz keeps the questions and answers it had when it started.
+
 ## History progression
 
 Open **F2 → History progression** to inspect each musician's friendship points,

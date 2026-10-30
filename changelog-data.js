@@ -2,6 +2,11 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaChangelog=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
  const entries=[
+  {date:'2026-10-29',title:'Edit every music-history fact',changes:[
+   'Developer → Music facts shows all 540 facts, including locked discoveries, with musician filters and catalog search.',
+   'Apply edited facts and their linked quiz questions. Changes save and export with the world project.',
+   'Existing discoveries, friendship points, and rewards carry over.'
+  ]},
   {date:'2026-10-29',title:'Friendship points',changes:[
    'Music-history progression now uses Friendship points and Friendship quests, including in the developer console.'
   ]},
