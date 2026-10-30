@@ -85,7 +85,7 @@ Undo and redo apply to complete project edits, including objects, collision, lay
 
 Edits save locally in this browser and origin. The Project tab's **Save project** reports storage success or failure. **Export project JSON** backs up the whole project, including embedded uploaded images, source cleanup patches, collision overrides, local foreground strokes, dialogue, and sprite details. **Import project JSON** validates a backup before replacing the current project and can be undone. **Reset project** replaces the current layout with the shared published layout and saves that copy locally; it can also be undone. Individual object and collision **Restore original** tools still return to the underlying original artwork or collision cells.
 
-Fresh browsers load `published-world-project.json` as the shared default. The October 29 export includes 14 placed objects, 1,451 collision overrides, 778 foreground strokes, and the Piano Lab and fishing-room edits. It also includes pixel artwork for the arcade background and the dance-room north wall corner. The complete uploaded project is preserved, including the fishing trapdoor and authored walking areas. The original PNG sources stay unchanged.
+Fresh browsers load `published-world-project.json` as the shared default. The October 30 graphics export updates the main arcade background artwork while retaining all 14 placed objects, 1,451 collision overrides, 778 foreground strokes, and the Piano Lab and fishing-room edits. The dance-room north wall corner artwork is also retained. The complete uploaded project is preserved, including the fishing trapdoor and authored walking areas. The original PNG sources stay unchanged.
 
 Valid local projects, including deliberately empty projects, take priority; legacy local asset, collision, and layer edits are also preserved. Use **Project → Reset project** to replace those local edits with the current published layout. Merely visiting the world does not save a local override, so browsers without local edits receive later published updates. Movement waits for the layout to finish loading. If the shared file fails to load or validate, existing local edits remain intact and the editor reports the failure.
 
@@ -109,6 +109,7 @@ node --test tests/room-developer-editor.test.cjs
 python3 tests/dialogue-editor-browser.py
 python3 tests/pixel-editor-browser.py
 python3 tests/published-world-browser.py
+python3 tests/artwork-selection-edit-browser.py
 python3 tests/collision-integration-browser.py
 python3 tests/dance-passage-browser.py
 python3 tests/world-features-browser.py
@@ -127,6 +128,24 @@ The art checks require Pillow and verify that pixels outside the 33 repair regio
 Learning rooms, Notes, missions, levels, the interactive dance floor, and the permanently repaired four-plant area are documented in [LEARNING-WORLD.md](LEARNING-WORLD.md). The permanent repair remains clear even in older editor projects containing the former passage-plant asset.
 
 The main world, Piano Lab, and cave consoles have **Show collision** and **Show layers** controls above the tool tabs. Collision shows the base walking boundary as well as painted overrides. Layer overlays tint foreground masks and outline background, actor-depth, and foreground assets with a color legend. They can stay visible independently while you select objects or pan. Room Layers also offers a straight Line tool and a pixel-exact brush preview. **C** toggles the Collision tool; **L** or **Shift+L** toggles Layers. Press the same shortcut again to return to Objects. Zoom and pan stay in place. Debug overlays disappear during Playtest and after closing the editor; authored collision and layer edits continue to work.
+
+## Fill and move selected pixels
+
+In **Pixel editor**, choose **Select** and mark a rectangle or finish a manual
+shape. **Fill selection** colours every pixel inside it with the selected
+RGBA colour, across colour boundaries. **Fill connected colour** remains the
+bucket tool for filling a connected region.
+
+With **Select** active, drag inside the finished selection to cut and move its
+pixels. The **Move selection** button also enables dragging. The vacated pixels
+become transparent; overlapping moves preserve the original selected pixels,
+including their transparency. Manual shapes move only their selected pixels.
+The selection follows the move and stays within the image. Shift-drag starts a
+new selection inside the existing one; dragging outside also selects a new area.
+
+Release to apply a move, or press **Escape** to cancel it. Each fill or completed
+move is one Undo/Redo step and saves with the complete world project. The same
+tools work on backgrounds, objects, room artwork, and character artwork.
 
 ## Music facts
 

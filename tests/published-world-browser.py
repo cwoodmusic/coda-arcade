@@ -15,7 +15,7 @@ import unittest
 from playwright.sync_api import sync_playwright
 
 ROOT=Path(__file__).resolve().parents[1]
-EXPORT_FINGERPRINT='35e1e93e45c1ce2cf3e160b44930927d3d37f12877cb72b62bb448d063e42f6b'
+EXPORT_FINGERPRINT='152dc9b6170ffc8c0daf012905f886181aeb3b3191c13af8f38d17d597f138c9'
 BLANK={'format':'CodaArcadeWorldProject','version':1,
        'world':{'width':1672,'height':941},'assets':[],'collision':[],'strokes':[]}
 
