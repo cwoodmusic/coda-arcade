@@ -321,11 +321,11 @@ scholar**. Musicians' **Music history & friendship** prompts offer friendship
 quests. Each completed quest earns one friendship point and unlocks one fact.
 A **!** marks a new fact ready to learn.
 Carry discoveries to the scholar for Notes and the historian's record.
-Record 30 facts from a character to unlock their 10-question quiz; 80% passes
+Record 10 facts from a character to unlock their 10-question quiz; 80% passes
 and earns a one-time 2,000-Note prize. Repeated clicks do not produce facts.
 Use **F2 → History progression** to inspect progress and enter an isolated
 preview for testing. **Developer → Music facts** lets you browse and edit all
-540 facts, including locked entries, and their linked quiz questions. Apply edits,
+180 facts, including locked entries, and their linked quiz questions. Apply edits,
 then use **Project → Export project JSON** to back them up for publication.
 See [the scholar guide](docs/music-history.md).
 

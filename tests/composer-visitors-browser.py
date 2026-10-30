@@ -112,6 +112,10 @@ class ComposerVisitorsBrowserTests(_world.WorldBrowserCase):
         self.assertEqual(conversation.locator('[data-discovered-fact]').count(), 0)
         self.assertTrue(conversation.get_by_role('button', name='Accept friendship quest').is_visible())
         self.assertEqual(self.page.evaluate('CodaArcadeQA.history().count'), 0)
+        history = self.page.evaluate('CodaArcadeQA.history().people.find(person=>person.id==="schoenberg")')
+        self.assertEqual(len(history['facts']), 10)
+        self.assertTrue(all(fact['locked'] for fact in history['facts']))
+        self.assertFalse(history['quiz']['eligible'])
         self.page.screenshot(path='/tmp/coda-schoenberg-relationship.png')
 
 

@@ -130,7 +130,7 @@ The main world, Piano Lab, and cave consoles have **Show collision** and **Show 
 
 ## Music facts
 
-Open **F2 → Music facts** to read and edit all 540 facts across the 18 musicians.
+Open **F2 → Music facts** to read and edit all 180 facts across the 18 musicians (10 each).
 Locked discoveries are visible here for authoring. Choose a musician and fact
 number, or use **Search all facts** to search the entire catalog. The fact list
 shows the full text; selecting one opens its editor.

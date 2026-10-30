@@ -10,59 +10,59 @@
     "id": "bach-quiz-01",
     "person": "bach",
     "factId": "bach-01",
-    "prompt": "In which town was J. S. Bach born?",
+    "prompt": "What was Bach’s large family known for?",
     "choices": [
-      "Eisenach",
-      "Salzburg",
-      "Vienna"
+      "Making music",
+      "Building ships",
+      "Training racehorses"
     ],
     "answer": 0
   },
   {
     "id": "bach-quiz-02",
     "person": "bach",
-    "factId": "bach-05",
-    "prompt": "What happens to the musical subject in a fugue?",
+    "factId": "bach-02",
+    "prompt": "Which instrument did Bach play before leading church music in Leipzig?",
     "choices": [
-      "It is played once, then replaced by a contrasting theme.",
-      "It enters in different voices, one after another.",
-      "It is repeated only by the same voice, without other entries."
+      "The trumpet",
+      "The organ",
+      "The drums"
     ],
     "answer": 1
   },
   {
     "id": "bach-quiz-03",
     "person": "bach",
-    "factId": "bach-06",
-    "prompt": "Which keys do the preludes and fugues of Bach’s Well-Tempered Clavier explore?",
+    "factId": "bach-04",
+    "prompt": "What does a church cantata bring together?",
     "choices": [
-      "Only the major keys",
-      "Only C major and A minor",
-      "All 24 major and minor keys"
+      "Dancers with no music",
+      "Only one piano player",
+      "Singers and instruments"
     ],
     "answer": 2
   },
   {
     "id": "bach-quiz-04",
     "person": "bach",
-    "factId": "bach-08",
-    "prompt": "What do Bach’s six Brandenburg Concertos explore?",
+    "factId": "bach-05",
+    "prompt": "What happens to a musical idea in a fugue?",
     "choices": [
-      "Different combinations of solo instruments",
-      "Different dance rhythms for a single solo instrument",
-      "Different combinations of choral voices without instruments"
+      "Different parts play the same idea.",
+      "The idea can only be played once.",
+      "Only drums are allowed to play it."
     ],
     "answer": 0
   },
   {
     "id": "bach-quiz-05",
     "person": "bach",
-    "factId": "bach-11",
-    "prompt": "What returns at the end of Bach’s Goldberg Variations?",
+    "factId": "bach-10",
+    "prompt": "Which instrument did Bach write six sets of pieces for?",
     "choices": [
-      "A newly added choir",
-      "The opening aria",
-      "The first cello suite"
+      "The flute",
+      "The cello",
+      "The trumpet"
     ],
     "answer": 1
   },
@@ -70,167 +70,167 @@
     "id": "bach-quiz-06",
     "person": "bach",
     "factId": "bach-15",
-    "prompt": "What was Anna Magdalena Bach’s own musical profession?",
+    "prompt": "What work did Anna Magdalena Bach do?",
     "choices": [
-      "Violin maker",
-      "Organ builder",
-      "Singer"
+      "She built organs for churches.",
+      "She made violins for an orchestra.",
+      "She earned her living as a singer."
     ],
     "answer": 2
   },
   {
     "id": "bach-quiz-07",
     "person": "bach",
-    "factId": "bach-18",
-    "prompt": "Which of Bach’s sons worked in London and influenced the young Mozart?",
+    "factId": "bach-17",
+    "prompt": "What did Bach’s son Carl Philipp Emanuel also become?",
     "choices": [
-      "Johann Christian Bach",
-      "Carl Philipp Emanuel Bach",
-      "Wilhelm Friedemann Bach"
+      "A composer who wrote music",
+      "A person who made clocks",
+      "A teacher of ballroom dance"
     ],
     "answer": 0
   },
   {
     "id": "bach-quiz-08",
     "person": "bach",
-    "factId": "bach-22",
-    "prompt": "Whose concertos helped shape Bach’s concerto writing?",
+    "factId": "bach-19",
+    "prompt": "Which musician was born in the same year as Bach?",
     "choices": [
-      "Johannes Brahms’s",
-      "Antonio Vivaldi’s",
-      "Frédéric Chopin’s"
+      "Scott Joplin",
+      "Handel",
+      "Duke Ellington"
     ],
     "answer": 1
   },
   {
     "id": "bach-quiz-09",
     "person": "bach",
-    "factId": "bach-25",
-    "prompt": "Why did Bach travel to Lübeck in 1705?",
+    "factId": "bach-22",
+    "prompt": "Whose concertos gave Bach ideas for writing his own?",
     "choices": [
-      "To direct the first performance of Messiah",
-      "To study piano with Haydn",
-      "To hear Dieterich Buxtehude"
+      "Brahms’s",
+      "Chopin’s",
+      "Vivaldi’s"
     ],
     "answer": 2
   },
   {
     "id": "bach-quiz-10",
     "person": "bach",
-    "factId": "bach-30",
-    "prompt": "Who directed the 1829 performance that helped renew interest in Bach’s St. Matthew Passion?",
+    "factId": "bach-28",
+    "prompt": "What can you hear in Baroque music?",
     "choices": [
-      "Felix Mendelssohn",
-      "Franz Liszt",
-      "Richard Wagner"
+      "Extra notes and a low part that repeats",
+      "A rule that every tune uses just one note",
+      "Music that never uses a low part"
     ],
     "answer": 0
   },
   {
     "id": "mozart-quiz-01",
     "person": "mozart",
-    "factId": "mozart-03",
-    "prompt": "Which instrument did Mozart’s sister Nannerl play with great skill?",
+    "factId": "mozart-01",
+    "prompt": "In which city was Mozart born?",
     "choices": [
-      "Keyboard",
-      "Trumpet",
-      "Timpani"
+      "Salzburg",
+      "Paris",
+      "London"
     ],
     "answer": 0
   },
   {
     "id": "mozart-quiz-02",
     "person": "mozart",
-    "factId": "mozart-07",
-    "prompt": "Where did Mozart settle in 1781 to pursue work beyond one court employer?",
+    "factId": "mozart-03",
+    "prompt": "What did Mozart’s sister Nannerl play with skill?",
     "choices": [
-      "London",
-      "Vienna",
-      "Paris"
+      "Trumpet",
+      "Keyboard instruments",
+      "Drums"
     ],
     "answer": 1
   },
   {
     "id": "mozart-quiz-03",
     "person": "mozart",
-    "factId": "mozart-09",
-    "prompt": "What relationship is central to a concerto?",
+    "factId": "mozart-04",
+    "prompt": "What did Mozart and Nannerl do as children?",
     "choices": [
-      "A choir singing without any instruments",
-      "A spoken scene alternating with a silent dance",
-      "A solo instrument or solo group contrasted with an ensemble"
+      "Build pianos in a factory",
+      "Teach at a music school in London",
+      "Travel around Europe to play music"
     ],
     "answer": 2
   },
   {
     "id": "mozart-quiz-04",
     "person": "mozart",
-    "factId": "mozart-10",
-    "prompt": "Who wrote the libretto for Mozart’s The Marriage of Figaro?",
+    "factId": "mozart-06",
+    "prompt": "What is an opera?",
     "choices": [
-      "Lorenzo Da Ponte",
-      "Emanuel Schikaneder",
-      "Friedrich Schiller"
+      "A story told with singing",
+      "A book with no music",
+      "A piece played only on drums"
     ],
     "answer": 0
   },
   {
     "id": "mozart-quiz-05",
     "person": "mozart",
-    "factId": "mozart-12",
-    "prompt": "Which combination is part of The Magic Flute?",
+    "factId": "mozart-07",
+    "prompt": "Where did Mozart move in 1781?",
     "choices": [
-      "Singing throughout, without spoken dialogue",
-      "Spoken dialogue and singing",
-      "Instrumental scenes with spoken narration but no singing"
+      "Bonn",
+      "Vienna",
+      "Warsaw"
     ],
     "answer": 1
   },
   {
     "id": "mozart-quiz-06",
     "person": "mozart",
-    "factId": "mozart-15",
-    "prompt": "For which clarinetist did Mozart write his Clarinet Concerto?",
+    "factId": "mozart-08",
+    "prompt": "Which part did Mozart often play in his own concertos?",
     "choices": [
-      "Joseph Joachim",
-      "Johann Peter Salomon",
-      "Anton Stadler"
+      "The main trumpet part",
+      "The main drum part",
+      "The main piano part"
     ],
     "answer": 2
   },
   {
     "id": "mozart-quiz-07",
     "person": "mozart",
-    "factId": "mozart-19",
-    "prompt": "Who completed the best-known early performing version of Mozart’s unfinished Requiem?",
+    "factId": "mozart-12",
+    "prompt": "What do performers do in The Magic Flute?",
     "choices": [
-      "Franz Xaver Süssmayr",
-      "Antonio Salieri",
-      "Joseph Haydn"
+      "Speak some lines and sing others",
+      "Speak every line without singing",
+      "Play instruments without any voices"
     ],
     "answer": 0
   },
   {
     "id": "mozart-quiz-08",
     "person": "mozart",
-    "factId": "mozart-20",
-    "prompt": "Which catalogue gives Mozart’s works numbers that often begin with K?",
+    "factId": "mozart-21",
+    "prompt": "How did Mozart and Haydn feel about each other’s music?",
     "choices": [
-      "The Hoboken catalogue",
-      "The Köchel catalogue",
-      "The Ryom catalogue"
+      "They never heard it.",
+      "They liked and respected it.",
+      "They both refused to listen to it."
     ],
     "answer": 1
   },
   {
     "id": "mozart-quiz-09",
     "person": "mozart",
-    "factId": "mozart-22",
-    "prompt": "To whom did Mozart dedicate a set of six string quartets?",
+    "factId": "mozart-23",
+    "prompt": "How many players usually make up a string quartet?",
     "choices": [
-      "Ludwig van Beethoven",
-      "Christoph Willibald Gluck",
-      "Joseph Haydn"
+      "Three",
+      "Five",
+      "Four"
     ],
     "answer": 2
   },
@@ -238,131 +238,131 @@
     "id": "mozart-quiz-10",
     "person": "mozart",
     "factId": "mozart-30",
-    "prompt": "Who helped preserve and promote Mozart’s music after his death?",
+    "prompt": "Who helped save and share Mozart’s music after he died?",
     "choices": [
       "His wife Constanze",
-      "His pupil Franz Schubert",
-      "His publisher John Stark"
+      "His father Leopold",
+      "J. S. Bach"
     ],
     "answer": 0
   },
   {
     "id": "beethoven-quiz-01",
     "person": "beethoven",
-    "factId": "beethoven-02",
-    "prompt": "With whom did Beethoven study after moving to Vienna in 1792?",
+    "factId": "beethoven-01",
+    "prompt": "In which city was Beethoven born?",
     "choices": [
-      "Joseph Haydn",
-      "Frédéric Chopin",
-      "Johann Christian Bach"
+      "Bonn",
+      "Vienna",
+      "Salzburg"
     ],
     "answer": 0
   },
   {
     "id": "beethoven-quiz-02",
     "person": "beethoven",
-    "factId": "beethoven-05",
-    "prompt": "What helps give the opening of Beethoven’s Fifth Symphony its identity?",
+    "factId": "beethoven-02",
+    "prompt": "Who taught Beethoven after he moved to Vienna?",
     "choices": [
-      "A long folk-song melody repeated without alteration",
-      "A tiny rhythmic idea developed into a large work",
-      "A sequence of independent dance movements"
+      "Frédéric Chopin",
+      "Joseph Haydn",
+      "Scott Joplin"
     ],
     "answer": 1
   },
   {
     "id": "beethoven-quiz-03",
     "person": "beethoven",
-    "factId": "beethoven-07",
-    "prompt": "What does Beethoven add to the orchestra in his Ninth Symphony?",
+    "factId": "beethoven-03",
+    "prompt": "What could Beethoven do while playing piano?",
     "choices": [
-      "A solo piano accompanying every movement",
-      "A solo violin leading the melody throughout",
-      "Solo singers and a choir"
+      "Make music without using any notes",
+      "Play only music written by others",
+      "Make up music as he played"
     ],
     "answer": 2
   },
   {
     "id": "beethoven-quiz-04",
     "person": "beethoven",
-    "factId": "beethoven-09",
-    "prompt": "How many piano sonatas did Beethoven write?",
+    "factId": "beethoven-04",
+    "prompt": "How many symphonies did Beethoven finish?",
     "choices": [
-      "32",
-      "12",
-      "48"
+      "Nine",
+      "Three",
+      "Twenty"
     ],
     "answer": 0
   },
   {
     "id": "beethoven-quiz-05",
     "person": "beethoven",
-    "factId": "beethoven-12",
-    "prompt": "What is the title of Beethoven’s only opera?",
+    "factId": "beethoven-05",
+    "prompt": "What small idea helps build Beethoven’s Fifth Symphony?",
     "choices": [
-      "Don Giovanni",
-      "Fidelio",
-      "The Magic Flute"
+      "A long spoken story",
+      "A short rhythm",
+      "A poem sung without instruments"
     ],
     "answer": 1
   },
   {
     "id": "beethoven-quiz-06",
     "person": "beethoven",
-    "factId": "beethoven-18",
-    "prompt": "What does Beethoven discuss in the private Heiligenstadt Testament?",
+    "factId": "beethoven-06",
+    "prompt": "What does Beethoven’s Sixth Symphony bring to mind?",
     "choices": [
-      "Instructions for staging Fidelio",
-      "The catalogue numbers of his piano sonatas",
-      "His struggles with hearing loss"
+      "A busy factory",
+      "A trip into outer space",
+      "Scenes from nature"
     ],
     "answer": 2
   },
   {
     "id": "beethoven-quiz-07",
     "person": "beethoven",
-    "factId": "beethoven-20",
-    "prompt": "Whose name did Beethoven remove from the Eroica score’s dedication?",
+    "factId": "beethoven-07",
+    "prompt": "Who joins the orchestra in Beethoven’s Ninth Symphony?",
     "choices": [
-      "Napoleon’s",
-      "Haydn’s",
-      "Schubert’s"
+      "Solo singers and a choir",
+      "Only a solo piano player",
+      "Only a solo violin player"
     ],
     "answer": 0
   },
   {
     "id": "beethoven-quiz-08",
     "person": "beethoven",
-    "factId": "beethoven-22",
-    "prompt": "Which musical eras does Beethoven’s work help connect?",
+    "factId": "beethoven-12",
+    "prompt": "What is the name of Beethoven’s only opera?",
     "choices": [
-      "The Renaissance and early Baroque",
-      "The Classical era and Romantic musical ideas",
-      "The swing era and bebop"
+      "The Magic Flute",
+      "Fidelio",
+      "Don Giovanni"
     ],
     "answer": 1
   },
   {
     "id": "beethoven-quiz-09",
     "person": "beethoven",
-    "factId": "beethoven-26",
-    "prompt": "Which composer was among the torchbearers at Beethoven’s funeral?",
+    "factId": "beethoven-17",
+    "prompt": "What did Beethoven keep doing as his hearing became very poor?",
     "choices": [
-      "Felix Mendelssohn",
-      "Johannes Brahms",
-      "Franz Schubert"
+      "Only repairing pianos",
+      "Working only as a painter",
+      "Writing music"
     ],
     "answer": 2
   },
   {
     "id": "beethoven-quiz-10",
     "person": "beethoven",
-    "factId": "beethoven-28",
-    "prompt": "Which pianist-composer helped develop the piano sonata tradition?",
+    "factId": "beethoven-22",
+    "prompt": "Which two music periods does Beethoven’s music help link?",
     "choices": [
-      "Muzio Clementi",
-      "George Frideric Handel",
-      "Domenico Cimarosa"
+      "Classical and Romantic",
+      "Renaissance and Baroque",
+      "Swing and bebop"
     ],
     "answer": 0
   },
@@ -370,7 +370,7 @@
     "id": "clara-quiz-01",
     "person": "clara",
     "factId": "clara-01",
-    "prompt": "What was Clara Schumann’s family name before her marriage?",
+    "prompt": "What was Clara Schumann’s last name at birth?",
     "choices": [
       "Wieck",
       "Hensel",
@@ -381,108 +381,108 @@
   {
     "id": "clara-quiz-02",
     "person": "clara",
-    "factId": "clara-06",
-    "prompt": "When did Clara begin composing her Piano Concerto in A minor?",
+    "factId": "clara-04",
+    "prompt": "What was Clara especially known for in the 1800s?",
     "choices": [
-      "After retiring from performing",
-      "While she was a teenager",
-      "After she began teaching in Frankfurt"
+      "Dancing in ballets",
+      "Playing piano in concerts",
+      "Making brass instruments"
     ],
     "answer": 1
   },
   {
     "id": "clara-quiz-03",
     "person": "clara",
-    "factId": "clara-08",
-    "prompt": "Who conducted the premiere of Clara’s Piano Concerto?",
+    "factId": "clara-05",
+    "prompt": "What did Clara do besides performing music?",
     "choices": [
-      "Johannes Brahms",
-      "Franz Liszt",
-      "Felix Mendelssohn"
+      "Build church organs",
+      "Make violins for other players",
+      "Write music of her own"
     ],
     "answer": 2
   },
   {
     "id": "clara-quiz-04",
     "person": "clara",
-    "factId": "clara-11",
-    "prompt": "To which violinist did Clara dedicate her Three Romances for violin and piano?",
+    "factId": "clara-06",
+    "prompt": "When did Clara start her Piano Concerto in A minor?",
     "choices": [
-      "Joseph Joachim",
-      "Louis Spohr",
-      "Johann Peter Salomon"
+      "When she was a teenager",
+      "After she stopped playing concerts",
+      "After she turned eighty"
     ],
     "answer": 0
   },
   {
     "id": "clara-quiz-05",
     "person": "clara",
-    "factId": "clara-15",
-    "prompt": "Whose music did Clara champion as well as Robert Schumann’s?",
+    "factId": "clara-09",
+    "prompt": "Who usually plays chamber music?",
     "choices": [
-      "Antonio Vivaldi’s",
-      "Johannes Brahms’s",
-      "Scott Joplin’s"
+      "Only one singer with no instruments",
+      "A small group of musicians",
+      "A whole town singing together"
     ],
     "answer": 1
   },
   {
     "id": "clara-quiz-06",
     "person": "clara",
-    "factId": "clara-19",
-    "prompt": "Which performance practice did Clara help champion?",
+    "factId": "clara-12",
+    "prompt": "Who did Clara marry in 1840?",
     "choices": [
-      "Playing all piano music with a chamber ensemble",
-      "Performing only newly composed piano works",
-      "Playing piano music from memory"
+      "Joseph Haydn",
+      "Johannes Brahms",
+      "Robert Schumann"
     ],
     "answer": 2
   },
   {
     "id": "clara-quiz-07",
     "person": "clara",
-    "factId": "clara-20",
-    "prompt": "Where did Clara begin teaching in 1878?",
+    "factId": "clara-15",
+    "prompt": "Whose music did Clara help more people hear?",
     "choices": [
-      "The Hoch Conservatory in Frankfurt",
-      "The St. Thomas School in Leipzig",
-      "The Paris Conservatory"
+      "Johannes Brahms’s",
+      "Antonio Vivaldi’s",
+      "Scott Joplin’s"
     ],
     "answer": 0
   },
   {
     "id": "clara-quiz-08",
     "person": "clara",
-    "factId": "clara-23",
-    "prompt": "Which two musical figures were siblings who shared ideas?",
+    "factId": "clara-19",
+    "prompt": "What does playing piano from memory mean?",
     "choices": [
-      "Clara Schumann and Johannes Brahms",
-      "Fanny Hensel and Felix Mendelssohn",
-      "Clara Schumann and Joseph Joachim"
+      "Playing only with another pianist",
+      "Playing without looking at written music",
+      "Reading each note from the music page"
     ],
     "answer": 1
   },
   {
     "id": "clara-quiz-09",
     "person": "clara",
-    "factId": "clara-25",
-    "prompt": "Which contemporary’s piano works did Clara perform?",
+    "factId": "clara-20",
+    "prompt": "What kind of school is a conservatory?",
     "choices": [
-      "Arnold Schoenberg’s",
-      "Duke Ellington’s",
-      "Frédéric Chopin’s"
+      "A cooking school",
+      "A school for caring for farm animals",
+      "A music school"
     ],
     "answer": 2
   },
   {
     "id": "clara-quiz-10",
     "person": "clara",
-    "factId": "clara-29",
-    "prompt": "What happened to Clara’s performing career after Robert died in 1856?",
+    "factId": "clara-22",
+    "prompt": "Who also wrote music and played piano in the 1800s?",
     "choices": [
-      "She continued performing for many years.",
-      "She immediately retired from all concerts.",
-      "She switched entirely to conducting orchestras."
+      "Fanny Hensel",
+      "Ella Fitzgerald",
+      "Nina Simone"
     ],
     "answer": 0
   },
@@ -490,119 +490,119 @@
     "id": "joplin-quiz-01",
     "person": "joplin",
     "factId": "joplin-01",
-    "prompt": "In which area did Scott Joplin grow up?",
+    "prompt": "What was Joplin’s family like?",
     "choices": [
-      "Texarkana",
-      "New Orleans",
-      "Chicago"
+      "Many family members made music.",
+      "No one in his family liked music.",
+      "They only worked as painters."
     ],
     "answer": 0
   },
   {
     "id": "joplin-quiz-02",
     "person": "joplin",
-    "factId": "joplin-03",
-    "prompt": "How do the melody and accompaniment often work together in ragtime?",
+    "factId": "joplin-02",
+    "prompt": "Which instrument did Joplin play?",
     "choices": [
-      "A steady melody plays without any accompaniment",
-      "A syncopated melody plays over a steady accompaniment",
-      "Every part accents exactly the same beats"
+      "Violin",
+      "Piano",
+      "Trumpet"
     ],
     "answer": 1
   },
   {
     "id": "joplin-quiz-03",
     "person": "joplin",
-    "factId": "joplin-05",
-    "prompt": "Which Joplin work was published in 1899?",
+    "factId": "joplin-03",
+    "prompt": "What often happens in ragtime music?",
     "choices": [
-      "The Entertainer",
-      "Solace",
-      "Maple Leaf Rag"
+      "Every player uses the same note.",
+      "The music has no steady beat.",
+      "Strong notes fall between the main beats."
     ],
     "answer": 2
   },
   {
     "id": "joplin-quiz-04",
     "person": "joplin",
-    "factId": "joplin-07",
-    "prompt": "Which publisher helped bring Joplin’s music to readers?",
+    "factId": "joplin-06",
+    "prompt": "Which piece helped make Joplin famous?",
     "choices": [
-      "John Stark",
-      "Billy Strayhorn",
-      "Norman Granz"
+      "Maple Leaf Rag",
+      "Kind of Blue",
+      "Mood Indigo"
     ],
     "answer": 0
   },
   {
     "id": "joplin-quiz-05",
     "person": "joplin",
-    "factId": "joplin-12",
-    "prompt": "Which film helped bring The Entertainer to a new audience in 1973?",
+    "factId": "joplin-13",
+    "prompt": "What advice did Joplin give ragtime players?",
     "choices": [
-      "Porgy and Bess",
-      "The Sting",
-      "Fantasia"
+      "Play as fast as possible.",
+      "Do not play too fast.",
+      "Never keep a steady beat."
     ],
     "answer": 1
   },
   {
     "id": "joplin-quiz-06",
     "person": "joplin",
-    "factId": "joplin-13",
-    "prompt": "What did Joplin warn performers about when playing ragtime?",
+    "factId": "joplin-18",
+    "prompt": "What is an opera, like Joplin’s Treemonisha?",
     "choices": [
-      "Playing it on a piano",
-      "Playing more than one musical section",
-      "Playing it too fast"
+      "A book of piano exercises",
+      "A dance with no music",
+      "A story acted out by singers"
     ],
     "answer": 2
   },
   {
     "id": "joplin-quiz-07",
     "person": "joplin",
-    "factId": "joplin-17",
-    "prompt": "Which dance tradition is connected with the habanera rhythm in Solace?",
+    "factId": "joplin-19",
+    "prompt": "What does Treemonisha show about learning?",
     "choices": [
-      "Cuban dance music",
-      "Polish dance music",
-      "Viennese waltzes"
+      "It can help people gain freedom.",
+      "It keeps people from helping others.",
+      "It only matters to musicians."
     ],
     "answer": 0
   },
   {
     "id": "joplin-quiz-08",
     "person": "joplin",
-    "factId": "joplin-19",
-    "prompt": "What does Treemonisha present as a source of community strength and freedom?",
+    "factId": "joplin-23",
+    "prompt": "How did Joplin work with Scott Hayden?",
     "choices": [
-      "Winning competitions",
-      "Education",
-      "Wealth alone"
+      "They made movies together.",
+      "They wrote ragtime music together.",
+      "They built pianos together."
     ],
     "answer": 1
   },
   {
     "id": "joplin-quiz-09",
     "person": "joplin",
-    "factId": "joplin-23",
-    "prompt": "Which fellow ragtime composer collaborated with Joplin on several rags?",
+    "factId": "joplin-27",
+    "prompt": "What kind of music did Tom Turpin help shape?",
     "choices": [
-      "George Gershwin",
-      "John Coltrane",
-      "Scott Hayden"
+      "Opera",
+      "Rock",
+      "Ragtime"
     ],
     "answer": 2
   },
   {
     "id": "joplin-quiz-10",
     "person": "joplin",
-    "factId": "joplin-30",
-    "prompt": "Which honor did Joplin receive after his death?",
+    "factId": "joplin-28",
+    "prompt": "How are ragtime and early jazz linked?",
     "choices": [
-      "A Pulitzer Prize special award",
-      "The Presidential Medal of Freedom",
-      "The National Medal of Arts"
+      "Ragtime helped shape early jazz.",
+      "Jazz and ragtime are the same thing.",
+      "Ragtime had no effect on early jazz."
     ],
     "answer": 0
   },
@@ -610,109 +610,109 @@
     "id": "ellington-quiz-01",
     "person": "ellington",
     "factId": "ellington-01",
-    "prompt": "What was Duke Ellington’s birth name?",
+    "prompt": "Where was Duke Ellington born?",
     "choices": [
-      "Edward Kennedy Ellington",
-      "William Thomas Strayhorn",
-      "Edward William Basie"
+      "New York City",
+      "Washington, D.C.",
+      "New Orleans"
     ],
-    "answer": 0
+    "answer": 1
   },
   {
     "id": "ellington-quiz-02",
     "person": "ellington",
-    "factId": "ellington-04",
-    "prompt": "Which Harlem club became closely associated with Ellington’s orchestra?",
+    "factId": "ellington-02",
+    "prompt": "What did Ellington do as a musician?",
     "choices": [
-      "The Music Box",
-      "The Cotton Club",
-      "The Apollo Theater"
+      "He only sang in a choir.",
+      "He only played the drums.",
+      "He played piano, wrote music, and led a band."
     ],
-    "answer": 1
+    "answer": 2
   },
   {
     "id": "ellington-quiz-03",
     "person": "ellington",
-    "factId": "ellington-06",
-    "prompt": "What often guided Ellington when he wrote for his orchestra?",
+    "factId": "ellington-05",
+    "prompt": "How did people far from the club hear Ellington’s band?",
     "choices": [
-      "A rule that every instrument must sound alike",
-      "Using the same arrangement for every band",
-      "The distinctive sounds of particular band members"
+      "Through radio shows",
+      "Through silent movies",
+      "Through letters without music"
     ],
-    "answer": 2
+    "answer": 0
   },
   {
     "id": "ellington-quiz-04",
     "person": "ellington",
-    "factId": "ellington-10",
-    "prompt": "What can a plunger mute help a brass player produce?",
+    "factId": "ellington-06",
+    "prompt": "What helped Ellington decide how to write for his band?",
     "choices": [
-      "A speech-like wah sound",
-      "A bowed string sound",
-      "A louder drumbeat"
+      "The color of the stage lights",
+      "Each band member’s own sound",
+      "The number of seats in the room"
     ],
-    "answer": 0
+    "answer": 1
   },
   {
     "id": "ellington-quiz-05",
     "person": "ellington",
-    "factId": "ellington-14",
-    "prompt": "Where did Black, Brown and Beige premiere in 1943?",
+    "factId": "ellington-12",
+    "prompt": "What kind of feel does swing give music?",
     "choices": [
-      "The Savoy Ballroom",
-      "Carnegie Hall",
-      "The Newport Jazz Festival"
+      "A silent feel",
+      "A completely steady, flat feel",
+      "A bouncy feel"
     ],
-    "answer": 1
+    "answer": 2
   },
   {
     "id": "ellington-quiz-06",
     "person": "ellington",
-    "factId": "ellington-18",
-    "prompt": "Who wrote Take the A Train?",
+    "factId": "ellington-15",
+    "prompt": "What history does Black, Brown and Beige share?",
     "choices": [
-      "Duke Ellington",
-      "Count Basie",
-      "Billy Strayhorn"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "ellington-quiz-07",
-    "person": "ellington",
-    "factId": "ellington-20",
-    "prompt": "What inspired Ellington’s Such Sweet Thunder suite?",
-    "choices": [
-      "Shakespeare",
-      "The seasons of the year",
-      "A train journey across America"
+      "Black American history",
+      "The history of space travel",
+      "The history of ancient Rome"
     ],
     "answer": 0
   },
   {
-    "id": "ellington-quiz-08",
+    "id": "ellington-quiz-07",
     "person": "ellington",
-    "factId": "ellington-23",
-    "prompt": "Which saxophonist played an extended solo at Ellington’s 1956 Newport appearance?",
+    "factId": "ellington-16",
+    "prompt": "What is a musical suite?",
     "choices": [
-      "Harry Carney",
-      "Paul Gonsalves",
-      "Johnny Hodges"
+      "One note held for a long time",
+      "A set of pieces played together",
+      "A kind of trumpet"
     ],
     "answer": 1
   },
   {
-    "id": "ellington-quiz-09",
+    "id": "ellington-quiz-08",
     "person": "ellington",
-    "factId": "ellington-27",
-    "prompt": "Which contemporary was a pianist, composer, and arranger across several jazz eras?",
+    "factId": "ellington-17",
+    "prompt": "How did Billy Strayhorn work with Ellington?",
     "choices": [
-      "Lorraine Hansberry",
-      "Daphne Oram",
-      "Mary Lou Williams"
+      "He built Ellington’s piano.",
+      "He taught Ellington to paint.",
+      "They wrote music together."
     ],
     "answer": 2
+  },
+  {
+    "id": "ellington-quiz-09",
+    "person": "ellington",
+    "factId": "ellington-28",
+    "prompt": "How did Ella Fitzgerald share Ellington’s music?",
+    "choices": [
+      "She made an album of his songs.",
+      "She made a book of his drawings.",
+      "She built a new instrument for him."
+    ],
+    "answer": 0
   },
   {
     "id": "ellington-quiz-10",
@@ -720,141 +720,141 @@
     "factId": "ellington-29",
     "prompt": "Which honor did Ellington receive in 1969?",
     "choices": [
+      "A prize for space travel",
       "The Presidential Medal of Freedom",
-      "A posthumous Pulitzer Prize special award",
-      "The National Medal of Arts"
+      "An Olympic gold medal"
     ],
-    "answer": 0
+    "answer": 1
   },
   {
     "id": "ella-quiz-01",
     "person": "ella",
-    "factId": "ella-03",
-    "prompt": "At which theater did Ella Fitzgerald win an amateur-night contest in 1934?",
+    "factId": "ella-01",
+    "prompt": "In which state was Ella Fitzgerald born?",
     "choices": [
-      "The Apollo Theater",
-      "Carnegie Hall",
-      "The Cotton Club"
+      "New York",
+      "Illinois",
+      "Virginia"
     ],
-    "answer": 0
+    "answer": 2
   },
   {
     "id": "ella-quiz-02",
     "person": "ella",
-    "factId": "ella-04",
-    "prompt": "Whose orchestra did Fitzgerald join in the 1930s?",
+    "factId": "ella-03",
+    "prompt": "What helped young Ella show her singing talent?",
     "choices": [
-      "Count Basie’s",
-      "Chick Webb’s",
-      "Duke Ellington’s"
+      "Winning a contest at the Apollo Theater",
+      "Winning a piano-building contest",
+      "Writing music for a silent movie"
     ],
-    "answer": 1
+    "answer": 0
   },
   {
     "id": "ella-quiz-03",
     "person": "ella",
-    "factId": "ella-06",
-    "prompt": "Which Fitzgerald recording became a major hit in 1938?",
+    "factId": "ella-04",
+    "prompt": "Whose band did Ella join in the 1930s?",
     "choices": [
-      "Mack the Knife",
-      "I Loves You, Porgy",
-      "A-Tisket, A-Tasket"
+      "Scott Joplin’s",
+      "Chick Webb’s",
+      "J. S. Bach’s"
     ],
-    "answer": 2
+    "answer": 1
   },
   {
     "id": "ella-quiz-04",
     "person": "ella",
-    "factId": "ella-09",
-    "prompt": "What does a scat singer use in place of a song’s usual words?",
+    "factId": "ella-07",
+    "prompt": "What did Ella do after Chick Webb died?",
     "choices": [
-      "Improvised syllables",
-      "Only the written lyrics",
-      "Spoken introductions"
+      "She stopped making music forever.",
+      "She only made piano records.",
+      "She led his band for a time."
     ],
-    "answer": 0
+    "answer": 2
   },
   {
     "id": "ella-quiz-05",
     "person": "ella",
-    "factId": "ella-13",
-    "prompt": "Which songwriter was the focus of Fitzgerald’s first Verve songbook album?",
+    "factId": "ella-09",
+    "prompt": "What do singers use when they scat?",
     "choices": [
-      "George Gershwin",
-      "Cole Porter",
-      "Irving Berlin"
+      "Made-up sounds instead of the usual words",
+      "Only words read from a book",
+      "Only humming with closed mouths"
     ],
-    "answer": 1
+    "answer": 0
   },
   {
     "id": "ella-quiz-06",
     "person": "ella",
-    "factId": "ella-17",
-    "prompt": "Who managed Fitzgerald and founded Verve?",
+    "factId": "ella-11",
+    "prompt": "What nickname did people often use for Ella?",
     "choices": [
-      "John Stark",
-      "Teo Macero",
-      "Norman Granz"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "ella-quiz-07",
-    "person": "ella",
-    "factId": "ella-19",
-    "prompt": "Which trumpeter and singer recorded celebrated duet albums with Fitzgerald?",
-    "choices": [
-      "Louis Armstrong",
-      "Miles Davis",
-      "Dizzy Gillespie"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "ella-quiz-08",
-    "person": "ella",
-    "factId": "ella-24",
-    "prompt": "What did Fitzgerald do after forgetting words to Mack the Knife at a Berlin concert?",
-    "choices": [
-      "Repeated only the song’s introduction",
-      "Improvised new lyrics",
-      "Ended the performance immediately"
+      "The King of Ragtime",
+      "The First Lady of Song",
+      "The Piano Captain"
     ],
     "answer": 1
   },
   {
-    "id": "ella-quiz-09",
+    "id": "ella-quiz-07",
     "person": "ella",
-    "factId": "ella-28",
-    "prompt": "Whose bebop style helped inspire Fitzgerald’s scat singing?",
+    "factId": "ella-12",
+    "prompt": "What did Ella share on her songbook albums?",
     "choices": [
-      "Scott Joplin’s",
-      "Frédéric Chopin’s",
-      "Dizzy Gillespie’s"
+      "Only drum solos",
+      "Stories with no music",
+      "Songs by many great songwriters"
     ],
     "answer": 2
   },
   {
-    "id": "ella-quiz-10",
+    "id": "ella-quiz-08",
     "person": "ella",
-    "factId": "ella-29",
-    "prompt": "Which honor did Fitzgerald receive in 1987?",
+    "factId": "ella-19",
+    "prompt": "What is a duet, like those Ella made with Louis Armstrong?",
     "choices": [
-      "The National Medal of Arts",
-      "The Presidential Medal of Freedom",
-      "A Pulitzer Prize special award"
+      "Music for two performers",
+      "Music for ten performers",
+      "Music with no performers"
     ],
     "answer": 0
   },
   {
+    "id": "ella-quiz-09",
+    "person": "ella",
+    "factId": "ella-24",
+    "prompt": "What did Ella do when she forgot words during a show?",
+    "choices": [
+      "She left the stage at once.",
+      "She made up new words as she sang.",
+      "She asked the band to stop forever."
+    ],
+    "answer": 1
+  },
+  {
+    "id": "ella-quiz-10",
+    "person": "ella",
+    "factId": "ella-27",
+    "prompt": "What kind of music did Ella’s peer Sarah Vaughan sing?",
+    "choices": [
+      "Only opera",
+      "Only country music",
+      "Jazz"
+    ],
+    "answer": 2
+  },
+  {
     "id": "nina-quiz-01",
     "person": "nina",
-    "factId": "nina-01",
-    "prompt": "What was Nina Simone’s birth name?",
+    "factId": "nina-02",
+    "prompt": "When did Nina Simone start playing piano?",
     "choices": [
-      "Eunice Kathleen Waymon",
-      "Ella Jane Fitzgerald",
-      "Mary Lou Williams"
+      "When she was a young child",
+      "Only after she retired",
+      "Only after her first hit record"
     ],
     "answer": 0
   },
@@ -862,107 +862,107 @@
     "id": "nina-quiz-02",
     "person": "nina",
     "factId": "nina-03",
-    "prompt": "What musical training did Simone have before becoming known as a singer?",
+    "prompt": "What did Nina study before becoming a famous singer?",
     "choices": [
-      "Orchestral percussion",
-      "Classical piano",
-      "Classical trumpet"
+      "Painting",
+      "Classical piano music",
+      "Ballet dancing"
     ],
     "answer": 1
   },
   {
     "id": "nina-quiz-03",
     "person": "nina",
-    "factId": "nina-06",
-    "prompt": "Where was Simone working when she adopted her stage name?",
+    "factId": "nina-04",
+    "prompt": "Whose music helped shape Nina’s piano playing?",
     "choices": [
-      "Paris",
-      "New Orleans",
-      "Atlantic City"
+      "Scott Joplin’s",
+      "Miles Davis’s",
+      "J. S. Bach’s"
     ],
     "answer": 2
   },
   {
     "id": "nina-quiz-04",
     "person": "nina",
-    "factId": "nina-09",
-    "prompt": "From which opera does I Loves You, Porgy come?",
+    "factId": "nina-10",
+    "prompt": "How did Nina use different kinds of music?",
     "choices": [
-      "Porgy and Bess",
-      "Treemonisha",
-      "Fidelio"
+      "She mixed several kinds together.",
+      "She used only one kind her whole life.",
+      "She avoided all older music."
     ],
     "answer": 0
   },
   {
     "id": "nina-quiz-05",
     "person": "nina",
-    "factId": "nina-15",
-    "prompt": "What prompted Simone to write Mississippi Goddam?",
+    "factId": "nina-12",
+    "prompt": "What instrument did Nina often play while singing?",
     "choices": [
-      "A piano teaching exercise",
-      "Racist violence in 1963",
-      "A commission for a film comedy"
+      "Trumpet",
+      "Piano",
+      "Violin"
     ],
     "answer": 1
   },
   {
     "id": "nina-quiz-06",
     "person": "nina",
-    "factId": "nina-19",
-    "prompt": "Who wrote To Be Young, Gifted and Black with Simone?",
+    "factId": "nina-15",
+    "prompt": "What led Nina to write Mississippi Goddam?",
     "choices": [
-      "Langston Hughes",
-      "Billy Strayhorn",
-      "Weldon Irvine"
+      "A trip to the beach",
+      "A new piano at home",
+      "Racist attacks on Black people"
     ],
     "answer": 2
   },
   {
     "id": "nina-quiz-07",
     "person": "nina",
-    "factId": "nina-20",
-    "prompt": "Which playwright does To Be Young, Gifted and Black honor?",
+    "factId": "nina-16",
+    "prompt": "What cause did Mississippi Goddam help support?",
     "choices": [
-      "Lorraine Hansberry",
-      "William Shakespeare",
-      "Lorenzo Da Ponte"
+      "Equal rights",
+      "A new sports team",
+      "A faster train service"
     ],
     "answer": 0
   },
   {
     "id": "nina-quiz-08",
     "person": "nina",
-    "factId": "nina-24",
-    "prompt": "How does Simone’s Sinnerman build intensity?",
+    "factId": "nina-18",
+    "prompt": "What does Nina’s song Four Women explore?",
     "choices": [
-      "By removing the pulse and piano throughout",
-      "Through repetition and a driving piano part",
-      "By keeping every phrase at the same quiet level"
+      "The rules of four sports",
+      "Racism and unfair ideas about Black women",
+      "The four seasons of the year"
     ],
     "answer": 1
   },
   {
     "id": "nina-quiz-09",
     "person": "nina",
-    "factId": "nina-25",
-    "prompt": "Which contemporary also connected music with political resistance?",
+    "factId": "nina-20",
+    "prompt": "Who does To Be Young, Gifted and Black honor?",
     "choices": [
-      "Clara Schumann",
-      "Maria Anna Mozart",
-      "Miriam Makeba"
+      "J. S. Bach",
+      "Duke Ellington",
+      "Lorraine Hansberry"
     ],
     "answer": 2
   },
   {
     "id": "nina-quiz-10",
     "person": "nina",
-    "factId": "nina-29",
-    "prompt": "What is the title of Simone’s 1991 autobiography?",
+    "factId": "nina-25",
+    "prompt": "How did singer Miriam Makeba use music?",
     "choices": [
-      "I Put a Spell on You",
-      "Little Girl Blue",
-      "To Be Young, Gifted and Black"
+      "To fight unfair laws",
+      "To keep laws secret",
+      "To teach people to build pianos"
     ],
     "answer": 0
   },
@@ -972,119 +972,119 @@
     "factId": "miles-03",
     "prompt": "Which instrument did Miles Davis play?",
     "choices": [
+      "Piano",
       "Trumpet",
-      "Alto saxophone",
-      "Piano"
+      "Violin"
     ],
-    "answer": 0
+    "answer": 1
   },
   {
     "id": "miles-quiz-02",
     "person": "miles",
-    "factId": "miles-06",
-    "prompt": "Which saxophonist did Davis play with early in his career?",
+    "factId": "miles-04",
+    "prompt": "Why did Miles move to New York in 1944?",
     "choices": [
-      "Harry Carney",
-      "Charlie Parker",
-      "Johnny Hodges"
+      "To become a painter",
+      "To build a music store",
+      "To study music"
     ],
-    "answer": 1
+    "answer": 2
   },
   {
     "id": "miles-quiz-03",
     "person": "miles",
-    "factId": "miles-08",
-    "prompt": "How large was the ensemble used in the Birth of the Cool recordings?",
+    "factId": "miles-06",
+    "prompt": "Which instrument did Miles’s fellow musician Charlie Parker play?",
     "choices": [
-      "Three players",
-      "A full symphony orchestra",
-      "Nine players"
+      "Saxophone",
+      "Drums",
+      "Flute"
     ],
-    "answer": 2
+    "answer": 0
   },
   {
     "id": "miles-quiz-04",
     "person": "miles",
-    "factId": "miles-11",
-    "prompt": "Which musical sources helped shape Sketches of Spain?",
+    "factId": "miles-07",
+    "prompt": "What is a chord in music?",
     "choices": [
-      "Spanish concert music and traditional musical ideas",
-      "Polish dances and mazurkas",
-      "American ragtime piano pieces"
+      "One note played alone",
+      "A group of notes played together",
+      "A pause with no sound"
     ],
-    "answer": 0
+    "answer": 1
   },
   {
     "id": "miles-quiz-05",
     "person": "miles",
-    "factId": "miles-14",
-    "prompt": "Which Davis album was recorded in 1959?",
+    "factId": "miles-12",
+    "prompt": "How many musicians play in a quintet?",
     "choices": [
-      "In a Silent Way",
-      "Kind of Blue",
-      "Bitches Brew"
+      "Two",
+      "Four",
+      "Five"
     ],
-    "answer": 1
+    "answer": 2
   },
   {
     "id": "miles-quiz-06",
     "person": "miles",
-    "factId": "miles-16",
-    "prompt": "What can modal jazz give improvisers room to explore?",
+    "factId": "miles-14",
+    "prompt": "Which album did Miles record in 1959?",
     "choices": [
-      "Only one fixed melody with no changes",
-      "Only percussion patterns without pitches",
-      "A scale or mode rather than rapidly changing chords"
+      "Kind of Blue",
+      "Maple Leaf Rag",
+      "Black, Brown and Beige"
     ],
-    "answer": 2
+    "answer": 0
   },
   {
     "id": "miles-quiz-07",
     "person": "miles",
-    "factId": "miles-18",
-    "prompt": "Who played piano on Freddie Freeloader from Kind of Blue?",
+    "factId": "miles-15",
+    "prompt": "What do players do in the modal jazz on Kind of Blue?",
     "choices": [
-      "Wynton Kelly",
-      "Bill Evans",
-      "Herbie Hancock"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "miles-quiz-08",
-    "person": "miles",
-    "factId": "miles-20",
-    "prompt": "Which musician belonged to Davis’s second great quintet?",
-    "choices": [
-      "Cootie Williams",
-      "Wayne Shorter",
-      "Charlie Parker"
+      "Play only one fixed tune forever",
+      "Use sets of notes to make up music",
+      "Avoid choosing any notes"
     ],
     "answer": 1
   },
   {
-    "id": "miles-quiz-09",
+    "id": "miles-quiz-08",
     "person": "miles",
-    "factId": "miles-25",
-    "prompt": "What technique did Teo Macero use to help shape Davis’s recordings?",
+    "factId": "miles-22",
+    "prompt": "How old was Tony Williams when he joined Miles’s band?",
     "choices": [
-      "Hand-copying music onto piano rolls",
-      "Acoustic recording without microphones",
-      "Tape editing"
+      "A very young child",
+      "Over sixty years old",
+      "Still a teenager"
     ],
     "answer": 2
   },
   {
-    "id": "miles-quiz-10",
+    "id": "miles-quiz-09",
     "person": "miles",
-    "factId": "miles-29",
-    "prompt": "Which former Davis band member built a major career in acoustic jazz and electronic music?",
+    "factId": "miles-24",
+    "prompt": "What did Bitches Brew bring into jazz?",
     "choices": [
-      "Herbie Hancock",
-      "Red Garland",
-      "Paul Chambers"
+      "Electric instruments and rock-like beats",
+      "Only church bells and silence",
+      "Only unaccompanied singing"
     ],
     "answer": 0
+  },
+  {
+    "id": "miles-quiz-10",
+    "person": "miles",
+    "factId": "miles-26",
+    "prompt": "What tool helped Miles change his trumpet sound?",
+    "choices": [
+      "A drumstick",
+      "A Harmon mute",
+      "A piano pedal"
+    ],
+    "answer": 1
   },
   {
     "id": "chopin-quiz-01",
@@ -1094,7 +1094,7 @@
     "choices": [
       "Warsaw",
       "Vienna",
-      "Salzburg"
+      "London"
     ],
     "answer": 0
   },
@@ -1102,275 +1102,275 @@
     "id": "chopin-quiz-02",
     "person": "chopin",
     "factId": "chopin-05",
-    "prompt": "In which city did Chopin eventually settle after leaving Poland?",
+    "prompt": "Where did Chopin make his home after leaving Poland?",
     "choices": [
       "London",
       "Paris",
-      "Bonn"
+      "Venice"
     ],
     "answer": 1
   },
   {
     "id": "chopin-quiz-03",
     "person": "chopin",
-    "factId": "chopin-08",
-    "prompt": "How do Chopin’s études combine learning and expression?",
+    "factId": "chopin-06",
+    "prompt": "Which instrument is in almost every piece Chopin wrote?",
     "choices": [
-      "They keep technical exercises separate from musical expression.",
-      "They use only slow, unchanging five-finger patterns.",
-      "They join technical challenges with expressive musical ideas."
+      "The violin",
+      "The flute",
+      "The piano"
     ],
     "answer": 2
   },
   {
     "id": "chopin-quiz-04",
     "person": "chopin",
-    "factId": "chopin-10",
-    "prompt": "What is the range of keys in Chopin’s 24 Preludes, Op. 28?",
+    "factId": "chopin-08",
+    "prompt": "What do Chopin’s études, or study pieces, help players do?",
     "choices": [
-      "All 24 major and minor keys",
-      "Only the twelve major keys",
-      "Only the twelve minor keys"
+      "Learn piano skills and show feelings",
+      "Learn skills without making music",
+      "Practice singing with an orchestra"
     ],
     "answer": 0
   },
   {
     "id": "chopin-quiz-05",
     "person": "chopin",
-    "factId": "chopin-12",
-    "prompt": "What rhythmic feature is often heard in a mazurka?",
+    "factId": "chopin-11",
+    "prompt": "Which country’s dances helped shape Chopin’s mazurkas?",
     "choices": [
-      "A strict two-beat march with no accents",
-      "Unexpected emphasis within a three-beat measure",
-      "Strong emphasis always fixed on the first beat"
+      "France",
+      "Poland",
+      "England"
     ],
     "answer": 1
   },
   {
     "id": "chopin-quiz-06",
     "person": "chopin",
-    "factId": "chopin-15",
-    "prompt": "Who helped establish the piano nocturne before Chopin developed it further?",
+    "factId": "chopin-18",
+    "prompt": "What were Chopin’s waltzes often made for?",
     "choices": [
-      "Muzio Clementi",
-      "Johann Nepomuk Hummel",
-      "John Field"
+      "Only for dancing at a ball",
+      "Only for marching in a parade",
+      "For listening, rather than ballroom dancing"
     ],
     "answer": 2
   },
   {
     "id": "chopin-quiz-07",
     "person": "chopin",
-    "factId": "chopin-18",
-    "prompt": "What were Chopin’s waltzes often intended for?",
+    "factId": "chopin-21",
+    "prompt": "How did Chopin earn much of his money in Paris?",
     "choices": [
-      "Listening rather than ordinary ballroom dancing",
-      "Strictly accompanying ballroom dancing",
-      "Teaching orchestras to play waltz accompaniments"
+      "Teaching piano",
+      "Building violins",
+      "Leading an opera house"
     ],
     "answer": 0
   },
   {
     "id": "chopin-quiz-08",
     "person": "chopin",
-    "factId": "chopin-20",
-    "prompt": "What does rubato allow a performer to do?",
+    "factId": "chopin-22",
+    "prompt": "What kind of performance did Chopin often prefer?",
     "choices": [
-      "Play every piece at exactly the same tempo",
-      "Use expressive flexibility in timing while keeping a sense of pulse",
-      "Change tempo randomly without a sense of pulse"
+      "A concert for a huge crowd",
+      "Playing for a small group",
+      "Playing in a large marching band"
     ],
     "answer": 1
   },
   {
     "id": "chopin-quiz-09",
     "person": "chopin",
-    "factId": "chopin-24",
-    "prompt": "Which composer praised Chopin’s early music in print?",
+    "factId": "chopin-23",
+    "prompt": "Which pianist was part of Chopin’s music circle in Paris?",
     "choices": [
+      "J. S. Bach",
       "George Frideric Handel",
-      "Antonio Vivaldi",
-      "Robert Schumann"
+      "Franz Liszt"
     ],
     "answer": 2
   },
   {
     "id": "chopin-quiz-10",
     "person": "chopin",
-    "factId": "chopin-30",
-    "prompt": "Where is Chopin’s heart kept?",
+    "factId": "chopin-24",
+    "prompt": "How did Robert Schumann support Chopin’s early music?",
     "choices": [
-      "Holy Cross Church in Warsaw",
-      "St. Stephen’s Cathedral in Vienna",
-      "St. Thomas Church in Leipzig"
+      "He praised it in his writing.",
+      "He told people not to hear it.",
+      "He said Chopin should stop writing."
     ],
     "answer": 0
   },
   {
     "id": "haydn-quiz-01",
     "person": "haydn",
-    "factId": "haydn-02",
-    "prompt": "Where did Haydn sing as a choirboy?",
+    "factId": "haydn-01",
+    "prompt": "In which country was Joseph Haydn born?",
     "choices": [
-      "St. Stephen’s Cathedral in Vienna",
-      "St. Thomas Church in Leipzig",
-      "Westminster Abbey in London"
+      "Austria",
+      "Poland",
+      "France"
     ],
     "answer": 0
   },
   {
     "id": "haydn-quiz-02",
     "person": "haydn",
-    "factId": "haydn-03",
-    "prompt": "For which family did Haydn work for much of his adult life?",
+    "factId": "haydn-02",
+    "prompt": "How did Haydn make music as a boy?",
     "choices": [
-      "The Bach family",
-      "The Esterházy family",
-      "The Schumann family"
+      "He led an opera house.",
+      "He sang in a choir.",
+      "He built pianos for concerts."
     ],
     "answer": 1
   },
   {
     "id": "haydn-quiz-03",
     "person": "haydn",
-    "factId": "haydn-07",
-    "prompt": "Which instruments usually make up a string quartet?",
+    "factId": "haydn-03",
+    "prompt": "What did the family that hired Haydn pay him to do?",
     "choices": [
-      "A violin, a flute, a trumpet, and a drum",
-      "Two cellos and two double basses",
-      "Two violins, a viola, and a cello"
+      "Build and repair pianos",
+      "Print and sell other people’s music",
+      "Write music and lead concerts"
     ],
     "answer": 2
   },
   {
     "id": "haydn-quiz-04",
     "person": "haydn",
-    "factId": "haydn-10",
-    "prompt": "What creates the famous surprise in Haydn’s Surprise Symphony?",
+    "factId": "haydn-05",
+    "prompt": "What kind of piece did Haydn help shape?",
     "choices": [
-      "A sudden loud chord in the slow movement",
-      "A soloist entering from the audience",
-      "All players leaving in the first movement"
+      "The symphony, for a large group of players",
+      "A solo song with no instruments",
+      "A piano exercise for one hand"
     ],
     "answer": 0
   },
   {
     "id": "haydn-quiz-05",
     "person": "haydn",
-    "factId": "haydn-12",
-    "prompt": "What happens near the end of Haydn’s Farewell Symphony?",
+    "factId": "haydn-07",
+    "prompt": "Which instruments usually play in a string quartet?",
     "choices": [
-      "The whole orchestra returns for a new first movement.",
-      "Players leave one by one until two violinists remain.",
-      "A choir joins the orchestra for the final song."
+      "Two flutes and two drums",
+      "Two violins, a viola, and a cello",
+      "One piano and a large choir"
     ],
     "answer": 1
   },
   {
     "id": "haydn-quiz-06",
     "person": "haydn",
-    "factId": "haydn-16",
-    "prompt": "Who helped arrange Haydn’s successful London visits?",
+    "factId": "haydn-10",
+    "prompt": "What is surprising in Haydn’s Surprise Symphony?",
     "choices": [
-      "Anton Stadler",
-      "Joseph Joachim",
-      "Johann Peter Salomon"
+      "A singer walks in from the crowd.",
+      "All the players leave at once.",
+      "A sudden loud chord comes in a slow part."
     ],
     "answer": 2
   },
   {
     "id": "haydn-quiz-07",
     "person": "haydn",
-    "factId": "haydn-19",
-    "prompt": "How is an oratorio usually presented?",
+    "factId": "haydn-12",
+    "prompt": "What happens in Haydn’s Farewell Symphony?",
     "choices": [
-      "As a musical story without staged acting or scenery",
-      "With staged acting, costumes, and scenery like an opera",
-      "As an instrumental suite without vocal storytelling"
+      "Players leave one by one until two violin players stay.",
+      "A new choir joins the players.",
+      "The whole group starts the piece again."
     ],
     "answer": 0
   },
   {
     "id": "haydn-quiz-08",
     "person": "haydn",
-    "factId": "haydn-22",
-    "prompt": "Which unusual bowed instrument did Haydn write music for because his patron favored it?",
+    "factId": "haydn-15",
+    "prompt": "Which city did Haydn visit twice in the 1790s?",
     "choices": [
-      "The clarinet",
-      "The baryton",
-      "The harpsichord"
+      "Paris",
+      "London",
+      "Warsaw"
     ],
     "answer": 1
   },
   {
     "id": "haydn-quiz-09",
     "person": "haydn",
-    "factId": "haydn-26",
-    "prompt": "Which composer studied with Haydn after arriving in Vienna in 1792?",
+    "factId": "haydn-24",
+    "prompt": "What did Mozart and Haydn think of each other’s music?",
     "choices": [
-      "Frédéric Chopin",
-      "Johannes Brahms",
-      "Ludwig van Beethoven"
+      "Neither one had heard it.",
+      "They both disliked it.",
+      "They both thought it was great."
     ],
     "answer": 2
   },
   {
     "id": "haydn-quiz-10",
     "person": "haydn",
-    "factId": "haydn-28",
-    "prompt": "Which composer and keyboard player lived in Vienna during Haydn’s lifetime?",
+    "factId": "haydn-26",
+    "prompt": "What did Beethoven do after moving to Vienna in 1792?",
     "choices": [
-      "Marianna Martines",
-      "Clara Schumann",
-      "Fanny Hensel"
+      "Studied music with Haydn",
+      "Gave Haydn his first music lesson",
+      "Stopped writing music"
     ],
     "answer": 0
   },
   {
     "id": "dj-quiz-01",
     "person": "dj",
-    "factId": "dj-05",
-    "prompt": "What does beatmatching line up between two recordings?",
+    "factId": "dj-01",
+    "prompt": "Which description of DJ Coda is true?",
     "choices": [
-      "Their pulses",
-      "Their lyrics",
-      "Their instrument names"
+      "A made-up arcade host",
+      "A real jazz trumpet player",
+      "A real composer from the 1700s"
     ],
     "answer": 0
   },
   {
     "id": "dj-quiz-02",
     "person": "dj",
-    "factId": "dj-06",
-    "prompt": "What does a crossfader let a DJ change?",
+    "factId": "dj-02",
+    "prompt": "What did the first disc jockeys do?",
     "choices": [
-      "The order of notes stored in a melody",
-      "The length of a turntable’s tonearm",
-      "The balance between two audio sources"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "dj-quiz-03",
-    "person": "dj",
-    "factId": "dj-10",
-    "prompt": "Which kick-drum pattern is often associated with disco?",
-    "choices": [
-      "A kick only on beats two and four",
-      "A steady kick on all four beats of the bar",
-      "A kick only on beats one and three"
+      "Build musical instruments",
+      "Choose and play records for a crowd",
+      "Write music for orchestras"
     ],
     "answer": 1
   },
   {
+    "id": "dj-quiz-03",
+    "person": "dj",
+    "factId": "dj-05",
+    "prompt": "What does beatmatching line up in two songs?",
+    "choices": [
+      "The words",
+      "The instruments",
+      "The beats"
+    ],
+    "answer": 2
+  },
+  {
     "id": "dj-quiz-04",
     "person": "dj",
-    "factId": "dj-12",
-    "prompt": "Who helped develop the extended disco remix?",
+    "factId": "dj-09",
+    "prompt": "Which communities helped disco grow?",
     "choices": [
-      "Tom Moulton",
-      "Duke Ellington",
-      "John Field"
+      "Black, Latino, and LGBTQ+ communities",
+      "Only musicians in classical orchestras",
+      "Only people who made church organs"
     ],
     "answer": 0
   },
@@ -1378,10 +1378,10 @@
     "id": "dj-quiz-05",
     "person": "dj",
     "factId": "dj-15",
-    "prompt": "Whose Bronx parties are central to the early history of hip-hop?",
+    "prompt": "Whose Bronx parties helped hip-hop get its start?",
     "choices": [
-      "David Mancuso’s",
-      "Francis Grasso’s",
+      "Frankie Knuckles’s",
+      "Thomas Edison’s",
       "DJ Kool Herc’s"
     ],
     "answer": 2
@@ -1389,12 +1389,12 @@
   {
     "id": "dj-quiz-06",
     "person": "dj",
-    "factId": "dj-19",
-    "prompt": "Who is widely credited with developing record scratching?",
+    "factId": "dj-20",
+    "prompt": "How does a DJ scratch a record?",
     "choices": [
-      "Ron Hardy",
-      "Grand Wizzard Theodore",
-      "Giorgio Moroder"
+      "Strike it with a drumstick",
+      "Move it back and forth",
+      "Blow air across its edge"
     ],
     "answer": 1
   },
@@ -1402,71 +1402,71 @@
     "id": "dj-quiz-07",
     "person": "dj",
     "factId": "dj-22",
-    "prompt": "In which city’s 1980s club scene did house music grow?",
+    "prompt": "Where did house music grow in the 1980s?",
     "choices": [
-      "Chicago",
-      "Detroit",
-      "New Orleans"
+      "Paris concert halls",
+      "Chicago dance clubs",
+      "Vienna opera houses"
     ],
-    "answer": 0
+    "answer": 1
   },
   {
     "id": "dj-quiz-08",
     "person": "dj",
     "factId": "dj-23",
-    "prompt": "Which Chicago club is closely associated with Frankie Knuckles’s role in house music?",
+    "prompt": "Which musician helped shape house music at the Warehouse?",
     "choices": [
-      "The Cotton Club",
-      "The Savoy Ballroom",
-      "The Warehouse"
+      "Frankie Knuckles",
+      "Ravi Shankar",
+      "Michael Jackson"
     ],
-    "answer": 2
+    "answer": 0
   },
   {
     "id": "dj-quiz-09",
     "person": "dj",
-    "factId": "dj-26",
-    "prompt": "Which group of musicians helped shape Detroit techno?",
+    "factId": "dj-29",
+    "prompt": "What does sampling use to make new music?",
     "choices": [
-      "John Coltrane, Bill Evans, and Paul Chambers",
-      "Juan Atkins, Derrick May, and Kevin Saunderson",
-      "Duke Ellington, Billy Strayhorn, and Johnny Hodges"
+      "Only words from a book",
+      "Only sounds played live",
+      "A piece of recorded sound"
     ],
-    "answer": 1
+    "answer": 2
   },
   {
     "id": "dj-quiz-10",
     "person": "dj",
-    "factId": "dj-29",
-    "prompt": "What is sampling in music?",
+    "factId": "dj-30",
+    "prompt": "What can a remix change in a recording?",
     "choices": [
-      "Reusing recorded sound as material for a new work",
-      "Lining up the pulses of two recordings",
-      "Changing a live instrument’s strings before a performance"
+      "Its parts, beat, or sound",
+      "The size of the record player",
+      "How many strings a violin has"
     ],
     "answer": 0
   },
   {
     "id": "vee-jay-quiz-01",
     "person": "vee-jay",
-    "factId": "vee-jay-03",
-    "prompt": "Who demonstrated the phonograph in 1877?",
+    "factId": "vee-jay-01",
+    "prompt": "Which description of Vee Jay is true?",
     "choices": [
-      "Thomas Edison",
-      "Emile Berliner",
-      "Robert Moog"
+      "A real singer from Egypt",
+      "A made-up arcade visitor",
+      "A real inventor from the 1800s"
     ],
-    "answer": 0
+    "answer": 1
   },
   {
     "id": "vee-jay-quiz-02",
     "person": "vee-jay",
-    "factId": "vee-jay-04",
-    "prompt": "Which recording invention is associated with Emile Berliner?",
+    "factId": "vee-jay-03",
+    "prompt": "What could Edison’s phonograph do?",
     "choices": [
-      "The magnetic tape loop",
-      "The voltage-controlled synthesizer",
-      "The flat-disc gramophone"
+      "Show moving pictures",
+      "Send a text message",
+      "Record sound and play it back"
     ],
     "answer": 2
   },
@@ -1474,275 +1474,275 @@
     "id": "vee-jay-quiz-03",
     "person": "vee-jay",
     "factId": "vee-jay-06",
-    "prompt": "What did electrical recording bring into commercial recording studios in the 1920s?",
+    "prompt": "What did studios start using in the 1920s?",
     "choices": [
-      "Digital audio workstations",
       "Microphones",
-      "Flat-screen televisions"
+      "Digital video cameras",
+      "Online music services"
     ],
-    "answer": 1
+    "answer": 0
   },
   {
     "id": "vee-jay-quiz-04",
     "person": "vee-jay",
     "factId": "vee-jay-10",
-    "prompt": "What does multitrack recording allow musicians to do?",
+    "prompt": "What does multitrack recording let musicians do?",
     "choices": [
-      "Record different parts separately",
-      "Capture all parts together in one live take",
-      "Store sound using mechanical grooves alone"
+      "Record each part on its own",
+      "Record only one instrument in a whole song",
+      "Make music without recording sound"
     ],
     "answer": 0
   },
   {
     "id": "vee-jay-quiz-05",
     "person": "vee-jay",
-    "factId": "vee-jay-13",
-    "prompt": "Which material could a musique concrète composer use?",
-    "choices": [
-      "Unrecorded live instrumental sounds alone",
-      "Only newly written orchestral melodies",
-      "Recorded everyday noises as well as other recorded sounds"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "vee-jay-quiz-06",
-    "person": "vee-jay",
     "factId": "vee-jay-15",
-    "prompt": "Which 1940 animated film presented orchestral concert music?",
+    "prompt": "What kind of music did the cartoons in Fantasia use?",
     "choices": [
-      "Thriller",
-      "Fantasia",
-      "The Sting"
+      "Only a solo drum",
+      "Music played by an orchestra",
+      "Only a person whistling"
     ],
     "answer": 1
   },
   {
+    "id": "vee-jay-quiz-06",
+    "person": "vee-jay",
+    "factId": "vee-jay-21",
+    "prompt": "How did the Beatles help shape music videos?",
+    "choices": [
+      "They invented the phonograph",
+      "They started every music TV channel",
+      "They made short films to share songs"
+    ],
+    "answer": 2
+  },
+  {
     "id": "vee-jay-quiz-07",
     "person": "vee-jay",
-    "factId": "vee-jay-18",
-    "prompt": "Which machines let people watch Soundies?",
+    "factId": "vee-jay-25",
+    "prompt": "What did Michael Jackson’s Thriller video include?",
     "choices": [
-      "Coin-operated Panorams",
-      "Player pianos controlled by paper rolls",
-      "Early portable cassette players"
+      "A story and big dance scenes",
+      "Only printed words on a screen",
+      "Only a still picture of a record"
     ],
     "answer": 0
   },
   {
     "id": "vee-jay-quiz-08",
     "person": "vee-jay",
-    "factId": "vee-jay-24",
-    "prompt": "What was MTV’s first broadcast music video?",
+    "factId": "vee-jay-28",
+    "prompt": "What music can a film’s soundtrack use?",
     "choices": [
-      "Bohemian Rhapsody by Queen",
-      "Thriller by Michael Jackson",
-      "Video Killed the Radio Star by the Buggles"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "vee-jay-quiz-09",
-    "person": "vee-jay",
-    "factId": "vee-jay-27",
-    "prompt": "Who may work with a director to make a music video?",
-    "choices": [
-      "Piano technicians, organ builders, and music engravers",
-      "Choreographers, editors, and production designers",
-      "Orchestra librarians, instrument tuners, and concert ushers"
+      "Only music written that day",
+      "New music and older recordings",
+      "Only music played without instruments"
     ],
     "answer": 1
   },
   {
-    "id": "vee-jay-quiz-10",
+    "id": "vee-jay-quiz-09",
     "person": "vee-jay",
     "factId": "vee-jay-29",
-    "prompt": "What do Foley artists create for films?",
+    "prompt": "What do Foley artists make for films?",
     "choices": [
-      "Sound effects matched to actions on screen",
-      "New lyrics for every soundtrack song",
-      "The printed parts used by the orchestra"
+      "The words to every song",
+      "New musical instruments",
+      "Sound effects matched to actions"
+    ],
+    "answer": 2
+  },
+  {
+    "id": "vee-jay-quiz-10",
+    "person": "vee-jay",
+    "factId": "vee-jay-30",
+    "prompt": "What does digital editing help creators line up?",
+    "choices": [
+      "Music and moving pictures",
+      "Seats in a concert hall",
+      "Strings on a guitar"
     ],
     "answer": 0
   },
   {
     "id": "zizi-quiz-01",
     "person": "zizi",
-    "factId": "zizi-02",
-    "prompt": "Which instrument is a plucked string instrument associated with Hindustani music?",
+    "factId": "zizi-01",
+    "prompt": "Which description of Zizi is true?",
     "choices": [
-      "Sitar",
-      "Tabla",
-      "Shakuhachi"
-    ],
-    "answer": 0
-  },
-  {
-    "id": "zizi-quiz-02",
-    "person": "zizi",
-    "factId": "zizi-05",
-    "prompt": "What does a raga provide in Indian classical music?",
-    "choices": [
-      "A pair of hand drums",
-      "A fixed orchestral seating plan",
-      "A melodic framework"
+      "A real singer from Brazil",
+      "A real composer from India",
+      "A made-up visitor from space"
     ],
     "answer": 2
   },
   {
+    "id": "zizi-quiz-02",
+    "person": "zizi",
+    "factId": "zizi-02",
+    "prompt": "Which music tradition uses the sitar?",
+    "choices": [
+      "Hindustani music from northern India",
+      "Mariachi music from Mexico",
+      "Samba from Brazil"
+    ],
+    "answer": 0
+  },
+  {
     "id": "zizi-quiz-03",
     "person": "zizi",
-    "factId": "zizi-06",
-    "prompt": "What does a tala organize?",
+    "factId": "zizi-05",
+    "prompt": "What does a raga guide in Indian classical music?",
     "choices": [
-      "The order of singers in a chorus",
-      "Musical time in recurring cycles",
-      "The tuning pegs on a lute"
+      "How to build drums",
+      "How to make tunes",
+      "Where an audience should sit"
     ],
     "answer": 1
   },
   {
     "id": "zizi-quiz-04",
     "person": "zizi",
-    "factId": "zizi-09",
-    "prompt": "Which instruments often appear in Indonesian gamelan ensembles?",
+    "factId": "zizi-06",
+    "prompt": "How does a tala organize beats?",
     "choices": [
-      "Bronze gongs and metallophones",
-      "Bowed strings and a continuo keyboard",
-      "Saxophones, brass, and a drum kit"
+      "In a cycle that repeats",
+      "In pictures on a screen",
+      "In a list of song titles"
     ],
     "answer": 0
   },
   {
     "id": "zizi-quiz-05",
     "person": "zizi",
-    "factId": "zizi-13",
-    "prompt": "What do griots in West Africa preserve through words, music, and performance?",
+    "factId": "zizi-09",
+    "prompt": "What instruments often play in Indonesian gamelan?",
     "choices": [
-      "Instrument-building methods alone",
-      "Printed orchestral scores alone",
-      "Histories"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "zizi-quiz-06",
-    "person": "zizi",
-    "factId": "zizi-16",
-    "prompt": "Which description fits the oud?",
-    "choices": [
-      "A pair of hand drums used in Hindustani music",
-      "A fretless plucked lute used in Middle Eastern and North African traditions",
-      "A Japanese end-blown bamboo flute"
+      "Only guitars and trumpets",
+      "Bronze gongs and metal bars that players hit",
+      "Only a piano and a violin"
     ],
     "answer": 1
   },
   {
+    "id": "zizi-quiz-06",
+    "person": "zizi",
+    "factId": "zizi-13",
+    "prompt": "What do West African griots keep alive through music?",
+    "choices": [
+      "Only plans for building instruments",
+      "Only rules for sports",
+      "History and stories of the past"
+    ],
+    "answer": 2
+  },
+  {
     "id": "zizi-quiz-07",
     "person": "zizi",
-    "factId": "zizi-19",
-    "prompt": "Which description fits the shakuhachi?",
+    "factId": "zizi-17",
+    "prompt": "Where was the singer Umm Kulthum from?",
     "choices": [
-      "A Japanese end-blown bamboo flute",
-      "A Chinese plucked lute held upright",
-      "A West African string instrument with a gourd body"
+      "Japan",
+      "Egypt",
+      "Mexico"
     ],
-    "answer": 0
+    "answer": 1
   },
   {
     "id": "zizi-quiz-08",
     "person": "zizi",
     "factId": "zizi-23",
-    "prompt": "Which combination often appears in a mariachi ensemble?",
+    "prompt": "What instruments often play in mariachi groups from Mexico?",
     "choices": [
-      "Only bronze gongs and metallophones",
-      "Only flutes and seven-string zithers",
-      "Violins, trumpets, and several kinds of guitar"
+      "Violins, trumpets, and guitars",
+      "Only bronze gongs",
+      "Only a piano and a flute"
     ],
-    "answer": 2
+    "answer": 0
   },
   {
     "id": "zizi-quiz-09",
     "person": "zizi",
-    "factId": "zizi-25",
-    "prompt": "Which instrument became central to Argentine tango?",
+    "factId": "zizi-26",
+    "prompt": "Where does samba have deep musical roots?",
     "choices": [
-      "Kora",
-      "Bandoneon",
-      "Guqin"
+      "Only in French opera houses",
+      "Only in Japanese flute music",
+      "Black communities in Brazil"
     ],
-    "answer": 1
+    "answer": 2
   },
   {
     "id": "zizi-quiz-10",
     "person": "zizi",
     "factId": "zizi-29",
-    "prompt": "Which musician helped develop Afrobeat in Nigeria?",
+    "prompt": "Who helped create Afrobeat in Nigeria?",
     "choices": [
       "Fela Kuti",
-      "Astor Piazzolla",
-      "Antônio Carlos Jobim"
+      "Umm Kulthum",
+      "Frankie Knuckles"
     ],
     "answer": 0
   },
   {
     "id": "metronome-quiz-01",
     "person": "metronome",
-    "factId": "metronome-04",
-    "prompt": "Which composer was an early major user of published metronome markings?",
+    "factId": "metronome-01",
+    "prompt": "Which description of Metronome is true?",
     "choices": [
-      "Beethoven",
-      "Vivaldi",
-      "Handel"
+      "A made-up visitor who works like a clock",
+      "A real singer from South Africa",
+      "A real composer from the 1700s"
     ],
     "answer": 0
   },
   {
     "id": "metronome-quiz-02",
     "person": "metronome",
-    "factId": "metronome-06",
-    "prompt": "Besides its number, what must a metronome marking identify?",
+    "factId": "metronome-04",
+    "prompt": "What do the metronome marks in Beethoven’s music tell players?",
     "choices": [
-      "Its key signature",
-      "Its starting dynamic",
-      "Its beat unit"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "metronome-quiz-03",
-    "person": "metronome",
-    "factId": "metronome-09",
-    "prompt": "What stores performances for a traditional player piano?",
-    "choices": [
-      "Sounds stored on magnetic tape",
-      "Patterns on a roll",
-      "Grooves on a flat disc"
+      "To show what color to paint a piano",
+      "How fast to play",
+      "To show where the audience should sit"
     ],
     "answer": 1
   },
   {
+    "id": "metronome-quiz-03",
+    "person": "metronome",
+    "factId": "metronome-05",
+    "prompt": "How often does a metronome beat at 60 beats per minute?",
+    "choices": [
+      "Once each minute",
+      "Twice each second",
+      "Once each second"
+    ],
+    "answer": 2
+  },
+  {
     "id": "metronome-quiz-04",
     "person": "metronome",
-    "factId": "metronome-11",
-    "prompt": "What is a polyrhythm?",
+    "factId": "metronome-07",
+    "prompt": "What changes the speed of a wind-up metronome?",
     "choices": [
-      "Contrasting rhythmic patterns combined at the same time",
-      "A single melody played without accompaniment",
-      "A gradual change in an instrument’s tone color"
+      "Moving the weight on its swinging arm",
+      "Adding a new string",
+      "Blowing harder into it"
     ],
     "answer": 0
   },
   {
     "id": "metronome-quiz-05",
     "person": "metronome",
-    "factId": "metronome-13",
-    "prompt": "Which composer wrote Piano Phase?",
+    "factId": "metronome-11",
+    "prompt": "What happens in a polyrhythm?",
     "choices": [
-      "Philip Glass",
-      "Terry Riley",
-      "Steve Reich"
+      "Everyone stops playing",
+      "Only one note plays with no beat",
+      "Different beat patterns play at the same time"
     ],
     "answer": 2
   },
@@ -1750,11 +1750,11 @@
     "id": "metronome-quiz-06",
     "person": "metronome",
     "factId": "metronome-16",
-    "prompt": "What instrument did Wendy Carlos use to perform Bach’s music on Switched-On Bach?",
+    "prompt": "What did Wendy Carlos use on Switched-On Bach?",
     "choices": [
       "A player piano",
-      "A Moog synthesizer",
-      "A theremin"
+      "A synthesizer that makes sound with electricity",
+      "A drum with no other instruments"
     ],
     "answer": 1
   },
@@ -1762,47 +1762,47 @@
     "id": "metronome-quiz-07",
     "person": "metronome",
     "factId": "metronome-21",
-    "prompt": "Who created the electronic realization of the original Doctor Who theme?",
+    "prompt": "Who made the first Doctor Who theme sound electronic?",
     "choices": [
+      "Clara Rockmore",
       "Delia Derbyshire",
-      "Daphne Oram",
-      "Wendy Carlos"
+      "Beethoven"
     ],
-    "answer": 0
+    "answer": 1
   },
   {
     "id": "metronome-quiz-08",
     "person": "metronome",
     "factId": "metronome-23",
-    "prompt": "How does a performer play the theremin?",
+    "prompt": "How do you play a theremin?",
     "choices": [
-      "By pressing keys that strike metal strings",
-      "By turning a paper roll through a mechanical piano",
-      "By moving the hands near antennas without touching the instrument"
+      "Move your hands near its antennas",
+      "Press keys that strike strings",
+      "Blow air through its mouthpiece"
     ],
-    "answer": 2
+    "answer": 0
   },
   {
     "id": "metronome-quiz-09",
     "person": "metronome",
     "factId": "metronome-27",
-    "prompt": "What do MIDI messages describe?",
+    "prompt": "What kind of information can MIDI messages carry?",
     "choices": [
-      "Photographs of the performer’s hand positions",
-      "Performance events such as note starts and stops",
-      "Audio recordings of the instrument’s sound"
+      "Pictures of musicians",
+      "Recordings of a crowd cheering",
+      "Instructions to start or stop notes"
     ],
-    "answer": 1
+    "answer": 2
   },
   {
     "id": "metronome-quiz-10",
     "person": "metronome",
-    "factId": "metronome-29",
-    "prompt": "What is a digital audio workstation used for?",
+    "factId": "metronome-28",
+    "prompt": "What can a drum machine repeat?",
     "choices": [
-      "Recording, editing, and arranging music on a computer",
-      "Reading musical time from a mechanical pendulum",
-      "Changing the physical length of a brass instrument"
+      "A pattern of drum sounds",
+      "A film’s moving pictures",
+      "The words printed in a book"
     ],
     "answer": 0
   },
@@ -1810,107 +1810,107 @@
     "id": "schoenberg-quiz-01",
     "person": "schoenberg",
     "factId": "schoenberg-01",
-    "prompt": "Where was Arnold Schoenberg born in 1874?",
+    "prompt": "Where was Arnold Schoenberg born?",
     "choices": [
       "Vienna",
       "Berlin",
-      "Leipzig"
+      "London"
     ],
     "answer": 0
   },
   {
     "id": "schoenberg-quiz-02",
     "person": "schoenberg",
-    "factId": "schoenberg-03",
-    "prompt": "Who was an important early teacher and colleague of Schoenberg?",
+    "factId": "schoenberg-02",
+    "prompt": "How did Schoenberg learn much about music?",
     "choices": [
-      "Johann Christian Bach",
-      "Alexander Zemlinsky",
-      "Joseph Haydn"
+      "Only by listening to radio shows",
+      "By reading music and playing in small groups",
+      "Only by studying dance steps"
     ],
     "answer": 1
   },
   {
     "id": "schoenberg-quiz-03",
     "person": "schoenberg",
-    "factId": "schoenberg-06",
-    "prompt": "For which ensemble was Verklärte Nacht first written?",
+    "factId": "schoenberg-10",
+    "prompt": "What is a feature of atonal music?",
     "choices": [
-      "A piano trio",
-      "A brass quintet",
-      "A string sextet"
+      "One key must always feel like home.",
+      "It cannot use written rhythms.",
+      "It has no main key that feels like home."
     ],
     "answer": 2
   },
   {
     "id": "schoenberg-quiz-04",
     "person": "schoenberg",
-    "factId": "schoenberg-10",
-    "prompt": "What can atonal music avoid establishing?",
+    "factId": "schoenberg-16",
+    "prompt": "What did Schoenberg’s twelve-tone method use?",
     "choices": [
-      "One key as the music’s main home",
-      "Any written rhythms",
-      "Any combination of instruments"
+      "All 12 kinds of notes in a set order",
+      "Only the notes of a major scale",
+      "A list of 12 different instruments"
     ],
     "answer": 0
   },
   {
     "id": "schoenberg-quiz-05",
     "person": "schoenberg",
-    "factId": "schoenberg-11",
-    "prompt": "What does Schoenberg’s Second String Quartet add in its final two movements?",
+    "factId": "schoenberg-09",
+    "prompt": "Did all of Schoenberg’s music use his twelve-tone method?",
     "choices": [
-      "A second string quartet",
-      "A soprano singer",
-      "A solo trumpet"
+      "Yes, every piece used it.",
+      "No, some of his music uses a home key.",
+      "No, because he never used that method."
     ],
     "answer": 1
   },
   {
     "id": "schoenberg-quiz-06",
     "person": "schoenberg",
-    "factId": "schoenberg-15",
-    "prompt": "What does Sprechstimme combine?",
+    "factId": "schoenberg-22",
+    "prompt": "What did Schoenberg do besides writing music?",
     "choices": [
-      "Two pianists playing identical parts",
-      "A drum solo and a dance",
-      "Features of speaking and singing"
+      "Built concert pianos",
+      "Made clay pots",
+      "Painted pictures, often of himself"
     ],
     "answer": 2
   },
   {
     "id": "schoenberg-quiz-07",
     "person": "schoenberg",
-    "factId": "schoenberg-17",
-    "prompt": "What is a twelve-tone row?",
+    "factId": "schoenberg-24",
+    "prompt": "What did Schoenberg’s student Alban Berg later write?",
     "choices": [
-      "An ordering of the twelve pitch classes",
-      "A major scale played twice",
-      "A list of twelve different instruments"
+      "Operas, with stories sung on stage",
+      "Only books about dance steps",
+      "Only drum practice pieces"
     ],
     "answer": 0
   },
   {
     "id": "schoenberg-quiz-08",
     "person": "schoenberg",
-    "factId": "schoenberg-22",
-    "prompt": "Which visual art did Schoenberg also practice?",
+    "factId": "schoenberg-25",
+    "prompt": "What were Anton Webern’s pieces known for?",
     "choices": [
-      "Sculpture",
-      "Painting",
-      "Architecture"
+      "Long marches for a large band",
+      "Short works packed with music ideas",
+      "Only easy songs for children"
     ],
     "answer": 1
   },
   {
     "id": "schoenberg-quiz-09",
     "person": "schoenberg",
-    "factId": "schoenberg-26",
-    "prompt": "Which composers are grouped with Schoenberg as the Second Viennese School?",
+    "factId": "schoenberg-28",
+    "prompt": "Where did Schoenberg move in 1933?",
     "choices": [
-      "Mozart and Haydn",
-      "Bach and Handel",
-      "Alban Berg and Anton Webern"
+      "Italy",
+      "Poland",
+      "The United States"
     ],
     "answer": 2
   },
@@ -1918,247 +1918,247 @@
     "id": "schoenberg-quiz-10",
     "person": "schoenberg",
     "factId": "schoenberg-29",
-    "prompt": "Where did Schoenberg teach after moving to the United States?",
+    "prompt": "In which city did Schoenberg teach in the United States?",
     "choices": [
-      "Los Angeles, including UCLA",
-      "New York, at the Juilliard School",
-      "Chicago, at the University of Chicago"
+      "Los Angeles",
+      "Chicago",
+      "New York"
     ],
     "answer": 0
   },
   {
     "id": "handel-quiz-01",
     "person": "handel",
-    "factId": "handel-02",
-    "prompt": "Which pair of composers shares Handel’s birth year?",
+    "factId": "handel-01",
+    "prompt": "In which city was George Frideric Handel born?",
     "choices": [
-      "J. S. Bach and Domenico Scarlatti",
-      "Mozart and Joseph Haydn",
-      "Beethoven and Franz Schubert"
+      "Halle",
+      "London",
+      "Vienna"
     ],
     "answer": 0
   },
   {
     "id": "handel-quiz-02",
     "person": "handel",
-    "factId": "handel-06",
-    "prompt": "Where was Handel’s opera Agrippina first performed?",
+    "factId": "handel-02",
+    "prompt": "What did Handel and J. S. Bach have in common?",
     "choices": [
-      "Vienna",
-      "Paris",
-      "Venice"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "handel-quiz-03",
-    "person": "handel",
-    "factId": "handel-12",
-    "prompt": "Which combination describes important parts of Handel’s London career?",
-    "choices": [
-      "English-language symphonies and Italian-language string quartets",
-      "Italian-language operas and English-language oratorios",
-      "French-language ballets and German-language songs"
+      "They grew up in the same family.",
+      "They were born in the same year.",
+      "They both lived only in Paris."
     ],
     "answer": 1
   },
   {
+    "id": "handel-quiz-03",
+    "person": "handel",
+    "factId": "handel-03",
+    "prompt": "What did Handel learn to do when he was young?",
+    "choices": [
+      "Only sing and dance",
+      "Only play the drums",
+      "Play violin and keyboards, and write music"
+    ],
+    "answer": 2
+  },
+  {
     "id": "handel-quiz-04",
     "person": "handel",
-    "factId": "handel-13",
-    "prompt": "How is an oratorio usually presented differently from an opera?",
+    "factId": "handel-04",
+    "prompt": "What is an opera, like those Handel worked on?",
     "choices": [
-      "It is usually performed without staged action",
-      "It is usually performed without any singers",
-      "It is usually performed without any instruments"
+      "A story told with singing and acting",
+      "A piece for drums alone",
+      "A painting of a music show"
     ],
     "answer": 0
   },
   {
     "id": "handel-quiz-05",
     "person": "handel",
-    "factId": "handel-16",
-    "prompt": "Which Handel opera contains the aria Ombra mai fu?",
+    "factId": "handel-10",
+    "prompt": "Which city did Handel make his home in 1712?",
     "choices": [
-      "Rinaldo",
-      "Rodelinda",
-      "Serse"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "handel-quiz-06",
-    "person": "handel",
-    "factId": "handel-17",
-    "prompt": "What occasion was associated with Handel’s Water Music in 1717?",
-    "choices": [
-      "A benefit concert at the Foundling Hospital",
-      "A royal boating event on the River Thames",
-      "A royal coronation in Westminster Abbey"
+      "Venice",
+      "London",
+      "Warsaw"
     ],
     "answer": 1
   },
   {
+    "id": "handel-quiz-06",
+    "person": "handel",
+    "factId": "handel-12",
+    "prompt": "Which language did Handel use for his oratorios in London?",
+    "choices": [
+      "Italian",
+      "French",
+      "English"
+    ],
+    "answer": 2
+  },
+  {
     "id": "handel-quiz-07",
     "person": "handel",
-    "factId": "handel-20",
-    "prompt": "In which city was Handel’s Messiah first performed?",
+    "factId": "handel-17",
+    "prompt": "What kind of event used Handel’s Water Music in 1717?",
     "choices": [
-      "Dublin",
-      "London",
-      "Hamburg"
+      "A royal boat trip on the River Thames",
+      "A royal crowning in a church",
+      "A lesson for young violin players"
     ],
     "answer": 0
   },
   {
     "id": "handel-quiz-08",
     "person": "handel",
-    "factId": "handel-24",
-    "prompt": "What feature often characterizes a recitative?",
+    "factId": "handel-20",
+    "prompt": "Where was Handel’s Messiah first performed?",
     "choices": [
-      "Every phrase has a repeated dance refrain",
-      "The voice performs only long wordless notes",
-      "Words follow the rhythms of speech"
+      "London",
+      "Dublin",
+      "Hamburg"
     ],
-    "answer": 2
+    "answer": 1
   },
   {
     "id": "handel-quiz-09",
     "person": "handel",
-    "factId": "handel-28",
-    "prompt": "Whose concerto grosso tradition influenced Handel?",
+    "factId": "handel-25",
+    "prompt": "Why did Handel give concerts for the Foundling Hospital?",
     "choices": [
-      "Arnold Schoenberg’s",
-      "Arcangelo Corelli’s",
-      "Frédéric Chopin’s"
+      "To raise money for a new opera house",
+      "To pay for a royal boat trip",
+      "To help children in need"
     ],
-    "answer": 1
+    "answer": 2
   },
   {
     "id": "handel-quiz-10",
     "person": "handel",
     "factId": "handel-30",
-    "prompt": "Where was Handel buried?",
+    "prompt": "In which city did Handel die in 1759?",
     "choices": [
-      "Westminster Abbey",
-      "Père Lachaise Cemetery",
-      "Holy Cross Church in Warsaw"
+      "London",
+      "Paris",
+      "Venice"
     ],
     "answer": 0
   },
   {
     "id": "vivaldi-quiz-01",
     "person": "vivaldi",
-    "factId": "vivaldi-02",
-    "prompt": "Who helped teach Vivaldi to play the violin?",
+    "factId": "vivaldi-01",
+    "prompt": "In which city was Antonio Vivaldi born?",
     "choices": [
-      "His father, who was a violinist",
-      "His brother, who was a flutist",
-      "His mother, who was a cellist"
+      "Venice",
+      "Vienna",
+      "Paris"
     ],
     "answer": 0
   },
   {
     "id": "vivaldi-quiz-02",
     "person": "vivaldi",
-    "factId": "vivaldi-05",
-    "prompt": "Why was Vivaldi nicknamed the Red Priest?",
+    "factId": "vivaldi-02",
+    "prompt": "Who helped Vivaldi learn to play the violin?",
     "choices": [
-      "He always used red ink for scores",
-      "He led an orchestra dressed in red",
-      "He had red hair"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "vivaldi-quiz-03",
-    "person": "vivaldi",
-    "factId": "vivaldi-07",
-    "prompt": "What was Venice’s Pietà, where Vivaldi worked?",
-    "choices": [
-      "A school devoted only to teaching organ builders",
-      "A charitable institution for girls with a celebrated music program",
-      "A royal court with an opera company"
+      "His brother",
+      "His father",
+      "His mother"
     ],
     "answer": 1
   },
   {
+    "id": "vivaldi-quiz-03",
+    "person": "vivaldi",
+    "factId": "vivaldi-05",
+    "prompt": "Why was Vivaldi called the Red Priest?",
+    "choices": [
+      "He always wrote in red ink.",
+      "His players all wore red.",
+      "He had red hair."
+    ],
+    "answer": 2
+  },
+  {
     "id": "vivaldi-quiz-04",
     "person": "vivaldi",
-    "factId": "vivaldi-13",
-    "prompt": "What kind of works make up Vivaldi’s The Four Seasons?",
+    "factId": "vivaldi-07",
+    "prompt": "Who did the Pietà, where Vivaldi worked, care for?",
     "choices": [
-      "Four violin concertos",
-      "Four choral oratorios",
-      "Four piano sonatas"
+      "Girls in need",
+      "Only princes from royal families",
+      "Only people who made violins"
     ],
     "answer": 0
   },
   {
     "id": "vivaldi-quiz-05",
     "person": "vivaldi",
-    "factId": "vivaldi-16",
-    "prompt": "What was printed with The Four Seasons to describe the scenes in the music?",
+    "factId": "vivaldi-10",
+    "prompt": "How many concertos did Vivaldi write?",
     "choices": [
-      "Stage directions for actors",
-      "Letters from Vivaldi’s students",
-      "Poems"
-    ],
-    "answer": 2
-  },
-  {
-    "id": "vivaldi-quiz-06",
-    "person": "vivaldi",
-    "factId": "vivaldi-20",
-    "prompt": "Which scenes does Vivaldi’s Winter suggest?",
-    "choices": [
-      "Birdsong, flowing streams, and spring weather",
-      "Cold, shivering, and slipping on ice",
-      "Harvest celebrations and a hunt"
+      "Fewer than ten",
+      "More than 500",
+      "Exactly 100"
     ],
     "answer": 1
   },
   {
+    "id": "vivaldi-quiz-06",
+    "person": "vivaldi",
+    "factId": "vivaldi-13",
+    "prompt": "What makes up Vivaldi’s The Four Seasons?",
+    "choices": [
+      "Four songs for a choir",
+      "Four pieces for drums",
+      "Four violin concertos, one for each season"
+    ],
+    "answer": 2
+  },
+  {
     "id": "vivaldi-quiz-07",
     "person": "vivaldi",
-    "factId": "vivaldi-22",
-    "prompt": "Which movement plan appears in many Vivaldi concertos?",
+    "factId": "vivaldi-17",
+    "prompt": "What does the music in Vivaldi’s Spring sound like?",
     "choices": [
-      "Fast–slow–fast",
-      "Slow–fast–slow",
-      "Three movements at the same slow tempo"
+      "Birds, streams, and a storm",
+      "Cold shivers and slipping on ice",
+      "A harvest party and a hunt"
     ],
     "answer": 0
   },
   {
     "id": "vivaldi-quiz-08",
     "person": "vivaldi",
-    "factId": "vivaldi-23",
-    "prompt": "What happens in ritornello form?",
+    "factId": "vivaldi-20",
+    "prompt": "What does Vivaldi’s Winter help us picture?",
     "choices": [
-      "Every player repeats one melody at exactly the same time",
-      "A solo singer alternates spoken dialogue with dance",
-      "A recurring ensemble passage alternates with contrasting episodes"
+      "Birds and streams",
+      "Cold, shivering, and slipping on ice",
+      "A harvest party and a hunt"
     ],
-    "answer": 2
+    "answer": 1
   },
   {
     "id": "vivaldi-quiz-09",
     "person": "vivaldi",
-    "factId": "vivaldi-26",
-    "prompt": "What performing forces are used in Vivaldi’s Gloria, RV 589?",
+    "factId": "vivaldi-22",
+    "prompt": "How do the three parts of many Vivaldi concertos go?",
     "choices": [
-      "String quartet without voices",
-      "Soloists, choir, and orchestra",
-      "Solo violin without accompaniment"
+      "Slow, fast, slow",
+      "The same slow speed in all three",
+      "Fast, slow, fast"
     ],
-    "answer": 1
+    "answer": 2
   },
   {
     "id": "vivaldi-quiz-10",
     "person": "vivaldi",
     "factId": "vivaldi-28",
-    "prompt": "Which composer arranged several Vivaldi concertos for keyboard?",
+    "prompt": "Who made keyboard versions of some Vivaldi concertos?",
     "choices": [
       "J. S. Bach",
       "Claude Debussy",

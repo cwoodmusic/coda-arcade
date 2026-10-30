@@ -7,12 +7,12 @@ quizzes can only be opened while visiting the scholar.
 
 ## Earn, learn, and deliver
 
-Each of the 18 characters has a 30-fact collection. Choose **Music history &
+Each of the 18 characters has a 10-fact collection. Choose **Music history &
 friendship** when talking to a musician, then accept their friendship quest.
 Only one friendship quest can be active at once. Start fresh gameplay after
 accepting: completed Pitch Race runs, Rhythm Room rounds, Music Triad matches,
 Piano Lab challenges, and real fishing catches provide verified progress.
-Quests repeat with increasing targets across six tiers; free play, practice
+Quests repeat with increasing targets across five tiers; free play, practice
 catches, stale runs, repeated result messages, and clicking conversations do not
 complete quests.
 
@@ -28,17 +28,16 @@ recorded text. The pouch and record are separate views at the scholar.
 
 ## Rewards and quizzes
 
-Fact hand-ins earn 50, 65, 80, 95, 110, then 125 Notes per fact across the six
-five-fact tiers. There are additional one-time bonuses of 500 Notes at 10
-recorded earned facts, 1,000 at 20, and 2,000 at 30. A complete earned fact
-collection pays 6,125 Notes before its quiz.
+Fact hand-ins earn 50, 65, 80, 95, then 110 Notes per fact. The prize rises
+after every two facts. Recording all ten facts earns a one-time 2,000-Note
+collection bonus. A new, fully earned collection pays 2,800 Notes before its quiz.
 
-Record all 30 facts from a character to unlock their 10-question history quiz.
+Record all 10 facts from a character to unlock their 10-question history quiz.
 Questions and answer choices are shuffled. Eight correct answers passes; the
 first pass pays 2,000 Notes. Questions are explicitly linked to that character's
 readable facts. Review correct answers after finishing. Retakes keep the best
 score but do not repay the prize. Each fully earned collection plus its quiz
-therefore pays 8,125 Notes. No Artist's Dream room or associated prizes are
+therefore pays 4,800 Notes. No Artist's Dream room or associated prizes are
 introduced in this update.
 
 Awards use saved intents and stable wallet IDs. A failed Notes write can be
@@ -47,7 +46,7 @@ prizes are split into two saved installments to respect the existing wallet.
 
 ## Read and edit every fact
 
-Use **Developer → Music facts** to browse all 540 facts, including locked entries.
+Use **Developer → Music facts** to browse all 180 facts, including locked entries.
 Choose a musician and fact number, or search the whole catalog. Edit the text
 and choose **Apply fact**. **Revert draft** returns to the applied version;
 **Restore default fact** restores the original wording. Drafts remain available
@@ -69,17 +68,25 @@ Press **F2 → History progression** to inspect each character's friendship poin
 ready fact, carried inventory, records, and quiz state. Normal players are
 read-only. **Open temporary progression test** uses the existing isolated test
 player; its controls can unlock a next fact, add it to the pouch, set a
-30-fact record for quiz preview, or reset a selected friendship. It uses
+10-fact record for quiz preview, or reset a selected friendship. It uses
 in-memory browser storage and never changes the original player's save.
 Progression is excluded from world-project JSON exports.
 
 ## Storage and compatibility
 
-`codaMusicHistoryV1` now contains a version-2 record of earned, learned, and
+`codaMusicHistoryV1` now contains a version-3 record of earned, learned, and
 recorded fact IDs, the active quest, completed quizzes, and reward intents.
-Older discovered facts remain readable in the record without retroactive
-fact or collection prizes. Corrupt or unavailable saves produce a visible
-error and are not overwritten.
+Progress from the earlier 30-fact collections carries forward by count, up to
+ten facts per musician. Completed collections and passed quizzes stay complete;
+previously recorded facts do not pay again. Valid older pending rewards can still
+be collected once. An unfinished old quest restarts against the new collection,
+so an old game result cannot earn a new fact. Corrupt or unavailable saves produce
+a visible error and are not overwritten.
+
+Older authored projects still load. Edits to retired facts remain in the exported
+project as a backup. A quiz edit tied to an older, different fact is kept in
+`archivedQuizzes` instead of being used with the wrong question. New authoring
+uses content version 2; player progress remains a separate record.
 
 History follows the existing local workspace boundary: it survives reloads
 within the active player workspace, is isolated between players, and is not
@@ -87,6 +94,19 @@ included in Firebase profile data or synced across devices. Classroom profile
 changes clear these local educational records under the existing privacy
 rules. Notes rewards use the existing wallet and its normal save behavior.
 No live database rules or cloud profile schema are changed.
+
+## Reading level
+
+The default facts and quiz text are written for students around fourth grade.
+Use short sentences and common words. Explain a new music term with a simple
+meaning when it first appears in a collection. Keep names, dates, cultural
+history, and the details needed to answer a linked quiz question accurate.
+Some names and work titles are unfamiliar even when the surrounding text is
+simple; reading-level formulas alone do not measure whether those facts are clear.
+
+When editing a fact, check its linked question and every answer choice too.
+The original fact and question IDs stay the same, so this wording update carries
+existing discoveries, friendship points, quiz records, and rewards forward.
 
 ## Reference reading
 

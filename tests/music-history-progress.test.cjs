@@ -26,17 +26,21 @@ function answerAll(f,wrong=0){const state=f.store.quizState();for(const [index,q
  const source=quizData.find(item=>item.id===question.id),correct=question.choices.indexOf(source.choices[source.answer]);
  assert.equal(f.store.answerQuiz(question.id,index<wrong?(correct+1)%question.choices.length:correct).ok,true);
 }}
+const oldIds=person=>Array.from({length:30},(_,index)=>person+'-'+String(index+1).padStart(2,'0'));
+const oldFactAmount=id=>50+15*Math.floor((Number(id.slice(-2))-1)/5);
+const oldState=edits=>({version:2,earned:[],learned:[],recorded:[],legacy:[],active:null,quizzes:{},seen:[],pending:[],paid:[],...edits});
+function oldCollectionAwards(person){return [...oldIds(person).map(id=>({id:'scholar-fact:'+id,amount:oldFactAmount(id)})),{id:'scholar-set:'+person+':10',amount:500},{id:'scholar-set:'+person+':20',amount:1000},{id:'scholar-set:'+person+':30',amount:1000},{id:'scholar-set:'+person+':30:part-2',amount:1000},{id:'scholar-quiz:'+person,amount:1000},{id:'scholar-quiz:'+person+':part-2',amount:1000}];}
 
-test('every collection has30 progressively priced relationship quests and no click-only facts',()=>{
- const f=fixture();assert.equal(Object.keys(history.PEOPLE).length,18);assert.equal(f.store.snapshot().total,540);
- for(const person of Object.keys(history.PEOPLE)){assert.equal(f.store.learnFact(person).ok,false);const quests=Array.from({length:30},(_,i)=>history.questFor(person,i));assert.equal(new Set(quests.map(q=>q.game)).size,5);assert.equal(quests[0].reward,50);assert.equal(quests[29].reward,125);}
+test('every collection has ten progressively priced friendship quests and no click-only facts',()=>{
+ const f=fixture();assert.equal(Object.keys(history.PEOPLE).length,18);assert.equal(f.store.snapshot().total,180);
+ for(const person of Object.keys(history.PEOPLE)){assert.equal(f.store.learnFact(person).ok,false);assert.equal(history.PEOPLE[person].facts.length,10);const quests=history.PEOPLE[person].facts.map((_,i)=>history.questFor(person,i));assert.equal(new Set(quests.map(q=>q.game)).size,5);assert.equal(quests[0].reward,50);assert.equal(quests[9].reward,110);assert.deepEqual(quests.map(q=>q.tier),[0,0,1,1,2,2,3,3,4,4]);}
  assert.equal(f.store.snapshot().count,0);assert.equal(f.wallet.snapshot().balance,150);
 });
 test('Bach starts with ten notes, one completed quest unlocks exactly one fact, and a global active quest cannot stack',()=>{
  const f=fixture();assert.equal(f.store.acceptQuest('bach').quest.target,10);assert.equal(f.store.acceptQuest('mozart').ok,false);
  const token=f.store.beginRun('pitch');assert.equal(f.store.recordResult('pitch','short',pitch(9),token),true);assert.equal(f.store.conversation('bach').hasNewFact,false);
  assert.equal(f.store.recordResult('pitch','ten',pitch(10),token),true);assert.equal(f.events.length,1);assert.equal(f.store.conversation('bach').hasNewFact,true);assert.equal(f.store.acceptQuest('bach').ok,false);
- const learned=f.store.learnFact('bach');assert.equal(learned.fact.id,'bach-01');assert.equal(f.store.learnFact('bach').ok,false);assert.deepEqual(f.store.snapshot().carriedIDs,['bach-01']);assert.equal(f.wallet.snapshot().balance,150);
+ const learned=f.store.learnFact('bach');assert.equal(learned.fact.id,history.PEOPLE.bach.facts[0].id);assert.equal(f.store.learnFact('bach').ok,false);assert.deepEqual(f.store.snapshot().carriedIDs,[history.PEOPLE.bach.facts[0].id]);assert.equal(f.wallet.snapshot().balance,150);
  assert.equal(f.store.acceptQuest('bach').ok,true);assert.equal(f.store.recordResult('pitch','ten',pitch(20),token),false);
 });
 test('fresh run eligibility, valid payloads, origin-verified callback IDs, and replay protection prevent stale quest credit',()=>{
@@ -53,15 +57,42 @@ test('nearby conversations, scholar proximity, permission and owner changes are 
 test('carried facts become scholar records and pay only after a real deposit; reload and repeated deposits cannot pay twice',()=>{
  const f=fixture();complete(f,'bach');f.store.learnFact('bach');const before=f.wallet.snapshot().balance;
  const paid=f.store.deposit();assert.equal(paid.ok,true);assert.equal(paid.deposited,1);assert.equal(paid.amount,50);assert.equal(f.wallet.snapshot().balance,before+50);assert.equal(f.store.snapshot().carriedIDs.length,0);assert.equal(f.store.snapshot().recordedCount,1);
- const restored=history.create(f.api);assert.equal(restored.deposit().amount,0);assert.equal(f.wallet.snapshot().balance,before+50);assert.equal(f.wallet.snapshot().rewards.filter(id=>id==='scholar-fact:bach-01').length,1);
+ const restored=history.create(f.api);assert.equal(restored.deposit().amount,0);assert.equal(f.wallet.snapshot().balance,before+50);assert.equal(f.wallet.snapshot().rewards.filter(id=>id==='scholar-fact:'+history.PEOPLE.bach.facts[0].id).length,1);
 });
-test('all30 quests can be completed through native activities, with tiered fact prizes and milestones totaling6125Notes',()=>{
- const f=fixture();for(let index=0;index<30;index++){complete(f,'bach');assert.equal(f.store.learnFact('bach').fact.id,'bach-'+String(index+1).padStart(2,'0'));}
- assert.equal(f.store.snapshot().carriedIDs.length,30);assert.equal(f.store.startQuiz('bach').ok,false);const result=f.store.deposit();assert.equal(result.ok,true,result.error);assert.equal(result.amount,6125);assert.equal(f.wallet.snapshot().balance,6275);assert.equal(f.store.conversation('bach').quiz.eligible,true);assert.equal(f.store.conversation('bach').relationship.count,30);assert.equal(f.store.learnFact('bach').ok,false);
+test('all ten quests use native activities and pay 2800 Notes including the completed collection',()=>{
+ const f=fixture();for(const fact of history.PEOPLE.bach.facts){complete(f,'bach');assert.equal(f.store.learnFact('bach').fact.id,fact.id);}
+ assert.equal(f.store.snapshot().carriedIDs.length,10);assert.equal(f.store.startQuiz('bach').ok,false);const result=f.store.deposit();assert.equal(result.ok,true,result.error);assert.equal(result.amount,2800);assert.equal(f.wallet.snapshot().balance,2950);const view=f.store.conversation('bach');assert.equal(view.quiz.eligible,true);assert.equal(view.relationship.count,10);assert.equal(view.relationship.total,10);assert.equal(view.relationship.name,'Lifelong friend');assert.match(view.message,/all 10 facts/);assert.equal(f.store.learnFact('bach').ok,false);
 });
 test('v1 discoveries migrate into recorded legacy knowledge with no retroactive fact or milestone prizes',()=>{
- const old=history.PEOPLE.bach.facts.map(fact=>fact.id),f=fixture({values:new Map([[history.KEY,JSON.stringify({version:1,discovered:old})]])});
- assert.equal(f.store.snapshot().recordedCount,30);assert.equal(f.store.snapshot().carriedIDs.length,0);assert.equal(f.store.deposit().amount,0);assert.equal(f.wallet.snapshot().balance,150);assert.deepEqual(JSON.parse(f.values.get(history.KEY)).legacy,old);
+ const f=fixture({values:new Map([[history.KEY,JSON.stringify({version:1,discovered:oldIds('bach')})]])});
+ assert.equal(f.store.snapshot().recordedCount,10);assert.equal(f.store.snapshot().carriedIDs.length,0);assert.equal(f.store.deposit().amount,0);assert.equal(f.wallet.snapshot().balance,150);assert.deepEqual(JSON.parse(f.values.get(history.KEY)).legacy,history.PEOPLE.bach.facts.map(fact=>fact.id));
+});
+test('v2 retired discoveries retain earned, carried, recorded and ready counts without replaying their recorded prizes',()=>{
+ const selected=new Set(history.PEOPLE.bach.facts.map(fact=>fact.id)),retired=oldIds('bach').filter(id=>!selected.has(id)).slice(-6),original=oldState({earned:retired,learned:retired.slice(0,5),recorded:retired.slice(0,3),pending:[{id:'scholar-fact:'+retired[0],amount:oldFactAmount(retired[0])}],paid:['scholar-fact:'+retired[1]]});
+ const f=fixture({values:new Map([[history.KEY,JSON.stringify(original)]])}),before=f.values.get(history.KEY),view=f.store.conversation('bach');
+ assert.equal(view.ok,true,view.error);assert.deepEqual([view.earnedCount,view.learnedCount,view.recordedCount,view.readyCount],[6,5,3,1]);assert.equal(view.relationship.count,6);assert.equal(f.values.get(history.KEY),before,'reading migration does not overwrite the old save');
+ assert.equal(f.store.learnFact('bach').fact.id,history.PEOPLE.bach.facts[5].id);const migrated=JSON.parse(f.values.get(history.KEY));assert.equal(migrated.version,3);assert.deepEqual(migrated.credited,history.PEOPLE.bach.facts.slice(0,3).map(fact=>fact.id));
+ const owed=original.pending[0].amount+history.PEOPLE.bach.facts.slice(3,6).reduce((sum,fact)=>sum+history.factReward(fact.id),0),deposit=f.store.deposit();assert.equal(deposit.ok,true,deposit.error);assert.equal(deposit.deposited,3);assert.equal(deposit.amount,owed);assert.equal(f.store.deposit().amount,0);assert.equal(history.create(f.api).snapshot().ok,true);
+});
+test('v2 completed collections and passed quizzes stay complete while genuine pending awards retry with their original amounts',()=>{
+ const awards=oldCollectionAwards('bach'),pending=awards.filter(item=>item.id==='scholar-fact:bach-30'||item.id==='scholar-set:bach:10'||item.id==='scholar-quiz:bach:part-2'),paid=awards.filter(item=>!pending.some(p=>p.id===item.id)),original=oldState({earned:oldIds('bach'),learned:oldIds('bach'),recorded:oldIds('bach'),quizzes:{bach:{best:90,passed:true,attempts:2}},pending,paid:paid.map(item=>item.id)});
+ const f=fixture();for(const item of paid)assert.equal(f.wallet.grantReward(item.id,item.amount).ok,true);assert.equal(f.wallet.grantReward(pending[0].id,pending[0].amount).ok,true,'simulate wallet saved before old acknowledgement failed');f.values.set(history.KEY,JSON.stringify(original));const before=f.wallet.snapshot().balance,view=f.store.conversation('bach');
+ assert.equal(view.ok,true,view.error);assert.equal(view.recordedCount,10);assert.equal(view.quiz.eligible,true);assert.equal(view.quiz.passed,true);assert.equal(view.quiz.best,90);assert.equal(view.relationship.name,'Lifelong friend');
+ assert.equal(f.store.deposit().amount,1500);assert.equal(f.wallet.snapshot().balance,before+1500);assert.equal(f.store.snapshot().pendingAmount,0);assert.equal(f.store.deposit().amount,0);assert.equal(f.wallet.snapshot().rewards.some(id=>id.startsWith('scholar-complete:bach')),false);
+ assert.equal(f.store.startQuiz('bach').ok,true);answerAll(f);assert.equal(f.store.finishQuiz().amount,0);assert.equal(f.wallet.snapshot().balance,before+1500);assert.equal(history.create(f.api).snapshot().ok,true);
+});
+test('old active quests are restarted after migration and their stale activity cannot unlock a newly indexed fact',()=>{
+ const original=oldState({earned:oldIds('bach').slice(0,3),learned:oldIds('bach').slice(0,3),active:{person:'bach',index:24,nonce:'old-active-quest',progress:0,seen:[]},seen:['pitch:previous-run']}),f=fixture({values:new Map([[history.KEY,JSON.stringify(original)]])});
+ assert.equal(f.store.snapshot().active,null);assert.equal(f.store.beginRun('pitch'),null);assert.equal(f.store.recordResult('pitch','old-result',pitch(99),'old-token'),false);assert.equal(f.store.conversation('bach').relationship.count,3);const accepted=f.store.acceptQuest('bach');assert.equal(accepted.ok,true,accepted.error);assert.equal(accepted.quest.index,3);assert.notEqual(JSON.parse(f.values.get(history.KEY)).active.nonce,'old-active-quest');
+});
+test('old paid fact IDs still deduplicate after count mapping, and fresh work can finish a partially credited collection',()=>{
+ const facts=history.PEOPLE.bach.facts,previous=facts.at(-1).id,award={id:'scholar-fact:'+previous,amount:oldFactAmount(previous)},original=oldState({earned:[previous],learned:[previous],recorded:[previous],paid:[award.id]}),f=fixture();f.wallet.grantReward(award.id,award.amount);f.values.set(history.KEY,JSON.stringify(original));const before=f.wallet.snapshot().balance;
+ assert.equal(f.store.conversation('bach').recordedCount,1);for(let index=1;index<facts.length;index++){complete(f,'bach');assert.equal(f.store.learnFact('bach').fact.id,facts[index].id);}
+ const owed=facts.slice(1,-1).reduce((sum,fact)=>sum+history.factReward(fact.id),0)+2000,result=f.store.deposit();assert.equal(result.ok,true,result.error);assert.equal(result.amount,owed);assert.equal(f.wallet.snapshot().balance,before+owed);assert.equal(f.wallet.snapshot().rewards.filter(id=>id===award.id).length,1);assert.equal(f.store.conversation('bach').quiz.eligible,true);assert.equal(f.store.deposit().amount,0);
+});
+test('migration rejects damaged retired IDs and fabricated old rewards without changing saved progress',()=>{
+ for(const original of [oldState({earned:['bach-31']}),oldState({earned:['missing-01']}),oldState({earned:['bach-30'],learned:['bach-30'],recorded:['bach-30'],pending:[{id:'scholar-fact:bach-30',amount:999}]}),oldState({pending:[{id:'unknown'}]})]){const raw=JSON.stringify(original),f=fixture({values:new Map([[history.KEY,raw]])});assert.equal(f.store.snapshot().ok,false);assert.equal(f.store.deposit().ok,false);assert.equal(f.values.get(history.KEY),raw);assert.equal(f.wallet.snapshot().balance,150);}
+ const f=fixture();complete(f,'bach');f.store.learnFact('bach');const corrupted=JSON.parse(f.values.get(history.KEY));corrupted.historicalAwards=[{id:'unknown'}];const raw=JSON.stringify(corrupted);f.values.set(history.KEY,raw);assert.equal(f.store.snapshot().ok,false);assert.equal(f.store.deposit().ok,false);assert.equal(f.values.get(history.KEY),raw);
 });
 test('damaged history is never silently reset or overwritten and a failed save leaves new facts unclaimed',()=>{
  const f=fixture();complete(f,'bach');const original=f.values.get(history.KEY);f.setWriteHook(key=>{if(key===history.KEY)throw Error('quota');});assert.equal(f.store.learnFact('bach').ok,false);assert.equal(f.values.get(history.KEY),original);f.setWriteHook(null);assert.equal(f.store.conversation('bach').hasNewFact,true);
@@ -76,7 +107,7 @@ test('unavailable wallets leave retryable reward intents without claiming Notes'
  const real=fixture(),missing=history.create({...real.api,wallet:{grantReward:()=>({ok:false,error:'wallet blocked'})}});complete({...real,store:missing},'bach');missing.learnFact('bach');assert.equal(missing.deposit().ok,false);assert.equal(missing.snapshot().pendingAmount,50);assert.equal(real.wallet.snapshot().balance,150);
  assert.equal(real.store.deposit().amount,50);assert.equal(real.wallet.snapshot().balance,200);
 });
-test('quiz locks require thirty deposited facts; attempts hide correct choices until grading, preserve best scores, and pay once',()=>{
+test('quiz locks require ten deposited facts; attempts hide correct choices until grading, preserve best scores, and pay once',()=>{
  const f=fixture();assert.equal(f.store.startQuiz('bach').ok,false);f.setDev(true);assert.equal(f.store.developerSet('bach','recorded').ok,true);f.store.deposit();const before=f.wallet.snapshot().balance;
  assert.equal(f.store.startQuiz('bach').ok,true);assert.equal(f.store.quizState().total,10);assert.ok(f.store.quizState().questions.every(q=>!Object.hasOwn(q,'answer')));assert.equal(f.store.finishQuiz().ok,false);
  answerAll(f,3);const failed=f.store.finishQuiz();assert.equal(failed.score,70);assert.equal(failed.passed,false);assert.equal(f.wallet.snapshot().balance,before);assert.ok(failed.questions.every(q=>Object.hasOwn(q,'answer')&&typeof q.correct==='boolean'));
@@ -87,7 +118,7 @@ test('quiz owner changes invalidate answers and completion, and developer progre
  const f=fixture();assert.equal(f.store.developerSet('bach','recorded').ok,false);assert.equal(f.store.snapshot().count,0);f.setDev(true);f.store.developerSet('bach','recorded');f.store.startQuiz('bach');const question=f.store.quizState().questions[0];f.setOwner('different-player');assert.equal(f.store.quizState(),null);assert.equal(f.store.answerQuiz(question.id,0).ok,false);assert.equal(f.store.finishQuiz().ok,false);
 });
 test('developer stages apply only to selected collection and leave other people unchanged',()=>{
- const f=fixture();f.setDev(true);f.store.developerSet('bach','carried');f.store.developerSet('mozart','recorded');assert.equal(f.store.snapshot().count,31);f.store.developerSet('bach','reset');assert.equal(f.store.snapshot().count,30);assert.equal(f.store.conversation('mozart').recordedCount,30);assert.equal(f.wallet.snapshot().balance,150);
+ const f=fixture();f.setDev(true);f.store.developerSet('bach','carried');f.store.developerSet('mozart','recorded');assert.equal(f.store.snapshot().count,11);f.store.developerSet('bach','reset');assert.equal(f.store.snapshot().count,10);assert.equal(f.store.conversation('mozart').recordedCount,10);assert.equal(f.wallet.snapshot().balance,150);
 });
 
 
@@ -96,9 +127,9 @@ test('quiz completion rechecks recorded collection and all installment reward ID
  const changed=JSON.parse(f.values.get(history.KEY));changed.recorded.pop();changed.paid=[];changed.pending=[];f.values.set(history.KEY,JSON.stringify(changed));assert.equal(f.store.finishQuiz().ok,false);
  f.store.developerSet('bach','recorded');f.store.startQuiz('bach');answerAll(f);assert.equal(f.store.finishQuiz().ok,true);assert.equal(f.store.snapshot().paid.includes('scholar-quiz:bach:part-2'),true);assert.equal(f.store.developerSet('bach','reset').ok,true);assert.equal(f.store.snapshot().ok,true);assert.equal(f.store.snapshot().paid.some(id=>id.startsWith('scholar-quiz:bach')),false);
 });
-test('the complete18-person reward ledger stays valid through all648 idempotent payouts',()=>{
+test('the complete eighteen-person reward ledger stays valid through all 252 idempotent payouts',()=>{
  const f=fixture();f.setDev(true);for(const person of Object.keys(history.PEOPLE))assert.equal(f.store.developerSet(person,'recorded').ok,true);
- const deposit=f.store.deposit();assert.equal(deposit.ok,true,deposit.error);assert.equal(f.store.snapshot().recordedCount,540);
+ const deposit=f.store.deposit();assert.equal(deposit.ok,true,deposit.error);assert.equal(f.store.snapshot().recordedCount,180);
  for(const person of Object.keys(history.PEOPLE)){assert.equal(f.store.startQuiz(person).ok,true);answerAll(f);assert.equal(f.store.finishQuiz().ok,true);}
- const snapshot=f.store.snapshot();assert.equal(snapshot.ok,true,snapshot.error);assert.equal(snapshot.paid.length,648);assert.equal(snapshot.pendingAmount,0);assert.equal(f.wallet.snapshot().balance,146400);assert.equal(f.store.deposit().amount,0);
+ const snapshot=f.store.snapshot();assert.equal(snapshot.ok,true,snapshot.error);assert.equal(snapshot.paid.length,252);assert.equal(snapshot.pendingAmount,0);assert.equal(f.wallet.snapshot().balance,86550);assert.equal(f.store.deposit().amount,0);
 });

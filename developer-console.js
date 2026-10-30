@@ -15,7 +15,7 @@ window.createCodaDeveloperConsole = function (api) {
   let pickSample = false, baseCache = null, baseKey = '', cleanupCache = null, loadFailed = false, pan = null;
   let publishedProject = null, publishedError = null, loadError = null, projectSource = 'base';
   let dialogue={}, sprites={}, artwork={}, dialogueEditor=null, pixelEditor=null, artworkEditor=null, artworkTools=null,educationEditor=null;
-  const emptyHistoryContent=()=>({version:1,facts:{},quizzes:{}});
+  const emptyHistoryContent=()=>({version:2,facts:{},quizzes:{}});
   let musicHistoryContent=emptyHistoryContent(),musicFactsEditor=null;
   let panTool=false, spaceHeld=false,collisionOverlay=false,layerOverlay=false,layerMaskSource=null,layerMaskTint=null,layerMaskKey='';
   const dialogueDefaults=api.dialogueDefaults||window.CodaNPCDialogueDefaults||{};
@@ -203,7 +203,7 @@ window.createCodaDeveloperConsole = function (api) {
 
   function pane(name, html) { const el=document.createElement('section'); el.id='dev-'+name; el.className='dev-pane'; el.hidden=true; el.setAttribute('role','tabpanel');el.setAttribute('aria-labelledby','devTab-'+name);el.innerHTML=html; panel.append(el); return el; }
   function message(text) { $('devStatus').textContent=text; }
-  function snapshot() { const rooms=api.getRooms?.();return JSON.stringify({assets:studio.assets,collision:collision.get(),strokes:layer.actions,...(Object.keys(dialogue).length?{dialogue}:{}),...(Object.keys(sprites).length?{sprites}:{}),...(Object.keys(artwork).length?{artwork}:{}),...(Object.keys(musicHistoryContent.facts).length||Object.keys(musicHistoryContent.quizzes).length?{musicHistoryContent}:{}),...(rooms&&Object.keys(rooms).length?{rooms}:{})}); }
+  function snapshot() { const rooms=api.getRooms?.();return JSON.stringify({assets:studio.assets,collision:collision.get(),strokes:layer.actions,...(Object.keys(dialogue).length?{dialogue}:{}),...(Object.keys(sprites).length?{sprites}:{}),...(Object.keys(artwork).length?{artwork}:{}),...(Object.keys(musicHistoryContent.facts).length||Object.keys(musicHistoryContent.quizzes).length||Object.keys(musicHistoryContent.archivedQuizzes||{}).length?{musicHistoryContent}:{}),...(rooms&&Object.keys(rooms).length?{rooms}:{})}); }
   function documentData() { return {format:FORMAT,version:VERSION,world:{width:W,height:H},...JSON.parse(snapshot())}; }
   function changed(before) { api.record(before); }
   function recordRoomChange(id,before) {

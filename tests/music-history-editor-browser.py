@@ -24,7 +24,7 @@ class MusicFactsEditorTests(_world.WorldBrowserCase):
         if (self._testMethodName == 'test_published_facts_appear_in_the_real_record_as_safe_text'
                 and urlparse(route.request.url).path.endswith('/published-world-project.json')):
             publication = json.loads((_world.ROOT / 'published-world-project.json').read_text())
-            publication['musicHistoryContent'] = {'version':1, 'facts':{'bach-01':PUBLISHED_FACT}, 'quizzes':{}}
+            publication['musicHistoryContent'] = {'version':2, 'facts':{'bach-01':PUBLISHED_FACT}, 'quizzes':{}}
             return route.fulfill(status=200, content_type='application/json', body=json.dumps(publication))
         return super().route_checkout(route)
 
@@ -75,12 +75,14 @@ class MusicFactsEditorTests(_world.WorldBrowserCase):
     def test_all_facts_are_browsable_and_search_crosses_musicians_without_unlocking(self):
         before = self.history_bytes();pane = self.editor()
         self.page.get_by_label('Fact musician',exact=True).select_option('')
-        self.assertEqual(pane.locator('[data-music-fact]').count(),540)
+        self.assertEqual(pane.locator('[data-music-fact]').count(),180)
         self.assertEqual(self.page.get_by_label('Fact musician',exact=True).locator('option').count(),19)
+        collection_sizes = self.page.evaluate('Object.values(CodaMusicHistoryData).map(person=>person.facts.length)')
+        self.assertEqual(collection_sizes,[10]*18)
         self.page.get_by_label('Fact musician',exact=True).select_option('vivaldi')
-        self.page.get_by_label('Music fact',exact=True).select_option('vivaldi-30')
-        expected = self.page.evaluate('CodaMusicHistoryData.vivaldi.facts[29].text')
-        self.assertEqual(self.page.get_by_label('Music fact text',exact=True).input_value(),expected)
+        last_fact = self.page.evaluate('CodaMusicHistoryData.vivaldi.facts.at(-1)')
+        self.page.get_by_label('Music fact',exact=True).select_option(last_fact['id'])
+        self.assertEqual(self.page.get_by_label('Music fact text',exact=True).input_value(),last_fact['text'])
         self.page.get_by_label('Search all music facts',exact=True).fill('Eisenach')
         pane.locator('[data-music-fact="bach-01"]').click()
         self.assertEqual(self.page.get_by_label('Fact musician',exact=True).input_value(),'bach')
@@ -130,6 +132,7 @@ class MusicFactsEditorTests(_world.WorldBrowserCase):
         self.page.locator('#devTab-project').click()
         with self.page.expect_download() as pending:self.page.locator('#devExport').click()
         exported = json.loads(Path(pending.value.path()).read_text())
+        self.assertEqual(exported['musicHistoryContent']['version'],2)
         self.assertEqual(exported['musicHistoryContent']['facts']['bach-01'],edited_text)
         self.assertNotIn('codaMusicHistoryV1',exported)
         self.page.once('dialog',lambda dialog:dialog.accept())
@@ -145,8 +148,47 @@ class MusicFactsEditorTests(_world.WorldBrowserCase):
         self.assertEqual(self.project()['musicHistoryContent'],exported['musicHistoryContent'])
         self.assertEqual(self.history_bytes(),progress)
 
+    def test_old_authored_content_keeps_retired_work_and_archive_only_exports(self):
+        original = self.project();progress = self.history_bytes()
+        identities = self.page.evaluate("""()=>({
+          retired:CodaMusicHistoryLegacy.FACT_IDS.find(id=>!CodaMusicHistoryContent.FACTS.some(f=>f.id===id)),
+          quiz:CodaMusicHistoryContent.QUESTIONS.find(q=>CodaMusicHistoryLegacy.QUIZ_FACTS[q.id]!==q.factId)
+        })""")
+        legacy = copy.deepcopy(original)
+        quiz = identities['quiz']
+        authored = {'prompt':'An older quiz question that I edited.',
+                    'choices':['First older choice','Second older choice','Third older choice'],'answer':1}
+        legacy['musicHistoryContent'] = {'version':1,
+            'facts':{identities['retired']:'A fact I edited for the older collection.'},
+            'quizzes':{quiz['id']:authored}}
+        self.page.keyboard.press('F2');self.page.locator('#devTab-project').click()
+        def import_legacy():
+            self.page.once('dialog',lambda dialog:dialog.accept())
+            self.page.locator('#devImportFile').set_input_files({'name':'older-facts.json',
+                'mimeType':'application/json','buffer':json.dumps(legacy).encode()})
+            self.page.wait_for_function('count=>{const c=CodaDeveloperConsole.getProject().musicHistoryContent;return c?.version===2&&Object.keys(c.facts).length===count}',arg=len(legacy['musicHistoryContent']['facts']))
+        import_legacy()
+        migrated = self.project()['musicHistoryContent']
+        self.assertIn(identities['retired'],migrated['facts'])
+        self.assertEqual(migrated['archivedQuizzes'][quiz['id']],authored)
+        self.assertNotIn(quiz['id'],migrated['quizzes'])
+        self.assertEqual(self.project()['assets'],original['assets'])
+        legacy['musicHistoryContent']['facts'] = {}
+        import_legacy()
+        with self.page.expect_download() as pending:self.page.locator('#devExport').click()
+        exported = json.loads(Path(pending.value.path()).read_text())
+        self.assertEqual(exported['musicHistoryContent']['facts'],{})
+        self.assertEqual(exported['musicHistoryContent']['archivedQuizzes'][quiz['id']],authored)
+        self.assertEqual(self.history_bytes(),progress)
+
     def test_published_facts_appear_in_the_real_record_as_safe_text(self):
-        self.assertEqual(self.page.evaluate('CodaArcadeQA.history().recordedCount'),30)
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.history().recordedCount'),10)
+        migrated = self.page.evaluate('CodaArcadeQA.history()')
+        bach = next(person for person in migrated['people'] if person['id']=='bach')
+        self.assertTrue(bach['quiz']['eligible'])
+        self.assertEqual(len(bach['facts']),10)
+        self.assertTrue(all(fact['recorded'] for fact in bach['facts']))
+        self.assertEqual(migrated['pendingAmount'],0, 'Legacy collections must not earn a second completion prize')
         progress = self.history_bytes()
         self.assertEqual(self.project()['musicHistoryContent']['facts']['bach-01'],PUBLISHED_FACT)
         journal = self.scholar();journal.get_by_role('button',name='Historian’s record',exact=True).click()
@@ -161,7 +203,7 @@ class MusicFactsEditorTests(_world.WorldBrowserCase):
         self.assertEqual(self.history_bytes(),progress)
 
     def test_linked_quiz_edits_reach_a_real_eligible_quiz(self):
-        self.assertEqual(self.page.evaluate('CodaArcadeQA.history().recordedCount'),30)
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.history().recordedCount'),10)
         progress = self.history_bytes();self.editor()
         question = self.page.evaluate('CodaMusicHistoryQuizData.find(q=>q.person==="bach")')
         self.page.get_by_label('Music fact',exact=True).select_option(question['factId'])
@@ -176,6 +218,7 @@ class MusicFactsEditorTests(_world.WorldBrowserCase):
         self.assertEqual(self.history_bytes(),progress)
         journal = self.scholar();journal.get_by_role('button',name='Music history quizzes',exact=True).click()
         journal.locator('[data-history-quiz="bach"] button').click()
+        self.assertEqual(journal.locator('[data-quiz-question]').count(),10)
         self.assertEqual(journal.locator('[data-quiz-question="'+question['id']+'"] legend').inner_text().split('. ',1)[1],prompt)
         for field in journal.locator('[data-quiz-question]').all():
             identifier = field.get_attribute('data-quiz-question')

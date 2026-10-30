@@ -81,7 +81,7 @@ class DialogueTextTests(_world.WorldBrowserCase):
         self.assertTrue(self.page.evaluate('CodaDialogueText.isRevealing(previousScholarLine)'))
         journal.get_by_role('button', name='Historian’s record', exact=True).click()
         self.assertFalse(self.page.evaluate('CodaDialogueText.isRevealing(previousScholarLine)'))
-        self.assertEqual(journal.locator('.history-fact.locked').count(), 540)
+        self.assertEqual(journal.locator('.history-fact.locked').count(), 180)
         self.assertEqual(journal.locator('.history-fact span[style]').count(), 0)
 
     def test_phone_chat_fits_portrait_and_landscape_and_close_remains_reachable(self):

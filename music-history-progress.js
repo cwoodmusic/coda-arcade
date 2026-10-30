@@ -4,16 +4,19 @@
  if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaMusicHistoryProgress=api;
 })(typeof window==='undefined'?null:window,function(PEOPLE,QUIZ_DATA,CONTENT){
  'use strict';
- const KEY='codaMusicHistoryV1',PERSON_IDS=Object.keys(PEOPLE),FACTS=Object.values(PEOPLE).flatMap(person=>person.facts),BY_ID=new Map(FACTS.map(fact=>[fact.id,fact])),IDS=new Set(BY_ID.keys()),MAX_SEEN=4096,MAX_AWARDS=IDS.size+PERSON_IDS.length*6;
+ const KEY='codaMusicHistoryV1',PERSON_IDS=Object.keys(PEOPLE),FACTS=Object.values(PEOPLE).flatMap(person=>person.facts),BY_ID=new Map(FACTS.map(fact=>[fact.id,fact])),IDS=new Set(BY_ID.keys()),MAX_SEEN=4096;
+ const OLD_FACTS=Object.fromEntries(PERSON_IDS.map(person=>[person,Array.from({length:30},(_,index)=>person+'-'+String(index+1).padStart(2,'0'))])),OLD_IDS=new Set(Object.values(OLD_FACTS).flat()),OLD_MAX_AWARDS=OLD_IDS.size+PERSON_IDS.length*6,MAX_AWARDS=OLD_MAX_AWARDS+IDS.size+PERSON_IDS.length*4;
  const GAMES=['pitch','rhythm','triad','piano','fishing'],GAME_NAMES={pitch:'Pitch Race',rhythm:'Rhythm Room',triad:'Music Triad',piano:'Piano Lab',fishing:'Rhythm Fishing'};
- const COLLECTION_BONUSES=Object.freeze({10:500,20:1000,30:2000}),QUIZ_PRIZE=2000,PASS_SCORE=80,QUESTION_COUNT=10;
- const REWARDS=Object.freeze({factBase:50,factStep:15,milestones:COLLECTION_BONUSES,quiz:QUIZ_PRIZE});
+ const COLLECTION_BONUSES=Object.freeze({10:2000}),QUIZ_PRIZE=2000,PASS_SCORE=80,QUESTION_COUNT=10;
+ const REWARDS=Object.freeze({factBase:50,factStep:15,factsPerTier:2,milestones:COLLECTION_BONUSES,quiz:QUIZ_PRIZE});
  const QUESTIONS=Array.isArray(QUIZ_DATA)?QUIZ_DATA:QUIZ_DATA?.QUESTIONS||[];
  const own=(object,key)=>Object.prototype.hasOwnProperty.call(object,key),integer=(value,max=1000000)=>Number.isSafeInteger(value)&&value>=0&&value<=max;
- const clone=value=>JSON.parse(JSON.stringify(value)),factReward=id=>50+15*Math.floor(PEOPLE[personFor(id)].facts.findIndex(fact=>fact.id===id)/5),personFor=id=>PERSON_IDS.find(person=>PEOPLE[person].facts.some(fact=>fact.id===id));
- const blank=()=>({version:2,earned:[],learned:[],recorded:[],legacy:[],active:null,quizzes:{},seen:[],pending:[],paid:[]});
+ const factReward=id=>50+15*Math.floor(PEOPLE[personFor(id)].facts.findIndex(fact=>fact.id===id)/REWARDS.factsPerTier),personFor=id=>PERSON_IDS.find(person=>PEOPLE[person].facts.some(fact=>fact.id===id));
+ // Migrated recorded facts/sets are already credited. Historical awards retain
+ // their original IDs and amounts so an interrupted old payment can retry.
+ const blank=()=>({version:3,earned:[],learned:[],recorded:[],legacy:[],credited:[],completed:[],historicalAwards:[],active:null,quizzes:{},seen:[],pending:[],paid:[]});
  function questFor(person,index,progress=0){
-  const tier=Math.floor(index/5),game=GAMES[(index+PERSON_IDS.indexOf(person))%GAMES.length];let goal,target;
+  const tier=Math.floor(index/REWARDS.factsPerTier),game=GAMES[(index+PERSON_IDS.indexOf(person))%GAMES.length];let goal,target;
   if(game==='pitch'){target=10+tier*5;goal='Identify '+target+' notes correctly in one completed solo Pitch Race run.';}
   if(game==='rhythm'){target=75+tier*3;goal='Finish a Tap Practice round of at least 8 notes with '+target+'% accuracy or better.';}
   if(game==='triad'){target=1+Math.floor(tier/2);goal=(tier>=3?'Win':'Finish')+' a Music Triad computer match with at least '+target+' capture'+(target===1?'':'s')+'.';}
@@ -21,33 +24,64 @@
   if(game==='fishing'){target=1+Math.floor(tier/2);goal='Catch '+target+' fish after accepting this quest. Practice catches do not count.';}
   return {id:'history-quest:'+person+':'+index,person,index,tier,game,title:PEOPLE[person].name+' · Friendship quest '+(index+1),goal,target,progress,reward:factReward(PEOPLE[person].facts[index].id),gameName:GAME_NAMES[game]};
  }
- function relationship(count){return {count,total:30,name:count>=30?'Lifelong friend':count>=25?'Close friend':count>=15?'Trusted friend':count>=5?'Friend':count>0?'Acquaintance':'New acquaintance'};}
- function validIds(value){return Array.isArray(value)&&value.length<=IDS.size&&new Set(value).size===value.length&&value.every(id=>IDS.has(id));}
+ function relationship(count,total){return {count,total,name:count>=total?'Lifelong friend':count>=Math.ceil(total*5/6)?'Close friend':count>=Math.ceil(total/2)?'Trusted friend':count>=Math.ceil(total/6)?'Friend':count>0?'Acquaintance':'New acquaintance'};}
+ function validIds(value,ids=IDS){return Array.isArray(value)&&value.length<=ids.size&&new Set(value).size===value.length&&value.every(id=>ids.has(id));}
+ const installments=plans=>plans.flatMap(item=>item.amount>1000?[{id:item.id,amount:1000},{id:item.id+':part-2',amount:item.amount-1000}]:[item]);
  function rewardPlans(state){
   const plans=[];
-  for(const id of state.recorded)if(state.earned.includes(id)&&!state.legacy.includes(id))plans.push({id:'scholar-fact:'+id,amount:factReward(id)});
-  for(const person of PERSON_IDS){const count=PEOPLE[person].facts.filter(fact=>state.recorded.includes(fact.id)&&state.earned.includes(fact.id)&&!state.legacy.includes(fact.id)).length;
-   for(const [milestone,amount]of Object.entries(COLLECTION_BONUSES))if(count>=Number(milestone))plans.push({id:'scholar-set:'+person+':'+milestone,amount});
+  for(const id of state.recorded)if(state.earned.includes(id)&&!state.legacy.includes(id)&&!state.credited.includes(id))plans.push({id:'scholar-fact:'+id,amount:factReward(id)});
+  for(const person of PERSON_IDS){const count=PEOPLE[person].facts.filter(fact=>state.recorded.includes(fact.id)).length;
+   for(const [milestone,amount]of Object.entries(COLLECTION_BONUSES))if(count>=Number(milestone)&&!state.completed.includes(person))plans.push({id:'scholar-complete:'+person,amount});
    if(state.quizzes[person]?.passed)plans.push({id:'scholar-quiz:'+person,amount:QUIZ_PRIZE});
-  }return plans.flatMap(item=>item.amount>1000?[{id:item.id,amount:1000},{id:item.id+':part-2',amount:item.amount-1000}]:[item]);
+  }return [...new Map([...installments(plans),...state.historicalAwards].map(item=>[item.id,item])).values()];
+ }
+ function oldRewardPlans(state){
+  const plans=[];for(const id of state.recorded)if(state.earned.includes(id)&&!state.legacy.includes(id))plans.push({id:'scholar-fact:'+id,amount:50+15*Math.floor((Number(id.slice(-2))-1)/5)});
+  for(const person of PERSON_IDS){const count=OLD_FACTS[person].filter(id=>state.recorded.includes(id)&&state.earned.includes(id)&&!state.legacy.includes(id)).length;
+   for(const [milestone,amount]of Object.entries({10:500,20:1000,30:2000}))if(count>=Number(milestone))plans.push({id:'scholar-set:'+person+':'+milestone,amount});
+   if(state.quizzes[person]?.passed)plans.push({id:'scholar-quiz:'+person,amount:QUIZ_PRIZE});
+  }return installments(plans);
+ }
+ const OLD_AWARDS=new Map(oldRewardPlans({recorded:[...OLD_IDS],earned:[...OLD_IDS],legacy:[],quizzes:Object.fromEntries(PERSON_IDS.map(person=>[person,{passed:true}]))}).map(item=>[item.id,item.amount]));
+ function validateOrder(state){
+  if(state.legacy.some(id=>state.earned.includes(id)||!state.learned.includes(id)||!state.recorded.includes(id))||state.learned.some(id=>!state.earned.includes(id)&&!state.legacy.includes(id))||state.recorded.some(id=>!state.learned.includes(id)))throw Error('Invalid discovery order');
+ }
+ function validateLedger(value,plans,max){
+  if(!Array.isArray(value.pending)||value.pending.length>max||value.pending.some(item=>!item||!plans.has(item.id)||plans.get(item.id)!==item.amount)||new Set(value.pending.map(item=>item.id)).size!==value.pending.length||!Array.isArray(value.paid)||value.paid.length>max||new Set(value.paid).size!==value.paid.length||value.paid.some(id=>!plans.has(id))||value.pending.some(item=>value.paid.includes(item.id)))throw Error('Invalid scholar awards');
+ }
+ function validateShared(value,state,old=false){
+  if(!Array.isArray(value.seen)||value.seen.length>MAX_SEEN||new Set(value.seen).size!==value.seen.length||value.seen.some(id=>typeof id!=='string'||id.length>160))throw Error('Invalid event records');state.seen=value.seen.slice();
+  if(!value.quizzes||typeof value.quizzes!=='object'||Array.isArray(value.quizzes)||Object.keys(value.quizzes).some(person=>!own(PEOPLE,person)))throw Error('Invalid quizzes');
+  const idsFor=person=>old?OLD_FACTS[person]:PEOPLE[person].facts.map(fact=>fact.id);
+  for(const [person,quiz]of Object.entries(value.quizzes)){if(!quiz||!integer(quiz.best,100)||typeof quiz.passed!=='boolean'||quiz.passed!==(quiz.best>=PASS_SCORE)||!integer(quiz.attempts)||idsFor(person).some(id=>!state.recorded.includes(id)))throw Error('Invalid quiz result');state.quizzes[person]={best:quiz.best,passed:quiz.passed,attempts:quiz.attempts};}
+  for(const person of PERSON_IDS)if(idsFor(person).filter(id=>state.earned.includes(id)&&!state.learned.includes(id)).length>1)throw Error('Too many ready facts');
+  if(value.active!==null){const active=value.active;if(!active||!own(PEOPLE,active.person)||!integer(active.index,idsFor(active.person).length-1)||typeof active.nonce!=='string'||active.nonce.length>100||!active.nonce||!integer(active.progress,3)||!Array.isArray(active.seen)||active.seen.length>3||active.seen.some(id=>typeof id!=='string'||id.length>160))throw Error('Invalid active quest');
+   const id=idsFor(active.person)[active.index];if(state.earned.includes(id)||state.legacy.includes(id)||idsFor(active.person).some(id=>state.earned.includes(id)&&!state.learned.includes(id)))throw Error('Invalid active fact');
+   state.active={person:active.person,index:active.index,nonce:active.nonce,progress:active.progress,seen:active.seen.slice()};
+  }
+ }
+ function migrate(old){
+  // Keep the amount of work earned at each stage when retired IDs disappear.
+  // Active quests restart because their old index can now refer to a new fact.
+  const state=blank();state.seen=old.seen.slice();state.quizzes={...old.quizzes};
+  for(const person of PERSON_IDS){const oldIds=OLD_FACTS[person],current=PEOPLE[person].facts.map(fact=>fact.id),count=key=>Math.min(current.length,oldIds.filter(id=>old[key].includes(id)).length),known=Math.min(current.length,count('earned')+count('legacy')),legacyCount=count('legacy');
+   state.legacy.push(...current.slice(0,legacyCount));state.earned.push(...current.slice(legacyCount,known));state.learned.push(...current.slice(0,count('learned')));state.recorded.push(...current.slice(0,count('recorded')));state.credited.push(...current.slice(0,count('recorded')));
+   if(count('recorded')===current.length)state.completed.push(person);
+  }
+  const originalPlans=new Map(oldRewardPlans(old).map(item=>[item.id,item.amount]));state.pending=old.pending.map(item=>({...item}));state.paid=old.paid.slice();
+  state.historicalAwards=[...new Set([...state.paid,...state.pending.map(item=>item.id)])].map(id=>({id,amount:originalPlans.get(id)}));
+  for(const person of PERSON_IDS)if(state.quizzes[person]?.passed)for(const item of installments([{id:'scholar-quiz:'+person,amount:QUIZ_PRIZE}]))if(!state.paid.includes(item.id)&&!state.pending.some(pending=>pending.id===item.id))state.paid.push(item.id);
+  return state;
  }
  function decode(raw){
   if(raw===null)return blank();const value=JSON.parse(raw);
-  if(value?.version===1){if(!validIds(value.discovered))throw Error('Invalid old history');const state=blank();state.legacy=value.discovered.slice();state.learned=value.discovered.slice();state.recorded=value.discovered.slice();return state;}
-  if(value?.version!==2||!['earned','learned','recorded','legacy'].every(key=>validIds(value[key])))throw Error('Invalid history');
-  const state=blank();for(const key of ['earned','learned','recorded','legacy'])state[key]=value[key].slice();
-  if(state.legacy.some(id=>state.earned.includes(id)||!state.learned.includes(id)||!state.recorded.includes(id))||state.learned.some(id=>!state.earned.includes(id)&&!state.legacy.includes(id))||state.recorded.some(id=>!state.learned.includes(id)))throw Error('Invalid discovery order');
-  if(!Array.isArray(value.seen)||value.seen.length>MAX_SEEN||new Set(value.seen).size!==value.seen.length||value.seen.some(id=>typeof id!=='string'||id.length>160))throw Error('Invalid event records');state.seen=value.seen.slice();
-  if(!value.quizzes||typeof value.quizzes!=='object'||Array.isArray(value.quizzes)||Object.keys(value.quizzes).some(person=>!own(PEOPLE,person)))throw Error('Invalid quizzes');
-  for(const [person,quiz]of Object.entries(value.quizzes)){if(!quiz||!integer(quiz.best,100)||typeof quiz.passed!=='boolean'||quiz.passed!==(quiz.best>=PASS_SCORE)||!integer(quiz.attempts)||PEOPLE[person].facts.some(fact=>!state.recorded.includes(fact.id)))throw Error('Invalid quiz result');state.quizzes[person]={best:quiz.best,passed:quiz.passed,attempts:quiz.attempts};}
-  for(const person of PERSON_IDS)if(PEOPLE[person].facts.filter(fact=>state.earned.includes(fact.id)&&!state.learned.includes(fact.id)).length>1)throw Error('Too many ready facts');
-  if(value.active!==null){const active=value.active;if(!active||!own(PEOPLE,active.person)||!integer(active.index,29)||typeof active.nonce!=='string'||active.nonce.length>100||!active.nonce||!integer(active.progress,3)||!Array.isArray(active.seen)||active.seen.length>3||active.seen.some(id=>typeof id!=='string'||id.length>160))throw Error('Invalid active quest');
-   const fact=PEOPLE[active.person].facts[active.index];if(state.earned.includes(fact.id)||state.legacy.includes(fact.id)||PEOPLE[active.person].facts.some(item=>state.earned.includes(item.id)&&!state.learned.includes(item.id)))throw Error('Invalid active fact');
-   state.active={person:active.person,index:active.index,nonce:active.nonce,progress:active.progress,seen:active.seen.slice()};
-  }
-  const plans=new Map(rewardPlans(state).map(item=>[item.id,item.amount]));
-  if(!Array.isArray(value.pending)||value.pending.length>MAX_AWARDS||value.pending.some(item=>!item||plans.get(item.id)!==item.amount)||new Set(value.pending.map(item=>item.id)).size!==value.pending.length||!Array.isArray(value.paid)||value.paid.length>MAX_AWARDS||new Set(value.paid).size!==value.paid.length||value.paid.some(id=>!plans.has(id))||value.pending.some(item=>value.paid.includes(item.id)))throw Error('Invalid scholar awards');
-  state.pending=value.pending.map(item=>({...item}));state.paid=value.paid.slice();return state;
+  if(value?.version===1){if(!validIds(value.discovered,OLD_IDS))throw Error('Invalid old history');const old=blank();old.legacy=value.discovered.slice();old.learned=value.discovered.slice();old.recorded=value.discovered.slice();return migrate(old);}
+  const old=value?.version===2;if((!old&&value?.version!==3)||!['earned','learned','recorded','legacy'].every(key=>validIds(value[key],old?OLD_IDS:IDS)))throw Error('Invalid history');
+  const state=blank();for(const key of ['earned','learned','recorded','legacy'])state[key]=value[key].slice();validateOrder(state);validateShared(value,state,old);
+  if(old){validateLedger(value,new Map(oldRewardPlans(state).map(item=>[item.id,item.amount])),OLD_MAX_AWARDS);state.pending=value.pending.map(item=>({...item}));state.paid=value.paid.slice();return migrate(state);}
+  if(!validIds(value.credited)||value.credited.some(id=>!state.recorded.includes(id))||!Array.isArray(value.completed)||new Set(value.completed).size!==value.completed.length||value.completed.some(person=>!own(PEOPLE,person)||PEOPLE[person].facts.some(fact=>!state.recorded.includes(fact.id)))||!Array.isArray(value.historicalAwards)||value.historicalAwards.length>OLD_MAX_AWARDS||value.historicalAwards.some(item=>!item||!OLD_AWARDS.has(item.id)||OLD_AWARDS.get(item.id)!==item.amount)||new Set(value.historicalAwards.map(item=>item.id)).size!==value.historicalAwards.length)throw Error('Invalid migrated history');
+  state.credited=value.credited.slice();state.completed=value.completed.slice();state.historicalAwards=value.historicalAwards.map(item=>({...item}));
+  validateLedger(value,new Map(rewardPlans(state).map(item=>[item.id,item.amount])),MAX_AWARDS);state.pending=value.pending.map(item=>({...item}));state.paid=value.paid.slice();return state;
  }
  function create(api={}){
   let attempt=null,serial=0;const tokens=new Map();
@@ -65,10 +99,10 @@
    const list=people[person].facts,ready=list.filter(fact=>state.earned.includes(fact.id)&&!state.learned.includes(fact.id)),learnedCount=list.filter(fact=>state.learned.includes(fact.id)).length,recordedCount=list.filter(fact=>state.recorded.includes(fact.id)).length,earnedCount=list.filter(fact=>state.earned.includes(fact.id)).length;
    const index=list.findIndex(fact=>!state.earned.includes(fact.id)&&!state.legacy.includes(fact.id)),sameActive=state.active?.person===person;
    const quest=index<0?null:{...questFor(person,index,sameActive?state.active.progress:0),status:ready.length?'ready':sameActive?'active':state.active?'blocked':'available'};
-   return {id:person,name:PEOPLE[person].name,count:learnedCount,learnedCount,recordedCount,earnedCount,readyCount:ready.length,hasNewFact:ready.length>0,relationship:relationship(earnedCount+list.filter(fact=>state.legacy.includes(fact.id)).length),quest,quiz:{eligible:recordedCount===list.length,best:state.quizzes[person]?.best??0,passed:state.quizzes[person]?.passed??false,prize:QUIZ_PRIZE},facts:list.map((fact,index)=>({id:fact.id,number:index+1,locked:!state.learned.includes(fact.id),recorded:state.recorded.includes(fact.id),carried:state.learned.includes(fact.id)&&!state.recorded.includes(fact.id),...(state.learned.includes(fact.id)?{text:fact.text}:{})}))};
+   return {id:person,name:PEOPLE[person].name,count:learnedCount,learnedCount,recordedCount,earnedCount,readyCount:ready.length,hasNewFact:ready.length>0,relationship:relationship(earnedCount+list.filter(fact=>state.legacy.includes(fact.id)).length,list.length),quest,quiz:{eligible:recordedCount===list.length,best:state.quizzes[person]?.best??0,passed:state.quizzes[person]?.passed??false,prize:QUIZ_PRIZE},facts:list.map((fact,index)=>({id:fact.id,number:index+1,locked:!state.learned.includes(fact.id),recorded:state.recorded.includes(fact.id),carried:state.learned.includes(fact.id)&&!state.recorded.includes(fact.id),...(state.learned.includes(fact.id)?{text:fact.text}:{})}))};
   }
   function snapshot(){const reading=read();if(!reading.ok)return {...reading,total:IDS.size,count:0,recordedCount:0,carriedIDs:[],active:null,people:[],pending:[],pendingRewards:[],pendingAmount:0};const state=reading.state,people=authoredPeople();return {ok:true,error:'',total:IDS.size,count:state.learned.length,recordedCount:state.recorded.length,carriedIDs:state.learned.filter(id=>!state.recorded.includes(id)),active:state.active?{...questFor(state.active.person,state.active.index,state.active.progress),status:'active'}:null,people:PERSON_IDS.map(person=>personView(state,person,people)),pending:state.pending.map(item=>({...item})),pendingRewards:state.pending.map(item=>({...item})),pendingAmount:state.pending.reduce((sum,item)=>sum+item.amount,0),paid:state.paid.slice()};}
-  function conversation(person){if(!own(PEOPLE,person))return fail('This character has no music history collection.');const reading=read();if(!reading.ok)return reading;const view=personView(reading.state,person,authoredPeople());return {ok:true,...view,message:view.hasNewFact?'A new fact is ready to learn!':view.learnedCount===30?'You have learned all 30 facts. Bring any carried facts to the scholar.':view.quest?.status==='active'?'No new facts yet. Finish our friendship quest first.':'No new facts are unlocked yet. Complete a friendship quest to earn one.'};}
+  function conversation(person){if(!own(PEOPLE,person))return fail('This character has no music history collection.');const reading=read();if(!reading.ok)return reading;const view=personView(reading.state,person,authoredPeople());return {ok:true,...view,message:view.hasNewFact?'A new fact is ready to learn!':view.learnedCount===view.facts.length?'You have learned all '+view.facts.length+' facts. Bring any carried facts to the scholar.':view.quest?.status==='active'?'No new facts yet. Finish our friendship quest first.':'No new facts are unlocked yet. Complete a friendship quest to earn one.'};}
   function acceptQuest(person){
    if(!own(PEOPLE,person)||!near(person))return fail('Talk to this musician nearby to accept a friendship quest.');const reading=read();if(!reading.ok)return reading;const state=reading.state,view=personView(state,person);
    if(state.active)return fail('Finish your current friendship quest for '+PEOPLE[state.active.person].name+' first.');if(view.hasNewFact)return fail('Learn the new fact you already earned before accepting another quest.');if(!view.quest)return fail('You have completed this musician’s fact collection.');
@@ -121,7 +155,7 @@
   function attemptAllowed(){return attempt&&allowed()&&attempt.owner===identity()&&atScholar();}
   function quizState(){if(!attemptAllowed())return null;return {person:attempt.person,name:PEOPLE[attempt.person].name,total:attempt.questions.length,answered:attempt.questions.filter(question=>question.selected!==null).length,finished:attempt.finished,score:attempt.score??null,passed:attempt.passed??false,reward:QUIZ_PRIZE,questions:attempt.questions.map(question=>({id:question.id,prompt:question.prompt,choices:question.choices.slice(),selected:question.selected,...(attempt.finished?{answer:question.answer,correct:question.selected===question.answer,factId:question.factId,explanation:question.explanation}:{} )}))};}
   function startQuiz(person){
-   if(!own(PEOPLE,person)||!atScholar())return fail('Visit the scholar to take a history quiz.');const reading=read();if(!reading.ok)return reading;if(PEOPLE[person].facts.some(fact=>!reading.state.recorded.includes(fact.id)))return fail('Record all 30 facts from '+PEOPLE[person].name+' with the scholar before taking this quiz.');
+   if(!own(PEOPLE,person)||!atScholar())return fail('Visit the scholar to take a history quiz.');const reading=read();if(!reading.ok)return reading;if(PEOPLE[person].facts.some(fact=>!reading.state.recorded.includes(fact.id)))return fail('Record all '+PEOPLE[person].facts.length+' facts from '+PEOPLE[person].name+' with the scholar before taking this quiz.');
    const content=authored(),pool=(CONTENT?.resolveQuestions(content)||QUESTIONS).filter(question=>question.person===person),facts=new Map((CONTENT?.resolvePeople(content)?.[person]?.facts||PEOPLE[person].facts).map(fact=>[fact.id,fact]));if(pool.length<QUESTION_COUNT)return fail('This quiz could not load. Reopen the scholar after refreshing the game.');
    attempt={owner:reading.owner,person,finished:false,questions:shuffled(pool).slice(0,QUESTION_COUNT).map(question=>{const choices=shuffled(question.choices.map((text,index)=>({text,index})));return {id:question.id,prompt:question.prompt,factId:question.factId,explanation:facts.get(question.factId)?.text,choices:choices.map(choice=>choice.text),answer:choices.findIndex(choice=>choice.index===question.answer),selected:null};})};return {ok:true,...quizState()};
   }
@@ -136,7 +170,7 @@
   function developerSet(person,stage){
    if(!developer()||!own(PEOPLE,person)||!['ready','carried','recorded','reset'].includes(stage))return fail('Progression editing is available only in an isolated developer test player.');const reading=read();if(!reading.ok)return reading;const state=reading.state,list=PEOPLE[person].facts,personIds=new Set(list.map(fact=>fact.id));
    if(stage==='reset'){
-    for(const key of ['earned','learned','recorded','legacy'])state[key]=state[key].filter(id=>!personIds.has(id));delete state.quizzes[person];const matches=id=>id.startsWith('scholar-fact:'+person+'-')||id.startsWith('scholar-set:'+person+':')||id==='scholar-quiz:'+person||id.startsWith('scholar-quiz:'+person+':');state.pending=state.pending.filter(item=>!matches(item.id));state.paid=state.paid.filter(id=>!matches(id));
+    for(const key of ['earned','learned','recorded','legacy','credited'])state[key]=state[key].filter(id=>!personIds.has(id));state.completed=state.completed.filter(id=>id!==person);delete state.quizzes[person];const matches=id=>id.startsWith('scholar-fact:'+person+'-')||id.startsWith('scholar-set:'+person+':')||id==='scholar-complete:'+person||id.startsWith('scholar-complete:'+person+':')||id==='scholar-quiz:'+person||id.startsWith('scholar-quiz:'+person+':');state.pending=state.pending.filter(item=>!matches(item.id));state.paid=state.paid.filter(id=>!matches(id));state.historicalAwards=state.historicalAwards.filter(item=>!matches(item.id));
    }else if(stage==='recorded'){
     for(const fact of list){if(!state.legacy.includes(fact.id)&&!state.earned.includes(fact.id))state.earned.push(fact.id);if(!state.learned.includes(fact.id))state.learned.push(fact.id);if(!state.recorded.includes(fact.id))state.recorded.push(fact.id);}
    }else{

@@ -1,8 +1,11 @@
 """Real relationship quest, carried discovery, scholar hand-in, records and quizzes."""
 import importlib.util
 from pathlib import Path
+import sys
 from urllib.parse import urlparse
 import unittest
+
+sys.dont_write_bytecode = True
 from world_navigation_helpers import talk_to_musician,open_settings,open_cabinet,_close_world_panels,advance_world
 spec=importlib.util.spec_from_file_location('history_world',Path(__file__).with_name('learning-world-browser.py'))
 world=importlib.util.module_from_spec(spec);spec.loader.exec_module(world)
@@ -38,10 +41,10 @@ class MusicHistoryBrowserTests(world.WorldBrowserCase):
         self.assertEqual(self.page.evaluate('CodaArcadeQA.scholar().activity'),'relaxing')
         self.scholar();journal=self.page.locator('.music-history')
         journal.get_by_role('button',name='Historian’s record',exact=True).click()
-        self.assertIn('0 / 540',journal.inner_text());self.assertEqual(journal.locator('.history-fact.locked').count(),540)
+        self.assertIn('0 / 180',journal.inner_text());self.assertEqual(journal.locator('.history-fact.locked').count(),180)
         self.assertNotIn('born in Eisenach',journal.text_content())
         journal.get_by_label('Search recorded facts').fill('Eisenach');self.assertEqual(journal.locator('.history-fact').count(),0)
-        journal.get_by_label('Search recorded facts').fill('');journal.get_by_label('Journal musician').select_option('bach');self.assertEqual(journal.locator('.history-fact.locked').count(),30)
+        journal.get_by_label('Search recorded facts').fill('');journal.get_by_label('Journal musician').select_option('bach');self.assertEqual(journal.locator('.history-fact.locked').count(),10)
         journal.get_by_role('button',name='Music history quizzes',exact=True).click()
         self.assertTrue(journal.locator('[data-history-quiz="bach"] button').is_disabled())
         self.close_history();open_settings(self.page)
@@ -70,7 +73,7 @@ class MusicHistoryBrowserTests(world.WorldBrowserCase):
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),balance+50)
         self.assertEqual(self.page.evaluate('CodaArcadeQA.history().carriedIDs'),[])
         journal.get_by_role('button',name='Historian’s record',exact=True).click();journal.get_by_label('Journal musician').select_option('bach')
-        self.assertEqual(journal.locator('.history-fact:not(.locked)').count(),1);self.assertEqual(journal.locator('.history-fact.locked').count(),29)
+        self.assertEqual(journal.locator('.history-fact:not(.locked)').count(),1);self.assertEqual(journal.locator('.history-fact.locked').count(),9)
         self.assertIn('born in Eisenach',journal.inner_text());self.close_history()
         self.page.reload();self.page.wait_for_function('window.CodaDeveloperConsole?.ready()');self.assertEqual(self.page.evaluate('CodaArcadeQA.history().recordedCount'),1)
 
@@ -78,12 +81,23 @@ class MusicHistoryBrowserTests(world.WorldBrowserCase):
         native=self.page.evaluate('localStorage.getItem("codaMusicHistoryV1")')
         self.page.keyboard.press('F2');self.page.locator('#devTab-history').click()
         pane=self.page.locator('#dev-history')
-        self.assertIn('read-only',pane.inner_text());self.assertEqual(pane.get_by_role('button',name='Set all 30 facts recorded').count(),0)
+        self.assertIn('read-only',pane.inner_text());self.assertEqual(pane.get_by_role('button',name='Set all 10 facts recorded').count(),0)
         pane.get_by_role('button',name='Open temporary progression test',exact=True).click()
         self.page.wait_for_function('window.CodaDeveloperTestMode?.isEnabled()&&window.CodaDeveloperConsole?.ready()')
         self.page.keyboard.press('F2');self.page.locator('#devTab-history').click();pane.get_by_label('History progression character').select_option('bach')
-        pane.get_by_role('button',name='Set all 30 facts recorded',exact=True).click()
-        self.assertEqual(self.page.evaluate('CodaArcadeQA.history().people.find(p=>p.id==="bach").recordedCount'),30)
+        # The isolated player still uses the real pouch and scholar hand-in.
+        for _ in range(9):pane.get_by_role('button',name='Add next fact to pouch',exact=True).click()
+        self.page.keyboard.press('F2');self.scholar();journal=self.page.locator('.music-history')
+        journal.get_by_role('button',name='Give carried facts to the scholar',exact=True).click()
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.history().people.find(p=>p.id==="bach").recordedCount'),9)
+        journal.get_by_role('button',name='Music history quizzes',exact=True).click()
+        self.assertTrue(journal.locator('[data-history-quiz="bach"] button').is_disabled())
+        self.assertFalse(self.page.evaluate('CodaArcadeQA.history().people.find(p=>p.id==="bach").quiz.eligible'))
+        self.close_history();self.page.locator('#view').focus();self.page.keyboard.press('F2')
+        self.page.locator('#devTab-history').click();pane.get_by_label('History progression character').select_option('bach')
+        pane.get_by_role('button',name='Set all 10 facts recorded',exact=True).click()
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.history().people.find(p=>p.id==="bach").recordedCount'),10)
+        self.assertTrue(self.page.evaluate('CodaArcadeQA.history().people.find(p=>p.id==="bach").quiz.eligible'))
         self.page.keyboard.press('F2');self.scholar();journal=self.page.locator('.music-history')
         journal.get_by_role('button',name='Music history quizzes',exact=True).click();journal.locator('[data-history-quiz="bach"] button').click()
         self.assertEqual(journal.locator('[data-quiz-question]').count(),10)

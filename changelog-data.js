@@ -2,6 +2,11 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaChangelog=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
  const entries=[
+  {date:'2026-10-29',title:'Ten easy music-history facts per musician',changes:[
+   'Each musician now has ten selected facts, written with simple words for students around fourth grade.',
+   'The matching quiz covers those ten facts. Learn and record all ten to unlock it.',
+   'Existing discoveries, completed collections, and quiz passes carry over without repeating old prizes.'
+  ]},
   {date:'2026-10-29',title:'Edit every music-history fact',changes:[
    'Developer → Music facts shows all 540 facts, including locked discoveries, with musician filters and catalog search.',
    'Apply edited facts and their linked quiz questions. Changes save and export with the world project.',
