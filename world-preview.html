@@ -2498,7 +2498,7 @@ developerConsole=window.createCodaDeveloperConsole({historyProgress:()=>musicHis
  getPixelProfile:id=>id==='player'?avatar:{...characterRenderer.appearanceFor(id),...(id==='dj'?npcLooks.dj:id==='scholar'?npcLooks.scholar:SHOPKEEPERS.find(p=>p.id===id)?.appearance||npc.find(person=>person.id===id)?.appearance||window.CodaMusicClassroom?.HAYDN?.id===id&&window.CodaMusicClassroom.HAYDN.appearance||{})},
  getPixelTargets:()=>[{id:'player',name:'Your avatar'},...npc.map(person=>({id:person.id,name:person.name})),{id:'dj',name:'DJ Coda'},{id:'scholar',name:'The Scholar'}],
  W,H,c,studio:assetStudio,layer:layerState,getForegroundMask:()=>assetForegroundComposite(),getPaintPaths:()=>layerState.patches.map(patch=>patch.path),parts:foregroundParts,catalog:window.CodaWorldObjectCatalog,worldArt,foregroundArt,floorArt,
- publishedProjectUrl:'published-world-project.json?v=graphics-20261030-1',
+ publishedProjectUrl:'published-world-project.json?v=graphics-20261030-2',
  cell:COLLISION_CELL,gridWidth:GRID_W,gridHeight:GRID_H,navGrid,baseGrid:defaultNavGrid,
  legacyCollision:[...edits].filter(([i,v])=>Number.isInteger(i)&&i>=0&&i<navGrid.length&&(v===0||v===1)),
  getCamera:()=>({...cam,min:ZOOM_MIN,max:zoomLimit(),step:ZOOM_STEP}),setCameraZoom,

@@ -15,7 +15,7 @@ import unittest
 from playwright.sync_api import sync_playwright
 
 ROOT=Path(__file__).resolve().parents[1]
-EXPORT_FINGERPRINT='152dc9b6170ffc8c0daf012905f886181aeb3b3191c13af8f38d17d597f138c9'
+EXPORT_FINGERPRINT='deaea5641668b1a0de8994045e5bbf2af85b23f161fad6fa0e85826205952a4e'
 BLANK={'format':'CodaArcadeWorldProject','version':1,
        'world':{'width':1672,'height':941},'assets':[],'collision':[],'strokes':[]}
 
@@ -113,7 +113,7 @@ class PublishedWorldTests(unittest.TestCase):
                          'Keep the uploaded main-arcade and Piano Lab edits')
         self.load();self.assertEqual(self.project(),self.published)
         self.assertEqual((len(self.published['assets']),len(self.published['collision']),
-                          len(self.published['strokes'])),(14,1451,778))
+                          len(self.published['strokes'])),(14,1451,793))
         games=self.page.evaluate('''()=>CodaArcadeQA.worldObjects().filter(x=>x.game).map(x=>({
           name:x.game.name,walkable:CodaArcadeQA.walkable(x.game.npcX??x.game.x,x.game.npcY??x.game.y),
           route:CodaArcadeQA.route(1180,388,x.game.x,x.game.y).length
