@@ -87,6 +87,26 @@ class WorldLayerSelectionTests(unittest.TestCase):
     def owner(self, x, y):
         return self.page.evaluate('([x,y])=>CodaArcadeQA.layerPixelOwner(x,y)', [x,y])
 
+    def test_double_click_finishes_manual_shape_once_without_filling_it(self):
+        original = self.project()
+        self.page.locator('#devLayerSelectionShape').select_option('manual')
+        self.click_pixel(1000, 480)
+        self.page.mouse.dblclick(**self.point(1020, 480))
+        self.assertIsNone(self.state()['selection'], 'Two corners cannot close an area')
+        self.assertEqual(self.state()['draft'], [[1000, 480], [1020, 480]])
+        self.assertTrue(self.page.locator('#devLayerFillSelection').is_disabled())
+        self.click_pixel(1020, 500)
+        self.page.mouse.dblclick(**self.point(1000, 500))
+        expected = {'x':1000, 'y':480, 'width':21, 'height':21,
+                    'points':[[1000,480], [1020,480], [1020,500], [1000,500]]}
+        self.assertEqual(self.state()['selection'], expected)
+        self.assertIsNone(self.state()['draft'], 'The second click must not start another draft')
+        self.assertEqual(self.project(), original, 'Finishing a selection does not paint or add history')
+        self.assertTrue(self.page.locator('#devLayerFillSelection').is_enabled())
+        self.page.locator('#devLayerFillSelection').click()
+        self.assertEqual(len(self.project()['strokes']), 1)
+        self.assertEqual(self.project()['strokes'][0]['selection'], expected)
+
     def test_rectangle_selection_is_preview_only_then_fills_exact_inclusive_pixels(self):
         original = self.project()
         outside = self.owner(1021,490)

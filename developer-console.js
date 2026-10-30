@@ -122,7 +122,7 @@ window.createCodaDeveloperConsole = function (api) {
     $('devLayerFillSelection').disabled=!editable||!selection||!!state.draft;
     $('devLayerFinishSelection').disabled=!editable||state?.shape!=='manual'||!state.draft?.length;
     $('devLayerClearSelection').disabled=!editable||!selection&&!state?.draft;
-    $('devLayerSelectionStatus').textContent=state?.draft?(state.shape==='manual'?state.draft.length+' corners · Finish selection or press Enter. Right-drag pans without clearing corners.':'Drag to select; release to finish.'):
+    $('devLayerSelectionStatus').textContent=state?.draft?(state.shape==='manual'?state.draft.length+' corners · Double-click, press Enter, or choose Finish selection. Right-drag pans without clearing corners.':'Drag to select; release to finish.'):
       selection?selection.width+' × '+selection.height+' pixels · Fill selection applies '+(layer.tool==='erase'?'Background':'Foreground')+'.':layerSelecting?'Drag a rectangle, or choose Manual shape and click its corners.':'Select an area to fill its foreground or background coverage.';
   }
   const dialoguePane=pane('dialogue','');
@@ -888,6 +888,12 @@ window.createCodaDeveloperConsole = function (api) {
   document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelTransientEdits();});
   c.addEventListener('lostpointercapture',e=>{if(pan&&e.pointerId===pan.id){pan=null;refreshCamera();}if(layerSelection?.getState().dragging)layerSelection.cancel();if(characterEditor?.getState().dragging)characterEditor.cancelGesture();});
   c.addEventListener('contextmenu',e=>{if(studio.active&&!playtest)e.preventDefault();});
+  c.addEventListener('dblclick',e=>{
+    if(e.button!==0||!canEditArtwork()||tab!=='layers'||!layerSelecting||panTool||spaceHeld||pan)return;
+    const state=layerSelection?.getState();if(state?.shape!=='manual'||!state.draft?.length)return;
+    e.preventDefault();e.stopImmediatePropagation();
+    if(!layerSelection.finish())message('Choose at least three corners around an area.');
+  });
   panel.addEventListener('click',e=>{
     if(loading){e.preventDefault();e.stopImmediatePropagation();message('Wait for project restoration to finish.');return;}
     // Actions that ask for a point or gesture on the map must reveal it first.

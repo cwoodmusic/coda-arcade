@@ -117,6 +117,48 @@ class RoomLayerSelectionTests(unittest.TestCase):
         self.assertIsNone(self.state()['layerSelection']['draft'])
         self.assertEqual(self.project(),before)
 
+    def test_double_click_adds_the_final_corner_and_finishes_without_authoring_a_fill(self):
+        self.page.locator('[data-room-field="layer-selection-shape"]').select_option('manual')
+        before=self.project()
+        for x,y in [(170,120),(230,120)]:
+            self.page.mouse.click(**self.point(x,y))
+        self.page.mouse.dblclick(**self.point(170,180))
+        selection=self.state()['layerSelection']['selection']
+        self.assertEqual(selection,{'x':170,'y':120,'width':61,'height':61,
+                                    'points':[[170,120],[230,120],[170,180]]})
+        self.assertIsNone(self.state()['layerSelection']['draft'])
+        self.assertTrue(self.action('layer-fill').is_enabled())
+        self.assertEqual(self.project(),before,'Finishing a selection does not change the saved project')
+        self.assertEqual(self.state()['undo'],0)
+        self.action('layer-fill').click()
+        self.assertEqual(self.project()['strokes'][-1]['selection'],selection)
+        self.assertEqual(self.state()['undo'],1)
+        self.page.evaluate("editor.open('objects')")
+        self.assertEqual(self.pixel(180,150),[238,9,206,255])
+        self.assertEqual(self.pixel(220,170),[18,52,239,255])
+
+    def test_double_click_keeps_invalid_shapes_and_does_not_finish_during_pan_or_revoked_access(self):
+        self.page.locator('[data-room-field="layer-selection-shape"]').select_option('manual')
+        before=self.project()
+        self.page.mouse.click(**self.point(170,120))
+        self.page.mouse.dblclick(**self.point(230,120))
+        self.assertEqual(self.state()['layerSelection']['draft'],[[170,120],[230,120]])
+        self.assertIsNone(self.state()['layerSelection']['selection'])
+        self.assertTrue(self.action('layer-fill').is_disabled())
+        self.page.mouse.click(**self.point(170,180))
+        draft=self.state()['layerSelection']['draft']
+        self.page.mouse.dblclick(**self.point(200,150),button='right')
+        self.assertEqual(self.state()['layerSelection']['draft'],draft)
+        self.action('pan').click()
+        self.page.mouse.dblclick(**self.point(200,150))
+        self.assertEqual(self.state()['layerSelection']['draft'],draft)
+        self.action('pan').click()
+        self.page.evaluate('allowed=false')
+        self.page.locator('#scene').dispatch_event('dblclick',{'button':0})
+        self.assertEqual(self.state()['layerSelection']['draft'],draft)
+        self.assertIsNone(self.state()['layerSelection']['selection'])
+        self.assertEqual(self.project(),before)
+
     def test_fill_round_trips_storage_export_and_rejects_invalid_selection(self):
         self.rectangle(185,135,215,165)
         self.action('layer-fill').click()
