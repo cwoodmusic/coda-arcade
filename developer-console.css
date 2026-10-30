@@ -9,6 +9,8 @@
 #assetStudio .dev-pane[hidden], #assetStudio .dev-original[hidden] { display:none; }
 #assetStudio .dev-toolbar { display:flex; gap:5px; flex-wrap:wrap; margin:8px 0; }
 #assetStudio .dev-toolbar button { flex:1; }
+#assetStudio #devAddFloodRig { display:block;width:calc(100% - 20px);min-height:44px;margin:10px; }
+#assetStudio #devFloodSettings[hidden] { display:none; }
 #assetStudio #devSelectionOrder { position:sticky;top:198px;z-index:4;padding:8px;background:#171529;border:1px solid #746087;border-radius:6px;margin:8px 0; }
 #assetStudio #devSelectionOrder[hidden] { display:none; }
 #assetStudio #devOrderSelection { display:block;overflow-wrap:anywhere;font-size:12px; }

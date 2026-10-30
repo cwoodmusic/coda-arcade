@@ -53,6 +53,12 @@ Route smoothing checks every crossed collision cell and prevents shortcuts throu
 
 Object art and collision are separate. For an edited original, **Open collision at original position** releases its old rectangular source area. Enable **Solid collision footprint** to add a footprint that follows the object's position, size, and rotation; its left/top/width/height fields use percentages of the object's dimensions. Explicit collision paint takes priority over object footprints and released source areas. Restore removes painted overrides and returns those cells to the original map.
 
+## Decor library and DJ floodlights
+
+Open **Objects → Asset library** to browse 40 new arcade decorations: 16 floor pieces, 16 tabletop pieces, and 8 wall decorations. Search or filter, choose a preview, then **Add to layout**. Browsing does not place anything. Each added item is a separate image asset with its source PNG embedded, so it supports moving, resizing, rotation, duplication, pixel editing, image replacement, ordering, background-mask overrides, undo, and project export/import. New items appear in the centre of the editor camera. Set a solid footprint if a floor decoration should block walking.
+
+The published layout adds only a four-head **DJ color-changing floodlights** rig above the DJ. Existing saved layouts remain intact; **Asset library → Add DJ floodlights** places a rig above the current DJ console without resetting your project. Select the rig to adjust **Lights enabled**, **Color cycle speed**, **Brightness %**, and **Beam length (px)**. Moving, resizing, rotation, opacity, and visibility apply to the light emitters too. Duplicate a rig to add more, or delete it like any other asset. Color transitions are smooth; reduced motion uses steady colors and FX Off hides live lights.
+
 ## Moving NPC sprites and arranging assets
 
 In the main arcade’s **Objects** tab, **NPC sprites → Select NPC** lists **The Scholar**, **Riff · Notes Shop**, and **Pip · Avatar Boutique**. Select one here or click their sprite on the map, then drag or edit NPC X/Y. They stay independent when their couch or counter moves or is hidden. Their conversation/shop interaction points move with them. Set facing, visibility, NPC layer, and depth offset individually; **Edit NPC sprite pixels** opens that character in the Pixel editor. **Reset NPC position** returns only their position to its default. These edits support undo, saving, and complete project export/import.

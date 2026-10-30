@@ -16,6 +16,7 @@ window.createCodaDeveloperConsole = function (api) {
   let publishedProject = null, publishedError = null, loadError = null, projectSource = 'base';
   let scenery, dialogue={}, sprites={}, artwork={}, dialogueEditor=null, pixelEditor=null, artworkEditor=null, artworkTools=null,educationEditor=null;
   let characters={},characterEditor=null,layerSelecting=false,layerSelection=null;
+  let decorLibrary=null,floodAdding=false,floodImageData=null;
   const emptyHistoryContent=()=>({version:2,facts:{},quizzes:{}});
   let musicHistoryContent=emptyHistoryContent(),musicFactsEditor=null;
   let panTool=false, spaceHeld=false,collisionOverlay=false,layerOverlay=false,layerMaskSource=null,layerMaskTint=null,layerMaskKey='';
@@ -82,6 +83,26 @@ window.createCodaDeveloperConsole = function (api) {
     <div class="dev-toolbar"><button type="button" id="devLift">Edit existing object</button><button type="button" id="devLiftRegion">Lift a region</button></div>
     <p class="studioTip">Click an original object on the map to select it, or choose its name here. Lift a region for artwork outside this catalog.</p>`;
   objects.children[0].after(catalogUI);
+  const libraryHost=document.createElement('section');catalogUI.before(libraryHost);
+  function createDecorAsset(item,position){
+    const asset=api.prototype(item.name,'image'),camera=api.getCamera?.()||{x:0,y:0,zoom:1};
+    Object.assign(asset,{data:item.data,w:item.width,h:item.height,x:position?.x??Math.round(camera.x+W/(camera.zoom||1)/2),y:position?.y??Math.round(camera.y+H/(camera.zoom||1)/2),layer:'world',anim:'none',ignoreBackgroundMasks:true});
+    return asset;
+  }
+  if(window.CodaDecorLibrary)decorLibrary=window.CodaDecorLibrary.mount({host:libraryHost,canEdit:()=>canEditArtwork()&&tab==='objects',onAdd:item=>{
+    if(!canEditArtwork()||tab!=='objects')return false;const asset=createDecorAsset(item);return api.add(asset)!==false;
+  }});
+  const floodButton=document.createElement('button');floodButton.type='button';floodButton.id='devAddFloodRig';floodButton.textContent='Add DJ floodlights';
+  const libraryDetails=libraryHost.querySelector('details')||libraryHost;libraryDetails.append(floodButton);
+  floodButton.onclick=async()=>{
+    if(floodAdding||!canEditArtwork()||tab!=='objects')return;floodAdding=true;floodButton.disabled=true;
+    try{
+      if(!floodImageData){const image=new Image();image.src='assets/decor/v1/dj-flood-rig.png';await image.decode();if(!image.naturalWidth||!image.naturalHeight||image.naturalWidth>8192||image.naturalHeight>8192)throw Error('Floodlight artwork could not load.');const source=makeCanvas(image.naturalWidth,image.naturalHeight);source.getContext('2d').drawImage(image,0,0);floodImageData=source.toDataURL('image/png');}
+      if(!canEditArtwork()||tab!=='objects')return;
+      const position=api.getFloodRigPosition?.()||{x:393.5,y:490},asset=createDecorAsset({name:'DJ color-changing floodlights',width:210,height:48,data:floodImageData},position);
+      asset.layer='front';asset.floodLights=window.CodaDJFloodlights.defaults();api.add(asset);
+    }catch(error){message(error.message||'Floodlights could not load.');}finally{floodAdding=false;floodButton.disabled=!canEditArtwork()||tab!=='objects';}
+  };
   const groups = new Map();
   for (const part of catalog) {
     const label=part.group || 'Furniture, plants & walls';
@@ -247,6 +268,11 @@ window.createCodaDeveloperConsole = function (api) {
   const orderTools=document.createElement('section');orderTools.className='dev-order';
   orderTools.innerHTML='<h3 class="dev-heading">Asset order</h3><label class="studioCheck"><input id="devIgnoreBackgroundMasks" type="checkbox">Draw in front of background masks</label><p class="studioTip">Keep this asset at its chosen depth where Send to background masks overlap.</p><label class="studioField">Depth offset (px)<input id="devAssetDepth" type="number" step="1"></label><p class="studioTip">Actor depth uses the bottom edge plus this offset. Higher depth appears in front.</p><label class="studioField">Arrange relative to<select id="devOrderTarget" aria-label="Arrange relative to"></select></label><div class="dev-toolbar"><button id="devOrderBehind" type="button">Place behind</button><button id="devOrderInFront" type="button">Place in front</button></div>';
   $('assetSelection').append(orderTools);$('devAssetDepth').min=-H;$('devAssetDepth').max=H;
+  const floodControls=document.createElement('section');floodControls.id='devFloodSettings';floodControls.hidden=true;
+  floodControls.innerHTML='<h3 class="dev-heading">DJ floodlights</h3><label class="studioCheck"><input id="devFloodEnabled" type="checkbox">Lights enabled</label><label class="studioField">Color cycle speed<input id="devFloodSpeed" type="number" min="0" max="4" step="0.1"></label><label class="studioField">Brightness %<input id="devFloodIntensity" type="number" min="0" max="100" step="1"></label><label class="studioField">Beam length (px)<input id="devFloodLength" type="number" min="20" max="500" step="5"></label><p class="studioTip">Move, resize, rotate or duplicate this rig like any image. Set speed to 0 to pause the color cycle. Visual effects Off hides its live lights.</p>';
+  $('assetSelection').append(floodControls);
+  for(const [id,key,min,max]of [['devFloodSpeed','speed',0,4],['devFloodIntensity','intensity',0,100],['devFloodLength','beamLength',20,500]])$(id).onchange=e=>{if(canEditArtwork()&&tab==='objects')editSelected(a=>{if(a.floodLights)a.floodLights[key]=api.bound(e.target.value,min,max,a.floodLights[key]);});};
+  $('devFloodEnabled').onchange=e=>{if(canEditArtwork()&&tab==='objects')editSelected(a=>{if(a.floodLights)a.floodLights.enabled=e.target.checked;});};
   function arrangeSelected(inFront){
     if(!canEditArtwork())return;finishGesture();const a=api.selected(),value=$('devOrderTarget').value;if(!a||!value)return;
     const key=value.startsWith('character.')?value:'asset.'+value,step=inFront?1:-1;
@@ -558,6 +584,7 @@ window.createCodaDeveloperConsole = function (api) {
     if(a.discoRays!==undefined&&typeof a.discoRays!=='boolean')return false;
     if(a.depthOffset!==undefined&&(!Number.isFinite(a.depthOffset)||Math.abs(a.depthOffset)>H))return false;
     if(a.ignoreBackgroundMasks!==undefined&&typeof a.ignoreBackgroundMasks!=='boolean')return false;
+    if(a.floodLights!==undefined&&(a.kind!=='image'||window.CodaDJFloodlights?.validate(a.floodLights)!==true))return false;
     if(a.layerOrder!==undefined&&(!Number.isFinite(a.layerOrder)||Math.abs(a.layerOrder)>1000000))return false;
     if(a.collider!==undefined) { const b=a.collider;if(!b||!['x','y','w','h'].every(k=>Number.isFinite(b[k])))return false;if(b.x< -100||b.x>100||b.y< -100||b.y>100||b.w<1||b.w>200||b.h<1||b.h>200)return false; }
     return true;
@@ -720,6 +747,7 @@ window.createCodaDeveloperConsole = function (api) {
   }
   function refresh() {
     syncLayerSelection();
+    decorLibrary?.refresh();floodButton.disabled=floodAdding||!canEditArtwork()||tab!=='objects';
     if(api.selected()&&characterEditor?.getSelected())characterEditor.clearSelection();characterEditor?.refresh();
     const orderSelected=orderSelection();selectionOrder.hidden=!studio.active||playtest||tab!=='objects';
     $('devOrderSelection').textContent=orderSelected?'Selected: '+orderSelected.name+' · '+({back:'Background',world:'Actor depth',front:'Foreground'}[orderSelected.layer]):'Select an object or NPC';
@@ -734,6 +762,7 @@ window.createCodaDeveloperConsole = function (api) {
     for(const [id,shown,label]of [['devShowCollision',collisionOverlay,'collision'],['devShowLayers',layerOverlay,'layers']]){$(id).setAttribute('aria-pressed',String(shown));$(id).textContent=(shown?'Hide ':'Show ')+label;$(id).disabled=playtest;}
     $('devOverlayLegend').hidden=playtest||!collisionOverlay&&!layerOverlay;$('devMasks').checked=layerOverlay;layer.maskView=layerOverlay;$('devMasks').disabled=playtest;
     const a=api.selected(); $('devUndo').disabled=!studio.undo.length;$('devRedo').disabled=!studio.redo.length;
+    floodControls.hidden=!a?.floodLights;if(a?.floodLights){$('devFloodEnabled').checked=a.floodLights.enabled;for(const [id,key]of [['devFloodSpeed','speed'],['devFloodIntensity','intensity'],['devFloodLength','beamLength']])$(id).value=a.floodLights[key];}
     $('devIgnoreBackgroundMasks').checked=a?.ignoreBackgroundMasks===true;$('devIgnoreBackgroundMasks').disabled=!a||!canEditArtwork();
     $('devAssetDepth').value=a?.depthOffset||0;$('devAssetDepth').disabled=!a||a.layer!=='world';
     const orderValue=$('devOrderTarget').value,orderChoices=studio.assets.filter(asset=>asset.id!==a?.id).map(asset=>[asset.id,asset.name]);
