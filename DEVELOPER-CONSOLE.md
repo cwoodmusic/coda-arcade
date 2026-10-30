@@ -67,6 +67,8 @@ Open **Layers**, or press **Shift+L**. **Paint foreground** promotes pixels from
 
 Erasing foreground also works on lifted original objects and their animated screens or disco spheres: erased pixels render behind characters, while the rest retains the object's selected layer. Brush strokes stay at their world coordinates. Moving, resizing, or rotating an object recomputes its intersection with those strokes; the resulting split follows the object's animation.
 
+**Objects → Asset order → Draw in front of background masks** lets a selected asset keep its chosen draw depth where **Send to background** masks overlap. This applies to uploaded images, lifted originals, and note props; it supports undo, save, and project export/import. Other assets continue to follow the mask. Use **Depth layer** and forward/back controls to choose the asset’s position relative to characters and other objects. The same checkbox is available in room asset controls.
+
 Layer painting changes occlusion, not walking collision. Painting existing room pixels also does not create or redraw an object; use Objects for that.
 
 ## Fishing trapdoor

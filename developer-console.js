@@ -245,7 +245,7 @@ window.createCodaDeveloperConsole = function (api) {
       editPixels:id=>{open('artwork');artworkEditor?.selectTarget('character.'+id+'.down');}});
   }
   const orderTools=document.createElement('section');orderTools.className='dev-order';
-  orderTools.innerHTML='<h3 class="dev-heading">Asset order</h3><label class="studioField">Depth offset (px)<input id="devAssetDepth" type="number" step="1"></label><p class="studioTip">Actor depth uses the bottom edge plus this offset. Higher depth appears in front.</p><label class="studioField">Arrange relative to<select id="devOrderTarget" aria-label="Arrange relative to"></select></label><div class="dev-toolbar"><button id="devOrderBehind" type="button">Place behind</button><button id="devOrderInFront" type="button">Place in front</button></div>';
+  orderTools.innerHTML='<h3 class="dev-heading">Asset order</h3><label class="studioCheck"><input id="devIgnoreBackgroundMasks" type="checkbox">Draw in front of background masks</label><p class="studioTip">Keep this asset at its chosen depth where Send to background masks overlap.</p><label class="studioField">Depth offset (px)<input id="devAssetDepth" type="number" step="1"></label><p class="studioTip">Actor depth uses the bottom edge plus this offset. Higher depth appears in front.</p><label class="studioField">Arrange relative to<select id="devOrderTarget" aria-label="Arrange relative to"></select></label><div class="dev-toolbar"><button id="devOrderBehind" type="button">Place behind</button><button id="devOrderInFront" type="button">Place in front</button></div>';
   $('assetSelection').append(orderTools);$('devAssetDepth').min=-H;$('devAssetDepth').max=H;
   function arrangeSelected(inFront){
     if(!canEditArtwork())return;finishGesture();const a=api.selected(),value=$('devOrderTarget').value;if(!a||!value)return;
@@ -265,6 +265,7 @@ window.createCodaDeveloperConsole = function (api) {
     const before=snapshot();Object.assign(a,patch);changed(before);message('Updated asset order. Undo is available.');
   }
   $('devOrderBehind').onclick=()=>arrangeSelected(false);$('devOrderInFront').onclick=()=>arrangeSelected(true);
+  $('devIgnoreBackgroundMasks').onchange=e=>{if(!canEditArtwork()||tab!=='objects')return;editSelected(a=>{if(e.target.checked)a.ignoreBackgroundMasks=true;else delete a.ignoreBackgroundMasks;});};
   $('devAssetDepth').onchange=e=>{if(canEditArtwork())editSelected(a=>{a.depthOffset=api.bound(e.target.value,-H,H,0);});};
   function orderSelection(){
     const asset=api.selected();if(asset)return {key:'asset.'+asset.id,kind:'asset',id:asset.id,name:asset.name,layer:asset.layer,bottom:asset.y+asset.h/2,asset};
@@ -556,6 +557,7 @@ window.createCodaDeveloperConsole = function (api) {
     if(a.discoSpin!==undefined&&(!Number.isFinite(a.discoSpin)||a.discoSpin<0||a.discoSpin>4))return false;
     if(a.discoRays!==undefined&&typeof a.discoRays!=='boolean')return false;
     if(a.depthOffset!==undefined&&(!Number.isFinite(a.depthOffset)||Math.abs(a.depthOffset)>H))return false;
+    if(a.ignoreBackgroundMasks!==undefined&&typeof a.ignoreBackgroundMasks!=='boolean')return false;
     if(a.layerOrder!==undefined&&(!Number.isFinite(a.layerOrder)||Math.abs(a.layerOrder)>1000000))return false;
     if(a.collider!==undefined) { const b=a.collider;if(!b||!['x','y','w','h'].every(k=>Number.isFinite(b[k])))return false;if(b.x< -100||b.x>100||b.y< -100||b.y>100||b.w<1||b.w>200||b.h<1||b.h>200)return false; }
     return true;
@@ -732,6 +734,7 @@ window.createCodaDeveloperConsole = function (api) {
     for(const [id,shown,label]of [['devShowCollision',collisionOverlay,'collision'],['devShowLayers',layerOverlay,'layers']]){$(id).setAttribute('aria-pressed',String(shown));$(id).textContent=(shown?'Hide ':'Show ')+label;$(id).disabled=playtest;}
     $('devOverlayLegend').hidden=playtest||!collisionOverlay&&!layerOverlay;$('devMasks').checked=layerOverlay;layer.maskView=layerOverlay;$('devMasks').disabled=playtest;
     const a=api.selected(); $('devUndo').disabled=!studio.undo.length;$('devRedo').disabled=!studio.redo.length;
+    $('devIgnoreBackgroundMasks').checked=a?.ignoreBackgroundMasks===true;$('devIgnoreBackgroundMasks').disabled=!a||!canEditArtwork();
     $('devAssetDepth').value=a?.depthOffset||0;$('devAssetDepth').disabled=!a||a.layer!=='world';
     const orderValue=$('devOrderTarget').value,orderChoices=studio.assets.filter(asset=>asset.id!==a?.id).map(asset=>[asset.id,asset.name]);
     for(const person of api.getEditorCharacters?.()||[])orderChoices.push(['character.'+person.id,person.name]);

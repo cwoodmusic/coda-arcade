@@ -19,7 +19,7 @@
    return path;
   }
   function split(asset,raw,frame,erased){
-   if(!raw||asset.layer==='back'||!erased)return {raw,above:raw,behind:null};
+   if(!raw||asset.layer==='back'||asset.ignoreBackgroundMasks===true||!erased)return {raw,above:raw,behind:null};
    const [sx,sy,sw,sh]=frame;if(sw<=0||sh<=0||asset.w<=0||asset.h<=0)return {raw,above:raw,behind:null};
    const key=JSON.stringify([asset.x,asset.y,asset.w,asset.h,asset.rotation,...frame]),cached=partitions.get(asset);
    if(cached&&cached.key===key&&cached.raw===raw&&cached.erased===erased)return cached;
