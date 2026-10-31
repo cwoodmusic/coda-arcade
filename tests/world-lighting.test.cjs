@@ -141,6 +141,15 @@ test('a scenery-specific lantern position follows rebuilt masonry and restores t
   assert.deepEqual(lighting.snapshot().lanterns.filter(lamp=>lamp.id==='boutique-west').map(({x,y})=>[x,y]),[[364,404]]);
 });
 
+test('removing one refreshed-scene lamp preserves every other lantern anchor and pulse',()=>{
+  let refreshed=true;
+  const original=createCodaWorldLighting({}).snapshot().lanterns;
+  const lighting=createCodaWorldLighting({isLanternVisible:id=>!refreshed||id!=='piano-east'});
+  assert.deepEqual(lighting.snapshot().lanterns,original.filter(lamp=>lamp.id!=='piano-east'));
+  refreshed=false;
+  assert.deepEqual(lighting.snapshot().lanterns,original);
+});
+
 test('beam clips are batched by room and the smaller raster is reused until geometry changes',()=>{
   const f=fixture(),ctx=context();
   f.balls([{id:'arcade',x:878,y:130,radius:28},{id:'dance',x:392,y:548,radius:29,club:true}]);

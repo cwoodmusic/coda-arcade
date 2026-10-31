@@ -75,7 +75,7 @@
       return LANTERNS.map((lamp, i) => {
         const position=api.getLanternPosition?.(lamp.id);
         return {...lamp,x:finite(position?.x,lamp.x),y:finite(position?.y,lamp.y),intensity:quiet() ? .65 : clamp(.48 + .43 * Math.sin(t * 1.65 + i * .79) + bass * .09, .10, 1)};
-      });
+      }).filter(lamp=>api.isLanternVisible?.(lamp.id)!==false);
     }
     function getGeometry() {
       const q = quality(), now = time(), reduced = quiet(), source = api.getBallStates?.() || [];

@@ -12,7 +12,7 @@ spec = importlib.util.spec_from_file_location('environment_world_fixture',
     Path(__file__).with_name('published-world-browser.py'))
 fixture = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(fixture)
-FINGERPRINT = 'e88223c217d77e835730003c06f58d396a3dd0e11b4dad15a2be716e3bc3a0d3'
+FINGERPRINT = 'ba0c511e8c2e111b43080967ac6f95d720a5a23fe3717b9c2f90376221c9c65f'
 
 
 class EnvironmentWorldTests(unittest.TestCase):
@@ -85,7 +85,7 @@ class EnvironmentWorldTests(unittest.TestCase):
         self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getScenery()'),'environment-v1')
         self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getProjectSource()'),'published')
         self.assertIsNone(self.page.evaluate('localStorage.getItem("codaWorldProjectV1")'))
-        self.assertEqual((len(self.current['assets']),len(self.current['collision']),len(self.current['strokes'])),(59,2362,26))
+        self.assertEqual((len(self.current['assets']),len(self.current['collision']),len(self.current['strokes'])),(59,2391,26))
         layers=self.page.evaluate('CodaArcadeQA.layerEditor()')
         self.assertEqual((layers['publishedStrokes'],layers['strokes']),(0,26))
         self.assertGreater(layers['paintPatches'],0)

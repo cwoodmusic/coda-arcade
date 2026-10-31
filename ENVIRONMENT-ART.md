@@ -145,6 +145,16 @@ and their continuous inner/outer neon trim. Its cropped generated source has
 an explicit native placement; only the narrow reviewed cap mask is copied.
 The surrounding floor, fixtures and collision remain as reviewed.
 
+The final Hall/loungeroof passes follow the later orthogonal-cap guides. The
+Hall's upper portrait wall becomes black exterior space, and a continuous blue
+cap replaces its left lantern; the refreshed-scene lantern effect is disabled
+for that removed fixture. The gold display, right lantern and Piano Lab stay
+in place. The lounge cap now runs straight into both corners, with its exterior
+face extended downward; the club cap beneath it is level. Only newly covered
+lounge masonry receives collision blocks, leaving the exit corridor open.
+Both passes use explicit crop placements and protected regions to retain the
+other accepted artwork and repairs.
+
 ## DJ stage lighting
 
 The four-head rig above DJ Coda projects colored beams and soft pools of light

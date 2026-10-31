@@ -150,6 +150,10 @@ open.onerror=()=>reject(open.error);open.onsuccess=()=>{const db=open.result,tx=
             self.assertFalse(self.page.evaluate('p=>CodaArcadeQA.walkable(...p)',[x,y]),(x,y))
         for point in [(535,285),(535,315),(535,335),(345,295)]:
             self.assertTrue(self.page.evaluate('p=>CodaArcadeQA.walkable(...p)',point),point)
+        self.assertTrue(self.page.evaluate('CodaArcadeQA.walkable(200,305)'),
+                        'The lounge carpet stays open above the new straight wall')
+        self.assertFalse(self.page.evaluate('CodaArcadeQA.walkable(200,325)'),
+                         'The new straight lounge roof/wall blocks the player')
         self.assertTrue(self.page.evaluate('CodaArcadeQA.place(335,385)'))
         self.page.locator('#view').focus()
         self.page.keyboard.down('d')
