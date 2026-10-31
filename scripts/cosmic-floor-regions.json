@@ -1,12 +1,12 @@
 {
-  "description": "Replace only exposed blue floor and connecting walkways with the generated cosmic palette. Keep the lounge carpet, colored dance tiles, all architecture, signs and doorways byte-pixel identical.",
+  "description": "Replace exposed floor and connecting walkways with quiet dark-blue glass. Protect lounge carpet, painted dance tiles, architecture, signs and doorways.",
   "worldSize": [1672, 941],
   "baselineSha256": "c612474d511996451631e5143fb5b9806ec2823a01ca45c31495204966ce5fa6",
   "baseline": "assets/environment/source/empty-arcade-before-cosmic.png",
-  "source": "assets/environment/source/cosmic-floor.png",
+  "source": "assets/environment/source/glass-floor.png",
   "output": "assets/environment/v1/empty-arcade.png",
   "authoredFloorRepair": {
-    "description": "The uploaded opaque blue wall-top repair hides earlier nightclub trim. Keep its exact painted silhouette and alpha while sampling the new cosmic material from an unobstructed main-floor area.",
+    "description": "Keep the authored wall-top repair silhouette and alpha while matching its old floor paint to the dark-blue glass material.",
     "bounds": [372,475,439,46],
     "sampleOffset": [512,128]
   },
@@ -23,7 +23,7 @@
   ],
   "protectedPolygons": [
     [[0,0],[435,0],[435,374],[255,374],[255,455],[0,455]],
-    [[169,665],[204,665],[237,664],[271,664],[305,664],[339,664],[374,664],[408,664],[442,664],[477,664],[511,664],[545,664],[579,665],[614,665],[626,693],[639,723],[651,753],[662,784],[674,814],[685,845],[117,845],[125,814],[134,784],[143,753],[152,723],[161,693]],
+    [[169,665],[204,665],[237,664],[271,664],[305,664],[339,664],[374,664],[408,664],[442,664],[477,664],[511,664],[545,664],[579,665],[618,665],[628,693],[639,723],[651,753],[662,784],[674,814],[685,845],[117,845],[125,814],[134,784],[143,753],[152,723],[161,693]],
     [[435,272],[596,272],[596,311],[650,311],[650,329],[681,329],[681,418],[417,418],[417,461],[351,438],[351,361],[386,361],[386,317],[418,317],[418,301],[435,301]],
     [[318,353],[350,353],[350,426],[417,450],[417,461],[384,451],[318,426]],
     [[1419,811],[1419,783],[1427,773],[1435,767],[1517,767],[1528,776],[1535,785],[1535,812]],

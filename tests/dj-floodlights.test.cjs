@@ -56,6 +56,22 @@ test('mirrored floodlight beams follow the reflected artwork while local LED geo
   'The parent asset transform mirrors the seven-LED faces once; local face geometry must not mirror a second time');
 });
 
+test('the stage rig projects its four floor pools onto the dance tiles and transforms their endpoints',()=>{
+ const stage=asset({x:391,y:524,w:210,h:48,floodLights:{...lights.defaults(),intensity:75,beamLength:280}});
+ const f=fixture(stage),rig=f.renderer.snapshot().rigs[0];
+ for(const head of rig.heads){
+  near(head.y,539.84);near(head.endY,819.84);
+  assert.ok(head.endX>120&&head.endX<680,'Floor pools must reach the painted dancefloor');
+  near(head.endLocalY-head.localY,280);
+ }
+ const ctx=context();f.renderer.drawBeams(ctx);
+ const gradients=ctx.calls.filter(call=>call[0]==='linear').filter((call,index)=>index%2===0);
+ for(const [index,call]of gradients.entries())assert.deepEqual(call[1],[rig.heads[index].localX,rig.heads[index].localY,rig.heads[index].endLocalX,rig.heads[index].endLocalY]);
+ stage.rotation=90;stage.flipX=true;f.animation({scale:1.5,dx:8,dy:-4});
+ const turned=f.renderer.snapshot().rigs[0];
+ for(const head of turned.heads){near(head.endX,399-head.endLocalY*1.5);near(head.endY,520-head.endLocalX*1.5);}
+});
+
 test('color cycles are gradual while speed zero and reduced motion remain stationary',()=>{
  const f=fixture();const first=f.renderer.snapshot().rigs[0].heads;f.time(.01);const next=f.renderer.snapshot().rigs[0].heads;
  assert.ok(next.every((head,index)=>Math.abs(head.hue-first[index].hue)<1));assert.notDeepEqual(next.map(head=>head.color),first.map(head=>head.color));
@@ -64,9 +80,9 @@ test('color cycles are gradual while speed zero and reduced motion remain statio
  f.assets([asset()]);f.reduced(true);const still=f.renderer.snapshot().rigs[0].heads;f.time(100);assert.deepEqual(f.renderer.snapshot().rigs[0].heads,still);
 });
 
-test('full and lite render four bounded beam cones and restore the caller context',()=>{
+test('full and lite render bounded beams with four floor pools and restore the caller context',()=>{
  const f=fixture(asset({opacity:50})),full=context();f.renderer.drawBeams(full);
- assert.equal(full.calls.filter(call=>call[0]==='linear').length,4);assert.equal(full.calls.filter(call=>call[0]==='radial').length,4);assert.equal(full.calls.filter(call=>call[0]==='fill').length,4);
+ assert.equal(full.calls.filter(call=>call[0]==='linear').length,8);assert.equal(full.calls.filter(call=>call[0]==='radial').length,4);assert.equal(full.calls.filter(call=>call[0]==='fill').length,8);
  assert.ok(full.calls.filter(call=>call[0]==='fill').every(call=>call[1]===.4&&call[2]==='screen'));assert.equal(full.globalAlpha,.8);assert.equal(full.globalCompositeOperation,'source-over');
  f.quality('lite');const lite=context();f.renderer.drawBeams(lite);assert.equal(lite.calls.filter(call=>call[0]==='linear').length,4);assert.equal(lite.calls.filter(call=>call[0]==='radial').length,0);
  const faces=context();f.renderer.drawFixture(faces,asset());assert.equal(faces.calls.filter(call=>call[0]==='ellipse').length,4*7*2);assert.equal(faces.calls.filter(call=>call[0]==='rect').length,0,'Lite faces tint round LEDs without a rectangle over the can');assert.ok(faces.calls.filter(call=>call[0]==='fill').every(call=>call[2]==='source-over'));assert.equal(faces.globalAlpha,.8);

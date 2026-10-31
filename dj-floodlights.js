@@ -23,7 +23,10 @@
    const cs=Math.cos(rotation),sn=Math.sin(rotation);
    const heads=HEADS.map((fraction,index)=>{
     const localX=(fraction-.5)*asset.w,localY=asset.h*.33,hue=(HUES[index]+phase*30)%360;
-    return {index,localX,localY,x:x+localX*cs*scaleX-localY*sn*scaleY,y:y+localX*sn*scaleX+localY*cs*scaleY,hue,color:shade(hue),angle:(index-1.5)*.24+(q==='full'&&!reduced()?Math.sin(phase*.35+index*.6)*.07:0)};
+    const angle=(index-1.5)*.24+(q==='full'&&!reduced()?Math.sin(phase*.35+index*.6)*.07:0);
+    const endLocalX=localX+Math.tan(angle)*settings.beamLength,endLocalY=localY+settings.beamLength;
+    return {index,localX,localY,x:x+localX*cs*scaleX-localY*sn*scaleY,y:y+localX*sn*scaleX+localY*cs*scaleY,hue,color:shade(hue),angle,
+     endLocalX,endLocalY,endX:x+endLocalX*cs*scaleX-endLocalY*sn*scaleY,endY:y+endLocalX*sn*scaleX+endLocalY*cs*scaleY};
    });
    return {id:asset.id,x,y,width:asset.w,height:asset.h,rotation,scale,scaleX,scaleY,opacity,enabled,quality:q,settings,heads};
   }
@@ -34,12 +37,19 @@
     const power=rig.settings.intensity/100,length=rig.settings.beamLength,width=Math.min(rig.width*.42,length*.46),lens=Math.max(3,rig.width*.035);
     ctx.save();ctx.translate(rig.x,rig.y);ctx.rotate(rig.rotation);ctx.scale(rig.scaleX,rig.scaleY);ctx.globalAlpha=(ctx.globalAlpha??1)*rig.opacity;ctx.globalCompositeOperation='screen';ctx.shadowBlur=0;
     for(const head of rig.heads){
-     const endX=head.localX+Math.tan(head.angle)*length,endY=head.localY+length,gradient=ctx.createLinearGradient(head.localX,head.localY,endX,endY);
-     gradient.addColorStop(0,shade(head.hue,power*(rig.quality==='full'?.26:.16)));gradient.addColorStop(.55,shade(head.hue,power*.08));gradient.addColorStop(1,shade(head.hue,0));
+     const endX=head.endLocalX,endY=head.endLocalY,gradient=ctx.createLinearGradient(head.localX,head.localY,endX,endY);
+     gradient.addColorStop(0,shade(head.hue,power*(rig.quality==='full'?.42:.28)));
+     gradient.addColorStop(.45,shade(head.hue,power*(rig.quality==='full'?.24:.16)));
+     gradient.addColorStop(.82,shade(head.hue,power*(rig.quality==='full'?.17:.09)));gradient.addColorStop(1,shade(head.hue,0));
      ctx.fillStyle=gradient;ctx.beginPath();ctx.moveTo(head.localX-lens,head.localY);ctx.lineTo(head.localX+lens,head.localY);ctx.lineTo(endX+width/2,endY);ctx.lineTo(endX-width/2,endY);ctx.closePath();ctx.fill();
      if(rig.quality==='full'){
-      const radius=width*.58;ctx.save();ctx.translate(endX,endY);ctx.scale(1,.32);
-      const pool=ctx.createRadialGradient(0,0,0,0,0,radius);pool.addColorStop(0,shade(head.hue,power*.12));pool.addColorStop(1,shade(head.hue,0));ctx.fillStyle=pool;ctx.fillRect(-radius,-radius,radius*2,radius*2);ctx.restore();
+      // A narrow luminous shaft keeps each physical can legible on the bright
+      // dance tiles, while the broad cone remains translucent around it.
+      const core=ctx.createLinearGradient(head.localX,head.localY,endX,endY);
+      core.addColorStop(0,shade(head.hue,power*.2));core.addColorStop(.5,shade(head.hue,power*.18));core.addColorStop(1,shade(head.hue,power*.025));
+      ctx.fillStyle=core;ctx.beginPath();ctx.moveTo(head.localX-lens*.4,head.localY);ctx.lineTo(head.localX+lens*.4,head.localY);ctx.lineTo(endX+width*.17,endY);ctx.lineTo(endX-width*.17,endY);ctx.closePath();ctx.fill();
+      const radius=width*.7;ctx.save();ctx.translate(endX,endY);ctx.scale(1,.32);
+      const pool=ctx.createRadialGradient(0,0,0,0,0,radius);pool.addColorStop(0,shade(head.hue,power*.32));pool.addColorStop(.4,shade(head.hue,power*.14));pool.addColorStop(1,shade(head.hue,0));ctx.fillStyle=pool;ctx.fillRect(-radius,-radius,radius*2,radius*2);ctx.restore();
      }
     }
     ctx.restore();

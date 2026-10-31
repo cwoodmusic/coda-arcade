@@ -19,26 +19,37 @@ depth order. Structural foreground pieces are cut from the finished architecture
 old annotated masks and clone patches are not layered onto the refreshed scene.
 Additional defaults are a movable four-head DJ floodlight rig and a large rectangle rug in front of the Notes shop. The other 47 library images stay unplaced until added. Their source art and reproducible extraction are in `assets/decor/` and `scripts/build-decor-props.cjs`; rug extraction uses `scripts/build-rug-props.cjs`. NPC appearance, accessories, accounts and game progress are separate systems.
 
-## Cosmic floor palette
+## Glass floor palette and sparse stars
 
-The exposed main floor, connecting walkways and nightclub perimeter use a dark
-teal and charcoal starfield with warm gold, coral and emerald details. The old
-isolated neon reflection splotches are removed. The lounge carpet, dance-tile
-geometry, walls, signs, doorways, object placements and collision stay intact.
+The exposed main floor, connecting walkways and nightclub perimeter use quiet
+dark-blue glass. The dense cosmic dust and isolated reflection splotches are
+removed. Forty-eight small warm-white and icy-blue stars pulse and gently flicker
+behind objects and actors. The lounge carpet, walls, signs, doorways, object
+placements and collision stay intact.
 
-The image-generated palette source is `assets/environment/source/cosmic-floor.png`.
-The original backdrop is retained as `source/empty-arcade-before-cosmic.png` in
-that same environment directory. Rebuild the scoped composite from the repository
-root with `node scripts/build-cosmic-floor.cjs`. Its reviewed floor masks are in
+The image-generated palette source is `assets/environment/source/glass-floor.png`.
+The previous cosmic reference and original backdrop remain in that source
+directory. Rebuild the scoped composite from the repository root with
+`node scripts/build-cosmic-floor.cjs`. Its reviewed masks are in
 `scripts/cosmic-floor-regions.json`; pixels outside those masks are preserved
-exactly. The builder removes only floor pixels from the published background
-repair journal so old blue paint cannot cover the new floor. The authored wall-top repair keeps its exact pixel coverage and transparency,
-with its old blue paint recolored from the same cosmic material. Other structural
-repairs and every non-artwork project field remain unchanged.
+exactly. Floor repair paint is rebased onto the new material while the authored
+wall-top repair keeps its coverage and transparency.
 
-The measured dance tiles cycle through a wider neon palette and brighten under
-grounded footsteps. Color animation pauses with Motion Off, reduced motion or
-FX Off; footstep feedback stays available.
+Dance-floor colors advance about once per second with smooth transitions.
+Grounded footsteps brighten the tile beneath the player. Color animation and
+star pulses pause with Motion Off or reduced motion. FX Off hides stars and
+holds the dance-floor palette still, with footstep feedback available.
+
+## DJ stage lighting
+
+The four-head rig above DJ Coda projects colored beams and soft pools of light
+onto the dance floor. Beam origins follow the visible lamps when the rig is
+moved, resized, rotated or flipped. The published rig uses a 280-pixel throw and
+75% intensity; its existing editor controls still adjust these values. Light is
+composited above the tile-color animation and below props and characters, with
+matching light in the foreground-brush source. Hiding or disabling the rig,
+setting its opacity/intensity to zero, or choosing FX Off removes its light.
+Motion Off and reduced motion hold the colors and beam directions steady.
 
 ## Projects and compatibility
 

@@ -8,7 +8,7 @@ function fixture(){
   return {floor,time:value=>time=value,player:value=>player=value,quality:value=>quality=value,quiet:value=>quiet=value,animation:value=>animation=value};
 }
 function context(){
-  return {calls:[],save(){},restore(){},beginPath(){this.path=[];},moveTo(x,y){this.path.push([x,y]);},lineTo(x,y){this.path.push([x,y]);},closePath(){},
+  return {calls:[],save(){},restore(){},beginPath(){this.path=[];},moveTo(x,y){this.path.push([x,y]);},lineTo(x,y){this.path.push([x,y]);},closePath(){},clip(){},
     fill(){this.calls.push({type:'fill',polygon:this.path.slice(),alpha:this.globalAlpha,color:this.fillStyle,composite:this.globalCompositeOperation});},stroke(){this.calls.push({type:'stroke',polygon:this.path.slice()});},
     fillRect(...bounds){this.calls.push({type:'rect',bounds});}};
 }
@@ -24,14 +24,16 @@ test('all 78 painted floor quadrilaterals map to their real perspective cell',()
   assert.notEqual(top.polygon[0][0],top.polygon[3][0],'Left edges follow the fan, not vertical square-grid lines');
   assert.equal(tileAt(125,675),null);assert.equal(tileAt(655,675),null);assert.equal(tileAt(400,850),null);
   assert.equal(tileAt(NaN,700),null);assert.equal(tileAt(400,Infinity),null);
+  assert.equal(tileAt(140,838),null,'The front-left rail is outside the visible floor');
+  assert.equal(tileAt(640,840),null,'The raised front-right rail is outside the visible floor');
 });
 
 test('crossing a skewed grout seam changes the activated tile at its actual position',()=>{
-  // The left edge of column 1 shifts from x204 at the back to x197 at row 1.
-  assert.equal(tileAt(200,668).column,0);
-  assert.equal(tileAt(200,692).column,1);
-  assert.equal(tileAt(200,692).row,0);
-  assert.equal(tileAt(200,694).row,1);
+  // The refreshed first seam shifts from x214 at the back to x208 at row 1.
+  assert.equal(tileAt(210,670).column,0);
+  assert.equal(tileAt(210,692).column,1);
+  assert.equal(tileAt(210,692).row,0);
+  assert.equal(tileAt(210,696).row,1);
 });
 
 test('grounded footsteps illuminate only their cell and recently left cells fade out',()=>{

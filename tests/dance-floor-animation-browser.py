@@ -45,6 +45,28 @@ class DanceFloorAnimationTests(world.WorldBrowserCase):
         self.assertGreater(sum(pixels['stepped'][:3]), sum(pixels['next'][:3]) + 80)
         self.assertEqual(pixels['edge'], [40, 48, 61, 255], 'Color passes stay inside measured tile borders')
 
+    def test_painted_grout_and_front_rail_stay_clear_of_the_animated_panels(self):
+        self.assertEqual(self.floor()['colorCycleSeconds'], 1)
+        pixels = self.page.evaluate('''async()=>{
+          const image=new Image();image.src='assets/environment/source/empty-arcade-before-cosmic.png';await image.decode();
+          const canvas=document.createElement('canvas');canvas.width=1672;canvas.height=941;
+          const g=canvas.getContext('2d');g.drawImage(image,0,0);
+          // These witnesses come from native backdrop grout, not the module's
+          // polygons. The legacy overlay colored over the x382 central seam.
+          const grout=[[382,710],[382,740],[382,800],[300,694],[400,724],
+            [450,754],[400,784],[400,814],[140,838],[640,840]];
+          const read=([x,y])=>[...g.getImageData(x,y,1,1).data];
+          const before=grout.map(read);
+          const floor=createCodaDanceFloor({getTime:()=>0,getPlayer:()=>({x:0,y:0})});
+          const centers=CodaArcadeQA.danceFloor().tiles.filter((tile,i)=>[20,45,70].includes(i)).map(tile=>
+            [Math.floor(tile.center[0])+5,Math.floor(tile.center[1])+4]);
+          const cellsBefore=centers.map(read);floor.draw(g);
+          return {before,after:grout.map(read),cellsBefore,cellsAfter:centers.map(read)};
+        }''')
+        self.assertEqual(pixels['after'], pixels['before'], 'Native grout and clipped rail pixels must remain untouched')
+        self.assertTrue(all(before != after for before, after in zip(pixels['cellsBefore'], pixels['cellsAfter'])),
+                        'Aligned panels still recolor the painted tile interiors')
+
     def test_motion_off_and_reduced_motion_stop_color_changes_but_keep_steps(self):
         self.page.evaluate("localStorage.setItem('arcadeAnimations','off')")
         first = self.floor()
