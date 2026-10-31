@@ -1,4 +1,4 @@
-"""Reviewed path erasures reveal glass without changing saved data or occluding actors.
+"""Reviewed path/rectangle rendering preserves saves and does not occlude actors.
 
 CODA_PATHWAY_EXPORT optionally checks the complete uploaded export; the portable
 fixture defaults to the published project carrying the same reviewed cutout.
@@ -51,7 +51,7 @@ open.onerror=()=>reject(open.error);open.onsuccess=()=>{const db=open.result,tx=
         self.assertEqual(status['pixels'],10543)
         self.assertEqual(status['runCount'],84)
         self.assertEqual(status['builds'],1)
-        samples=self.page.evaluate('''async({shape,project})=>{
+        samples=self.page.evaluate('''async({shape,project,rectangle})=>{
  const image=new Image();image.src='assets/environment/v1/empty-arcade.png';await image.decode();
  const native=document.createElement('canvas');native.width=1672;native.height=941;native.getContext('2d').drawImage(image,0,0);
  const base=document.createElement('canvas');base.width=1672;base.height=941;__paletteConsole.renderBase(base.getContext('2d'));
@@ -61,13 +61,20 @@ open.onerror=()=>reject(open.error);open.onsuccess=()=>{const db=open.result,tx=
  const pixel=(canvas,x,y)=>[...canvas.getContext('2d').getImageData(x,y,1,1).data];
  return points.map(({x,y})=>{
   const fragment=document.createElement('canvas');fragment.width=1;fragment.height=1;fragment.getContext('2d').drawImage(image,x,y,1,1,0,0,1,1);
-  return {x,y,base:pixel(base,x,y),expected:pixel(native,x+shape.sampleOffset[0],y+shape.sampleOffset[1]),fragment:pixel(tools.fragment(fragment,x,y),0,0)};
+  const inPolygon=polygon=>{let hit=false;for(let i=0,j=polygon.length-1;i<polygon.length;j=i++){
+   const [ax,ay]=polygon[i],[bx,by]=polygon[j];if((ay>y+.5)!==(by>y+.5)&&x+.5<(bx-ax)*(y+.5-ay)/(by-ay)+ax)hit=!hit;
+  }return hit;};
+  const superseded=rectangle.polygons.some(inPolygon);
+  return {x,y,superseded,base:pixel(base,x,y),expected:superseded?pixel(native,x,y):pixel(native,x+shape.sampleOffset[0],y+shape.sampleOffset[1]),fragment:pixel(tools.fragment(fragment,x,y),0,0)};
  });
-}''',{'shape':self.shape,'project':local})
+}''',{'shape':self.shape,'project':local,'rectangle':self.rectangle})
         for sample in samples:
             self.assertEqual(sample['base'],sample['expected'],sample)
             self.assertEqual(sample['base'][3],255)
-            self.assertEqual(sample['fragment'][3],0,'Glass underlay must never turn the old wall foreground opaque')
+            if sample['superseded']:
+                self.assertEqual(sample['fragment'],sample['expected'],'The approved rectangle replaces old diagonal cutout paint')
+            else:
+                self.assertEqual(sample['fragment'][3],0,'Outside the new rectangle, raw cutout erasures stay transparent')
         # Walk inside the newly opened path using the normal keyboard handler.
         self.assertTrue(self.page.evaluate('CodaArcadeQA.place(300,470)'))
         self.page.locator('#view').focus()
@@ -130,6 +137,64 @@ open.onerror=()=>reject(open.error);open.onsuccess=()=>{const db=open.result,tx=
 }''')
         for sample in observed:
             self.assertEqual(sample['world'],sample['base'],sample)
+
+
+    def test_rectangle_blocks_its_masonry_and_leaves_the_former_diagonal_floor_open(self):
+        self.load()
+        floors=[(285,385),(315,415),(335,440),(400,455),(420,485)]
+        masonry=[(365,335),(395,365),(415,415)]
+        for x,y in floors:
+            self.assertTrue(self.page.evaluate('p=>CodaArcadeQA.walkable(...p)',[x,y]),(x,y))
+        for x,y in masonry:
+            self.assertFalse(self.page.evaluate('p=>CodaArcadeQA.walkable(...p)',[x,y]),(x,y))
+        self.assertTrue(self.page.evaluate('CodaArcadeQA.place(335,385)'))
+        self.page.locator('#view').focus()
+        self.page.keyboard.down('d')
+        self.page.wait_for_timeout(400)
+        self.page.keyboard.up('d')
+        stopped=self.page.evaluate('CodaArcadeQA.position()')
+        self.assertGreater(stopped['x'],335.5,'Keyboard movement must reach the new wall')
+        self.assertLess(stopped['x'],355,'The actor must stop before crossing the new rectangular masonry')
+        self.assertTrue(self.page.evaluate('CodaArcadeQA.place(325,435)'))
+        self.page.keyboard.down('d')
+        self.page.wait_for_timeout(300)
+        self.page.keyboard.up('d')
+        crossed=self.page.evaluate('CodaArcadeQA.position()')
+        self.assertGreater(crossed['x'],345,'The former diagonal wall must no longer block the floor below the rectangle')
+        # This floor was inside the old lamp-wall foreground silhouette. A
+        # floor-colored copy of that obsolete mask must not hide the avatar.
+        self.assertTrue(self.page.evaluate('CodaArcadeQA.place(335,415)'))
+        self.page.evaluate('publishFrames(3)')
+        self.assertGreater(self.avatar_pixels(),60,'The old diagonal foreground must not hide a player standing on the new floor')
+
+
+    def avatar_pixels(self):
+        return self.page.evaluate('''()=>{
+ const base=document.createElement('canvas');base.width=1672;base.height=941;__paletteConsole.renderBase(base.getContext('2d'));
+ const bg=base.getContext('2d'),g=view.getContext('2d'),p=CodaArcadeQA.position(),cam=CodaArcadeQA.camera();let count=0;
+ for(let y=Math.floor(p.y)-43;y<Math.floor(p.y)-3;y++)for(let x=Math.floor(p.x)-12;x<Math.floor(p.x)+12;x++){
+  const a=g.getImageData(Math.floor((x-cam.x)*cam.zoom),Math.floor((y-cam.y)*cam.zoom),1,1).data,b=bg.getImageData(x,y,1,1).data;
+  if(Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1])+Math.abs(a[2]-b[2])>40)count++;
+ }return count;
+}''')
+
+    def test_straight_stage_face_blocks_masonry_and_releases_its_old_diagonal_corner(self):
+        self.load()
+        for point in [(755,675),(755,715),(785,665)]:
+            self.assertTrue(self.page.evaluate('p=>CodaArcadeQA.walkable(...p)',point),point)
+        for point in [(675,585),(705,625)]:
+            self.assertFalse(self.page.evaluate('p=>CodaArcadeQA.walkable(...p)',point),point)
+        self.assertTrue(self.page.evaluate('CodaArcadeQA.place(755,665)'))
+        self.page.locator('#view').focus()
+        self.page.keyboard.down('s')
+        self.page.wait_for_timeout(300)
+        self.page.keyboard.up('s')
+        after=self.page.evaluate('CodaArcadeQA.position()')
+        self.assertGreater(after['y'],685,'Keyboard movement must cross the former diagonal stage wall')
+        self.assertTrue(self.page.evaluate('p=>CodaArcadeQA.walkable(p.x,p.y)',after))
+        self.assertTrue(self.page.evaluate('CodaArcadeQA.place(755,685)'))
+        self.page.evaluate('publishFrames(3)')
+        self.assertGreater(self.avatar_pixels(),60,'Retired diagonal foreground must not cover the player on exposed stage-side glass')
 
 
 if __name__=='__main__':

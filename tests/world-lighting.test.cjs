@@ -131,6 +131,16 @@ test('drawing reuses a small glow atlas and avoids live shadow blur',()=>{
   assert.equal(ctx.calls.length,count,'Off must leave the original artwork untouched');
 });
 
+test('a scenery-specific lantern position follows rebuilt masonry and restores the original scene anchor',()=>{
+  let refreshed=true;
+  const lighting=createCodaWorldLighting({getLanternPosition:id=>refreshed&&id==='boutique-west'?{x:397,y:359}:null});
+  const updated=lighting.snapshot().lanterns;
+  assert.deepEqual(updated.filter(lamp=>lamp.id!=='boutique-west').map(({id,x,y})=>({id,x,y})),LANTERNS.filter(lamp=>lamp.id!=='boutique-west').map(({id,x,y})=>({id,x,y})));
+  assert.deepEqual(updated.filter(lamp=>lamp.id==='boutique-west').map(({x,y})=>[x,y]),[[397,359]]);
+  refreshed=false;
+  assert.deepEqual(lighting.snapshot().lanterns.filter(lamp=>lamp.id==='boutique-west').map(({x,y})=>[x,y]),[[364,404]]);
+});
+
 test('beam clips are batched by room and the smaller raster is reused until geometry changes',()=>{
   const f=fixture(),ctx=context();
   f.balls([{id:'arcade',x:878,y:130,radius:28},{id:'dance',x:392,y:548,radius:29,club:true}]);

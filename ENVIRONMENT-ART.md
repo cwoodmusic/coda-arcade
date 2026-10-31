@@ -105,6 +105,29 @@ and draws it behind the background composition. Both the floor repair pass and
 walkway cleanup protect the newer authored pixels, preserving the reshaped path
 on repeated builds instead of restoring the earlier diagonal.
 
+## Rectangular boutique lamp wall
+
+The later rectangular-wall edit replaces the boutique's diagonal lantern return
+with a flat wall and continuous glass below it. Its generated source is
+`source/boutique-rectangle.png`; `scripts/boutique-rectangle-regions.json` limits
+ownership to the reviewed wall and floor. `build-boutique-rectangle.cjs` runs
+after the older floor, green and walkway passes so those earlier sources cannot
+restore the diagonal. Only background journal pixels inside this newer mask
+are removed. Exact legacy journal colors are mapped to the current artwork at
+render time; imported project data and stored backups remain unchanged.
+
+The dance-room corner is also a south-facing rectangle: its top and bottom
+end at the same vertical edge, and both music plaques face forward. The final
+`build-stage-wall.cjs` pass owns only `scripts/stage-wall-regions.json`; that
+mask explicitly protects the painted dance tiles. The removed return wall
+reveals glass around the existing sofa and cactus. Published collision follows
+the new walls and open floor, and refreshed-scene lamp anchors follow the new
+artwork while the original scene retains its original anchors.
+The stage source is normalized from its declared 1671×941 size with nearest
+sampling. Reflection edges blend only over existing glass beyond the removed
+masonry, using the saved pre-edit plate so repeated builds do not accumulate
+the blend.
+
 ## DJ stage lighting
 
 The four-head rig above DJ Coda projects colored beams and soft pools of light

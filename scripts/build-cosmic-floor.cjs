@@ -147,6 +147,8 @@ async function main(){
  }
  if(!previewOnly&&!dryRun)await require('./build-green-accents.cjs').build();
  if(!previewOnly&&!dryRun)await require('./build-walkway-cleanup.cjs').build();
+ if(!previewOnly&&!dryRun)await require('./build-boutique-rectangle.cjs').build();
+ if(!previewOnly&&!dryRun)await require('./build-stage-wall.cjs').build();
 }
 if(require.main===module)main().catch(error=>{process.stderr.write(error.stack+'\n');process.exitCode=1;});
 module.exports={inside,floorMask,authoredShapeMask,rebaseArtwork,repairPoints,recolorRepairs};

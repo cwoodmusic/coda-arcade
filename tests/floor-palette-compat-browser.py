@@ -38,6 +38,7 @@ class FloorPaletteCompatibilityTests(unittest.TestCase):
         self.current=json.loads((ROOT/'published-world-project.json').read_text())
         self.manifest=json.loads((ROOT/'assets/environment/floor-palette-compat.json').read_text())
         self.shape=json.loads((ROOT/'assets/environment/boutique-pathway-shape.json').read_text())
+        self.rectangle=json.loads((ROOT/'scripts/boutique-rectangle-regions.json').read_text())
         self.context.route('**/published-world-project.json*',lambda route:route.fulfill(status=200,content_type='application/json',body=json.dumps(self.current)))
         source=(ROOT/'developer-console.js').read_text()+'''\n(()=>{const original=window.createCodaDeveloperConsole;
 window.createCodaDeveloperConsole=api=>{const instance=original(api);window.__paletteConsole=instance;return instance;};})();'''

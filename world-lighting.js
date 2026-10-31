@@ -72,7 +72,10 @@
     }
     function lanternState() {
       const t = quiet() ? 0 : time(), beat = api.getBeat?.() || {}, bass = beat.on ? Math.exp(-clamp(finite(beat.phase), 0, 1) * 5) : 0;
-      return LANTERNS.map((lamp, i) => ({...lamp, intensity: quiet() ? .65 : clamp(.48 + .43 * Math.sin(t * 1.65 + i * .79) + bass * .09, .10, 1)}));
+      return LANTERNS.map((lamp, i) => {
+        const position=api.getLanternPosition?.(lamp.id);
+        return {...lamp,x:finite(position?.x,lamp.x),y:finite(position?.y,lamp.y),intensity:quiet() ? .65 : clamp(.48 + .43 * Math.sin(t * 1.65 + i * .79) + bass * .09, .10, 1)};
+      });
     }
     function getGeometry() {
       const q = quality(), now = time(), reduced = quiet(), source = api.getBallStates?.() || [];

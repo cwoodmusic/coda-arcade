@@ -9,7 +9,7 @@ const {inside,rebaseArtwork}=require('./build-cosmic-floor.cjs');
 function cleanupMask(meta){
  const [width,height]=meta.worldSize,mask=new Uint8Array(width*height);
  for(let y=0;y<height;y++)for(let x=0;x<width;x++)
-  if(meta.polygons.some(polygon=>inside(polygon,x+.5,y+.5)))mask[y*width+x]=1;
+  if(meta.polygons.some(polygon=>inside(polygon,x+.5,y+.5))&&!(meta.protectedPolygons||[]).some(polygon=>inside(polygon,x+.5,y+.5)))mask[y*width+x]=1;
  if(meta.protectedShape){
   const shape=require(path.resolve(__dirname,'..',meta.protectedShape));
   if(shape.version!==1||shape.width!==width||shape.height!==height||!Array.isArray(shape.deltaRuns))throw Error('Unsupported protected pathway shape');
@@ -25,15 +25,29 @@ function cleanupMask(meta){
 async function compose({meta,mask,previewOnly}){
  const load=url=>new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>reject(Error('Could not load '+url));image.src=url;});
  const original=await load('/before'),source=previewOnly?original:await load('/source'),[width,height]=meta.worldSize;
- if([original,source].some(image=>image.naturalWidth!==width||image.naturalHeight!==height))throw Error('Walkway source dimensions must match the world exactly');
+ const [sourceWidth,sourceHeight]=previewOnly?meta.worldSize:meta.sourceSize||meta.worldSize;
+ if(original.naturalWidth!==width||original.naturalHeight!==height||source.naturalWidth!==sourceWidth||source.naturalHeight!==sourceHeight)throw Error('Walkway source dimensions must match the declared size');
  const canvas=()=>{const c=document.createElement('canvas');c.width=width;c.height=height;return c;};
  const output=canvas(),g=output.getContext('2d',{willReadFrequently:true}),generated=canvas(),s=generated.getContext('2d',{willReadFrequently:true});
- g.drawImage(original,0,0);s.drawImage(source,0,0);
+ g.drawImage(original,0,0);s.imageSmoothingEnabled=false;s.drawImage(source,0,0,width,height);
  const before=g.getImageData(0,0,width,height),after=g.getImageData(0,0,width,height),pixels=s.getImageData(0,0,width,height).data;
+ let featherPixels=before.data;
+ if(meta.floorFeather&&!previewOnly){
+  const reference=await load('/feather-base');if(reference.naturalWidth!==width||reference.naturalHeight!==height)throw Error('Floor feather reference dimensions must match the world');
+  const b=canvas().getContext('2d');b.drawImage(reference,0,0);featherPixels=b.getImageData(0,0,width,height).data;
+ }
  let allowed=0,changed=0;
  for(let i=0;i<mask.length;i++)if(mask[i]){
   allowed++;const at=i*4;if([0,1,2,3].some(c=>before.data[at+c]!==pixels[at+c]))changed++;
-  for(let c=0;c<4;c++)after.data[at+c]=pixels[at+c];
+  // The outside edge of a floor reflection meets existing glass, beyond the
+  // removed masonry. Blend there while keeping the new wall face pixel-sharp.
+  let weight=1;const feather=meta.floorFeather;
+  if(feather){
+   const x=i%width,y=Math.floor(i/width),[r0,r1]=feather.right,[b0,b1]=feather.bottom,[l0,l1,below]=feather.leftBelow;
+   weight=Math.max(0,Math.min(weight,(r1-x-.5)/(r1-r0),(b1-y-.5)/(b1-b0)));
+   if(y>=below)weight=Math.max(0,Math.min(weight,(x+.5-l0)/(l1-l0)));
+  }
+  for(let c=0;c<4;c++)after.data[at+c]=Math.round(featherPixels[at+c]*(1-weight)+pixels[at+c]*weight);
  }
  for(let i=0;i<mask.length;i++)if(!mask[i])for(let c=0;c<4;c++)if(before.data[i*4+c]!==after.data[i*4+c])throw Error('An unmarked walkway pixel changed');
  g.putImageData(after,0,0);
@@ -43,9 +57,9 @@ async function compose({meta,mask,previewOnly}){
  return {image:output.toDataURL('image/png'),preview:preview.toDataURL('image/png'),allowed,changed,protectedPixels:mask.length-allowed};
 }
 async function build(options={}){
- const root=path.resolve(__dirname,'..'),meta=JSON.parse(await fs.readFile(path.join(__dirname,'walkway-cleanup-regions.json'),'utf8')),mask=cleanupMask(meta),projectPath=path.join(root,'published-world-project.json');
+ const root=path.resolve(__dirname,'..'),meta=options.meta||JSON.parse(await fs.readFile(path.join(__dirname,'walkway-cleanup-regions.json'),'utf8')),mask=cleanupMask(meta),projectPath=path.join(root,'published-world-project.json');
  const originalProject=JSON.parse(await fs.readFile(projectPath,'utf8')),rebased=rebaseArtwork(originalProject,mask,meta.worldSize[0]);
- const files={'/before':meta.output,'/source':meta.source};
+ const files={'/before':meta.output,'/source':meta.source,'/feather-base':meta.before};
  const server=http.createServer(async(req,res)=>{try{
   if(req.url==='/'){res.setHeader('Content-Type','text/html');res.end('<!doctype html><title>Walkway cleanup compositor</title>');return;}
   if(!files[req.url]){res.writeHead(404);res.end();return;}
