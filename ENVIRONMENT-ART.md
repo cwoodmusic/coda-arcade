@@ -128,6 +128,23 @@ sampling. Reflection edges blend only over existing glass beyond the removed
 masonry, using the saved pre-edit plate so repeated builds do not accumulate
 the blend.
 
+The boutique's recessed shoulders are filled by
+`scripts/build-boutique-flat-top.cjs`, under one horizontal roof. Its explicit
+mask preserves the central icon/sign journal, hanging lamp, mirror, counter,
+lower wall and floor; collision blocks only the newly filled shoulders.
+
+`wall-reflections.js` adds cached soft colored projections of the composed
+backdrop onto reviewed glass regions around the room. Reflections draw before
+actors and furniture, protect carpet/dance tiles/architecture, and follow the
+Full/Lite/Off effects setting. Dark masonry is filtered out before projection
+to prevent rectangular haze bands. The original artwork and project data are
+never modified by the reflection effect.
+
+The final `build-boutique-corner-cap.cjs` pass completes both blue cap elbows
+and their continuous inner/outer neon trim. Its cropped generated source has
+an explicit native placement; only the narrow reviewed cap mask is copied.
+The surrounding floor, fixtures and collision remain as reviewed.
+
 ## DJ stage lighting
 
 The four-head rig above DJ Coda projects colored beams and soft pools of light

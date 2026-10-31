@@ -51,7 +51,7 @@ open.onerror=()=>reject(open.error);open.onsuccess=()=>{const db=open.result,tx=
         self.assertEqual(status['pixels'],10543)
         self.assertEqual(status['runCount'],84)
         self.assertEqual(status['builds'],1)
-        samples=self.page.evaluate('''async({shape,project,rectangle})=>{
+        samples=self.page.evaluate('''async({shape,project,supersededPolygons})=>{
  const image=new Image();image.src='assets/environment/v1/empty-arcade.png';await image.decode();
  const native=document.createElement('canvas');native.width=1672;native.height=941;native.getContext('2d').drawImage(image,0,0);
  const base=document.createElement('canvas');base.width=1672;base.height=941;__paletteConsole.renderBase(base.getContext('2d'));
@@ -64,17 +64,17 @@ open.onerror=()=>reject(open.error);open.onsuccess=()=>{const db=open.result,tx=
   const inPolygon=polygon=>{let hit=false;for(let i=0,j=polygon.length-1;i<polygon.length;j=i++){
    const [ax,ay]=polygon[i],[bx,by]=polygon[j];if((ay>y+.5)!==(by>y+.5)&&x+.5<(bx-ax)*(y+.5-ay)/(by-ay)+ax)hit=!hit;
   }return hit;};
-  const superseded=rectangle.polygons.some(inPolygon);
+  const superseded=supersededPolygons.some(inPolygon);
   return {x,y,superseded,base:pixel(base,x,y),expected:superseded?pixel(native,x,y):pixel(native,x+shape.sampleOffset[0],y+shape.sampleOffset[1]),fragment:pixel(tools.fragment(fragment,x,y),0,0)};
  });
-}''',{'shape':self.shape,'project':local,'rectangle':self.rectangle})
+}''',{'shape':self.shape,'project':local,'supersededPolygons':self.superseded_polygons})
         for sample in samples:
             self.assertEqual(sample['base'],sample['expected'],sample)
             self.assertEqual(sample['base'][3],255)
             if sample['superseded']:
-                self.assertEqual(sample['fragment'],sample['expected'],'The approved rectangle replaces old diagonal cutout paint')
+                self.assertEqual(sample['fragment'],sample['expected'],'Approved rectangle/join artwork replaces old diagonal cutout paint')
             else:
-                self.assertEqual(sample['fragment'][3],0,'Outside the new rectangle, raw cutout erasures stay transparent')
+                self.assertEqual(sample['fragment'][3],0,'Outside the reviewed masks, raw cutout erasures stay transparent')
         # Walk inside the newly opened path using the normal keyboard handler.
         self.assertTrue(self.page.evaluate('CodaArcadeQA.place(300,470)'))
         self.page.locator('#view').focus()
@@ -143,10 +143,13 @@ open.onerror=()=>reject(open.error);open.onsuccess=()=>{const db=open.result,tx=
         self.load()
         floors=[(285,385),(315,415),(335,440),(400,455),(420,485)]
         masonry=[(365,335),(395,365),(415,415)]
+        shoulders=[(375,285),(425,305),(615,285),(665,325)]
         for x,y in floors:
             self.assertTrue(self.page.evaluate('p=>CodaArcadeQA.walkable(...p)',[x,y]),(x,y))
-        for x,y in masonry:
+        for x,y in masonry+shoulders:
             self.assertFalse(self.page.evaluate('p=>CodaArcadeQA.walkable(...p)',[x,y]),(x,y))
+        for point in [(535,285),(535,315),(535,335),(345,295)]:
+            self.assertTrue(self.page.evaluate('p=>CodaArcadeQA.walkable(...p)',point),point)
         self.assertTrue(self.page.evaluate('CodaArcadeQA.place(335,385)'))
         self.page.locator('#view').focus()
         self.page.keyboard.down('d')

@@ -16,6 +16,7 @@ window.createCodaDeveloperConsole = function (api) {
   let publishedProject = null, publishedError = null, loadError = null, projectSource = 'base';
   let scenery, dialogue={}, sprites={}, artwork={}, dialogueEditor=null, pixelEditor=null, artworkEditor=null, artworkTools=null,educationEditor=null;
   let floorPaletteCompat=null,pathwayFloorFill=null;
+  const wallReflections=window.CodaWallReflections?.create({document,getQuality:api.getReflectionQuality});
   let characters={},characterEditor=null,layerSelecting=false,layerSelection=null;
   let decorLibrary=null,floodAdding=false,floodImageData=null,notesRugAdding=false,notesRugData=null;
   const emptyHistoryContent=()=>({version:2,facts:{},quizzes:{}});
@@ -547,7 +548,8 @@ window.createCodaDeveloperConsole = function (api) {
       // Reviewed deleted structure reveals glass behind the raw alpha cutout.
       // Keep that cutout transparent in foreground fragments so actors stay visible.
       pathwayFloorFill?.draw(g,baseCache);
-      g.drawImage(artworkTools?.compose('background.world',baseCache)||baseCache,0,0,W,H);return;
+      const composed=artworkTools?.compose('background.world',baseCache)||baseCache;
+      g.drawImage(composed,0,0,W,H);wallReflections?.draw(g,composed);return;
     }
     if(!worldArt.complete||!worldArt.naturalWidth)return;
     if(arcadeFloor?.isReady&&!arcadeFloor.isReady()){g.drawImage(worldArt,0,0,W,H);return;}
@@ -970,5 +972,5 @@ window.createCodaDeveloperConsole = function (api) {
     getScenery:()=>scenery,isRefreshedScenery:refreshedScenery,environmentReady,
     getCharacters:()=>{const result=clone(characters);for(const id of ['scholar','riff','pip']){const preview=characterEditor?.getPreview(id);if(preview)result[id]={...(result[id]||{}),...preview};}return result;},
     getProject:()=>clone(documentData()),getPublishedProject:()=>publishedProject?clone(publishedProject):null,getProjectSource:()=>projectSource,
-    getMusicHistoryContent:()=>clone(musicHistoryContent),getMusicFactsEditor:()=>musicFactsEditor,getDialogue:id=>id===undefined?clone(dialogue):dialogue[id]?clone(dialogue[id]):null,getSprites:()=>clone(sprites),getEducationEditor:()=>educationEditor,getState:()=>({pathwayFloorFill:pathwayFloorFill?.getState()||null,paletteCompatibility:floorPaletteCompat?.getState()||null,layerSelection:layerSelection?{...layerSelection.getState(),selecting:layerSelecting}:null,characters:characterEditor?.getState()||null,scenery:scenery||null,artwork:artworkEditor?.getState()||null,education:educationEditor?.getState()||null,open:studio.active,editing:studio.active&&!playtest,playtest,tab,fullscreen,overlays:{collision:collisionOverlay,layers:layerOverlay,visible:studio.active&&!playtest}})};
+    getMusicHistoryContent:()=>clone(musicHistoryContent),getMusicFactsEditor:()=>musicFactsEditor,getDialogue:id=>id===undefined?clone(dialogue):dialogue[id]?clone(dialogue[id]):null,getSprites:()=>clone(sprites),getEducationEditor:()=>educationEditor,getState:()=>({wallReflections:wallReflections?.getState()||null,pathwayFloorFill:pathwayFloorFill?.getState()||null,paletteCompatibility:floorPaletteCompat?.getState()||null,layerSelection:layerSelection?{...layerSelection.getState(),selecting:layerSelecting}:null,characters:characterEditor?.getState()||null,scenery:scenery||null,artwork:artworkEditor?.getState()||null,education:educationEditor?.getState()||null,open:studio.active,editing:studio.active&&!playtest,playtest,tab,fullscreen,overlays:{collision:collisionOverlay,layers:layerOverlay,visible:studio.active&&!playtest}})};
 };
