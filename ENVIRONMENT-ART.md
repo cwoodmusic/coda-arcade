@@ -19,6 +19,27 @@ depth order. Structural foreground pieces are cut from the finished architecture
 old annotated masks and clone patches are not layered onto the refreshed scene.
 Additional defaults are a movable four-head DJ floodlight rig and a large rectangle rug in front of the Notes shop. The other 47 library images stay unplaced until added. Their source art and reproducible extraction are in `assets/decor/` and `scripts/build-decor-props.cjs`; rug extraction uses `scripts/build-rug-props.cjs`. NPC appearance, accessories, accounts and game progress are separate systems.
 
+## Cosmic floor palette
+
+The exposed main floor, connecting walkways and nightclub perimeter use a dark
+teal and charcoal starfield with warm gold, coral and emerald details. The old
+isolated neon reflection splotches are removed. The lounge carpet, dance-tile
+geometry, walls, signs, doorways, object placements and collision stay intact.
+
+The image-generated palette source is `assets/environment/source/cosmic-floor.png`.
+The original backdrop is retained as `source/empty-arcade-before-cosmic.png` in
+that same environment directory. Rebuild the scoped composite from the repository
+root with `node scripts/build-cosmic-floor.cjs`. Its reviewed floor masks are in
+`scripts/cosmic-floor-regions.json`; pixels outside those masks are preserved
+exactly. The builder removes only floor pixels from the published background
+repair journal so old blue paint cannot cover the new floor. The authored wall-top repair keeps its exact pixel coverage and transparency,
+with its old blue paint recolored from the same cosmic material. Other structural
+repairs and every non-artwork project field remain unchanged.
+
+The measured dance tiles cycle through a wider neon palette and brighten under
+grounded footsteps. Color animation pauses with Motion Off, reduced motion or
+FX Off; footstep feedback stays available.
+
 ## Projects and compatibility
 
 New browsers load the refreshed published project. Its object placements,

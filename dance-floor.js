@@ -1,4 +1,4 @@
-/* Footstep lights for the measured quadrilateral tiles in the painted club.
+/* Color-changing panels and footstep lights for the measured club tiles.
  * Vertices follow the original grout, whose columns fan out toward the viewer.
  * No world collision cells or rectangular sprite grid are used here. */
 (function (root, factory) {
@@ -17,8 +17,9 @@
     [[119,843],[161,843],[203,843],[245,843],[287,843],[329,843],[370,843],[413,843],[457,843],[500,843],[543,843],[586,843],[630,843],[683,843]]
   ];
   VERTEX_ROWS.forEach(row => { row.forEach(Object.freeze); Object.freeze(row); }); Object.freeze(VERTEX_ROWS);
-  const COLORS = ['#70eaff','#ffe997','#ff83ed','#fff6b2','#a2ffff','#8aaaff','#ffb5e9'];
-  const DECAY = .72, INSET = 1.5;
+  const COLORS = ['#20d9d2','#ffbd45','#ff6b79','#6aee9b','#a68cff','#ff974f','#ed73db'];
+  const DECAY = .72, INSET = 1.5, COLOR_SECONDS = 2.8;
+  const RGB = COLORS.map(color=>[1,3,5].map(index=>parseInt(color.slice(index,index+2),16)));
   const finite = (value, fallback = 0) => Number.isFinite(value) ? value : fallback;
   const cross = (a, b) => a[0] * b[1] - a[1] * b[0];
   function pointInPolygon(x, y, polygon) {
@@ -57,8 +58,19 @@
   }
   Object.freeze(TILES);
   function tileAt(x, y) { return TILES.find(tile => pointInPolygon(x, y, tile.polygon)) || null; }
+  function panelColor(tile, time) {
+    // Adjacent panels trade palette positions in a slow diagonal wave. Only
+    // their color changes; measured vertices and grout never move or flash.
+    const progress = Math.max(0,time) / COLOR_SECONDS + tile.row * .13 + tile.column * .07;
+    const step = Math.floor(progress), fraction = progress - step;
+    const mix = fraction * fraction * (3 - 2 * fraction);
+    const index = (tile.column + tile.row * 3 + step) % COLORS.length;
+    const first=RGB[index], next=RGB[(index+1)%COLORS.length];
+    return 'rgb('+first.map((value,i)=>Math.round(value+(next[i]-value)*mix)).join(',')+')';
+  }
   function createCodaDanceFloor(api = {}) {
     const lit = new Map(); let current = null, lastTime = 0;
+    function animated() { return api.getQuality?.() !== 'off' && !api.reducedMotion?.() && api.getAnimation?.() !== false; }
     function update() {
       const time = Math.max(0, finite(api.getTime?.(), lastTime));
       if (time < lastTime) lit.clear(); lastTime = time;
@@ -83,15 +95,23 @@
       return remaining * remaining;
     }
     function draw(ctx) {
-      const time = update(); if (!ctx || !lit.size) return;
+      const time = update(); if (!ctx) return;
       const quality = api.getQuality?.() || 'full', quiet = !!api.reducedMotion?.();
+      const colorTime = animated() ? time : 0;
+      ctx.save(); ctx.shadowBlur=0; ctx.globalCompositeOperation='source-over';
+      ctx.globalAlpha=quality==='lite'?.64:.72;
+      for (const tile of TILES) {
+        ctx.fillStyle=panelColor(tile,colorTime);
+        trace(ctx,tile.inset);ctx.fill();
+      }
+      ctx.restore();
       ctx.save(); ctx.shadowBlur = 0; ctx.globalCompositeOperation = 'screen';
       for (const light of lit.values()) {
         const tile = light.tile, brightness = intensity(light, time);
-        ctx.fillStyle = tile.color; ctx.globalAlpha = .28 * brightness;
+        ctx.fillStyle = '#fff5de'; ctx.globalAlpha = .52 * brightness;
         trace(ctx, tile.inset); ctx.fill();
         // The rim follows each measured skewed edge, safely inside its grout.
-        ctx.strokeStyle = '#eaffff'; ctx.lineWidth = 1; ctx.globalAlpha = .46 * brightness;
+        ctx.strokeStyle = '#fff7de'; ctx.lineWidth = 1; ctx.globalAlpha = .74 * brightness;
         trace(ctx, insetPolygon(tile.polygon, INSET + .5)); ctx.stroke();
         // A small crisp glint, with no blur textures or full-canvas offscreen pass.
         if (quality !== 'off') {
@@ -105,8 +125,9 @@
     }
     function snapshot() {
       const time = update();
-      return {columns: 13, rows: 6, tileCount: TILES.length, current, decaySeconds: DECAY,
-        tiles: TILES.map(tile => ({id:tile.id,row:tile.row,column:tile.column,polygon:tile.polygon.map(p=>p.slice()),inset:tile.inset.map(p=>p.slice()),center:tile.center.slice()})),
+      const moving=animated();
+      return {columns: 13, rows: 6, tileCount: TILES.length, current, decaySeconds: DECAY, animated:moving, colorCycleSeconds:COLOR_SECONDS,
+        tiles: TILES.map(tile => ({id:tile.id,row:tile.row,column:tile.column,color:panelColor(tile,moving?time:0),polygon:tile.polygon.map(p=>p.slice()),inset:tile.inset.map(p=>p.slice()),center:tile.center.slice()})),
         active: Array.from(lit.values(), light=>({id:light.tile.id,row:light.tile.row,column:light.tile.column,intensity:intensity(light,time),entered:light.entered}))};
     }
     return {draw, snapshot, tileAt: (x,y) => {const tile=tileAt(x,y);return tile?{id:tile.id,row:tile.row,column:tile.column,polygon:tile.polygon.map(p=>p.slice())}:null;}};
