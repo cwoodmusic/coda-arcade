@@ -5,11 +5,28 @@ const {floorMask,rebaseArtwork,repairPoints,recolorRepairs}=require('../scripts/
 const mask=floorMask(meta),width=meta.worldSize[0];
 
 test('cosmic palette reaches exposed floor while protecting the existing architecture and dance tiles',()=>{
- for(const [x,y]of [[1000,500],[450,450],[425,440],[790,600],[110,740]])
+ for(const [x,y]of [[1000,500],[450,450],[425,440],[790,600],[110,740],[775,525]])
   assert.equal(mask[y*width+x],1,`Exposed floor ${x},${y} must receive the new palette`);
  for(const [x,y]of [[250,250],[400,750],[500,350],[850,60],[840,600],[1460,780]])
   assert.equal(mask[y*width+x],0,`Protected carpet, tile, wall or sign ${x},${y} must stay intact`);
  assert.equal(mask.length,1672*941);
+});
+
+test('the glass repair scope includes both jagged walkway ends and samples only unobstructed main floor',()=>{
+ const witnesses=[[300,460],[315,465],[330,464],[800,540]],tiles={};
+ for(const [x,y]of witnesses){
+  const key=Math.floor(x/64)+','+Math.floor(y/64),index=y%64*64+x%64;
+  (tiles[key]??=[]).push([index,1,'#3601f1ff']);
+ }
+ for(const runs of Object.values(tiles))runs.sort((a,b)=>a[0]-b[0]);
+ const project={artwork:{'background.world':{width:1672,height:941,tiles}}};
+ assert.deepEqual(repairPoints(project,meta.authoredFloorRepair).sort(),witnesses.slice().sort(),
+  'The former narrow repair band left these purple fringe pixels unchanged');
+ const [dx,dy]=meta.authoredFloorRepair.sampleOffset;
+ for(const [x,y]of witnesses)assert.equal(mask[(y+dy)*width+x+dx],1,'Repair samples must come from exposed glass floor');
+ const rebased=rebaseArtwork(project,new Uint8Array(mask.length).fill(1),width,meta.authoredFloorRepair);
+ assert.equal(rebased.removed,0,'Expanding a native floor mask must not erase the authored trim-covering silhouette');
+ assert.deepEqual(rebased.project,project);
 });
 
 test('recoloring an authored repair preserves its exact coverage, original alpha and every other pixel',()=>{
@@ -24,6 +41,13 @@ test('recoloring an authored repair preserves its exact coverage, original alpha
  assert.deepEqual(repairPoints(result.project,{bounds:[384,475,3,1]}),points,'Painted silhouette remains exact');
  const repeat=recolorRepairs(result.project,samples);
  assert.equal(repeat.changed,0);assert.deepEqual(repeat.project,result.project);
+});
+
+test('floor-family repair selection leaves warm lamp and cyan wall details intact',()=>{
+ const project={artwork:{'background.world':{width:1672,height:941,tiles:{'12,8':[
+  [768,1,'#3601f1ff'],[769,1,'#e14488ff'],[770,1,'#08dcffff']
+ ]}}}};
+ assert.deepEqual(repairPoints(project,{bounds:[768,524,3,1],blueFloorOnly:true}),[[768,524]]);
 });
 
 test('rebasing splits a journal run at the floor-wall boundary without changing retained colors or layout',()=>{

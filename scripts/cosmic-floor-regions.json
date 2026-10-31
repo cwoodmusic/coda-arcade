@@ -6,9 +6,10 @@
   "source": "assets/environment/source/glass-floor.png",
   "output": "assets/environment/v1/empty-arcade.png",
   "authoredFloorRepair": {
-    "description": "Keep the authored wall-top repair silhouette and alpha while matching its old floor paint to the dark-blue glass material.",
-    "bounds": [372,475,439,46],
-    "sampleOffset": [512,128]
+    "description": "Match the entire authored floor repair fringe beneath the boutique and along the nightclub wall to glass, including its jagged left and right ends. Keep every painted coverage and alpha value that hides intentional trim.",
+    "bounds": [275,430,605,128],
+    "sampleOffset": [640,128],
+    "blueFloorOnly": true
   },
   "floorPolygons": [
     [[500,124],[1193,124],[1193,155],[1375,155],[1375,305],[1594,305],[1594,810],[859,810],[859,441],[681,441],[681,330],[649,330],[649,313],[597,313],[597,273],[500,273]],
@@ -18,6 +19,7 @@
     [[271,375],[327,375],[327,427],[399,455],[446,468],[446,496],[397,479],[328,454],[271,454]],
     [[1375,154],[1382,154],[1382,306],[1375,306]],
     [[808,435],[831,435],[831,505],[808,505]],
+    [[716,492],[808,492],[808,557],[779,557],[773,548],[716,516]],
     [[94,690],[174,658],[617,658],[635,670],[705,693],[776,737],[805,742],[808,806],[777,829],[728,837],[119,837],[96,812]],
     [[778,557],[827,557],[827,806],[778,806]]
   ],

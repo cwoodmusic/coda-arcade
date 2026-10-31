@@ -12,7 +12,7 @@ spec = importlib.util.spec_from_file_location('environment_world_fixture',
     Path(__file__).with_name('published-world-browser.py'))
 fixture = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(fixture)
-FINGERPRINT = '8d2847400414828e337915c5a4874d4fb89164abcacec53822d841753719a71f'
+FINGERPRINT = 'ea3e0d3676c9abfa6cb08d40c6a5e51c7d1f27cd3c9fb9957f9baf71a8e153eb'
 
 
 class EnvironmentWorldTests(unittest.TestCase):

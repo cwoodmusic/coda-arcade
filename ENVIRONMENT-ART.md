@@ -40,6 +40,22 @@ Grounded footsteps brighten the tile beneath the player. Color animation and
 star pulses pause with Motion Off or reduced motion. FX Off hides stars and
 holds the dance-floor palette still, with footstep feedback available.
 
+## Saved floor-paint compatibility
+
+Older environment-v1 editor projects may contain painted blue floor repairs
+that cover the newer glass backdrop. `floor-palette-compat.js` resolves only
+known old RGBA pixels at their recorded positions, for both the base background
+and structural fragments. It preserves local project JSON, object placement,
+collision, transparent object erasures and custom paint with different colors.
+The saved project does not need a Reset. Legacy scenery without environment-v1
+keeps its original rendering.
+
+`scripts/build-floor-palette-compat.cjs` rebuilds the compatibility manifest from
+its retained old-color rules and the current published background journal. Run
+it after the floor builder, then use `--check` to verify reproducibility. The
+reviewed native floor mask and repair-color predicate retain lamps and wall
+trim rather than painting the entire bounding rectangle as floor.
+
 ## DJ stage lighting
 
 The four-head rig above DJ Coda projects colored beams and soft pools of light

@@ -22,14 +22,17 @@ function floorMask(meta){
  }
  return mask;
 }
-function rebaseArtwork(project,mask,width){
+function rebaseArtwork(project,mask,width,preserveRepair){
  const next=structuredClone(project),texture=next.artwork?.['background.world'];let removed=0,retained=0;
  if(!texture)return {project:next,removed,retained};
  for(const [key,runs]of Object.entries(texture.tiles)){
   const [tx,ty]=key.split(',').map(Number),kept=[];
   for(const [start,length,color]of runs)for(let index=start;index<start+length;index++){
    const x=tx*64+index%64,y=ty*64+Math.floor(index/64);
-   if(mask[y*width+x]){removed++;continue;}
+   const keepRepair=preserveRepair&&x>=preserveRepair.bounds[0]&&x<preserveRepair.bounds[0]+preserveRepair.bounds[2]&&y>=preserveRepair.bounds[1]&&y<preserveRepair.bounds[1]+preserveRepair.bounds[3];
+   // Authored wall-covering floor paint keeps its silhouette even when a
+   // later native floor mask expands underneath it. Recolor rather than erase.
+   if(mask[y*width+x]&&!keepRepair){removed++;continue;}
    retained++;const last=kept.at(-1);
    if(last&&last[0]+last[1]===index&&last[2]===color)last[1]++;
    else kept.push([index,1,color]);
@@ -45,9 +48,14 @@ function repairPoints(project,repair){
  const [left,top,width,height]=repair.bounds,result=[];
  for(const [key,runs]of Object.entries(project.artwork?.['background.world']?.tiles||{})){
   const [tx,ty]=key.split(',').map(Number);
-  for(const [start,length]of runs)for(let i=start;i<start+length;i++){
+  for(const [start,length,color]of runs)for(let i=start;i<start+length;i++){
    const x=tx*64+i%64,y=ty*64+Math.floor(i/64);
-   if(x>=left&&x<left+width&&y>=top&&y<top+height)result.push([x,y]);
+   if(x<left||x>=left+width||y<top||y>=top+height)continue;
+   if(repair.blueFloorOnly){
+    const [r,g,b]=[1,3,5].map(at=>parseInt(color.slice(at,at+2),16));
+    if(!(b>r*1.4&&b>g*1.4))continue;
+   }
+   result.push([x,y]);
   }
  }
  return result;
@@ -95,7 +103,7 @@ async function main(){
  const root=path.resolve(__dirname,'..'),meta=JSON.parse(await fs.readFile(path.join(__dirname,'cosmic-floor-regions.json'),'utf8')),previewOnly=process.argv.includes('--preview-mask'),dryRun=process.argv.includes('--dry-run');
  const baseline=await fs.readFile(path.join(root,meta.baseline));
  if(createHash('sha256').update(baseline).digest('hex')!==meta.baselineSha256)throw Error('The immutable original backdrop has changed');
- const mask=floorMask(meta),projectPath=path.join(root,'published-world-project.json'),originalProject=JSON.parse(await fs.readFile(projectPath,'utf8')),rebased=rebaseArtwork(originalProject,mask,meta.worldSize[0]);
+ const mask=floorMask(meta),projectPath=path.join(root,'published-world-project.json'),originalProject=JSON.parse(await fs.readFile(projectPath,'utf8')),rebased=rebaseArtwork(originalProject,mask,meta.worldSize[0],meta.authoredFloorRepair);
  const profile=await fs.mkdtemp(path.join(os.tmpdir(),'coda-cosmic-floor-')),server=http.createServer(async(req,res)=>{try{
   if(req.url==='/'){res.setHeader('Content-Type','text/html');res.end('<!doctype html><title>Cosmic floor compositor</title>');return;}
   if(!['/baseline','/source'].includes(req.url)){res.writeHead(404);res.end();return;}

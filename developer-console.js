@@ -15,6 +15,7 @@ window.createCodaDeveloperConsole = function (api) {
   let pickSample = false, baseCache = null, baseKey = '', cleanupCache = null, loadFailed = false, pan = null;
   let publishedProject = null, publishedError = null, loadError = null, projectSource = 'base';
   let scenery, dialogue={}, sprites={}, artwork={}, dialogueEditor=null, pixelEditor=null, artworkEditor=null, artworkTools=null,educationEditor=null;
+  let floorPaletteCompat=null;
   let characters={},characterEditor=null,layerSelecting=false,layerSelection=null;
   let decorLibrary=null,floodAdding=false,floodImageData=null,notesRugAdding=false,notesRugData=null;
   const emptyHistoryContent=()=>({version:2,facts:{},quizzes:{}});
@@ -217,6 +218,7 @@ window.createCodaDeveloperConsole = function (api) {
     getTargets:api.getArtworkCharacters||api.getPixelTargets,getProfile:api.getPixelProfile,canEdit:canEditArtwork});
   if(window.CodaArtworkEditor&&window.createCodaWorldArtworkTools){
     artworkTools=window.createCodaWorldArtworkTools({width:W,height:H,catalog,getAssets:()=>studio.assets,getRootData:()=>artwork,
+      resolveTexture:(id,patch)=>refreshedScenery()?floorPaletteCompat?.resolveTexture(id,patch)||patch:patch,
       getObjectSource:name=>{const part=catalog.find(p=>p.name===name);return part?sourcePicture({name,bounds:part.bounds}):null;},
       getAssetSource:api.getAssetArtworkSource,getBackgroundSource:backgroundSource,getClassroomSource:api.getClassroomArtworkSource,drawAssetPreview:api.drawArtworkAssetPreview,
       getRoomEditors:api.getArtworkRooms,characters:characterArtwork,canEdit:canEditArtwork,onExit:()=>setTab('objects'),onUndo:()=>undoRedo(true),onRedo:()=>undoRedo(false),getHistory:()=>({undo:studio.undo.length,redo:studio.redo.length}),applyRootData:applyArtworkData});
@@ -692,6 +694,8 @@ window.createCodaDeveloperConsole = function (api) {
   async function decodeProjectImages(data) {
     if(data.scenery==='environment-v1'){
       const environment=api.environmentArt;if(!environment)throw Error('The refreshed environment artwork is unavailable.');
+      if(!floorPaletteCompat&&window.CodaFloorPaletteCompat)floorPaletteCompat=window.CodaFloorPaletteCompat.create({url:api.paletteCompatUrl});
+      await floorPaletteCompat?.ready;
       await (typeof environment.ready==='function'?environment.ready():environment.ready);
       const background=environment.background?.();
       if(!environmentReady()||(background.naturalWidth||background.width)!==W||(background.naturalHeight||background.height)!==H)throw Error('The refreshed environment artwork is unavailable or has incorrect dimensions.');
@@ -962,5 +966,5 @@ window.createCodaDeveloperConsole = function (api) {
     getScenery:()=>scenery,isRefreshedScenery:refreshedScenery,environmentReady,
     getCharacters:()=>{const result=clone(characters);for(const id of ['scholar','riff','pip']){const preview=characterEditor?.getPreview(id);if(preview)result[id]={...(result[id]||{}),...preview};}return result;},
     getProject:()=>clone(documentData()),getPublishedProject:()=>publishedProject?clone(publishedProject):null,getProjectSource:()=>projectSource,
-    getMusicHistoryContent:()=>clone(musicHistoryContent),getMusicFactsEditor:()=>musicFactsEditor,getDialogue:id=>id===undefined?clone(dialogue):dialogue[id]?clone(dialogue[id]):null,getSprites:()=>clone(sprites),getEducationEditor:()=>educationEditor,getState:()=>({layerSelection:layerSelection?{...layerSelection.getState(),selecting:layerSelecting}:null,characters:characterEditor?.getState()||null,scenery:scenery||null,artwork:artworkEditor?.getState()||null,education:educationEditor?.getState()||null,open:studio.active,editing:studio.active&&!playtest,playtest,tab,fullscreen,overlays:{collision:collisionOverlay,layers:layerOverlay,visible:studio.active&&!playtest}})};
+    getMusicHistoryContent:()=>clone(musicHistoryContent),getMusicFactsEditor:()=>musicFactsEditor,getDialogue:id=>id===undefined?clone(dialogue):dialogue[id]?clone(dialogue[id]):null,getSprites:()=>clone(sprites),getEducationEditor:()=>educationEditor,getState:()=>({paletteCompatibility:floorPaletteCompat?.getState()||null,layerSelection:layerSelection?{...layerSelection.getState(),selecting:layerSelecting}:null,characters:characterEditor?.getState()||null,scenery:scenery||null,artwork:artworkEditor?.getState()||null,education:educationEditor?.getState()||null,open:studio.active,editing:studio.active&&!playtest,playtest,tab,fullscreen,overlays:{collision:collisionOverlay,layers:layerOverlay,visible:studio.active&&!playtest}})};
 };
