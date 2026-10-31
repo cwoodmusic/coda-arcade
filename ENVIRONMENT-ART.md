@@ -40,6 +40,22 @@ Grounded footsteps brighten the tile beneath the player. Color animation and
 star pulses pause with Motion Off or reduced motion. FX Off hides stars and
 holds the dance-floor palette still, with footstep feedback available.
 
+## Emerald wall and jade counter
+
+The back-wall masonry around the main Coda sign is emerald green. The long
+shop counter uses jade panels and mint lighting with its original gold trim.
+The three existing counter icons use a matching mint/emerald rendering palette;
+their stored image data and player artwork remain intact.
+
+The generated sources are `source/green-back-wall.png` and
+`source/jade-counter.png` inside `assets/environment/`. Original counter and
+backdrop references are retained alongside them. Run
+`node scripts/build-green-accents.cjs` to rebuild the scoped palette edit.
+The floor builder runs that step automatically, so regenerating glass does not
+remove the green accents. Floor, sign and lamp pixels outside the masonry mask
+remain unchanged; the counter retains its alpha silhouette and original gold
+pixels. No project reset or layout change is needed.
+
 ## Saved floor-paint compatibility
 
 Older environment-v1 editor projects may contain painted blue floor repairs

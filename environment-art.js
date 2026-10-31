@@ -78,7 +78,7 @@
      finish();
     }catch(error){finish(Error('Environment artwork could not decode: '+file+'. '+(error.message||'')));}
    }
-   image.addEventListener('load',onload);image.addEventListener('error',onerror);image.src=baseUrl+file+(file===BACKGROUND?'?v=glass-fringe-20261031-1':'');
+   image.addEventListener('load',onload);image.addEventListener('error',onerror);image.src=baseUrl+file+((file===BACKGROUND||file==='main-counter.png')?'?v=emerald-20261031-1':'');
    if(image.complete&&image.naturalWidth)onload();
   }));
   const ready=Promise.all(tasks).then(()=>{loaded=true;});

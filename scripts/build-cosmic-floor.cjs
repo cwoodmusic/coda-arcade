@@ -134,6 +134,7 @@ async function main(){
  }finally{
   socket?.close();browser.kill('SIGTERM');server.close();if(browser.exitCode===null)await new Promise(resolve=>browser.once('exit',resolve));await fs.rm(profile,{recursive:true,force:true});
  }
+ if(!previewOnly&&!dryRun)await require('./build-green-accents.cjs').build();
 }
 if(require.main===module)main().catch(error=>{process.stderr.write(error.stack+'\n');process.exitCode=1;});
 module.exports={inside,floorMask,rebaseArtwork,repairPoints,recolorRepairs};
