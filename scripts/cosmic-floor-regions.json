@@ -5,6 +5,7 @@
   "baseline": "assets/environment/source/empty-arcade-before-cosmic.png",
   "source": "assets/environment/source/glass-floor.png",
   "output": "assets/environment/v1/empty-arcade.png",
+  "protectedShape": "assets/environment/boutique-pathway-shape.json",
   "authoredFloorRepair": {
     "description": "Match the entire authored floor repair fringe beneath the boutique and along the nightclub wall to glass, including its jagged left and right ends. Keep every painted coverage and alpha value that hides intentional trim.",
     "bounds": [275,430,605,128],

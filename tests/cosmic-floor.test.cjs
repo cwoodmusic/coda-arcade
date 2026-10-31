@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
 const meta=require('../scripts/cosmic-floor-regions.json');
-const {floorMask,rebaseArtwork,repairPoints,recolorRepairs}=require('../scripts/build-cosmic-floor.cjs');
+const {floorMask,authoredShapeMask,rebaseArtwork,repairPoints,recolorRepairs}=require('../scripts/build-cosmic-floor.cjs');
 const mask=floorMask(meta),width=meta.worldSize[0];
 
 test('cosmic palette reaches exposed floor while protecting the existing architecture and dance tiles',()=>{
@@ -48,6 +48,17 @@ test('floor-family repair selection leaves warm lamp and cyan wall details intac
   [768,1,'#3601f1ff'],[769,1,'#e14488ff'],[770,1,'#08dcffff']
  ]}}}};
  assert.deepEqual(repairPoints(project,{bounds:[768,524,3,1],blueFloorOnly:true}),[[768,524]]);
+});
+
+test('later authored pathway erasures and custom paint survive old floor rebasing and palette sampling',()=>{
+ const owned=authoredShapeMask(meta,require('../assets/environment/boutique-pathway-shape.json'));
+ const project={artwork:{'background.world':{width:1672,height:941,tiles:{
+  '4,6':[[3584+15,1,'#00000000']], //271,440: beyond the earlier repair bounds.
+  '4,7':[[172,1,'#0a0b32ff']] //300,450: blue custom paint, not old floor material.
+ }}}};
+ const result=rebaseArtwork(project,new Uint8Array(mask.length).fill(1),width,null,owned);
+ assert.equal(result.removed,0);assert.deepEqual(result.project,project);
+ assert.deepEqual(repairPoints(project,meta.authoredFloorRepair,owned),[]);
 });
 
 test('rebasing splits a journal run at the floor-wall boundary without changing retained colors or layout',()=>{

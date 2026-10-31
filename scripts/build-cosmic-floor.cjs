@@ -22,7 +22,16 @@ function floorMask(meta){
  }
  return mask;
 }
-function rebaseArtwork(project,mask,width,preserveRepair){
+function authoredShapeMask(meta,shape){
+ const [width,height]=meta.worldSize,mask=new Uint8Array(width*height);
+ if(shape.version!==1||shape.width!==width||shape.height!==height||!Array.isArray(shape.deltaRuns))throw Error('Unsupported authored pathway shape');
+ for(const [y,x0,x1]of shape.deltaRuns){
+  if(![y,x0,x1].every(Number.isInteger)||y<0||y>=height||x0<0||x1>width||x0>=x1)throw Error('Invalid authored pathway run');
+  mask.fill(1,y*width+x0,y*width+x1);
+ }
+ return mask;
+}
+function rebaseArtwork(project,mask,width,preserveRepair,protectedMask){
  const next=structuredClone(project),texture=next.artwork?.['background.world'];let removed=0,retained=0;
  if(!texture)return {project:next,removed,retained};
  for(const [key,runs]of Object.entries(texture.tiles)){
@@ -32,7 +41,7 @@ function rebaseArtwork(project,mask,width,preserveRepair){
    const keepRepair=preserveRepair&&x>=preserveRepair.bounds[0]&&x<preserveRepair.bounds[0]+preserveRepair.bounds[2]&&y>=preserveRepair.bounds[1]&&y<preserveRepair.bounds[1]+preserveRepair.bounds[3];
    // Authored wall-covering floor paint keeps its silhouette even when a
    // later native floor mask expands underneath it. Recolor rather than erase.
-   if(mask[y*width+x]&&!keepRepair){removed++;continue;}
+   if(mask[y*width+x]&&!keepRepair&&!protectedMask?.[y*width+x]){removed++;continue;}
    retained++;const last=kept.at(-1);
    if(last&&last[0]+last[1]===index&&last[2]===color)last[1]++;
    else kept.push([index,1,color]);
@@ -44,12 +53,13 @@ function rebaseArtwork(project,mask,width,preserveRepair){
  assert.deepEqual(omitBackground(next),omitBackground(project),'Only floor-overlapping background journal pixels may change');
  return {project:next,removed,retained};
 }
-function repairPoints(project,repair){
+function repairPoints(project,repair,protectedMask){
  const [left,top,width,height]=repair.bounds,result=[];
  for(const [key,runs]of Object.entries(project.artwork?.['background.world']?.tiles||{})){
   const [tx,ty]=key.split(',').map(Number);
   for(const [start,length,color]of runs)for(let i=start;i<start+length;i++){
    const x=tx*64+i%64,y=ty*64+Math.floor(i/64);
+   if(protectedMask?.[y*project.artwork['background.world'].width+x])continue;
    if(x<left||x>=left+width||y<top||y>=top+height)continue;
    if(repair.blueFloorOnly){
     const [r,g,b]=[1,3,5].map(at=>parseInt(color.slice(at,at+2),16));
@@ -103,7 +113,8 @@ async function main(){
  const root=path.resolve(__dirname,'..'),meta=JSON.parse(await fs.readFile(path.join(__dirname,'cosmic-floor-regions.json'),'utf8')),previewOnly=process.argv.includes('--preview-mask'),dryRun=process.argv.includes('--dry-run');
  const baseline=await fs.readFile(path.join(root,meta.baseline));
  if(createHash('sha256').update(baseline).digest('hex')!==meta.baselineSha256)throw Error('The immutable original backdrop has changed');
- const mask=floorMask(meta),projectPath=path.join(root,'published-world-project.json'),originalProject=JSON.parse(await fs.readFile(projectPath,'utf8')),rebased=rebaseArtwork(originalProject,mask,meta.worldSize[0],meta.authoredFloorRepair);
+ const protectedMask=meta.protectedShape?authoredShapeMask(meta,JSON.parse(await fs.readFile(path.join(root,meta.protectedShape),'utf8'))):null;
+ const mask=floorMask(meta),projectPath=path.join(root,'published-world-project.json'),originalProject=JSON.parse(await fs.readFile(projectPath,'utf8')),rebased=rebaseArtwork(originalProject,mask,meta.worldSize[0],meta.authoredFloorRepair,protectedMask);
  const profile=await fs.mkdtemp(path.join(os.tmpdir(),'coda-cosmic-floor-')),server=http.createServer(async(req,res)=>{try{
   if(req.url==='/'){res.setHeader('Content-Type','text/html');res.end('<!doctype html><title>Cosmic floor compositor</title>');return;}
   if(!['/baseline','/source'].includes(req.url)){res.writeHead(404);res.end();return;}
@@ -120,7 +131,7 @@ async function main(){
   socket.addEventListener('message',event=>{const message=JSON.parse(event.data);if(message.id){const job=jobs.get(message.id);if(!job)return;jobs.delete(message.id);clearTimeout(job.timer);message.error?job.reject(Error(message.error.message)):job.resolve(message.result);}else listeners.get(message.method)?.(message.params);});
   const send=(method,params={})=>new Promise((resolve,reject)=>{const id=nextId++,timer=setTimeout(()=>{jobs.delete(id);reject(Error('Timed out: '+method));},30000);jobs.set(id,{resolve,reject,timer});socket.send(JSON.stringify({id,method,params}));});
   await send('Page.enable');const loaded=new Promise(resolve=>listeners.set('Page.loadEventFired',resolve));await send('Page.navigate',{url:'http://127.0.0.1:'+server.address().port});await loaded;
-  const points=repairPoints(rebased.project,meta.authoredFloorRepair);
+  const points=repairPoints(rebased.project,meta.authoredFloorRepair,protectedMask);
   const result=await send('Runtime.evaluate',{awaitPromise:true,returnByValue:true,expression:`(${compose.toString()})(${JSON.stringify({meta,mask:Array.from(mask),previewOnly,repairPoints:points})})`});
   if(result.exceptionDetails)throw Error(result.exceptionDetails.exception?.description||result.exceptionDetails.text);
   const {image,preview,repairSamples,...report}=result.result.value,recolored=recolorRepairs(rebased.project,repairSamples);
@@ -135,6 +146,7 @@ async function main(){
   socket?.close();browser.kill('SIGTERM');server.close();if(browser.exitCode===null)await new Promise(resolve=>browser.once('exit',resolve));await fs.rm(profile,{recursive:true,force:true});
  }
  if(!previewOnly&&!dryRun)await require('./build-green-accents.cjs').build();
+ if(!previewOnly&&!dryRun)await require('./build-walkway-cleanup.cjs').build();
 }
 if(require.main===module)main().catch(error=>{process.stderr.write(error.stack+'\n');process.exitCode=1;});
-module.exports={inside,floorMask,rebaseArtwork,repairPoints,recolorRepairs};
+module.exports={inside,floorMask,authoredShapeMask,rebaseArtwork,repairPoints,recolorRepairs};

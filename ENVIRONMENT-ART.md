@@ -42,7 +42,8 @@ holds the dance-floor palette still, with footstep feedback available.
 
 ## Emerald wall and jade counter
 
-The back-wall masonry around the main Coda sign is emerald green. The long
+The back-wall masonry around the main Coda sign and beside the cyan Piano Lab
+entrance is emerald green. The long
 shop counter uses jade panels and mint lighting with its original gold trim.
 The three existing counter icons use a matching mint/emerald rendering palette;
 their stored image data and player artwork remain intact.
@@ -71,6 +72,38 @@ its retained old-color rules and the current published background journal. Run
 it after the floor builder, then use `--check` to verify reproducibility. The
 reviewed native floor mask and repair-color predicate retain lamps and wall
 trim rather than painting the entire bounding rectangle as floor.
+
+## Walkway joins and lamp cleanup
+
+The boutique-to-nightclub walkway is a continuous glass surface with clean
+wall-cap joins. The generated cleanup removes the old flat repair band, blue
+stub and clipped divider-lamp glow within a narrow reviewed mask. The lamp and
+wall stay in their existing positions.
+
+`source/walkway-cleanup.png` is composited only through
+`scripts/walkway-cleanup-regions.json` by `scripts/build-walkway-cleanup.cjs`.
+This runs after the floor and green accents. The cleaned native artwork owns
+that mask, so the builder removes only overlapping published background-journal
+pixels. It retains all edits outside the mask, object erasures and layout data.
+Regenerate `scripts/build-floor-palette-compat.cjs` afterward; historical floor
+pigments then reveal the cleaned source in existing local projects too.
+
+## Reshaped boutique path
+
+The current path follows the newer editor export: the west wall segment and
+dance-floor disco ball remain hidden, and its six collision edits are retained.
+The 10,543 transparent background pixels defining the removed area reveal a
+scoped glass underlay. Foreground fragments keep those same pixels transparent,
+so the removed wall cannot cover actors on the new floor. The opaque authored
+outline, saved JSON and custom paint remain intact. Nightclub ambience is
+clipped below the refreshed north wall, so its former lighting boundary cannot
+paint a rectangular haze band across this new walkway.
+
+`assets/environment/boutique-pathway-shape.json` records the reviewed row masks.
+`pathway-floor-fill.js` samples approved glass from the empty main-floor artwork
+and draws it behind the background composition. Both the floor repair pass and
+walkway cleanup protect the newer authored pixels, preserving the reshaped path
+on repeated builds instead of restoring the earlier diagonal.
 
 ## DJ stage lighting
 

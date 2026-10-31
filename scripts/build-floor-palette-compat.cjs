@@ -30,8 +30,12 @@ function visit(texture,callback){
 // neither an attachment nor a full Git history. --legacy adds another export.
 if(fs.existsSync(output)){
  const previous=JSON.parse(fs.readFileSync(output,'utf8'));
- for(const [key,rules]of Object.entries(previous.tiles))for(const [start,length,color]of rules)
-  for(let index=start;index<start+length;index++)remember(key,index,color);
+ for(const [key,rules]of Object.entries(previous.tiles))for(const [start,length,color,target]of rules)
+  for(let index=start;index<start+length;index++){
+   remember(key,index,color);
+   // A project may have been saved after an intermediate palette update.
+   if(target!==null)remember(key,index,target);
+  }
 }
 for(const journal of journals)visit(journal,remember);
 if(!known.size)throw Error('Seed at least one known legacy floor journal');
