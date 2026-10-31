@@ -36,6 +36,26 @@ test('four can faces and beam origins share position, rotation, resize and anima
  f.assets([asset({w:400,h:80})]);const resized=f.renderer.snapshot().rigs[0];near(resized.heads[0].localX,(.170899-.5)*400);near(resized.heads[0].localY,26.4);
 });
 
+test('mirrored floodlight beams follow the reflected artwork while local LED geometry stays intact',()=>{
+ const value=asset({rotation:30,flipX:true,flipY:true}),f=fixture(value);
+ f.animation({dx:5,dy:-7,rot:Math.PI/3,scale:2});
+ const rig=f.renderer.snapshot().rigs[0];
+ near(rig.scale,2);near(rig.scaleX,-2);near(rig.scaleY,-2);
+ near(rig.rotation,Math.PI/2);near(rig.x,105);near(rig.y,193);
+ const first=rig.heads[0];
+ near(first.localX,(.170899-.5)*200);near(first.localY,40*.33);
+ near(first.x,105+first.localY*2);near(first.y,193-first.localX*2);
+ const beam=context();f.renderer.drawBeams(beam);
+ assert.deepEqual(beam.calls.find(call=>call[0]==='scale'),['scale',-2,-2]);
+ const mirroredFaces=context();f.renderer.drawFixture(mirroredFaces,value);
+ value.flipX=false;value.flipY=false;
+ const restored=f.renderer.snapshot().rigs[0];near(restored.scaleX,2);near(restored.scaleY,2);
+ near(restored.heads[0].x,105-first.localY*2);near(restored.heads[0].y,193+first.localX*2);
+ const normalFaces=context();f.renderer.drawFixture(normalFaces,value);
+ assert.deepEqual(mirroredFaces.calls.filter(call=>call[0]==='ellipse'),normalFaces.calls.filter(call=>call[0]==='ellipse'),
+  'The parent asset transform mirrors the seven-LED faces once; local face geometry must not mirror a second time');
+});
+
 test('color cycles are gradual while speed zero and reduced motion remain stationary',()=>{
  const f=fixture();const first=f.renderer.snapshot().rigs[0].heads;f.time(.01);const next=f.renderer.snapshot().rigs[0].heads;
  assert.ok(next.every((head,index)=>Math.abs(head.hue-first[index].hue)<1));assert.notDeepEqual(next.map(head=>head.color),first.map(head=>head.color));

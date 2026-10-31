@@ -16,7 +16,7 @@ window.createCodaDeveloperConsole = function (api) {
   let publishedProject = null, publishedError = null, loadError = null, projectSource = 'base';
   let scenery, dialogue={}, sprites={}, artwork={}, dialogueEditor=null, pixelEditor=null, artworkEditor=null, artworkTools=null,educationEditor=null;
   let characters={},characterEditor=null,layerSelecting=false,layerSelection=null;
-  let decorLibrary=null,floodAdding=false,floodImageData=null;
+  let decorLibrary=null,floodAdding=false,floodImageData=null,notesRugAdding=false,notesRugData=null;
   const emptyHistoryContent=()=>({version:2,facts:{},quizzes:{}});
   let musicHistoryContent=emptyHistoryContent(),musicFactsEditor=null;
   let panTool=false, spaceHeld=false,collisionOverlay=false,layerOverlay=false,layerMaskSource=null,layerMaskTint=null,layerMaskKey='';
@@ -86,7 +86,7 @@ window.createCodaDeveloperConsole = function (api) {
   const libraryHost=document.createElement('section');catalogUI.before(libraryHost);
   function createDecorAsset(item,position){
     const asset=api.prototype(item.name,'image'),camera=api.getCamera?.()||{x:0,y:0,zoom:1};
-    Object.assign(asset,{data:item.data,w:item.width,h:item.height,x:position?.x??Math.round(camera.x+W/(camera.zoom||1)/2),y:position?.y??Math.round(camera.y+H/(camera.zoom||1)/2),layer:'world',anim:'none',ignoreBackgroundMasks:true});
+    Object.assign(asset,{data:item.data,w:item.width,h:item.height,x:position?.x??Math.round(camera.x+W/(camera.zoom||1)/2),y:position?.y??Math.round(camera.y+H/(camera.zoom||1)/2),layer:item.category==='rug'?'back':'world',anim:'none',ignoreBackgroundMasks:true});
     return asset;
   }
   if(window.CodaDecorLibrary)decorLibrary=window.CodaDecorLibrary.mount({host:libraryHost,canEdit:()=>canEditArtwork()&&tab==='objects',onAdd:item=>{
@@ -94,14 +94,30 @@ window.createCodaDeveloperConsole = function (api) {
   }});
   const floodButton=document.createElement('button');floodButton.type='button';floodButton.id='devAddFloodRig';floodButton.textContent='Add DJ floodlights';
   const libraryDetails=libraryHost.querySelector('details')||libraryHost;libraryDetails.append(floodButton);
+  async function embeddedDecorImage(name){
+    const image=new Image();image.src='assets/decor/v1/'+name+'.png';await image.decode();
+    if(!image.naturalWidth||!image.naturalHeight||image.naturalWidth>8192||image.naturalHeight>8192)throw Error('Library artwork could not load.');
+    const source=makeCanvas(image.naturalWidth,image.naturalHeight);source.getContext('2d').drawImage(image,0,0);return source.toDataURL('image/png');
+  }
   floodButton.onclick=async()=>{
     if(floodAdding||!canEditArtwork()||tab!=='objects')return;floodAdding=true;floodButton.disabled=true;
     try{
-      if(!floodImageData){const image=new Image();image.src='assets/decor/v1/dj-flood-rig.png';await image.decode();if(!image.naturalWidth||!image.naturalHeight||image.naturalWidth>8192||image.naturalHeight>8192)throw Error('Floodlight artwork could not load.');const source=makeCanvas(image.naturalWidth,image.naturalHeight);source.getContext('2d').drawImage(image,0,0);floodImageData=source.toDataURL('image/png');}
+      if(!floodImageData)floodImageData=await embeddedDecorImage('dj-flood-rig');
       if(!canEditArtwork()||tab!=='objects')return;
       const position=api.getFloodRigPosition?.()||{x:393.5,y:490},asset=createDecorAsset({name:'DJ color-changing floodlights',width:210,height:48,data:floodImageData},position);
       asset.layer='front';asset.floodLights=window.CodaDJFloodlights.defaults();api.add(asset);
     }catch(error){message(error.message||'Floodlights could not load.');}finally{floodAdding=false;floodButton.disabled=!canEditArtwork()||tab!=='objects';}
+  };
+  const notesRugButton=document.createElement('button');notesRugButton.type='button';notesRugButton.id='devAddNotesRug';notesRugButton.textContent='Place Notes shop rug';libraryDetails.append(notesRugButton);
+  notesRugButton.onclick=async()=>{
+    if(notesRugAdding||!canEditArtwork()||tab!=='objects')return;notesRugAdding=true;notesRugButton.disabled=true;
+    try{
+      if(!notesRugData)notesRugData=await embeddedDecorImage('rug-notes-rectangle');
+      if(!canEditArtwork()||tab!=='objects')return;
+      const placement=api.getNotesRugPlacement?.()||{x:1350,y:640,width:360,height:112,rotation:0};
+      const asset=createDecorAsset({name:'Notes shop arcade rug',category:'rug',width:placement.width,height:placement.height,data:notesRugData},placement);
+      asset.rotation=placement.rotation||0;if(placement.flipX)asset.flipX=true;if(placement.flipY)asset.flipY=true;api.add(asset);
+    }catch(error){message(error.message||'The Notes shop rug could not load.');}finally{notesRugAdding=false;notesRugButton.disabled=!canEditArtwork()||tab!=='objects';}
   };
   const groups = new Map();
   for (const part of catalog) {
@@ -266,6 +282,11 @@ window.createCodaDeveloperConsole = function (api) {
       editPixels:id=>{open('artwork');artworkEditor?.selectTarget('character.'+id+'.down');}});
   }
   const orderTools=document.createElement('section');orderTools.className='dev-order';
+  const transformTools=document.createElement('div');transformTools.className='dev-toolbar dev-transform-tools';transformTools.setAttribute('role','group');transformTools.setAttribute('aria-label','Asset flip and rotation');
+  transformTools.innerHTML='<button id="devAssetFlipX" type="button" aria-pressed="false">Flip horizontal</button><button id="devAssetFlipY" type="button" aria-pressed="false">Flip vertical</button><button id="devAssetRotateLeft" type="button">Rotate left 90°</button><button id="devAssetRotateRight" type="button">Rotate right 90°</button>';
+  $('assetSelection').querySelector('.studioGrid').after(transformTools);
+  for(const [id,key]of [['devAssetFlipX','flipX'],['devAssetFlipY','flipY']])$(id).onclick=()=>{if(canEditArtwork()&&tab==='objects')editSelected(a=>{if(a[key]===true)delete a[key];else a[key]=true;});};
+  for(const [id,degrees]of [['devAssetRotateLeft',-90],['devAssetRotateRight',90]])$(id).onclick=()=>{if(canEditArtwork()&&tab==='objects')editSelected(a=>{a.rotation=((a.rotation+degrees+180)%360+360)%360-180;});};
   orderTools.innerHTML='<h3 class="dev-heading">Asset order</h3><label class="studioCheck"><input id="devIgnoreBackgroundMasks" type="checkbox">Draw in front of background masks</label><p class="studioTip">Keep this asset at its chosen depth where Send to background masks overlap.</p><label class="studioField">Depth offset (px)<input id="devAssetDepth" type="number" step="1"></label><p class="studioTip">Actor depth uses the bottom edge plus this offset. Higher depth appears in front.</p><label class="studioField">Arrange relative to<select id="devOrderTarget" aria-label="Arrange relative to"></select></label><div class="dev-toolbar"><button id="devOrderBehind" type="button">Place behind</button><button id="devOrderInFront" type="button">Place in front</button></div>';
   $('assetSelection').append(orderTools);$('devAssetDepth').min=-H;$('devAssetDepth').max=H;
   const floodControls=document.createElement('section');floodControls.id='devFloodSettings';floodControls.hidden=true;
@@ -511,7 +532,7 @@ window.createCodaDeveloperConsole = function (api) {
   function drawUnliftedPixels(g, image, x, y) {g.drawImage(unliftedPicture(image,x,y),x,y);}
   function cabinetDisplaced(a) {
     const [x,y,w,h]=a.origin.bounds;
-    return !a.visible||a.opacity<100||a.anim!=='none'||a.x!==x+w/2||a.y!==y+h/2||a.w!==w||a.h!==h||a.rotation!==0;
+    return !a.visible||a.opacity<100||a.anim!=='none'||a.x!==x+w/2||a.y!==y+h/2||a.w!==w||a.h!==h||a.rotation!==0||a.flipX===true||a.flipY===true;
   }
   function cabinetFloor(a,repair) {
     const bounds=a.origin.bounds,bottom=cabinetDisplaced(a)?repair.reflectionBottom:bounds[1]+bounds[3];
@@ -584,6 +605,7 @@ window.createCodaDeveloperConsole = function (api) {
     if(a.discoRays!==undefined&&typeof a.discoRays!=='boolean')return false;
     if(a.depthOffset!==undefined&&(!Number.isFinite(a.depthOffset)||Math.abs(a.depthOffset)>H))return false;
     if(a.ignoreBackgroundMasks!==undefined&&typeof a.ignoreBackgroundMasks!=='boolean')return false;
+    if(a.flipX!==undefined&&typeof a.flipX!=='boolean'||a.flipY!==undefined&&typeof a.flipY!=='boolean')return false;
     if(a.floodLights!==undefined&&(a.kind!=='image'||window.CodaDJFloodlights?.validate(a.floodLights)!==true))return false;
     if(a.layerOrder!==undefined&&(!Number.isFinite(a.layerOrder)||Math.abs(a.layerOrder)>1000000))return false;
     if(a.collider!==undefined) { const b=a.collider;if(!b||!['x','y','w','h'].every(k=>Number.isFinite(b[k])))return false;if(b.x< -100||b.x>100||b.y< -100||b.y>100||b.w<1||b.w>200||b.h<1||b.h>200)return false; }
@@ -607,7 +629,7 @@ window.createCodaDeveloperConsole = function (api) {
       const b=a.collider, angle=a.rotation*Math.PI/180, cs=Math.cos(angle), sn=Math.sin(angle);
       const absC=Math.abs(cs), absS=Math.abs(sn);
       const halfW=b.w*a.w/200, halfH=b.h*a.h/200;
-      const localX=(b.x+b.w/2)*a.w/100, localY=(b.y+b.h/2)*a.h/100;
+      const localX=(b.x+b.w/2)*a.w/100*(a.flipX===true?-1:1), localY=(b.y+b.h/2)*a.h/100*(a.flipY===true?-1:1);
       const centerX=a.x+localX*cs-localY*sn, centerY=a.y+localX*sn+localY*cs;
       const extentX=absC*halfW+absS*halfH, extentY=absS*halfW+absC*halfH;
       const minX=Math.max(0,Math.floor((centerX-extentX)/api.cell));
@@ -747,7 +769,7 @@ window.createCodaDeveloperConsole = function (api) {
   }
   function refresh() {
     syncLayerSelection();
-    decorLibrary?.refresh();floodButton.disabled=floodAdding||!canEditArtwork()||tab!=='objects';
+    decorLibrary?.refresh();floodButton.disabled=floodAdding||!canEditArtwork()||tab!=='objects';notesRugButton.disabled=notesRugAdding||!canEditArtwork()||tab!=='objects';
     if(api.selected()&&characterEditor?.getSelected())characterEditor.clearSelection();characterEditor?.refresh();
     const orderSelected=orderSelection();selectionOrder.hidden=!studio.active||playtest||tab!=='objects';
     $('devOrderSelection').textContent=orderSelected?'Selected: '+orderSelected.name+' · '+({back:'Background',world:'Actor depth',front:'Foreground'}[orderSelected.layer]):'Select an object or NPC';
@@ -762,6 +784,8 @@ window.createCodaDeveloperConsole = function (api) {
     for(const [id,shown,label]of [['devShowCollision',collisionOverlay,'collision'],['devShowLayers',layerOverlay,'layers']]){$(id).setAttribute('aria-pressed',String(shown));$(id).textContent=(shown?'Hide ':'Show ')+label;$(id).disabled=playtest;}
     $('devOverlayLegend').hidden=playtest||!collisionOverlay&&!layerOverlay;$('devMasks').checked=layerOverlay;layer.maskView=layerOverlay;$('devMasks').disabled=playtest;
     const a=api.selected(); $('devUndo').disabled=!studio.undo.length;$('devRedo').disabled=!studio.redo.length;
+    for(const [id,key]of [['devAssetFlipX','flipX'],['devAssetFlipY','flipY']]){$(id).setAttribute('aria-pressed',String(a?.[key]===true));$(id).disabled=!a||!canEditArtwork();}
+    for(const id of ['devAssetRotateLeft','devAssetRotateRight'])$(id).disabled=!a||!canEditArtwork();
     floodControls.hidden=!a?.floodLights;if(a?.floodLights){$('devFloodEnabled').checked=a.floodLights.enabled;for(const [id,key]of [['devFloodSpeed','speed'],['devFloodIntensity','intensity'],['devFloodLength','beamLength']])$(id).value=a.floodLights[key];}
     $('devIgnoreBackgroundMasks').checked=a?.ignoreBackgroundMasks===true;$('devIgnoreBackgroundMasks').disabled=!a||!canEditArtwork();
     $('devAssetDepth').value=a?.depthOffset||0;$('devAssetDepth').disabled=!a||a.layer!=='world';
@@ -833,7 +857,7 @@ window.createCodaDeveloperConsole = function (api) {
       g.save();for(let y=y0;y<y1;y++){let start=x0;while(start<x1){const value=!!api.navGrid[y*cols+start];let end=start+1;while(end<x1&&!!api.navGrid[y*cols+end]===value)end++;g.fillStyle=value?'#32eba03d':'#fa41643d';g.fillRect(start*cell,y*cell,Math.min(W,end*cell)-start*cell,Math.min(cell,H-y*cell));start=end;}}
       g.lineWidth=1.5/zoom;for(const [index,value]of collision.get()){const x=index%cols*cell,y=Math.floor(index/cols)*cell;if(x+cell<cam.x||y+cell<cam.y||x>(cam.x+W/zoom)||y>(cam.y+H/zoom))continue;g.strokeStyle=value?'#75ffd0':'#ff8094';g.strokeRect(x+.5/zoom,y+.5/zoom,cell-1/zoom,cell-1/zoom);}g.restore();
     }
-    if(tab==='objects'){const a=api.selected();if(a?.collider){const b=a.collider;g.save();g.translate(a.x,a.y);g.rotate(a.rotation*Math.PI/180);g.fillStyle='#ff56764d';g.strokeStyle='#ff8aab';g.lineWidth=2/cam.zoom;g.fillRect(b.x*a.w/100,b.y*a.h/100,b.w*a.w/100,b.h*a.h/100);g.strokeRect(b.x*a.w/100,b.y*a.h/100,b.w*a.w/100,b.h*a.h/100);g.restore();}}
+    if(tab==='objects'){const a=api.selected();if(a?.collider){const b=a.collider;g.save();g.translate(a.x,a.y);g.rotate(a.rotation*Math.PI/180);g.scale(a.flipX===true?-1:1,a.flipY===true?-1:1);g.fillStyle='#ff56764d';g.strokeStyle='#ff8aab';g.lineWidth=2/cam.zoom;g.fillRect(b.x*a.w/100,b.y*a.h/100,b.w*a.w/100,b.h*a.h/100);g.strokeRect(b.x*a.w/100,b.y*a.h/100,b.w*a.w/100,b.h*a.h/100);g.restore();}}
   }
   function liftedRegion(bounds) { return lift({name:'region-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),bounds}); }
   for(const name of TABS)$('devTab-'+name).onclick=()=>setTab(name);

@@ -41,10 +41,18 @@
   ['neon-music-note','Music note neon sign','wall',48,54],
   ['wall-vinyl-record','Wall vinyl record','wall',48,48],
   ['neon-rainbow','Neon rainbow','wall',78,44],
-  ['neon-controller-sign','Controller neon sign','wall',78,46]
+  ['neon-controller-sign','Controller neon sign','wall',78,46],
+  ['rug-notes-rectangle','Notes shop arcade rug','rug',360,140],
+  ['rug-neon-oval','Sunset oval rug','rug',180,90],
+  ['rug-pixel-round','Pixel maze round rug','rug',120,100],
+  ['rug-checker-square','Neon checker square rug','rug',110,90],
+  ['rug-lightning-runner','Lightning runner rug','rug',280,90],
+  ['rug-starburst','Arcade starburst rug','rug',130,110],
+  ['rug-controller','Game controller rug','rug',160,90],
+  ['rug-hex-grid','Synth grid hexagon rug','rug',130,110]
  ];
  const items=Object.freeze(records.map(([id,name,category,width,height])=>Object.freeze({id,name,category,width,height})));
- const categoryNames={floor:'Floor decor',tabletop:'Tabletop',wall:'Wall decor'};
+ const categoryNames={floor:'Floor decor',tabletop:'Tabletop',wall:'Wall decor',rug:'Rugs'};
  function mount(api={}){
   const host=api.host;if(!host?.ownerDocument)throw Error('The decor library needs an editor host.');
   const doc=host.ownerDocument,win=doc.defaultView;let selected=null,busy=false,destroyed=false,request=0;
@@ -52,7 +60,7 @@
   const el=(tag,className,text)=>{const node=doc.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
   const library=el('details','decor-library');library.dataset.decorLibrary='';
   const summary=el('summary','','Asset library · '+items.length+' decor');summary.dataset.decorLibraryToggle='';library.append(summary);
-  library.append(el('p','decor-library-help','Choose decor, then add a copy to your layout. Move, resize, duplicate, replace, or edit its pixels using Objects.'));
+  library.append(el('p','decor-library-help','Choose decor or a floor rug, then add a copy to your layout. Move, resize, duplicate, replace, or edit its pixels using Objects.'));
   const filters=el('div','decor-library-filters'),category=el('select'),search=el('input');
   category.dataset.decorCategory='';category.setAttribute('aria-label','Decor category');
   for(const [value,label]of [['all','All decor'],...Object.entries(categoryNames)]){const option=el('option','',label);option.value=value;category.append(option);}category.value='all';
@@ -106,7 +114,7 @@
     const canvas=doc.createElement('canvas');canvas.width=width;canvas.height=height;const context=canvas.getContext('2d');context.imageSmoothingEnabled=false;context.drawImage(picture,0,0);
     const data=canvas.toDataURL('image/png'),scale=Math.min(item.width/width,item.height/height);
     if(!editable())return false;
-    const accepted=await api.onAdd({id:item.id,name:item.name,width:Math.max(2,Math.round(width*scale)),height:Math.max(2,Math.round(height*scale)),data});
+    const accepted=await api.onAdd({id:item.id,name:item.name,category:item.category,width:Math.max(2,Math.round(width*scale)),height:Math.max(2,Math.round(height*scale)),data});
     if(destroyed||token!==request)return false;
     if(accepted===false)throw Error('The decor could not be added to this layout.');
     message('Added '+item.name+'. Select the placed copy to change it.');return true;

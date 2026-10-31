@@ -12,7 +12,7 @@ spec = importlib.util.spec_from_file_location('environment_world_fixture',
     Path(__file__).with_name('published-world-browser.py'))
 fixture = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(fixture)
-FINGERPRINT = '4a3fa5407a4dde286e6c6ecac5519bb5334675f917ba9df1795934e5314c299e'
+FINGERPRINT = '858b4ebd997451e197dddb37c117b0a2fd4c9e8d7be7bc7eddfa5c0ff7300209'
 
 
 class EnvironmentWorldTests(unittest.TestCase):
@@ -53,7 +53,7 @@ class EnvironmentWorldTests(unittest.TestCase):
         self.assertEqual(fingerprint,FINGERPRINT)
         self.load();self.assertEqual(self.project(),self.current)
         self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getScenery()'),'environment-v1')
-        self.assertEqual((len(self.current['assets']),len(self.current['collision']),len(self.current['strokes'])),(19,1451,0))
+        self.assertEqual((len(self.current['assets']),len(self.current['collision']),len(self.current['strokes'])),(20,1451,0))
         layers=self.page.evaluate('CodaArcadeQA.layerEditor()')
         self.assertEqual((layers['publishedStrokes'],layers['strokes'],layers['paintPatches']),(0,0,0))
         games=self.page.evaluate('''()=>CodaArcadeQA.worldObjects().filter(x=>x.game).map(x=>({

@@ -16,22 +16,23 @@
    if(!asset||!validate(asset.floodLights)||![asset.x,asset.y,asset.w,asset.h].every(Number.isFinite)||asset.w<=0||asset.h<=0)return null;
    const settings=asset.floodLights,animation=api.getAnimation?.(asset)||{},time=reduced()?0:now(),phase=time*settings.speed;
    const rotation=(Number.isFinite(asset.rotation)?asset.rotation:0)*Math.PI/180+(Number.isFinite(animation.rot)?animation.rot:0),scale=Number.isFinite(animation.scale)?animation.scale:1;
+   const scaleX=scale*(asset.flipX===true?-1:1),scaleY=scale*(asset.flipY===true?-1:1);
    const x=asset.x+(Number.isFinite(animation.dx)?animation.dx:0),y=asset.y+(Number.isFinite(animation.dy)?animation.dy:0);
    const opacity=Math.max(0,Math.min(1,(Number.isFinite(asset.opacity)?asset.opacity:100)/100))*(Number.isFinite(animation.alpha)?animation.alpha:1);
    const q=quality(),visible=asset.visible!==false&&opacity>0,enabled=visible&&settings.enabled&&settings.intensity>0&&q!=='off';
    const cs=Math.cos(rotation),sn=Math.sin(rotation);
    const heads=HEADS.map((fraction,index)=>{
     const localX=(fraction-.5)*asset.w,localY=asset.h*.33,hue=(HUES[index]+phase*30)%360;
-    return {index,localX,localY,x:x+(localX*cs-localY*sn)*scale,y:y+(localX*sn+localY*cs)*scale,hue,color:shade(hue),angle:(index-1.5)*.24+(q==='full'&&!reduced()?Math.sin(phase*.35+index*.6)*.07:0)};
+    return {index,localX,localY,x:x+localX*cs*scaleX-localY*sn*scaleY,y:y+localX*sn*scaleX+localY*cs*scaleY,hue,color:shade(hue),angle:(index-1.5)*.24+(q==='full'&&!reduced()?Math.sin(phase*.35+index*.6)*.07:0)};
    });
-   return {id:asset.id,x,y,width:asset.w,height:asset.h,rotation,scale,opacity,enabled,quality:q,settings,heads};
+   return {id:asset.id,x,y,width:asset.w,height:asset.h,rotation,scale,scaleX,scaleY,opacity,enabled,quality:q,settings,heads};
   }
   function drawBeams(ctx){
    if(!ctx||quality()==='off')return;
    for(const asset of api.getAssets?.()||[]){
     const rig=state(asset);if(!rig?.enabled)continue;
     const power=rig.settings.intensity/100,length=rig.settings.beamLength,width=Math.min(rig.width*.42,length*.46),lens=Math.max(3,rig.width*.035);
-    ctx.save();ctx.translate(rig.x,rig.y);ctx.rotate(rig.rotation);ctx.scale(rig.scale,rig.scale);ctx.globalAlpha=(ctx.globalAlpha??1)*rig.opacity;ctx.globalCompositeOperation='screen';ctx.shadowBlur=0;
+    ctx.save();ctx.translate(rig.x,rig.y);ctx.rotate(rig.rotation);ctx.scale(rig.scaleX,rig.scaleY);ctx.globalAlpha=(ctx.globalAlpha??1)*rig.opacity;ctx.globalCompositeOperation='screen';ctx.shadowBlur=0;
     for(const head of rig.heads){
      const endX=head.localX+Math.tan(head.angle)*length,endY=head.localY+length,gradient=ctx.createLinearGradient(head.localX,head.localY,endX,endY);
      gradient.addColorStop(0,shade(head.hue,power*(rig.quality==='full'?.26:.16)));gradient.addColorStop(.55,shade(head.hue,power*.08));gradient.addColorStop(1,shade(head.hue,0));
@@ -63,7 +64,7 @@
    }
    ctx.restore();
   }
-  function snapshot(){return {quality:quality(),rigs:(api.getAssets?.()||[]).map(state).filter(Boolean).map(rig=>({id:rig.id,x:rig.x,y:rig.y,width:rig.width,height:rig.height,rotation:rig.rotation,scale:rig.scale,opacity:rig.opacity,enabled:rig.enabled,settings:{...rig.settings},heads:rig.heads.map(head=>({...head}))}))};}
+  function snapshot(){return {quality:quality(),rigs:(api.getAssets?.()||[]).map(state).filter(Boolean).map(rig=>({id:rig.id,x:rig.x,y:rig.y,width:rig.width,height:rig.height,rotation:rig.rotation,scale:rig.scale,scaleX:rig.scaleX,scaleY:rig.scaleY,opacity:rig.opacity,enabled:rig.enabled,settings:{...rig.settings},heads:rig.heads.map(head=>({...head}))}))};}
   return {drawBeams,drawFixture,snapshot};
  }
  return Object.freeze({defaults,validate,create});

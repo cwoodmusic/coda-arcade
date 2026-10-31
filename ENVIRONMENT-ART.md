@@ -17,7 +17,7 @@ screens, lights and interactions remain connected.
 The renderer uses the empty backdrop as the base and draws props separately in
 depth order. Structural foreground pieces are cut from the finished architecture;
 old annotated masks and clone patches are not layered onto the refreshed scene.
-The only additional default prop is a movable four-head DJ floodlight rig. Forty new decor images stay in the editor library until added. Their source art and reproducible extraction are in `assets/decor/` and `scripts/build-decor-props.cjs`. NPC appearance, accessories, accounts and game progress are separate systems.
+Additional defaults are a movable four-head DJ floodlight rig and a large rectangle rug in front of the Notes shop. The other 47 library images stay unplaced until added. Their source art and reproducible extraction are in `assets/decor/` and `scripts/build-decor-props.cjs`; rug extraction uses `scripts/build-rug-props.cjs`. NPC appearance, accessories, accounts and game progress are separate systems.
 
 ## Projects and compatibility
 

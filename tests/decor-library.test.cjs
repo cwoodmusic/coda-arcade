@@ -2,15 +2,21 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const library=require('../decor-library.js');
 
-test('the library supplies forty distinct portable decor sources at useful world sizes',()=>{
- assert.equal(library.items.length,40);assert.equal(new Set(library.items.map(item=>item.id)).size,40);
- assert.deepEqual(library.items.reduce((counts,item)=>(counts[item.category]=(counts[item.category]||0)+1,counts),{}),{floor:16,tabletop:16,wall:8});
+test('the library retains forty decor sources and adds eight rugs at varied world sizes',()=>{
+ assert.equal(library.items.length,48);assert.equal(new Set(library.items.map(item=>item.id)).size,48);
+ assert.deepEqual(library.items.reduce((counts,item)=>(counts[item.category]=(counts[item.category]||0)+1,counts),{}),{floor:16,tabletop:16,wall:8,rug:8});
  for(const item of library.items){
   assert.match(item.id,/^[a-z0-9]+(?:-[a-z0-9]+)*$/);assert.ok(item.name.length>3);
-  assert.ok(Number.isInteger(item.width)&&Number.isInteger(item.height)&&item.width>=16&&item.height>=18&&item.width<=100&&item.height<=105);
+  assert.ok(Number.isInteger(item.width)&&Number.isInteger(item.height)&&item.width>=16&&item.height>=18&&item.width<=360&&item.height<=200);
+  if(item.category!=='rug')assert.ok(item.width<=100&&item.height<=105);
   if(item.category==='floor')assert.ok(item.height>=80);if(item.category==='tabletop')assert.ok(item.width<=36&&item.height<=32);
+  if(item.category==='rug')assert.match(item.id,/^rug-/);
   assert.ok(Object.isFrozen(item));
  }
+ assert.equal(library.items.slice(0,40).some(item=>item.category==='rug'),false,'The original catalog remains in its existing order');
+ const rugs=library.items.filter(item=>item.category==='rug');
+ assert.ok(rugs.some(item=>item.width/item.height>2),'Include a wide shop rug');
+ const runner=rugs.find(item=>item.id==='rug-lightning-runner');assert.ok(runner.width/runner.height>2,'Include a long runner that can be quarter-turned');
  assert.ok(Object.isFrozen(library.items));
 });
 
@@ -43,8 +49,19 @@ test('browsing never places decor and Add creates one independent source image w
  assert.equal(value.control.select('neon-jukebox'),true);assert.equal(value.calls.length,0);assert.equal(value.pending.length,0);
  const adding=value.control.addSelected();assert.equal(value.control.getState().busy,true);assert.equal(await value.control.addSelected(),false);
  value.resolve();assert.equal(await adding,true);assert.equal(value.calls.length,1);assert.equal(value.draws.length,1);
- assert.deepEqual(value.calls[0],{id:'neon-jukebox',name:'Neon jukebox',width:64,height:96,data:'data:image/png;base64,AQID'});
+ assert.deepEqual(value.calls[0],{id:'neon-jukebox',name:'Neon jukebox',category:'floor',width:64,height:96,data:'data:image/png;base64,AQID'});
  assert.equal(value.control.getState().busy,false);assert.equal(value.control.getState().selected,'neon-jukebox');value.control.destroy();
+});
+
+test('rug filtering and Add identify floor placement while preserving the source image proportions',async()=>{
+ const value=fixture();value.find('decorCategory').value='rug';value.find('decorCategory').onchange();
+ assert.equal(value.control.getState().visible,8);assert.equal(value.calls.length,0);
+ assert.equal(value.control.select('rug-notes-rectangle'),true);
+ const adding=value.control.addSelected();value.pending[0].naturalWidth=720;value.pending[0].naturalHeight=280;value.resolve();
+ assert.equal(await adding,true);assert.deepEqual(value.calls[0],{id:'rug-notes-rectangle',name:'Notes shop arcade rug',category:'rug',width:360,height:140,data:'data:image/png;base64,AQID'});
+ value.find('decorSearch').value='round';value.find('decorSearch').oninput();
+ assert.equal(value.control.getState().visible,1);assert.equal(value.control.getState().selected,null);
+ value.control.destroy();
 });
 
 test('filtering is a preview action and clears a hidden selection instead of placing a stale item',()=>{
