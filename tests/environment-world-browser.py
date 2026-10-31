@@ -1,4 +1,4 @@
-"""Actual refreshed world: empty scenery, independent props and legacy anchors."""
+"""Published authored world: portable pixels, placements and save precedence."""
 import copy
 import hashlib
 import importlib.util
@@ -12,7 +12,7 @@ spec = importlib.util.spec_from_file_location('environment_world_fixture',
     Path(__file__).with_name('published-world-browser.py'))
 fixture = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(fixture)
-FINGERPRINT = '858b4ebd997451e197dddb37c117b0a2fd4c9e8d7be7bc7eddfa5c0ff7300209'
+FINGERPRINT = '1cab08878f620188c19c9964f4f0d5ddf8856d18f42cee474804d4b451036733'
 
 
 class EnvironmentWorldTests(unittest.TestCase):
@@ -33,6 +33,24 @@ class EnvironmentWorldTests(unittest.TestCase):
     def frames(self):
         self.page.evaluate('publishFrames(3)')
 
+    def load_local_project(self, project):
+        # The complete export exceeds localStorage's quota. Seed the same
+        # IndexedDB store used by Save project rather than shrinking its data.
+        self.load()
+        self.page.evaluate('''project=>new Promise((resolve,reject)=>{
+          const open=indexedDB.open('codaArcadeAssetStudioDB',1);
+          open.onerror=()=>reject(open.error);
+          open.onsuccess=()=>{
+            const db=open.result,tx=db.transaction('layouts','readwrite');
+            tx.objectStore('layouts').put({...project,savedAt:Date.now()},'codaWorldProjectV1');
+            tx.oncomplete=()=>{db.close();resolve();};
+            tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);
+          };
+        })''', project)
+        self.page.reload(wait_until='domcontentloaded')
+        self.page.wait_for_function('CodaDeveloperConsole.ready()&&CodaArcadeQA.characters().spriteState.ready')
+        self.frames()
+
     def world_pixel(self, x, y):
         return self.page.evaluate('''([x,y])=>{
           const camera=CodaArcadeQA.camera();
@@ -48,14 +66,33 @@ class EnvironmentWorldTests(unittest.TestCase):
           return Array.from(g.getImageData(x,y,1,1).data);
         }''', [x,y])
 
-    def test_reviewed_default_loads_new_art_without_legacy_paint_or_lost_cabinets(self):
+    def authored_background(self):
+        from PIL import Image
+        image = Image.open(fixture.ROOT/'assets/environment/v1/empty-arcade.png').convert('RGBA')
+        pixels = image.load()
+        for tile, runs in self.current.get('artwork',{}).get('background.world',{}).get('tiles',{}).items():
+            tx, ty = map(int, tile.split(','))
+            for start, length, color in runs:
+                rgba = tuple(bytes.fromhex(color[1:]))
+                for index in range(start, start + length):
+                    pixels[tx*64+index%64, ty*64+index//64] = rgba
+        return image
+
+    def test_reviewed_default_loads_authored_art_placements_and_all_cabinets(self):
         fingerprint=hashlib.sha256(json.dumps(self.current,sort_keys=True,separators=(',',':')).encode()).hexdigest()
         self.assertEqual(fingerprint,FINGERPRINT)
         self.load();self.assertEqual(self.project(),self.current)
         self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getScenery()'),'environment-v1')
-        self.assertEqual((len(self.current['assets']),len(self.current['collision']),len(self.current['strokes'])),(20,1451,0))
+        self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getProjectSource()'),'published')
+        self.assertIsNone(self.page.evaluate('localStorage.getItem("codaWorldProjectV1")'))
+        self.assertEqual((len(self.current['assets']),len(self.current['collision']),len(self.current['strokes'])),(59,2106,26))
         layers=self.page.evaluate('CodaArcadeQA.layerEditor()')
-        self.assertEqual((layers['publishedStrokes'],layers['strokes'],layers['paintPatches']),(0,0,0))
+        self.assertEqual((layers['publishedStrokes'],layers['strokes']),(0,26))
+        self.assertGreater(layers['paintPatches'],0)
+        self.assertGreater(layers['editedPixels'],0)
+        self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getCharacters()'),self.current['characters'])
+        added=next(asset for asset in self.project()['assets'] if asset['id']=='asset-64')
+        self.assertEqual((added['name'],added['x'],added['y'],added['flipX']),('Boombox tower',120,207,True))
         games=self.page.evaluate('''()=>CodaArcadeQA.worldObjects().filter(x=>x.game).map(x=>({
           name:x.game.name,walkable:CodaArcadeQA.walkable(x.game.npcX??x.game.x,x.game.npcY??x.game.y),
           route:CodaArcadeQA.route(1180,388,x.game.x,x.game.y).length}))''')
@@ -69,8 +106,21 @@ class EnvironmentWorldTests(unittest.TestCase):
             'dance_front_right_palm','dance_front_second_right_palm','dance_far_right_palm',
             'obelisk_west','obelisk_middle','obelisk_east','obelisk_far_east','obelisk_corner'})
         self.assertTrue(all(part['depth']>max(walls) for part in front),front)
-        self.assertFalse(any(part['type']=='marked-foreground' for part in depths))
-        self.page.locator('#view').screenshot(path='/workspace/onboarding-logs/environment-v1-runtime.png')
+        self.assertFalse(any(part['type']=='marked-foreground' for part in depths),
+                         'Authored strokes must not restore obsolete baked foreground masks')
+        self.page.locator('#view').screenshot(path='/tmp/environment-world-update.png')
+
+    def test_existing_local_project_keeps_priority_over_the_new_publication(self):
+        local=copy.deepcopy(self.current)
+        local['assets'][0]['x']+=32
+        local['characters']['riff']['x']-=16
+        self.load_local_project(local)
+        self.assertEqual(self.project(),local)
+        self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getProjectSource()'),'local')
+        self.page.reload(wait_until='domcontentloaded')
+        self.page.wait_for_function('CodaDeveloperConsole.ready()')
+        self.assertEqual(self.project(),local)
+        self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getPublishedProject()'),self.current)
 
     def test_full_fx_flicker_uses_new_background_and_does_not_restore_old_dj_art(self):
         html=(fixture.ROOT/'world-preview.html').read_text()
@@ -98,7 +148,7 @@ class EnvironmentWorldTests(unittest.TestCase):
         self.assertIn([206,42,108,48],fresh,'Fixed signs must flicker using the new room artwork')
         self.assertNotIn([341,620,93,39],fresh,'The old Dance console region is no longer a fixed wall sign')
 
-    def test_background_pixel_editor_and_region_copy_use_the_complete_empty_plate(self):
+    def test_background_pixel_editor_and_region_copy_preserve_the_authored_plate(self):
         console=(fixture.ROOT/'developer-console.js').read_text()
         console+='''
 const originalEnvironmentConsole=window.createCodaDeveloperConsole;
@@ -111,10 +161,10 @@ window.createCodaDeveloperConsole=api=>{const instance=originalEnvironmentConsol
         with self.page.expect_download() as pending:
             self.page.locator('[data-artwork-editor]:visible [data-artwork-export]').click()
         from PIL import Image, ImageChops
-        with Image.open(pending.value.path()) as exported, Image.open(fixture.ROOT/'assets/environment/v1/empty-arcade.png') as background:
+        with Image.open(pending.value.path()) as exported, self.authored_background() as background:
             self.assertEqual(exported.size,background.size)
             self.assertEqual(ImageChops.difference(exported.convert('RGBA'),background.convert('RGBA')).getextrema(),((0,0),)*4,
-                             'Background Export PNG must contain the complete empty room, without assets or clone blobs')
+                             'Background Export PNG must include the uploaded pixels without flattening placed assets')
         self.assertEqual(self.project(),self.current)
         self.page.locator('[data-artwork-editor]:visible [data-artwork-exit]').click();self.frames()
         self.page.locator('#assetList').select_option('asset-1')
@@ -152,7 +202,7 @@ window.createCodaDeveloperConsole=api=>{const instance=originalEnvironmentConsol
                          'Hiding a refreshed speaker must remove its rings/notes rather than leave legacy fixed emitters behind')
 
     def test_hiding_counter_reveals_finished_background_instead_of_a_clone_patch(self):
-        self.load();point=(1400,540);expected=self.background_pixel(*point)
+        self.load();point=(1490,520);expected=list(self.authored_background().getpixel(point))
         before=self.world_pixel(*point);self.assertNotEqual(before,expected)
         self.open_tab('objects');self.page.locator('#assetList').select_option('asset-2')
         self.page.locator('#assetVisible').uncheck();self.frames()
@@ -166,7 +216,7 @@ window.createCodaDeveloperConsole=api=>{const instance=originalEnvironmentConsol
         local=copy.deepcopy(self.current)
         local['assets']=[asset for asset in local['assets'] if asset.get('origin',{}).get('name') not in (
             'cabinet_pitch_race','cabinet_music_triad','cabinet_rhythm_room','cabinet_song_machine')]
-        self.load(local=local)
+        self.load_local_project(local)
         for x,y in [(715,250),(830,250),(960,250),(1080,250)]:
             self.assertNotEqual(self.world_pixel(x,y),self.background_pixel(x,y),
                                 'A cabinet restored to its original position must keep its body')
