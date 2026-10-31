@@ -155,6 +155,18 @@ lounge masonry receives collision blocks, leaving the exit corridor open.
 Both passes use explicit crop placements and protected regions to retain the
 other accepted artwork and repairs.
 
+The later northwest inner-wall pass makes the dance-room face south, with its
+inner cap aligned to the long DJ wall and glass below the removed diagonal.
+The left couch and other props remain independent, while the two lamp bodies
+and painted dance tiles are excluded from this art patch. A separate narrow
+north-cap pass connects the lounge roof to the Piano Lab post and preserves
+the sign faces, lamp fixtures and elevated Piano roof. Both run after the
+earlier Hall/lounge cap passes so those sources cannot restore the old angles.
+The wide generated north source has an explicit content crop to discard its
+white margins before native placement. A reviewed copy of its own blue cap
+course fills the small left connection to the existing lounge post; all copy
+destinations remain inside the north-cap ownership mask.
+
 ## DJ stage lighting
 
 The four-head rig above DJ Coda projects colored beams and soft pools of light

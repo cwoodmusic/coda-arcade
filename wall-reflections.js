@@ -8,6 +8,7 @@
   [[435,179],[681,179],[681,424],[435,424]],
   [[269,426],[727,426],[727,506],[269,506]],
   [[269,375],[358,375],[358,426],[269,426]],
+  [[77,649],[247,649],[247,710],[77,710]],
   [[724,507],[807,507],[807,806],[777,829],[728,837],[119,837],[96,812],[94,690],[174,658],[617,658],[617,649],[724,649]]
  ].map(p=>Object.freeze(p.map(Object.freeze))));
  const PROTECTED=Object.freeze([
@@ -25,7 +26,7 @@
   {id:'hall-of-fame',source:[1380,138,211,168],floor:[1380,309,211,206],alpha:.16},
   {id:'boutique',source:[359,274,322,151],floor:[359,427,322,145],alpha:.16},
   {id:'dance-north',source:[236,510,489,138],floor:[236,650,489,166],alpha:.14},
-  {id:'dance-west',source:[61,503,165,181],floor:[61,686,165,141],alpha:.14}
+  {id:'dance-west',source:[50,507,186,141],floor:[50,650,186,166],alpha:.14}
  ].map(item=>Object.freeze({...item,source:Object.freeze(item.source),floor:Object.freeze(item.floor)})));
  function inside(polygon,x,y){let hit=false;for(let i=0,j=polygon.length-1;i<polygon.length;j=i++){
   const a=polygon[i],b=polygon[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])hit=!hit;

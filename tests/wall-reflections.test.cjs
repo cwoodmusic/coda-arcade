@@ -11,3 +11,11 @@ test('off and unavailable sources skip reflection generation',()=>{
  assert.equal(reflections.draw({}, {width:1672,height:941}),false);assert.equal(reflections.getState().builds,0);
  assert.equal(create().draw({}, {width:100,height:100}),false);
 });
+test('the flat northwest face reflects onto its new glass and joins the existing north strip',()=>{
+ const west=STRIPS.find(strip=>strip.id==='dance-west'),north=STRIPS.find(strip=>strip.id==='dance-north');
+ assert.deepEqual(west.source,[50,507,186,141]);
+ assert.deepEqual(west.floor,[50,650,186,166]);
+ assert.equal(west.floor[0]+west.floor[2],north.floor[0]);
+ for(const [x,y]of [[85,665],[110,690],[85,705]])assert.equal(isGlassFloor(x,y),true,`${x},${y}`);
+ for(const [x,y]of [[70,665],[60,670],[100,620],[200,640],[170,700]])assert.equal(isGlassFloor(x,y),false,`${x},${y}`);
+});

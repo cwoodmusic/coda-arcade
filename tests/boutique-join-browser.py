@@ -22,7 +22,8 @@ class BoutiqueJoinTests(unittest.TestCase):
     def test_native_join_and_runtime_base_match_reviewed_source_without_new_local_saves(self):
         layers=[json.loads((fixture.ROOT/'scripts'/name).read_text()) for name in [
             'boutique-join-regions.json','boutique-corner-cap-regions.json',
-            'hall-roof-cap-regions.json','lounge-club-roof-regions.json']]
+            'hall-roof-cap-regions.json','lounge-club-roof-regions.json',
+            'dance-northwest-south-wall-regions.json','arcade-north-straight-cap-regions.json']]
         self.load()
         result=self.page.evaluate('''async layers=>{
           const load=src=>new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=reject;image.src=src;});
@@ -30,7 +31,12 @@ class BoutiqueJoinTests(unittest.TestCase):
           const canvas=()=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
           const a=canvas(),c=canvas();a.getContext('2d').drawImage(native,0,0);__paletteConsole.renderBase(c.getContext('2d'));
           const aa=a.getContext('2d').getImageData(0,0,w,h).data,cc=c.getContext('2d').getImageData(0,0,w,h).data;
-          const expectedPixels=sources.map((source,index)=>{const c=canvas(),g=c.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(source,...(layers[index].sourcePlacement||[0,0,w,h]));return g.getImageData(0,0,w,h).data;});
+          const expectedPixels=sources.map((source,index)=>{
+            const c=canvas(),g=c.getContext('2d'),meta=layers[index],placement=meta.sourcePlacement||[0,0,w,h];g.imageSmoothingEnabled=false;
+            if(meta.sourceRect)g.drawImage(source,...meta.sourceRect,...placement);else g.drawImage(source,...placement);
+            for(const region of meta.sourceCopies||[])g.drawImage(c,...region);
+            return g.getImageData(0,0,w,h).data;
+          });
           const inPolygon=(poly,x,y)=>{let hit=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){
             const [ax,ay]=poly[i],[bx,by]=poly[j];if((ay>y)!==(by>y)&&x<(bx-ax)*(y-ay)/(by-ay)+ax)hit=!hit;
           }return hit;};

@@ -29,7 +29,11 @@ async function compose({meta,mask,previewOnly}){
  if(original.naturalWidth!==width||original.naturalHeight!==height||source.naturalWidth!==sourceWidth||source.naturalHeight!==sourceHeight)throw Error('Walkway source dimensions must match the declared size');
  const canvas=()=>{const c=document.createElement('canvas');c.width=width;c.height=height;return c;};
  const output=canvas(),g=output.getContext('2d',{willReadFrequently:true}),generated=canvas(),s=generated.getContext('2d',{willReadFrequently:true});
- g.drawImage(original,0,0);s.imageSmoothingEnabled=false;s.drawImage(source,...(meta.sourcePlacement||[0,0,width,height]));
+ g.drawImage(original,0,0);s.imageSmoothingEnabled=false;
+ const placement=previewOnly?[0,0,width,height]:meta.sourcePlacement||[0,0,width,height];
+ if(meta.sourceRect&&!previewOnly)s.drawImage(source,...meta.sourceRect,...placement);
+ else s.drawImage(source,...placement);
+ if(!previewOnly)for(const region of meta.sourceCopies||[])s.drawImage(generated,...region);
  const before=g.getImageData(0,0,width,height),after=g.getImageData(0,0,width,height),pixels=s.getImageData(0,0,width,height).data;
  let featherPixels=before.data;
  if(meta.floorFeather&&!previewOnly){
