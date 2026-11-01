@@ -60,7 +60,9 @@ async function extract(meta,alphaBounds,gridCells,fitRect){
    const id=sheet.ids[i],item=meta.items.find(value=>value.id===id),[cx,cy,cw,ch]=cells[i],pixels=s.getImageData(cx,cy,cw,ch).data,bounds=alphaBounds(pixels,cw,ch,meta.alphaThreshold);
    if(!bounds)throw Error('Empty lounge sprite cell: '+id);
    const [bx,by,bw,bh]=bounds,left=Math.max(0,bx-2),top=Math.max(0,by-2),right=Math.min(cw,bx+bw+2),bottom=Math.min(ch,by+bh+2),crop=[cx+left,cy+top,right-left,bottom-top];
-   const placement=fitRect(crop[2],crop[3],item.width,item.height),out=document.createElement('canvas');out.width=item.width;out.height=item.height;const g=out.getContext('2d',{willReadFrequently:true});g.imageSmoothingEnabled=false;g.drawImage(image,...crop,...placement);
+   const placement=fitRect(crop[2],crop[3],item.width,item.height),out=document.createElement('canvas');
+   if(meta.bottomAligned?.includes(id))placement[1]=item.height-placement[3]-2;
+   out.width=item.width;out.height=item.height;const g=out.getContext('2d',{willReadFrequently:true});g.imageSmoothingEnabled=false;g.drawImage(image,...crop,...placement);
    const final=g.getImageData(0,0,out.width,out.height).data,visibleBounds=alphaBounds(final,out.width,out.height,meta.alphaThreshold);
    if(!visibleBounds)throw Error('Normalized lounge sprite is empty: '+id);
    const corners=[3,(out.width-1)*4+3,(out.height-1)*out.width*4+3,(out.width*out.height-1)*4+3].map(at=>final[at]);
@@ -107,4 +109,4 @@ async function build(options={}){
  }finally{socket?.close();browser.kill('SIGTERM');server.close();if(browser.exitCode===null)await new Promise(resolve=>browser.once('exit',resolve));await fs.rm(profile,{recursive:true,force:true,maxRetries:10,retryDelay:100});}
 }
 if(require.main===module)build({check:process.argv.includes('--check'),dryRun:process.argv.includes('--dry-run')}).catch(error=>{process.stderr.write(error.stack+'\n');process.exitCode=1;});
-module.exports={alphaBounds,gridCells,fitRect,validateMetadata,build};
+module.exports={alphaBounds,gridCells,fitRect,validateMetadata,extract,build};

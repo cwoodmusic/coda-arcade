@@ -1,5 +1,31 @@
 # Empty arcade background and independent props
 
+## Hand-drawn library style and facing
+
+All 79 library items now use the chunky hand-drawn pixel style established by
+the Notes pencil cup, ledger and price display. Seventy-four have new artwork;
+the five matching Notes accessories keep their existing art. Props use simpler
+teal, coral, cream, muted purple and ochre shapes with fewer glossy highlights.
+Furniture and equipment face straight south rather than diagonally. The cash
+register faces north: its rear housing and vents face the player, with the
+operator's keypad and screen on the far side. Rugs remain flat and top-down.
+The preview states each asset's direction; searching **north** finds the register.
+
+`pixel-style.js` maps the current library to
+`assets/decor/handdrawn/v1/` and records the facing directions. The original
+PNG collection and its source sheets remain available. Existing custom image
+imports retain their embedded art. Standard arcade sofas, counters, DJ desk and
+candle tables use the matching new designs. Sofas retain their original world
+silhouettes and foot baselines, keeping the Lounge sign clear. The published
+rectangular table uses its new artwork at the same position and dimensions.
+
+The eleven generated sheets are retained as `assets/decor/source/handdrawn-*.png`.
+Run `node scripts/build-pixel-style-assets.cjs` to extract the 74 transparent
+sprites and their provenance manifest; `--check` verifies reproduction. The
+earlier artwork builders still reproduce the retained original collection.
+Validate the active collection with `node --test tests/pixel-style.test.cjs`
+and `python3 tests/decor-library-browser.py`.
+
 ## Empty walls and movable decorations
 
 The current main arcade uses `assets/environment/v1/empty-walls.png` beneath

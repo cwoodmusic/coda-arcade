@@ -4,6 +4,7 @@
  'use strict';
  const WORLD=Object.freeze({width:1672,height:941}),BACKGROUND='empty-walls.png';
  const wallFixtures=typeof module==='object'&&module.exports?require('./wall-fixtures.js'):window.CodaWallFixtures;
+ const pixelStyle=typeof module==='object'&&module.exports?require('./pixel-style.js'):window.CodaPixelStyle;
  const FIXTURES=Object.freeze(Object.fromEntries((wallFixtures?.CATALOG||[]).map(part=>[part.name,Object.freeze({file:'wall-fixtures/'+part.sprite+'.png',width:part.bounds[2],height:part.bounds[3],mirror:false})])));
  const rows=[
   ['lounge_sofa','lounge-couch-south.png',288,105],
@@ -80,7 +81,8 @@
      finish();
     }catch(error){finish(Error('Environment artwork could not decode: '+file+'. '+(error.message||'')));}
    }
-   image.addEventListener('load',onload);image.addEventListener('error',onerror);image.src=baseUrl+file+(file===BACKGROUND?'?v=independent-wall-fixtures-20261101-1':file==='main-counter.png'?'?v=matte-counter-20261101-1':'');
+   const styled=pixelStyle?.ENVIRONMENT[file];
+   image.addEventListener('load',onload);image.addEventListener('error',onerror);image.src=styled?baseUrl+'../../decor/handdrawn/v1/'+styled+'.png?v='+pixelStyle.VERSION:baseUrl+file+(file===BACKGROUND?'?v=independent-wall-fixtures-20261101-1':'');
    if(image.complete&&image.naturalWidth)onload();
   }));
   const ready=Promise.all(tasks).then(()=>{loaded=true;});
@@ -90,7 +92,12 @@
    if(!loaded||!has(name))return null;if(objects.has(name))return objects.get(name);
    const spec=OBJECTS[name]||FIXTURES[name],source=images.get(spec.file),rect=FIXTURES[name]?{x:0,y:0,width:spec.width,height:spec.height}:fitRect(source.naturalWidth,source.naturalHeight,spec.width,spec.height),[result,context]=canvas(spec.width,spec.height);
    if(spec.mirror){context.translate(spec.width,0);context.scale(-1,1);}
-   context.drawImage(source,rect.x,rect.y,rect.width,rect.height);objects.set(name,result);return result;
+   // Keep the current world's sofa silhouettes and foot baselines while the
+   // separate library copies retain the complete new hand-drawn proportions.
+   const fitted=pixelStyle?.ENVIRONMENT_FIT[name];
+   if(fitted)context.drawImage(source,...fitted.source,...fitted.target);
+   else context.drawImage(source,rect.x,rect.y,rect.width,rect.height);
+   objects.set(name,result);return result;
   }
   function structural(part){
    const bounds=structuralBounds(part);if(!loaded||!bounds)return null;

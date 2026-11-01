@@ -165,7 +165,7 @@ class LoungeUpdateTests(unittest.TestCase):
         self.page.locator('[data-decor-item="clothes-rack-south"]').click()
         self.assertEqual(fingerprint(self.project()), fingerprint(original), 'Previewing a rack must not place it')
         cutouts = self.page.evaluate('''async ids=>Promise.all(ids.map(async id=>{
- const image=new Image();image.src='assets/decor/v1/'+id+'.png';await image.decode();
+ const image=new Image();image.src=CodaDecorLibrary.imageURL(id);await image.decode();
  const c=document.createElement('canvas');c.width=image.naturalWidth;c.height=image.naturalHeight;
  const g=c.getContext('2d');g.drawImage(image,0,0);const p=g.getImageData(0,0,c.width,c.height).data;
  let clear=0,opaque=0;for(let at=3;at<p.length;at+=4){if(p[at]===0)clear++;if(p[at]>=245)opaque++;}

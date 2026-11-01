@@ -1,6 +1,7 @@
 /* Reusable source decor; adding an item creates an independent embedded image. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaDecorLibrary=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
+ const pixelStyle=typeof module==='object'&&module.exports?require('./pixel-style.js'):(typeof window==='undefined'?null:window.CodaPixelStyle);
  const records=[
   ['neon-jukebox','Neon jukebox','floor',64,96],
   ['rocket-statue','Rocket statue','floor',58,100],
@@ -88,7 +89,7 @@
   const host=api.host;if(!host?.ownerDocument)throw Error('The decor library needs an editor host.');
   const doc=host.ownerDocument,win=doc.defaultView;let selected=null,busy=false,destroyed=false,request=0;
   const baseUrl=String(api.baseUrl||'assets/decor/v1/').replace(/\/?$/,'/');
-  const imageUrl=id=>baseUrl+id+'.png'+(id==='counter-jade-south'?'?v=matte-counter-20261101-1':'');
+  const imageUrl=id=>api.baseUrl?baseUrl+id+'.png':imageURL(id);
   const el=(tag,className,text)=>{const node=doc.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
   const library=el('details','decor-library');library.dataset.decorLibrary='';
   const summary=el('summary','','Asset library · '+items.length+' items');summary.dataset.decorLibraryToggle='';library.append(summary);
@@ -122,12 +123,12 @@
   function select(id){
    const item=items.find(value=>value.id===id);if(!item||!editable()||busy)return false;
    selected=item;for(const [key,card]of cards)card.setAttribute('aria-pressed',String(key===id));
-   image.src=imageUrl(id);image.alt=item.name;heading.textContent=item.name;size.textContent=categoryNames[item.category]+' · fits within '+item.width+' × '+item.height+' pixels';preview.hidden=false;
+   image.src=imageUrl(id);image.alt=item.name;heading.textContent=item.name;size.textContent=categoryNames[item.category]+' · '+(pixelStyle?.facingLabel(item.id,item.category)||'')+' · fits within '+item.width+' × '+item.height+' pixels';preview.hidden=false;
    message('Ready to add '+item.name+'.');refresh();return true;
   }
   function filter(){
    const query=search.value.trim().toLocaleLowerCase();let visible=0;
-   for(const item of items){const matches=(category.value==='all'||category.value===item.category)&&(!query||(item.name+' '+item.id+' '+categoryNames[item.category]).toLocaleLowerCase().includes(query));cards.get(item.id).hidden=!matches;if(matches)visible++;}
+   for(const item of items){const matches=(category.value==='all'||category.value===item.category)&&(!query||(item.name+' '+item.id+' '+categoryNames[item.category]+' '+(pixelStyle?.facingLabel(item.id,item.category)||'')).toLocaleLowerCase().includes(query));cards.get(item.id).hidden=!matches;if(matches)visible++;}
    if(selected&&cards.get(selected.id).hidden){cards.get(selected.id).setAttribute('aria-pressed','false');selected=null;preview.hidden=true;message('Select an item to preview it.');}
    count.textContent=visible+' of '+items.length+' assets';empty.hidden=visible!==0;refresh();
   }
@@ -156,5 +157,6 @@
   category.onchange=filter;search.oninput=filter;add.onclick=addSelected;filter();
   return {refresh,select,addSelected,getState:()=>({selected:selected?.id||null,busy,open:library.open===true,category:category.value,query:search.value,visible:Array.from(cards.values()).filter(card=>!card.hidden).length}),destroy(){if(destroyed)return;destroyed=true;++request;library.remove();}};
  }
- return Object.freeze({items,mount});
+ function imageURL(id){return pixelStyle?.imageURL(id)||'assets/decor/v1/'+id+'.png';}
+ return Object.freeze({items,mount,imageURL});
 });

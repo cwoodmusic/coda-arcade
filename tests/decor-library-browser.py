@@ -124,6 +124,25 @@ class DecorLibraryBrowserTests(unittest.TestCase):
         self.page.evaluate("CodaDeveloperConsole.open('objects')")
         self.frames()
 
+    def test_handdrawn_audio_assets_and_north_facing_register_use_the_new_sources(self):
+        self.load(seed=True)
+        for decor_id in ['boombox','boombox-tower','notes-register']:
+            asset = self.add_decor(decor_id)
+            self.assertTrue(self.page.locator('[data-decor-preview] img').get_attribute('src').startswith('assets/decor/handdrawn/v1/'))
+            description = self.page.locator('[data-decor-preview]').inner_text()
+            self.assertIn('North-facing · rear view' if decor_id == 'notes-register' else 'South-facing · front view', description)
+            expected = self.page.evaluate('''async id=>{
+              const image=new Image();image.src=CodaDecorLibrary.imageURL(id);await image.decode();
+              const c=document.createElement('canvas');c.width=image.naturalWidth;c.height=image.naturalHeight;
+              c.getContext('2d').drawImage(image,0,0);return c.toDataURL();
+            }''', decor_id)
+            self.assertEqual(asset['data'], expected, 'Placed asset must contain the new artwork')
+        expected = self.project()
+        self.assertTrue(self.page.evaluate('CodaDeveloperConsole.save()'))
+        self.page.reload(wait_until='domcontentloaded')
+        self.ready()
+        self.assertEqual(self.project(), expected)
+
     def test_music_wall_art_is_separate_and_the_rectangular_table_replaces_only_the_round_table(self):
         self.load(seed=False)
         table = next(asset for asset in self.project()['assets'] if asset['id'] == 'asset-7')
@@ -178,7 +197,7 @@ class DecorLibraryBrowserTests(unittest.TestCase):
         self.library()
         self.assertEqual(self.page.locator('[data-decor-item]:visible').count(), 79)
         images = self.page.evaluate('''async()=>Promise.all(CodaDecorLibrary.items.map(async item=>{
-          const image=new Image();image.src='assets/decor/v1/'+item.id+'.png';await image.decode();
+          const image=new Image();image.src=CodaDecorLibrary.imageURL(item.id);await image.decode();
           const canvas=document.createElement('canvas');canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;
           const g=canvas.getContext('2d');g.drawImage(image,0,0);const pixels=g.getImageData(0,0,canvas.width,canvas.height).data;
           let clear=false,visible=false;for(let i=3;i<pixels.length;i+=4){if(pixels[i]===0)clear=true;if(pixels[i]>0)visible=true;if(clear&&visible)break;}

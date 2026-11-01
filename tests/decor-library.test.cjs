@@ -73,10 +73,11 @@ test('rug filtering and Add identify floor placement while preserving the source
  value.control.destroy();
 });
 
-test('the matte counter refreshes its card, preview and added image while other asset URLs keep their cache',async()=>{
- const value=fixture(),url='assets/decor/v1/counter-jade-south.png?v=matte-counter-20261101-1';
+test('hand-drawn cards, previews and added images use the same versioned source',async()=>{
+ const value=fixture(),url=library.imageURL('counter-jade-south');
+ assert.match(url,/handdrawn\/v1\/counter-jade-south\.png\?v=/);
  assert.equal(value.find('decorItem','counter-jade-south').children[0].src,url);
- assert.equal(value.find('decorItem','sofa-south').children[0].src,'assets/decor/v1/sofa-south.png');
+ assert.equal(value.find('decorItem','sofa-south').children[0].src,library.imageURL('sofa-south'));
  assert.equal(value.control.select('counter-jade-south'),true);
  assert.equal(value.find('decorPreview').children[0].src,url);
  const adding=value.control.addSelected();assert.equal(value.pending[0].url,url);

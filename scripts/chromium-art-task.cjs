@@ -2,7 +2,7 @@
 'use strict';
 const fs=require('node:fs/promises'),http=require('node:http'),path=require('node:path'),os=require('node:os');
 const {spawn}=require('node:child_process');
-async function run(files,task,args){
+async function run(files,task,args,helpers=[]){
  const server=http.createServer(async(req,res)=>{try{
   if(req.url==='/'){res.end('<!doctype html><title>Local artwork builder</title>');return;}
   if(!files[req.url]){res.writeHead(404);res.end();return;}
@@ -22,7 +22,8 @@ async function run(files,task,args){
   socket.addEventListener('message',event=>{const message=JSON.parse(event.data),job=pending.get(message.id);if(!job)return;pending.delete(message.id);clearTimeout(job.timer);message.error?job.reject(Error(message.error.message)):job.resolve(message.result);});
   const send=(method,params={})=>new Promise((resolve,reject)=>{const id=++serial,timer=setTimeout(()=>{pending.delete(id);reject(Error('Timed out: '+method));},60000);pending.set(id,{resolve,reject,timer});socket.send(JSON.stringify({id,method,params}));});
   await send('Page.navigate',{url:'http://127.0.0.1:'+server.address().port});
-  const result=await send('Runtime.evaluate',{awaitPromise:true,returnByValue:true,expression:`(${task.toString()})(${JSON.stringify(args)})`});
+  const argumentsSource=[JSON.stringify(args),...helpers.map(fn=>'('+fn.toString()+')')].join(',');
+  const result=await send('Runtime.evaluate',{awaitPromise:true,returnByValue:true,expression:`(${task.toString()})(${argumentsSource})`});
   if(result.exceptionDetails)throw Error(result.exceptionDetails.exception?.description||result.exceptionDetails.text);
   return result.result.value;
  }finally{socket?.close();browser.kill('SIGTERM');server.close();if(browser.exitCode===null)await new Promise(resolve=>browser.once('exit',resolve));await fs.rm(profile,{recursive:true,force:true,maxRetries:10,retryDelay:100});}
