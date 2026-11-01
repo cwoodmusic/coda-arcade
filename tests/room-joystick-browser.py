@@ -167,6 +167,8 @@ class RoomJoystickTests(unittest.TestCase):
         self.page.locator('#fishingBoatBoard').tap()
         self.page.clock.run_for(32)
         self.assertEqual(self.state()['phase'], 'explore')
+        self.move(0, 1);self.page.clock.run_for(160);self.move(0, 0)
+        self.page.clock.run_for(32)
         before = self.state()['boat']
         self.move(.6, -.2)
         self.page.clock.run_for(192)

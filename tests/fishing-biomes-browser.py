@@ -61,8 +61,10 @@ class FishingBiomeWorldTests(_fish._world.WorldBrowserCase):
 
     def clear_home_dock(self):
         if self.screen_id() == 'lantern-lake' and self.state()['boat']['x'] < 400:
-            # The south-facing pier remains solid. Row out beside it before
-            # turning north toward an east/west screen passage.
+            # Leave the painted pier piles to the south before turning east.
+            # The full hull must not cut through either solid corner post.
+            if self.state()['boat']['y'] < 450:
+                self.sail_axis('y', 450)
             self.sail_axis('x', 400)
 
     def cross(self, direction, expected):

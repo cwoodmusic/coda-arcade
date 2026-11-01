@@ -1,8 +1,9 @@
 /* Connected fishing screens and habitat rules. No catch journals are rewritten. */
 (function(root,factory){
  const layout=typeof module==='object'&&module.exports?require('./fishing-cave-layout.js'):root?.CodaFishingCaveLayout;
- const api=factory(layout);if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaFishingBiomes=api;
-})(typeof window==='undefined'?null:window,function(layout){
+ const water=typeof module==='object'&&module.exports?require('./fishing-water.js'):root?.CodaFishingWater;
+ const api=factory(layout,water);if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaFishingBiomes=api;
+})(typeof window==='undefined'?null:window,function(layout,water){
  'use strict';
  const freeze=Object.freeze,WIDTH=1000,HEIGHT=620,DEFAULT_SCREEN='lantern-lake';
  const BIOME_IDS=freeze(['cave','swamp','ocean']),ALL_METERS=freeze(['4/4','6/8','2/2']),EMPTY=freeze([]);
@@ -49,6 +50,7 @@
  function isWater(value,x,y){
   const screen=screenFor(value);if(!screen||!Number.isFinite(x)||!Number.isFinite(y))return false;
   if(screen.id===DEFAULT_SCREEN&&layout?.isShore(x,y))return false;
+  if(water?.has(screen.id))return water.isWater(screen.id,x,y);
   const lake=layout?.LAKE||{x:550,y:350,rx:360,ry:185};
   const lakeWater=((x-lake.x)/lake.rx)**2+((y-lake.y)/lake.ry)**2<.97;
   if(screen.id===DEFAULT_SCREEN&&typeof layout?.isWater==='function'?layout.isWater(x,y):lakeWater)return true;
@@ -57,7 +59,7 @@
    return x>=c.x&&x<=c.x+c.width&&y>=c.y&&y<=c.y+c.height;
   });
  }
- function isBoatWater(value,x,y){return [[0,0],[-18,0],[18,0],[0,-12],[0,12]].every(([dx,dy])=>isWater(value,x+dx,y+dy));}
+ function isBoatWater(value,x,y){return (water?.BOAT_SAMPLES||[[0,0],[-18,0],[18,0],[0,-12],[0,12]]).every(([dx,dy])=>isWater(value,x+dx,y+dy));}
  function entryFor(side,point={}){
   if(side==='east')return freeze({x:38,y:clamp(Number.isFinite(point.y)?point.y:350,320,380)});
   if(side==='west')return freeze({x:962,y:clamp(Number.isFinite(point.y)?point.y:350,320,380)});

@@ -15,12 +15,15 @@
  });
  const meterFor=value=>{let id=typeof value==='string'?value:value?.id;if(['cut','cut-time','cuttime'].includes(id))id='2/2';return Object.prototype.hasOwnProperty.call(METERS,id)?METERS[id]:null;};
  const RARITIES=Object.freeze([
-  {id:'common',label:'Common',rank:0,weight:52,bpm:76,window:.19,missLoss:7,extraLoss:4,description:'Quarter notes, eighth-note pairs, and clear rests.'},
-  {id:'uncommon',label:'Uncommon',rank:1,weight:28,bpm:82,window:.185,missLoss:7,extraLoss:4,description:'Eighth notes, longer notes, and eighth through whole-bar rests.'},
-  {id:'rare',label:'Rare',rank:2,weight:13,bpm:104,window:.18,missLoss:6,extraLoss:4,description:'Offbeat entrances, held syncopations, and short sixteenth-note groups.'},
-  {id:'epic',label:'Epic',rank:3,weight:5,bpm:117,window:.175,missLoss:5,extraLoss:3,description:'Dotted notes and short sixteenth groups at a manageable pace.'},
-  {id:'legendary',label:'Legendary',rank:4,weight:2,bpm:132,window:.17,missLoss:5,extraLoss:3,description:'Changing tempos, offbeat rests, and brief sixteenth-note bursts.'}
+  {id:'common',label:'Common',rank:0,weight:52,bpm:72,window:.22,missLoss:5,extraLoss:3,description:'Quarter notes, eighth-note pairs, and clear rests.'},
+  {id:'uncommon',label:'Uncommon',rank:1,weight:28,bpm:76,window:.215,missLoss:5,extraLoss:3,description:'Eighth notes, longer notes, and eighth through whole-bar rests.'},
+  {id:'rare',label:'Rare',rank:2,weight:13,bpm:76,window:.21,missLoss:4,extraLoss:3,description:'Offbeat entrances, held syncopations, and short sixteenth-note groups.'},
+  {id:'epic',label:'Epic',rank:3,weight:5,bpm:80,window:.205,missLoss:3,extraLoss:2,description:'Dotted notes and short sixteenth groups at a manageable pace.'},
+  {id:'legendary',label:'Legendary',rank:4,weight:2,bpm:84,window:.20,missLoss:3,extraLoss:2,description:'Changing tempos, offbeat rests, and brief sixteenth-note bursts.'}
  ].map(Object.freeze));
+ // Complexity still rises with rarity. Gentler speeds and mistake losses
+ // give players room to recover without removing advanced written rhythms.
+ const TEMPO_RANGES=Object.freeze({common:Object.freeze([72,72]),uncommon:Object.freeze([76,76]),rare:Object.freeze([72,80]),epic:Object.freeze([76,84]),legendary:Object.freeze([80,88])});
  const SPECIES=[
   ['silver-minnow','Silver Minnow','common','#a7c8de','#eef9ff','slender',[5,12],4,8],
   ['cave-guppy','Cave Guppy','common','#8db0df','#eab1dd','round',[4,8],4,8],
@@ -63,11 +66,11 @@
   return {marking:'Andante',meaning:'Walking pace'};
  }
  function speciesTempo(rarity,index){
-  const rank=RARITIES.find(value=>value.id===rarity).rank,range=rank===2?[96,112]:rank===3?[108,126]:rank===4?[120,144]:rank===1?[82,82]:[76,76];
+  const rank=RARITIES.find(value=>value.id===rarity).rank,range=TEMPO_RANGES[rarity];
   const change=rank<2?'steady':['accelerando','ritardando','steady','ritardando','steady','accelerando'][index%6],rawStart=change==='ritardando'?range[1]:change==='steady'?(range[0]+range[1])/2:range[0],rawEnd=change==='accelerando'?range[1]:change==='ritardando'?range[0]:rawStart;
   // Every advanced pattern pool includes sixteenth rhythms, including later
-  // practice bars. Scale the entire curve so they never exceed 100 quarter
-  // notes per minute, while accelerando and ritardando still change speed.
+  // practice bars. The gentler authored ranges stay below this safety cap;
+  // keep scaling the whole curve if a future range exceeds 100 quarter BPM.
   const scale=rank<2?1:Math.min(1,MAX_SIXTEENTH_BPM/Math.max(rawStart,rawEnd)),start=rawStart*scale,end=rawEnd*scale;
   return Object.freeze({...tempoMarking(start),initialMarking:tempoMarking(start).marking,endMarking:tempoMarking(end).marking,unit:'quarter',change,startQuarterBpm:start,endQuarterBpm:end,rampAfterBars:1,rampBars:3});
  }
@@ -222,27 +225,35 @@
    if(!Number.isFinite(time)||time<now||finished)return getState();now=time;
    const beat=beatAtTime(now);
    if(beat<0)return getState();phase='playing';
-   for(const event of events){
-    // A delayed frame must catch an already-clean fourth bar before it starts
-    // judging unanswered notes from the fifth bar.
-    if(perfectEligible()&&event.onset>=PERFECT_TARGET_BARS*meter.barBeats&&completeCatch())break;
-    if(event.rest){
-     // Listening through a rest is part of a clean bar. Tapping during its
-     // silence forfeits this credit as well as applying the extra-tap loss.
-     if(!event.restProgressAwarded&&now+1e-9>=timeAtBeat(event.onset+event.duration)){
-      event.restProgressAwarded=true;
-      if(event.restClean)progress=Math.min(100,progress+CLEAN_BAR_GAIN*event.duration/meter.barBeats);
+   let catchingUp=true;
+   while(catchingUp&&!finished){
+    for(const event of events){
+     // A delayed frame must catch an already-clean fourth bar before it starts
+     // judging unanswered notes from the fifth bar.
+     if(perfectEligible()&&event.onset>=PERFECT_TARGET_BARS*meter.barBeats&&completeCatch())break;
+     if(event.rest){
+      // Listening through a rest is part of a clean bar. Tapping during its
+      // silence forfeits this credit as well as applying the extra-tap loss.
+      if(!event.restProgressAwarded&&now+1e-9>=timeAtBeat(event.onset+event.duration)){
+       event.restProgressAwarded=true;
+       if(event.restClean)progress=Math.min(100,progress+CLEAN_BAR_GAIN*event.duration/meter.barBeats);
+      }
+      continue;
      }
-     continue;
+     if(event.judgement==='holding'){
+      if(now+1e-9>=event.holdEndTime){judge('hit',event);if(finished)break;}
+      continue;
+     }
+     if(event.time+lateWindow(event)>=now)break;
+     if(event.judgement==='pending'){judge('miss',event);if(finished)break;}
     }
-    if(event.judgement==='holding'){
-     if(now+1e-9>=event.holdEndTime){judge('hit',event);if(finished)break;}
-     continue;
-    }
-    if(event.time+lateWindow(event)>=now)break;
-    if(event.judgement==='pending'){judge('miss',event);if(finished)break;}
+    completeCatch();
+    // A delayed frame can outlive the generated score. Judge bounded batches
+    // before extending again, so idle fish still escape without allocating an
+    // arbitrarily large future score just to discover those missed notes.
+    if(!practice&&!finished&&bar*meter.barBeats<=beat)makeUntil(Math.min(beat+16,bar*meter.barBeats+16));
+    else catchingUp=false;
    }
-   completeCatch();
    if(!finished)makeUntil(beat+16);
    // Retain the nearby score for rendering; a long session must not grow forever.
    if(events.length>192){const remove=events.findIndex(event=>event.onset>=beat-8);if(remove>0)events.splice(0,remove);}

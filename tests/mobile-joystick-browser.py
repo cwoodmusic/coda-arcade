@@ -175,6 +175,9 @@ class MobileJoystickTests(unittest.TestCase):
         self.walk_room('CodaArcadeQA.fishing().player',pier['x'],pier['y'],160)
         self.page.keyboard.press('e');self.page.clock.run_for(64)
         self.assertEqual(self.page.evaluate('CodaArcadeQA.fishing().phase'),'explore')
+        # Test free-water analog steering after clearing the solid pier piles.
+        self.page.keyboard.down('s');self.page.clock.run_for(160);self.page.keyboard.up('s')
+        self.page.clock.run_for(32)
         before=self.page.evaluate('CodaArcadeQA.fishing().boat')
         self.down(joystick_point(self.page,.9,-.3));self.page.clock.run_for(140)
         after=self.page.evaluate('CodaArcadeQA.fishing().boat')

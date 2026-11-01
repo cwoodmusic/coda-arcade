@@ -30,15 +30,16 @@ test('home landing, dock and ladder remain dry while the south-facing berth stay
  for(let y=235;y<=410;y+=3)for(let x=70;x<=330;x+=3)if(layout.isShore(x,y))assert.equal(world.isWater(world.DEFAULT_SCREEN,x,y),false);
 });
 
-test('only the home lake gains the dock departure channel and its banks stay dry',()=>{
+test('the dock departure connects into painted water while actual banks stay dry',()=>{
  const path=[];for(let y=435;y<=490;y++)path.push([270,y]);for(let x=270;x<=550;x++)path.push([x,490]);
  for(const [x,y]of path){
   assert.equal(world.isBoatWater(world.DEFAULT_SCREEN,x,y),true,`Home departure ${x},${y}`);
   for(const dx of [-18,0,18])for(const dy of [-12,0,12])assert.equal(world.isWater(world.DEFAULT_SCREEN,x+dx,y+dy),true);
  }
  assert.equal(world.isWater(world.DEFAULT_SCREEN,230,470),true,'The dock channel extends beyond the old ellipse');
- for(const screen of world.SCREENS.filter(screen=>screen.id!==world.DEFAULT_SCREEN))assert.equal(world.isWater(screen,230,470),false,screen.id+' keeps its original bank');
- for(const [x,y]of [[270,350],[270,395],[219,490],[270,511]])assert.equal(world.isWater(world.DEFAULT_SCREEN,x,y),false,'Landing, pier and departure banks remain blocked');
+ for(const screen of world.SCREENS)for(const [x,y]of require('../fishing-water-regions.js').screens[screen.id].dryWitnesses)assert.equal(world.isWater(screen,x,y),false,screen.id+' keeps its painted banks dry');
+ for(const [x,y]of [[270,350],[270,395]])assert.equal(world.isWater(world.DEFAULT_SCREEN,x,y),false,'Landing and pier remain blocked');
+ for(const [x,y]of [[219,490],[270,511]])assert.equal(world.isWater(world.DEFAULT_SCREEN,x,y),true,'The water does not stop at the former departure rectangle');
 });
 
 test('only connected edges have complete water corridors for a boat footprint',()=>{
@@ -48,14 +49,15 @@ test('only connected edges have complete water corridors for a boat footprint',(
   if(!connected)continue;
   for(let t=0;t<=1;t+=.025){
    let x=550,y=350;
-   if(direction==='east')x=800+210*t;else if(direction==='west')x=300-310*t;else if(direction==='north')y=250-260*t;else y=450+180*t;
+   if(direction==='east')x=800+174*t;else if(direction==='west')x=300-274*t;else if(direction==='north')y=250-224*t;else y=450+144*t;
    assert.equal(world.isBoatWater(screen,x,y),true,screen.id+' complete corridor '+x+','+y);
   }
  }
  assert.equal(world.isWater('not-a-screen',550,350),false);
  assert.equal(world.isBoatWater(world.DEFAULT_SCREEN,NaN,350),false);
  assert.equal(world.isWater(world.DEFAULT_SCREEN,550,Infinity),false);
- assert.equal(world.isBoatWater('mistfen-channel',974,280),false,'Rock beside an exit does not become an exit');
+ assert.equal(world.isBoatWater('mistfen-channel',974,280),true,'The full painted swamp waterway is wider than the former exit rectangle');
+ assert.equal(world.isBoatWater('mistfen-channel',100,80),false,'The actual mossy bank stays solid');
 });
 
 test('travel happens only at the real edge and puts the full boat safely on the neighboring screen',()=>{

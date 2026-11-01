@@ -75,7 +75,11 @@ class CaveMobileTests(_fish._world.WorldBrowserCase):
     def test_close_view_boat_steering_and_pinch_are_correct_and_editor_stays_independent_phone(self):
         self.enter();pier=self.state()['boardingPoint'];self.walk(pier['x'],pier['y'])
         _fish.FishingWorldTests.fishing_action(self,'#fishingBoatBoard');self.page.clock.run_for(32)
-        self.assertEqual(self.state()['phase'],'explore');self.assert_visible_actor('boat')
+        self.assertEqual(self.state()['phase'],'explore')
+        # Row south past the pier piles before testing sideways touch steering.
+        self.page.locator('#fishingLakeCanvas').focus();self.page.keyboard.down('s')
+        self.page.clock.run_for(160);self.page.keyboard.up('s');self.page.clock.run_for(32)
+        self.assert_visible_actor('boat')
         before=self.state()['boat'];point={'id':1,**self.point(before['x']+28,before['y'])}
         client=self.context.new_cdp_session(self.page)
         client.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[point]});self.page.clock.run_for(180)

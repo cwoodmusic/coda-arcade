@@ -38,7 +38,8 @@ test('the south-facing berth has a full-width departure channel into the lake',(
   assert.equal(layout.isBoatWater(x,y),true,`Boat departure ${x},${y}`);
   for(const dx of [-18,0,18])for(const dy of [-12,0,12])assert.equal(layout.isWater(x+dx,y+dy),true,`Full departure footprint ${x+dx},${y+dy}`);
  }
- assert.equal(layout.isBoatWater(270,498),true);assert.equal(layout.isBoatWater(270,499),false,'The boat remains inside the painted channel at its south edge');
+ assert.equal(layout.isBoatWater(270,498),true);assert.equal(layout.isBoatWater(270,499),true,'Painted water continues beyond the former departure rectangle');
  for(const [x,y]of [[270,350],[270,395]])assert.equal(layout.isWater(x,y),false,'A water polygon never floods the landing or pier');
- for(const [x,y]of [[219,490],[270,511]])assert.equal(layout.isWater(x,y),false,'The channel has physical outer banks');
+ for(const [x,y]of [[219,490],[270,511]])assert.equal(layout.isWater(x,y),true,'Visible bays outside the former channel remain navigable');
+ for(const [x,y]of [[100,150],[200,90],[850,550]])assert.equal(layout.isWater(x,y),false,'Actual cave rocks remain solid');
 });
