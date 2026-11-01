@@ -78,7 +78,7 @@
      finish();
     }catch(error){finish(Error('Environment artwork could not decode: '+file+'. '+(error.message||'')));}
    }
-   image.addEventListener('load',onload);image.addEventListener('error',onerror);image.src=baseUrl+file+(file===BACKGROUND?'?v=NWfinish20261031-1':file==='main-counter.png'?'?v=north-walls-20261031-1':'');
+   image.addEventListener('load',onload);image.addEventListener('error',onerror);image.src=baseUrl+file+(file===BACKGROUND?'?v=wall-uniform-20261031-1':file==='main-counter.png'?'?v=north-walls-20261031-1':'');
    if(image.complete&&image.naturalWidth)onload();
   }));
   const ready=Promise.all(tasks).then(()=>{loaded=true;});
@@ -92,10 +92,18 @@
   }
   function structural(part){
    const bounds=structuralBounds(part);if(!loaded||!bounds)return null;
-   const key=JSON.stringify([part.bounds,part.poly||null]);if(structures.has(key))return structures.get(key);
+   const key=JSON.stringify([part.name,part.bounds,part.poly||null]);if(structures.has(key))return structures.get(key);
    const [result,context]=canvas(bounds.width,bounds.height);context.save();context.translate(-bounds.x,-bounds.y);
    if(part.poly){context.beginPath();context.moveTo(...part.poly[0]);for(const point of part.poly.slice(1))context.lineTo(...point);context.closePath();context.clip();}
-   context.drawImage(images.get(BACKGROUND),0,0);context.restore();structures.set(key,result);return result;
+   context.drawImage(images.get(BACKGROUND),0,0);context.restore();
+   // Legacy wall crops can overlap newly exposed floor. Remove only the
+   // reviewed southwest source overlap; saved object artwork is applied later.
+   if(part.name==='dance_lower_wall_left'&&win.CodaForegroundFloorCompat){
+    const image=context.getImageData(0,0,bounds.width,bounds.height),pixels=image.data;
+    for(let y=0;y<bounds.height;y++)for(let x=0;x<bounds.width;x++)if(win.CodaForegroundFloorCompat.structuralFloorPixel(part,bounds.x+x+.5,bounds.y+y+.5))pixels[(y*bounds.width+x)*4+3]=0;
+    context.putImageData(image,0,0);
+   }
+   structures.set(key,result);return result;
   }
   return Object.freeze({ready,isReady:()=>loaded,background:()=>images.get(BACKGROUND),object,has,structural});
  }

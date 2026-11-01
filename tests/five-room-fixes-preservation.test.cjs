@@ -6,8 +6,10 @@ const front=require('../scripts/front-wall-depth-regions.json');
 const green=require('../scripts/sign-green-completion-regions.json');
 const hall=require('../scripts/hall-floor-repair-regions.json');
 const finish=require('../scripts/dance-northwest-finish-regions.json');
+const boutique=require('../scripts/boutique-wall-uniform-regions.json');
+const danceMain=require('../scripts/dance-main-wall-uniform-regions.json');
 const project=require('../published-world-project.json');
-const width=1672,metas=[northwest,front,green,hall,finish],masks=metas.map(cleanupMask);
+const width=1672,metas=[northwest,front,green,hall,finish,boutique,danceMain],masks=metas.map(cleanupMask);
 const owns=(mask,x,y)=>mask[y*width+x];
 
 test('northwest repair removes the obsolete upper wall and lamp while retaining the new inner wall, plaques and left lamp',()=>{
@@ -24,6 +26,24 @@ test('front depth owns only exterior bodies and the extension below them while r
   assert.equal(owns(mask,x,y),1,`Reviewed exterior body ${x},${y}`);
  for(const [x,y]of [[55,825],[110,842],[200,877],[290,880],[320,910],[430,935],[480,875],[600,860],[780,850],[900,820],[1450,800],[400,800]])
   assert.equal(owns(mask,x,y),0,`Preserved cap, stair, entrance or interior ${x},${y}`);
+});
+
+test('the approved front artwork owns complete brick faces across former interior source seams, below every preserved cap and rail',()=>{
+ const mask=masks[1];
+ for(const [x,y]of [[125,860],[135,875],[180,887],[230,890],[270,903],[470,903],[520,890],[540,892],[600,875],[900,832],[1039,833],[1530,832]])
+  assert.equal(owns(mask,x,y),1,`Complete exterior brick face ${x},${y}`);
+ for(const [x,y]of [[90,842],[125,852],[180,880],[270,892],[460,892],[510,882],[550,881],[600,868],[780,868],[820,859],[830,853],[840,846],[850,836],[858,832],[900,828]])
+  assert.equal(owns(mask,x,y),0,`Preserved blue cap, neon or outer corner ${x},${y}`);
+});
+
+test('the expanded front pass retains every previously approved front pixel for identical standalone and full-pipeline builds',()=>{
+ const previous=cleanupMask({...front,polygons:[
+  [[49,842],[68,858],[110,858],[153,895],[244,895],[244,909],[305,909],[305,941],[49,941]],
+  [[445,909],[493,909],[562,883],[782,883],[816,863],[858,837],[858,941],[445,941]],
+  [[858,834],[1616,834],[1616,941],[858,941]]
+ ]});
+ for(let i=0;i<previous.length;i++)if(previous[i])assert.equal(masks[1][i],1,`Previously approved front pixel ${i%width},${Math.floor(i/width)}`);
+ for(const [x,y]of [[800,872],[820,862],[830,854]])assert.equal(owns(masks[1],x,y),1,`Retained published bevel artwork ${x},${y}`);
 });
 
 test('emerald completion reuses approved masonry and cannot change the sign frame, roof or torches',()=>{
@@ -77,6 +97,31 @@ test('the final rail copies use normalized world coordinates in an order that le
   for(let y=dy;y<dy+dh;y++)for(let x=dx;x<dx+dw;x++)assert.equal(owns(mask,x,y),1,`Owned rail copy ${x},${y}`);
   previousDestinations.push([dx,dy,dw,dh]);
  }
+});
+
+test('the uniform boutique grid preserves its original brand, authored shirt artwork and lamp without changing its caps or floor',()=>{
+ const mask=masks[5];
+ for(const [x,y]of [[380,300],[450,300],[620,350],[530,390],[410,358],[600,358]])
+  assert.equal(owns(mask,x,y),1,`Continuous boutique masonry ${x},${y}`);
+ for(const [x,y]of [[531,315],[530,350],[397,359],[397,300],[368,280],[500,280],[675,350],[400,430],[500,450]])
+  assert.equal(owns(mask,x,y),0,`Preserved boutique artwork, fixture, cap or floor ${x},${y}`);
+ let shirtPixels=0;
+ for(const [tile,runs]of Object.entries(project.artwork?.['background.world']?.tiles||{})){
+  const [tx,ty]=tile.split(',').map(Number);
+  for(const [start,length]of runs)for(let i=start;i<start+length;i++){
+   const x=tx*64+i%64,y=ty*64+Math.floor(i/64);
+   if(x>=521&&x<541&&y>=305&&y<325){shirtPixels++;assert.equal(owns(mask,x,y),0);}
+  }
+ }
+ assert.equal(shirtPixels,309,'Every existing authored shirt-emblem pixel stays authoritative');
+});
+
+test('the uniform DJ grid preserves opaque plaques and light fixtures while owning adjacent glow and leaving caps, rails and floors intact',()=>{
+ const mask=masks[6];
+ for(const [x,y]of [[280,550],[450,580],[600,550],[625,550],[506,558],[650,620],[700,620]])
+  assert.equal(owns(mask,x,y),1,`Continuous DJ masonry or lighting glow ${x},${y}`);
+ for(const [x,y]of [[613,549],[613,530],[507,539],[632,572],[665,613],[683,572],[715,613],[650,590],[700,590],[500,515],[650,643],[650,655],[250,580],[725,580]])
+  assert.equal(owns(mask,x,y),0,`Preserved DJ artwork, fixture, cap, rail or floor ${x},${y}`);
 });
 
 test('all finishing passes preserve world size, furniture and existing authored background pixels',()=>{

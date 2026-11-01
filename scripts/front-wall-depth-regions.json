@@ -1,5 +1,5 @@
 {
-  "description": "Deepen the exterior front-wall bodies toward the existing world bottom without moving any top cap, neon rail, interior floor, stairs or entrance artwork. All layout and project data retain their existing dimensions and positions.",
+  "description": "Use the approved deep exterior artwork for complete front-wall faces, beginning at the dark underside of the unchanged blue caps. This removes partial-course grid jogs and diagonal source joins while preserving neon rails, interior floors, stairs, entrance artwork and the building outline.",
   "worldSize": [1672,941],
   "source": "assets/environment/source/front-wall-depth.png",
   "sourceSize": [2169,725],
@@ -8,9 +8,10 @@
   "output": "assets/environment/v1/empty-arcade.png",
   "preserveProject": true,
   "polygons": [
-    [[49,842],[68,858],[110,858],[153,895],[244,895],[244,909],[305,909],[305,941],[49,941]],
+    [[49,830],[68,847],[111,847],[115,848],[120,852],[125,856],[130,861],[135,864],[140,870],[145,874],[150,879],[154,883],[244,883],[244,897],[305,897],[305,941],[49,941]],
+    [[445,897],[480,897],[493,890],[498,886],[542,886],[550,883],[560,877],[568,873],[813,873],[820,867],[830,857],[840,849],[850,842],[858,837],[858,941],[445,941]],
     [[445,909],[493,909],[562,883],[782,883],[816,863],[858,837],[858,941],[445,941]],
-    [[858,834],[1616,834],[1616,941],[858,941]]
+    [[858,834],[861,831],[1616,831],[1616,941],[858,941]]
   ],
   "protectedPolygons": [
     [[305,843],[445,843],[445,941],[305,941]],

@@ -259,3 +259,21 @@ lamp, colored tile interiors, outside posts, and southwest turn are protected.
 An eight-pixel feather replaces the old blue fringe along the diagonal tile
 edge, blending into an immutable sparse before-image. Reflection clips follow
 the repaired glass and exclude both lengths of the thick neon border.
+
+
+## Uniform wall and foreground audit
+
+The final boutique and DJ-wall passes replace inconsistent masonry with a
+single grid per face. Their metadata protects the existing labels, lanterns,
+plaque interiors, caps, floor and authored shirt artwork. The front-depth pass
+owns complete brick faces below the caps, preventing a source boundary from
+cutting diagonally through a course. Other north, Lounge, Piano and Hall faces
+were checked and retain their accepted artwork.
+
+`foreground-floor-compat.js` recognizes eleven exact historical wall-selection
+shapes used by twelve saved paint actions. It removes their floor coverage at
+render time so those pixels cannot obscure actors or floor effects. The raw
+project, history and selections stay unchanged; new custom floor painting
+remains available. The southwest structural cutout also excludes real floor
+while retaining its neon border. Furniture and cabinet transparency was
+checked independently; no floor patches were found in their cutouts.

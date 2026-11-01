@@ -26,7 +26,8 @@ class BoutiqueJoinTests(unittest.TestCase):
             'dance-northwest-south-wall-regions.json','arcade-north-straight-cap-regions.json',
             'five-northwest-cleanup-regions.json','front-wall-depth-regions.json',
             'sign-green-completion-regions.json','hall-floor-repair-regions.json',
-            'dance-northwest-finish-regions.json']]
+            'dance-northwest-finish-regions.json',
+            'boutique-wall-uniform-regions.json','dance-main-wall-uniform-regions.json']]
         self.load()
         result=self.page.evaluate('''async layers=>{
           const load=src=>new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=reject;image.src=src;});
