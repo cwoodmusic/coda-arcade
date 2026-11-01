@@ -238,7 +238,7 @@ This build does not modify the backdrop, project data or original sprites.
 
 ## Room finishing repairs
 
-The last four passes in `build-cosmic-floor.cjs` own only reviewed native-art
+The finishing passes in `build-cosmic-floor.cjs` own only reviewed native-art
 regions: the obsolete wall band above the dance-room inner cap and its neon
 corner, deeper front exterior courses, the exposed masonry beside the Coda
 sign, and continuous glass beside Hall of Fame. The removed upper dance lamp
@@ -250,3 +250,12 @@ remains 1672×941, with furniture, collisions, and saved-project data unchanged.
 The Hall floor uses an immutable sparse before-image to feather its outer
 edges without accumulating changes on repeated builds. Source dimensions and
 placements are recorded in the four `*-regions.json` files.
+
+The final `build-dance-northwest-finish.cjs` pass replaces the northwest wall
+face and adjoining glass lane together so their tile grids and reflections
+cannot meet at the former y710 seam. Its source copies normalize the upper
+neon to the width and centerline of the retained lower border. The existing
+lamp, colored tile interiors, outside posts, and southwest turn are protected.
+An eight-pixel feather replaces the old blue fringe along the diagonal tile
+edge, blending into an immutable sparse before-image. Reflection clips follow
+the repaired glass and exclude both lengths of the thick neon border.

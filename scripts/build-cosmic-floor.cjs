@@ -160,6 +160,7 @@ async function main(){
  if(!previewOnly&&!dryRun)await require('./build-front-wall-depth.cjs').build();
  if(!previewOnly&&!dryRun)await require('./build-sign-green-completion.cjs').build();
  if(!previewOnly&&!dryRun)await require('./build-hall-floor-repair.cjs').build();
+ if(!previewOnly&&!dryRun)await require('./build-dance-northwest-finish.cjs').build();
 }
 if(require.main===module)main().catch(error=>{process.stderr.write(error.stack+'\n');process.exitCode=1;});
 module.exports={inside,floorMask,authoredShapeMask,rebaseArtwork,repairPoints,recolorRepairs};

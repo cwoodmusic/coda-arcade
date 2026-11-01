@@ -25,12 +25,13 @@ class BoutiqueJoinTests(unittest.TestCase):
             'hall-roof-cap-regions.json','lounge-club-roof-regions.json',
             'dance-northwest-south-wall-regions.json','arcade-north-straight-cap-regions.json',
             'five-northwest-cleanup-regions.json','front-wall-depth-regions.json',
-            'sign-green-completion-regions.json','hall-floor-repair-regions.json']]
+            'sign-green-completion-regions.json','hall-floor-repair-regions.json',
+            'dance-northwest-finish-regions.json']]
         self.load()
         result=self.page.evaluate('''async layers=>{
           const load=src=>new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=reject;image.src=src;});
           const [native,...sources]=await Promise.all([load(layers[0].output),...layers.map(meta=>load(meta.source))]),[w,h]=layers[0].worldSize;
-          const featherSources=await Promise.all(layers.map(meta=>meta.floorFeather&&meta.before?load(meta.before):null));
+          const featherSources=await Promise.all(layers.map(meta=>(meta.floorFeather||meta.tileEdgeFeather)&&meta.before?load(meta.before):null));
           const canvas=()=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
           const a=canvas(),c=canvas();a.getContext('2d').drawImage(native,0,0);__paletteConsole.renderBase(c.getContext('2d'));
           const aa=a.getContext('2d').getImageData(0,0,w,h).data,cc=c.getContext('2d').getImageData(0,0,w,h).data;
@@ -39,13 +40,28 @@ class BoutiqueJoinTests(unittest.TestCase):
             if(meta.sourceRect)g.drawImage(source,...meta.sourceRect,...placement);else g.drawImage(source,...placement);
             for(const region of meta.sourceCopies||[])g.drawImage(c,...region);
             const data=g.getImageData(0,0,w,h).data;
-            if(meta.floorFeather){
+            if(meta.floorFeather||meta.tileEdgeFeather){
               if(!featherSources[index])throw Error('A reviewed feather needs its immutable reference artwork');
               const reference=canvas(),rg=reference.getContext('2d');rg.drawImage(featherSources[index],0,0);
-              const before=rg.getImageData(0,0,w,h).data,{right:[r0,r1],bottom:[b0,b1],leftBelow:[l0,l1,below]}=meta.floorFeather;
+              const before=rg.getImageData(0,0,w,h).data;
               for(let y=0;y<h;y++)for(let x=0;x<w;x++){
-                let weight=Math.max(0,Math.min(1,(r1-x-.5)/(r1-r0),(b1-y-.5)/(b1-b0)));
-                if(y>=below)weight=Math.max(0,Math.min(weight,(x+.5-l0)/(l1-l0)));
+                let weight=1;
+                if(meta.floorFeather){
+                  const {right:[r0,r1],bottom:[b0,b1],leftBelow:[l0,l1,below]}=meta.floorFeather;
+                  weight=Math.max(0,Math.min(weight,(r1-x-.5)/(r1-r0),(b1-y-.5)/(b1-b0)));
+                  if(y>=below)weight=Math.max(0,Math.min(weight,(x+.5-l0)/(l1-l0)));
+                }
+                if(meta.tileEdgeFeather){
+                  // The reviewed edge is defined per integer image row; only
+                  // the horizontal ramp uses the pixel center.
+                  const {points,width}=meta.tileEdgeFeather,cy=y;
+                  if(cy>=points[0][1]&&cy<=points.at(-1)[1]){
+                    for(let i=1;i<points.length;i++)if(cy<=points[i][1]){
+                      const [ax,ay]=points[i-1],[bx,by]=points[i],edge=ax+(bx-ax)*(cy-ay)/(by-ay);
+                      weight=Math.max(0,Math.min(weight,(edge+width-(x+.5))/width));break;
+                    }
+                  }
+                }
                 const at=(y*w+x)*4;for(let channel=0;channel<4;channel++)data[at+channel]=Math.round(before[at+channel]*(1-weight)+data[at+channel]*weight);
               }
             }

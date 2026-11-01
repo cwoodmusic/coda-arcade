@@ -22,7 +22,18 @@ function cleanupMask(meta){
  }
  return mask;
 }
-async function compose({meta,mask,previewOnly}){
+function tileEdgeWeight(feather,x,y){
+ const {points,width}=feather;
+ if(y<points[0][1]||y>points.at(-1)[1])return 1;
+ for(let i=1;i<points.length;i++){
+  const [x0,y0]=points[i-1],[x1,y1]=points[i];
+  if(y>y1)continue;
+  const edge=x0+(x1-x0)*(y-y0)/(y1-y0);
+  return Math.max(0,Math.min(1,(edge+width-x)/width));
+ }
+ return 1;
+}
+async function compose({meta,mask,previewOnly},tileEdgeWeight){
  const load=url=>new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>reject(Error('Could not load '+url));image.src=url;});
  const original=await load('/before'),source=previewOnly?original:await load('/source'),[width,height]=meta.worldSize;
  const [sourceWidth,sourceHeight]=previewOnly?meta.worldSize:meta.sourceSize||meta.worldSize;
@@ -36,7 +47,7 @@ async function compose({meta,mask,previewOnly}){
  if(!previewOnly)for(const region of meta.sourceCopies||[])s.drawImage(generated,...region);
  const before=g.getImageData(0,0,width,height),after=g.getImageData(0,0,width,height),pixels=s.getImageData(0,0,width,height).data;
  let featherPixels=before.data;
- if(meta.floorFeather&&!previewOnly){
+ if((meta.floorFeather||meta.tileEdgeFeather)&&!previewOnly){
   const reference=await load('/feather-base');if(reference.naturalWidth!==width||reference.naturalHeight!==height)throw Error('Floor feather reference dimensions must match the world');
   const b=canvas().getContext('2d');b.drawImage(reference,0,0);featherPixels=b.getImageData(0,0,width,height).data;
  }
@@ -51,7 +62,8 @@ async function compose({meta,mask,previewOnly}){
    weight=Math.max(0,Math.min(weight,(r1-x-.5)/(r1-r0),(b1-y-.5)/(b1-b0)));
    if(y>=below)weight=Math.max(0,Math.min(weight,(x+.5-l0)/(l1-l0)));
   }
-  for(let c=0;c<4;c++)after.data[at+c]=Math.round(featherPixels[at+c]*(1-weight)+pixels[at+c]*weight);
+  if(meta.tileEdgeFeather)weight=Math.min(weight,tileEdgeWeight(meta.tileEdgeFeather,i%width+.5,Math.floor(i/width)));
+  for(let c=0;c<4;c++)after.data[at+c]=weight<1?Math.round(featherPixels[at+c]*(1-weight)+pixels[at+c]*weight):pixels[at+c];
  }
  for(let i=0;i<mask.length;i++)if(!mask[i])for(let c=0;c<4;c++)if(before.data[i*4+c]!==after.data[i*4+c])throw Error('An unmarked walkway pixel changed');
  g.putImageData(after,0,0);
@@ -83,7 +95,7 @@ async function build(options={}){
   socket.addEventListener('message',event=>{const message=JSON.parse(event.data);if(message.id){const job=jobs.get(message.id);if(!job)return;jobs.delete(message.id);clearTimeout(job.timer);message.error?job.reject(Error(message.error.message)):job.resolve(message.result);}else events.get(message.method)?.(message.params);});
   const send=(method,params={})=>new Promise((resolve,reject)=>{const id=next++,timer=setTimeout(()=>{jobs.delete(id);reject(Error('Timed out: '+method));},30000);jobs.set(id,{resolve,reject,timer});socket.send(JSON.stringify({id,method,params}));});
   await send('Page.enable');const loaded=new Promise(resolve=>events.set('Page.loadEventFired',resolve));await send('Page.navigate',{url:'http://127.0.0.1:'+server.address().port});await loaded;
-  const result=await send('Runtime.evaluate',{awaitPromise:true,returnByValue:true,expression:`(${compose.toString()})(${JSON.stringify({meta,mask:Array.from(mask),previewOnly:!!options.previewOnly})})`});
+  const result=await send('Runtime.evaluate',{awaitPromise:true,returnByValue:true,expression:`(${compose.toString()})(${JSON.stringify({meta,mask:Array.from(mask),previewOnly:!!options.previewOnly})},${tileEdgeWeight.toString()})`});
   if(result.exceptionDetails)throw Error(result.exceptionDetails.exception?.description||result.exceptionDetails.text);
   const {image,preview,...report}=result.result.value;
   await fs.writeFile('/tmp/coda-walkway-cleanup-mask.png',Buffer.from(preview.split(',')[1],'base64'));
@@ -95,4 +107,4 @@ async function build(options={}){
  }finally{socket?.close();browser.kill('SIGTERM');server.close();if(browser.exitCode===null)await new Promise(resolve=>browser.once('exit',resolve));await fs.rm(profile,{recursive:true,force:true,maxRetries:10,retryDelay:100});}
 }
 if(require.main===module)build({dryRun:process.argv.includes('--dry-run'),previewOnly:process.argv.includes('--preview-mask')}).catch(error=>{process.stderr.write(error.stack+'\n');process.exitCode=1;});
-module.exports={cleanupMask,build};
+module.exports={cleanupMask,tileEdgeWeight,build};

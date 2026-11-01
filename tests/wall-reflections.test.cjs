@@ -16,6 +16,6 @@ test('the flat northwest face reflects onto its new glass and joins the existing
  assert.deepEqual(west.source,[50,507,186,141]);
  assert.deepEqual(west.floor,[50,650,186,166]);
  assert.equal(west.floor[0]+west.floor[2],north.floor[0]);
- for(const [x,y]of [[85,665],[110,690],[85,705]])assert.equal(isGlassFloor(x,y),true,`${x},${y}`);
- for(const [x,y]of [[70,665],[60,670],[100,620],[200,640],[170,700]])assert.equal(isGlassFloor(x,y),false,`${x},${y}`);
+ for(const [x,y]of [[90,665],[110,690],[90,705],[90,730],[110,800]])assert.equal(isGlassFloor(x,y),true,`${x},${y}`);
+ for(const [x,y]of [[70,665],[60,670],[100,620],[200,640],[170,700],[85,650],[85,665],[85,705],[85,800],[200,650],[246,658]])assert.equal(isGlassFloor(x,y),false,`${x},${y}`);
 });

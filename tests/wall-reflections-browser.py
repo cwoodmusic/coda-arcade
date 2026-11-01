@@ -97,14 +97,15 @@ class WallReflectionTests(unittest.TestCase):
  const before=source.toDataURL(),output=document.createElement('canvas');output.width=1672;output.height=941;const g=output.getContext('2d');let quality='full';
  const api=CodaWallReflections.create({document,getQuality:()=>quality});
  api.draw(g,source);const first=api.getState(),pixels=g.getImageData(0,0,1672,941).data;
- const regions={north:[500,128,692,200],hall:[1380,309,211,170],boutique:[359,427,322,79],dance:[725,650,82,150],northwest:[77,649,170,61]},counts={};
+ const regions={north:[500,128,692,200],hall:[1380,309,211,170],boutique:[359,427,322,79],dance:[725,650,82,150],northwest:[87,659,160,180]},counts={};
  for(const [name,[x,y,w,h]]of Object.entries(regions)){let count=0;for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++)if(pixels[(yy*1672+xx)*4+3]>0)count++;counts[name]=count;}
  let outside=0,colored=0;for(let y=0;y<941;y++)for(let x=0;x<1672;x++){const at=(y*1672+x)*4;if(!pixels[at+3])continue;if(!CodaWallReflections.isGlassFloor(x+.5,y+.5))outside++;if(Math.max(...pixels.slice(at,at+3))-Math.min(...pixels.slice(at,at+3))>30)colored++;}
  const alpha=(x,y)=>g.getImageData(x,y,1,1).data[3],full=alpha(820,180);
  g.clearRect(0,0,1672,941);quality='lite';api.draw(g,source);const lite=alpha(820,180),second=api.getState();
  g.clearRect(0,0,1672,941);quality='off';const off=api.draw(g,source),offPixels=g.getImageData(0,0,1672,941).data.some(v=>v!==0);
- const protectedPoints=[[70,665],[64,690],[100,620],[170,700]].map(([x,y])=>({x,y,alpha:pixels[(y*1672+x)*4+3]}));
- return {first,second,counts,outside,colored,protectedPoints,sourceUnchanged:before===source.toDataURL(),full,lite,off,offPixels};
+ const protectedPoints=[[70,665],[64,690],[100,620],[170,700],[85,650],[85,665],[85,705],[85,800],[200,650],[246,658]].map(([x,y])=>({x,y,alpha:pixels[(y*1672+x)*4+3]}));
+ const westGlass={x:90,y:730,glass:CodaWallReflections.isGlassFloor(90,730),alpha:pixels[(730*1672+90)*4+3]};
+ return {first,second,counts,outside,colored,protectedPoints,westGlass,sourceUnchanged:before===source.toDataURL(),full,lite,off,offPixels};
 }''')
                 self.assertTrue(actual['sourceUnchanged'])
                 self.assertIsNone(actual['first']['error'])
@@ -114,6 +115,8 @@ class WallReflectionTests(unittest.TestCase):
                 self.assertGreater(actual['colored'],1000)
                 for region,count in actual['counts'].items():self.assertGreater(count,300,region)
                 for point in actual['protectedPoints']:self.assertEqual(point['alpha'],0,point)
+                self.assertTrue(actual['westGlass']['glass'],actual['westGlass'])
+                self.assertGreater(actual['westGlass']['alpha'],0,'Reflections reach the glass below the west rail')
                 self.assertGreater(actual['full'],actual['lite'])
                 self.assertFalse(actual['off'])
                 self.assertFalse(actual['offPixels'])
