@@ -6,7 +6,7 @@
   "source": "assets/environment/source/lounge-glass-floor.png",
   "sourcePlacement": [40, 110, 455, 290],
   "output": "assets/environment/v1/empty-arcade.png",
-  "reviewedProjectSha256": "a9a495716023e0df56dc23db8c9bbfd09316f5f08668fbcca43a633461dc2c00",
+  "reviewedProjectSha256": "7957c8362e43bfa8cdd94fca842c88fdd6286aac86d5220de095d3ff54a9df54",
   "polygons": [
     [[82,203],[143,185],[181,172],[208,149],[359,149],[438,180],[438,271],[360,271],[360,362],[269,362],[269,314],[82,314]]
   ],

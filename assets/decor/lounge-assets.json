@@ -13,6 +13,10 @@
     {
       "path": "assets/decor/source/lounge-wall-art.png",
       "sha256": "e154ac9037b11ead838332ebc2de1208aa43c2b4ea176eb86fed0833b4eebf7e"
+    },
+    {
+      "path": "assets/decor/source/music-lounge-additions.png",
+      "sha256": "62446b94a40bdc7e6a17b57d872612981b3897726be00f7b4668d299a128523c"
     }
   ],
   "items": [
@@ -719,6 +723,358 @@
       ],
       "output": "assets/decor/v1/wall-art-sunset.png",
       "sha256": "78f866eb74d826a06f261381a0d2c35577a9a4cc3aad191592a88915d11c2bff"
+    },
+    {
+      "id": "table-lounge-walnut",
+      "name": "Rectangular walnut lounge table",
+      "category": "furniture",
+      "width": 156,
+      "height": 66,
+      "source": "assets/decor/source/music-lounge-additions.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "cell": [
+        0,
+        0,
+        528,
+        494
+      ],
+      "crop": [
+        43,
+        240,
+        472,
+        194
+      ],
+      "placement": [
+        2,
+        2,
+        151,
+        62
+      ],
+      "visibleBounds": [
+        3,
+        3,
+        149,
+        60
+      ],
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "output": "assets/decor/v1/table-lounge-walnut.png",
+      "sha256": "bfb0a7ed05aec64e7745b64efc36eb8fbfb9d299026a83c39cdeb9613016f497"
+    },
+    {
+      "id": "wall-art-treble-clef",
+      "name": "Framed treble clef",
+      "category": "wall",
+      "width": 54,
+      "height": 76,
+      "source": "assets/decor/source/music-lounge-additions.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "cell": [
+        528,
+        0,
+        285,
+        494
+      ],
+      "crop": [
+        541,
+        128,
+        243,
+        334
+      ],
+      "placement": [
+        2,
+        3,
+        50,
+        69
+      ],
+      "visibleBounds": [
+        2,
+        3,
+        50,
+        69
+      ],
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "output": "assets/decor/v1/wall-art-treble-clef.png",
+      "sha256": "4ea757a6c2f6ccd655fd0e2d6d792e679a60cbd6a23122a5106223d70f2550b1"
+    },
+    {
+      "id": "wall-art-bass-clef",
+      "name": "Framed bass clef",
+      "category": "wall",
+      "width": 54,
+      "height": 66,
+      "source": "assets/decor/source/music-lounge-additions.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "cell": [
+        813,
+        0,
+        333,
+        494
+      ],
+      "crop": [
+        843,
+        127,
+        280,
+        335
+      ],
+      "placement": [
+        2,
+        3,
+        50,
+        60
+      ],
+      "visibleBounds": [
+        3,
+        3,
+        49,
+        60
+      ],
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "output": "assets/decor/v1/wall-art-bass-clef.png",
+      "sha256": "deb47ddc96b47b3c4b60a83a4f36af635633a6daf1c9060e3a2e92525f1a3610"
+    },
+    {
+      "id": "wall-art-grand-staff",
+      "name": "Framed grand staff sheet music",
+      "category": "wall",
+      "width": 76,
+      "height": 76,
+      "source": "assets/decor/source/music-lounge-additions.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "cell": [
+        1146,
+        0,
+        390,
+        494
+      ],
+      "crop": [
+        1169,
+        128,
+        317,
+        335
+      ],
+      "placement": [
+        4,
+        2,
+        68,
+        72
+      ],
+      "visibleBounds": [
+        4,
+        2,
+        68,
+        72
+      ],
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "output": "assets/decor/v1/wall-art-grand-staff.png",
+      "sha256": "1be8839a91a4a4e7eac03d73d753be64f105f7ecdd3243a4c80265d2fb97c05d"
+    },
+    {
+      "id": "wall-art-gold-record",
+      "name": "Gold record award",
+      "category": "wall",
+      "width": 68,
+      "height": 80,
+      "source": "assets/decor/source/music-lounge-additions.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "cell": [
+        0,
+        494,
+        402,
+        530
+      ],
+      "crop": [
+        53,
+        526,
+        323,
+        379
+      ],
+      "placement": [
+        2,
+        2,
+        64,
+        75
+      ],
+      "visibleBounds": [
+        2,
+        2,
+        64,
+        75
+      ],
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "output": "assets/decor/v1/wall-art-gold-record.png",
+      "sha256": "4c349cada8ee97917345ff050783f7c1af3c7f1dda0f5626c864640bcf2406dc"
+    },
+    {
+      "id": "wall-art-saxophone",
+      "name": "Framed golden saxophone",
+      "category": "wall",
+      "width": 64,
+      "height": 80,
+      "source": "assets/decor/source/music-lounge-additions.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "cell": [
+        402,
+        494,
+        356,
+        530
+      ],
+      "crop": [
+        429,
+        526,
+        305,
+        379
+      ],
+      "placement": [
+        2,
+        2,
+        60,
+        75
+      ],
+      "visibleBounds": [
+        2,
+        2,
+        59,
+        75
+      ],
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "output": "assets/decor/v1/wall-art-saxophone.png",
+      "sha256": "14f14a77b3fdcc45dabe8a078ce3c362a351b57fbf4f42172a790c48f6f41067"
+    },
+    {
+      "id": "wall-art-electric-guitars",
+      "name": "Crossed electric guitars wall art",
+      "category": "wall",
+      "width": 72,
+      "height": 80,
+      "source": "assets/decor/source/music-lounge-additions.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "cell": [
+        758,
+        494,
+        371,
+        530
+      ],
+      "crop": [
+        782,
+        526,
+        324,
+        379
+      ],
+      "placement": [
+        3,
+        2,
+        65,
+        76
+      ],
+      "visibleBounds": [
+        3,
+        2,
+        65,
+        76
+      ],
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "output": "assets/decor/v1/wall-art-electric-guitars.png",
+      "sha256": "878783ce324e12691e85a00edd8a0fc1512f4f90fcf619f29df42efb99c4760a"
+    },
+    {
+      "id": "wall-art-drum-kit",
+      "name": "Framed drum kit",
+      "category": "wall",
+      "width": 74,
+      "height": 80,
+      "source": "assets/decor/source/music-lounge-additions.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "cell": [
+        1129,
+        494,
+        407,
+        530
+      ],
+      "crop": [
+        1152,
+        526,
+        336,
+        379
+      ],
+      "placement": [
+        3,
+        2,
+        67,
+        76
+      ],
+      "visibleBounds": [
+        3,
+        2,
+        67,
+        76
+      ],
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "output": "assets/decor/v1/wall-art-drum-kit.png",
+      "sha256": "25883f239374337854d47b7114d9cc510b3413f96ec3038dd737e0caa3811352"
     }
   ]
 }

@@ -3,8 +3,8 @@ const test=require('node:test'),assert=require('node:assert/strict');
 const library=require('../decor-library.js');
 
 test('the library retains its original decor and adds separate lounge furniture, rugs and counter art',()=>{
- assert.equal(library.items.length,71);assert.equal(new Set(library.items.map(item=>item.id)).size,71);
- assert.deepEqual(library.items.reduce((counts,item)=>(counts[item.category]=(counts[item.category]||0)+1,counts),{}),{floor:16,tabletop:22,wall:12,rug:11,furniture:10});
+ assert.equal(library.items.length,79);assert.equal(new Set(library.items.map(item=>item.id)).size,79);
+ assert.deepEqual(library.items.reduce((counts,item)=>(counts[item.category]=(counts[item.category]||0)+1,counts),{}),{floor:16,tabletop:22,wall:19,rug:11,furniture:11});
  for(const item of library.items){
   assert.match(item.id,/^[a-z0-9]+(?:-[a-z0-9]+)*$/);assert.ok(item.name.length>3);
   assert.ok(Number.isInteger(item.width)&&Number.isInteger(item.height)&&item.width>=16&&item.height>=18&&item.width<=400&&item.height<=200);
@@ -87,7 +87,7 @@ test('the matte counter refreshes its card, preview and added image while other 
 
 test('furniture filtering is a preview and each added sofa is an independent embedded copy',async()=>{
  const value=fixture();value.find('decorCategory').value='furniture';value.find('decorCategory').onchange();
- assert.equal(value.control.getState().visible,10);assert.equal(value.calls.length,0);
+ assert.equal(value.control.getState().visible,11);assert.equal(value.calls.length,0);
  value.find('decorSearch').value='sofa';value.find('decorSearch').oninput();
  assert.equal(value.control.getState().visible,3);assert.equal(value.control.select('sofa-south'),true);assert.equal(value.calls.length,0);
  for(let count=0;count<2;count++){

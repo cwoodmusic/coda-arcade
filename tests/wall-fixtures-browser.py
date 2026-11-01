@@ -23,9 +23,10 @@ class WallFixtureTests(fixture.EnvironmentWorldTests):
 
     def test_lantern_move_hide_duplicate_and_reload_keep_sprite_and_glow_together(self):
         self.load()
-        self.assertEqual(len(self.lamp()), 1)
-        self.assertEqual(self.lamp()[0]['x'], 605)
+        current = next(asset for asset in self.project()['assets'] if asset.get('origin', {}).get('name') == 'wall_lantern_arcade-west')
+        self.assertEqual(len(self.lamp()), 1 if current['visible'] else 0)
         self.lift('wall_lantern_arcade-west')
+        self.page.locator('#assetVisible').check()
         self.field('assetX', 900)
         self.field('assetY', 350)
         self.page.evaluate('publishFrames(3)')

@@ -156,9 +156,9 @@ class LoungeUpdateTests(unittest.TestCase):
         original = self.project()
         self.open_library()
         catalog = self.page.evaluate('CodaDecorLibrary.items')
-        self.assertEqual(len(catalog), 71)
-        self.assertEqual([item['id'] for item in catalog[-16:]], NEW_IDS)
-        for category, count in [('floor',16), ('tabletop',22), ('wall',12), ('rug',11), ('furniture',10)]:
+        self.assertEqual(len(catalog), 79)
+        self.assertEqual([item['id'] for item in catalog[55:71]], NEW_IDS)
+        for category, count in [('floor',16), ('tabletop',22), ('wall',19), ('rug',11), ('furniture',11)]:
             self.page.locator('[data-decor-category]').select_option(category)
             self.assertEqual(self.page.locator('[data-decor-item]:visible').count(), count)
         self.page.locator('[data-decor-category]').select_option('all')

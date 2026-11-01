@@ -5,15 +5,16 @@ const {alphaBounds,gridCells,fitRect,validateMetadata}=require('../scripts/build
 const root=path.resolve(__dirname,'..'),read=file=>fs.readFileSync(path.join(root,file));
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 
-test('the lounge expansion is sixteen separate placeable assets with front-facing furniture and counter-sized props',()=>{
+test('the lounge expansion is twenty-four separate placeable assets with front-facing furniture and music artwork',()=>{
  const expected=[
   'rug-lounge-constellation','rug-lounge-sunset','rug-lounge-jade','clothes-rack-south','wardrobe-south','table-rectangle-south',
   'notes-register','notes-receipt-printer','notes-pen-cup','notes-ledger','notes-price-display','notes-display-tray',
-  'wall-art-orbit','wall-art-equalizer','wall-art-keyboard','wall-art-sunset'
+  'wall-art-orbit','wall-art-equalizer','wall-art-keyboard','wall-art-sunset',
+  'table-lounge-walnut','wall-art-treble-clef','wall-art-bass-clef','wall-art-grand-staff','wall-art-gold-record','wall-art-saxophone','wall-art-electric-guitars','wall-art-drum-kit'
  ];
  assert.deepEqual(validateMetadata(meta).ids,expected);
  assert.deepEqual(library.items.slice(55).map(item=>item.id),expected);
- assert.deepEqual(library.items.slice(55).reduce((counts,item)=>(counts[item.category]=(counts[item.category]||0)+1,counts),{}),{rug:3,furniture:3,tabletop:6,wall:4});
+ assert.deepEqual(library.items.slice(55).reduce((counts,item)=>(counts[item.category]=(counts[item.category]||0)+1,counts),{}),{rug:3,furniture:4,tabletop:6,wall:11});
  assert.ok(library.items.slice(55).filter(item=>item.category==='tabletop').every(item=>item.width<=36&&item.height<=32),'Counter items stay small enough to arrange separately');
  assert.throws(()=>validateMetadata({...meta,sheets:[{...meta.sheets[0],ids:Array(6).fill(expected[0])}]}),/duplicate/);
  assert.throws(()=>validateMetadata({...meta,sheets:[{...meta.sheets[0],source:'published-world-project.json'}]}),/Invalid/);
@@ -44,7 +45,7 @@ test('transparent bounds and normalization keep pixel art proportional with clea
 
 test('all generated expansion cutouts retain transparent corners and reproducible source provenance',()=>{
  const report=JSON.parse(read(meta.manifest)),catalog=new Map(library.items.map(item=>[item.id,item]));
- assert.equal(report.version,1);assert.equal(report.items.length,16);assert.equal(report.sources.length,3);
+ assert.equal(report.version,1);assert.equal(report.items.length,24);assert.equal(report.sources.length,4);
  assert.deepEqual(report.items.map(item=>item.id),validateMetadata(meta).ids);
  for(const source of report.sources)assert.equal(sha(read(source.path)),source.sha256,'Generated sheets are retained without alteration');
  for(const record of report.items){

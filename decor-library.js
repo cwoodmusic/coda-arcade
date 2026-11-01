@@ -72,7 +72,15 @@
   ['wall-art-orbit','Framed orbit wall art','wall',68,68],
   ['wall-art-equalizer','Framed equalizer wall art','wall',56,56],
   ['wall-art-keyboard','Framed keyboard wall art','wall',60,60],
-  ['wall-art-sunset','Framed sunset wall art','wall',68,68]
+  ['wall-art-sunset','Framed sunset wall art','wall',68,68],
+  ['table-lounge-walnut','Rectangular walnut lounge table','furniture',156,66],
+  ['wall-art-treble-clef','Framed treble clef','wall',54,76],
+  ['wall-art-bass-clef','Framed bass clef','wall',54,66],
+  ['wall-art-grand-staff','Framed grand staff sheet music','wall',76,76],
+  ['wall-art-gold-record','Gold record award','wall',68,80],
+  ['wall-art-saxophone','Framed golden saxophone','wall',64,80],
+  ['wall-art-electric-guitars','Crossed electric guitars wall art','wall',72,80],
+  ['wall-art-drum-kit','Framed drum kit','wall',74,80]
  ];
  const items=Object.freeze(records.map(([id,name,category,width,height])=>Object.freeze({id,name,category,width,height})));
  const categoryNames={floor:'Floor decor',tabletop:'Tabletop',wall:'Wall decor',rug:'Rugs',furniture:'South-facing furniture'};

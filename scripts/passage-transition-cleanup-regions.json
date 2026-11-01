@@ -6,7 +6,7 @@
   "source": "assets/environment/source/passage-transition-clean.png",
   "sourcePlacement": [235, 315, 155, 155],
   "output": "assets/environment/v1/empty-arcade.png",
-  "reviewedProjectSha256": "a9a495716023e0df56dc23db8c9bbfd09316f5f08668fbcca43a633461dc2c00",
+  "reviewedProjectSha256": "7957c8362e43bfa8cdd94fca842c88fdd6286aac86d5220de095d3ff54a9df54",
   "preserveAuthoredOverlap": true,
   "polygons": [
     [[269,340],[359,340],[359,457],[269,457]]

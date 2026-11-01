@@ -33,6 +33,26 @@ and `PYTHONDONTWRITEBYTECODE=1 python3 tests/wall-fixtures-browser.py`.
 
 The following sections document the retained earlier artwork and its builders.
 
+## Rectangular lounge table and music collection
+
+The published layout uses the uploaded world project (10), with its round
+lounge table replaced by a rectangular walnut coffee table in front of the
+sofa. The table remains independently editable and has a matching collision
+footprint. All other uploaded asset placements, wall art, NPCs, collision edits
+and room projects are retained.
+
+The **Asset library** now contains 79 items. **South-facing furniture** includes
+the new walnut table. **Wall decor** adds framed treble and bass clefs, grand
+staff sheet music, a gold record award, a golden saxophone, crossed electric
+guitars and a drum kit. Each is a separate transparent image; adding, moving,
+resizing, duplicating and saving use the existing editor controls. The wall art
+is available for placement rather than added over the uploaded layout.
+
+The generated sheet is `assets/decor/source/music-lounge-additions.png`.
+`node scripts/build-lounge-assets.cjs` rebuilds the cutouts and provenance
+manifest; `--check` verifies them. The earlier 71 library entries and artwork
+are retained.
+
 The main arcade's refreshed environment uses `scenery: "environment-v1"` in a
 world-project export. `assets/environment/v1/empty-arcade.png` is a complete
 1672 × 941 empty-room image. Floors, carpet, masonry, trim, doorways and fixed

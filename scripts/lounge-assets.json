@@ -20,6 +20,12 @@
       "rows": 1,
       "columns": 4,
       "ids": ["wall-art-orbit", "wall-art-equalizer", "wall-art-keyboard", "wall-art-sunset"]
+    },
+    {
+      "source": "assets/decor/source/music-lounge-additions.png",
+      "rows": 2,
+      "columns": 4,
+      "ids": ["table-lounge-walnut", "wall-art-treble-clef", "wall-art-bass-clef", "wall-art-grand-staff", "wall-art-gold-record", "wall-art-saxophone", "wall-art-electric-guitars", "wall-art-drum-kit"]
     }
   ]
 }

@@ -20,7 +20,9 @@ test('reflection cleanup is confined to reviewed glass and leaves matching lamps
 test('the reviewed journal snapshot contains only exact opaque floor pigments from the unchanged export',()=>{
  const raw=fs.readFileSync(path.join(repoRoot,'published-world-project.json')),project=JSON.parse(raw),reference=JSON.parse(fs.readFileSync(path.join(repoRoot,meta.journalReference)));
  assert.equal(crypto.createHash('sha256').update(raw).digest('hex'),meta.reviewedProjectSha256);
- assert.equal(reference.projectSha256,meta.reviewedProjectSha256);
+ // Asset/NPC placements can change while this immutable pigment snapshot
+ // still matches the current authored background pixel for pixel below.
+ assert.equal(reference.projectSha256,meta.journalProjectSha256);
  let opaque=0,erased=0;
  for(const [key,runs]of Object.entries(project.artwork['background.world'].tiles)){
   const [tx,ty]=key.split(',').map(Number),referencePixels=new Map();

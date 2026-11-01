@@ -23,7 +23,7 @@ test('the west finish preserves every native pixel outside its dedicated vertica
 });
 
 test('the narrow native strip has no authored overlap and preserves saved floor paint and erasures',async()=>{
- assert.equal(sha(read('published-world-project.json')),'a9a495716023e0df56dc23db8c9bbfd09316f5f08668fbcca43a633461dc2c00');
+ assert.equal(sha(read('published-world-project.json')),'7957c8362e43bfa8cdd94fca842c88fdd6286aac86d5220de095d3ff54a9df54');
  const palette=read('assets/environment/floor-palette-compat.json');
  assert.equal(sha(palette),'8135e15d9907eacadfacac92e2f52e3d03a041ae3ba394edeff04af8aef38a44');
  const patch=JSON.parse(read('published-world-project.json')).artwork['background.world'],mask=westNeonMask();let overlap=0;

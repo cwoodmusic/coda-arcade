@@ -14,7 +14,7 @@ spec = importlib.util.spec_from_file_location('environment_world_fixture',
     Path(__file__).with_name('published-world-browser.py'))
 fixture = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(fixture)
-FINGERPRINT = '7b64d89174d441bd948a341aaff7c052ad4afe03abf65d9e25e4ffe458bbe1a6'
+FINGERPRINT = 'ca2d6574f259ed98b33e53672191fad09a944a93f7126ac0cc2eaba5ed3af0d1'
 
 
 class EnvironmentWorldTests(unittest.TestCase):
@@ -91,14 +91,15 @@ class EnvironmentWorldTests(unittest.TestCase):
         self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getScenery()'),'environment-v1')
         self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getProjectSource()'),'published')
         self.assertIsNone(self.page.evaluate('localStorage.getItem("codaWorldProjectV1")'))
-        self.assertEqual((len(self.current['assets']),len(self.current['collision']),len(self.current['strokes'])),(58,3067,33))
+        self.assertEqual((len(self.current['assets']),len(self.current['collision']),len(self.current['strokes'])),(80,3067,33))
         layers=self.page.evaluate('CodaArcadeQA.layerEditor()')
         self.assertEqual((layers['publishedStrokes'],layers['strokes']),(0,33))
         self.assertGreater(layers['paintPatches'],0)
         self.assertGreater(layers['editedPixels'],0)
         self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getCharacters()'),self.current['characters'])
-        added=next(asset for asset in self.project()['assets'] if asset['id']=='asset-64')
-        self.assertEqual((added['name'],added['x'],added['y'],added['flipX']),('Boombox tower',120,207,True))
+        added=next(asset for asset in self.project()['assets'] if asset['id']=='asset-81')
+        self.assertEqual((added['name'],added['x'],added['y']),('Sign · The Coda Arcade', 872, 64))
+        self.assertNotIn('asset-64',{asset['id'] for asset in self.project()['assets']},'Keep the uploaded removal of the boombox tower')
         assets={asset['id']:asset for asset in self.project()['assets']}
         self.assertNotIn('asset-57',assets,'The uploaded project removes the neon cactus')
         self.assertFalse(assets['asset-10']['visible'])
