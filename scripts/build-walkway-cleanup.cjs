@@ -33,7 +33,15 @@ function tileEdgeWeight(feather,x,y){
  }
  return 1;
 }
-async function compose({meta,mask,previewOnly},tileEdgeWeight){
+function floorFeatherWeight(feather,x,y){
+ if(!feather)return 1;
+ const [r0,r1]=feather.right,[b0,b1]=feather.bottom,[l0,l1,below]=feather.leftBelow;
+ let weight=Math.max(0,Math.min(1,(r1-x-.5)/(r1-r0),(b1-y-.5)/(b1-b0)));
+ if(y>=below)weight=Math.max(0,Math.min(weight,(x+.5-l0)/(l1-l0)));
+ if(feather.top){const [t0,t1]=feather.top;weight=Math.max(0,Math.min(weight,(y+.5-t0)/(t1-t0)));}
+ return weight;
+}
+async function compose({meta,mask,previewOnly},tileEdgeWeight,floorFeatherWeight){
  const load=url=>new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>reject(Error('Could not load '+url));image.src=url;});
  const original=await load('/before'),source=previewOnly?original:await load('/source'),[width,height]=meta.worldSize;
  const [sourceWidth,sourceHeight]=previewOnly?meta.worldSize:meta.sourceSize||meta.worldSize;
@@ -56,12 +64,7 @@ async function compose({meta,mask,previewOnly},tileEdgeWeight){
   allowed++;const at=i*4;if([0,1,2,3].some(c=>before.data[at+c]!==pixels[at+c]))changed++;
   // The outside edge of a floor reflection meets existing glass, beyond the
   // removed masonry. Blend there while keeping the new wall face pixel-sharp.
-  let weight=1;const feather=meta.floorFeather;
-  if(feather){
-   const x=i%width,y=Math.floor(i/width),[r0,r1]=feather.right,[b0,b1]=feather.bottom,[l0,l1,below]=feather.leftBelow;
-   weight=Math.max(0,Math.min(weight,(r1-x-.5)/(r1-r0),(b1-y-.5)/(b1-b0)));
-   if(y>=below)weight=Math.max(0,Math.min(weight,(x+.5-l0)/(l1-l0)));
-  }
+  let weight=floorFeatherWeight(meta.floorFeather,i%width,Math.floor(i/width));
   if(meta.tileEdgeFeather)weight=Math.min(weight,tileEdgeWeight(meta.tileEdgeFeather,i%width+.5,Math.floor(i/width)));
   for(let c=0;c<4;c++)after.data[at+c]=weight<1?Math.round(featherPixels[at+c]*(1-weight)+pixels[at+c]*weight):pixels[at+c];
  }
@@ -95,7 +98,7 @@ async function build(options={}){
   socket.addEventListener('message',event=>{const message=JSON.parse(event.data);if(message.id){const job=jobs.get(message.id);if(!job)return;jobs.delete(message.id);clearTimeout(job.timer);message.error?job.reject(Error(message.error.message)):job.resolve(message.result);}else events.get(message.method)?.(message.params);});
   const send=(method,params={})=>new Promise((resolve,reject)=>{const id=next++,timer=setTimeout(()=>{jobs.delete(id);reject(Error('Timed out: '+method));},30000);jobs.set(id,{resolve,reject,timer});socket.send(JSON.stringify({id,method,params}));});
   await send('Page.enable');const loaded=new Promise(resolve=>events.set('Page.loadEventFired',resolve));await send('Page.navigate',{url:'http://127.0.0.1:'+server.address().port});await loaded;
-  const result=await send('Runtime.evaluate',{awaitPromise:true,returnByValue:true,expression:`(${compose.toString()})(${JSON.stringify({meta,mask:Array.from(mask),previewOnly:!!options.previewOnly})},${tileEdgeWeight.toString()})`});
+  const result=await send('Runtime.evaluate',{awaitPromise:true,returnByValue:true,expression:`(${compose.toString()})(${JSON.stringify({meta,mask:Array.from(mask),previewOnly:!!options.previewOnly})},${tileEdgeWeight.toString()},${floorFeatherWeight.toString()})`});
   if(result.exceptionDetails)throw Error(result.exceptionDetails.exception?.description||result.exceptionDetails.text);
   const {image,preview,...report}=result.result.value;
   await fs.writeFile('/tmp/coda-walkway-cleanup-mask.png',Buffer.from(preview.split(',')[1],'base64'));
@@ -107,4 +110,4 @@ async function build(options={}){
  }finally{socket?.close();browser.kill('SIGTERM');server.close();if(browser.exitCode===null)await new Promise(resolve=>browser.once('exit',resolve));await fs.rm(profile,{recursive:true,force:true,maxRetries:10,retryDelay:100});}
 }
 if(require.main===module)build({dryRun:process.argv.includes('--dry-run'),previewOnly:process.argv.includes('--preview-mask')}).catch(error=>{process.stderr.write(error.stack+'\n');process.exitCode=1;});
-module.exports={cleanupMask,tileEdgeWeight,build};
+module.exports={cleanupMask,tileEdgeWeight,floorFeatherWeight,build};

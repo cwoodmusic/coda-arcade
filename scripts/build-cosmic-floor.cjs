@@ -163,6 +163,7 @@ async function main(){
  if(!previewOnly&&!dryRun)await require('./build-dance-northwest-finish.cjs').build();
  if(!previewOnly&&!dryRun)await require('./build-boutique-wall-uniform.cjs').build();
  if(!previewOnly&&!dryRun)await require('./build-dance-main-wall-uniform.cjs').build();
+ if(!previewOnly&&!dryRun)await require('./build-dance-floor-blend.cjs').build();
 }
 if(require.main===module)main().catch(error=>{process.stderr.write(error.stack+'\n');process.exitCode=1;});
 module.exports={inside,floorMask,authoredShapeMask,rebaseArtwork,repairPoints,recolorRepairs};
