@@ -1,5 +1,38 @@
 # Empty arcade background and independent props
 
+## Empty walls and movable decorations
+
+The current main arcade uses `assets/environment/v1/empty-walls.png` beneath
+separate wall decorations. The Lounge masonry is amber and flat beneath its
+horizontal cap; the north central wall between Lounge and Piano Lab is green;
+the dance floor's north wall is purple. Other walls remain blue. Signs,
+lanterns, musical plaques, bottle shelves and wall gems are not painted into
+these walls. The previous `empty-arcade.png` and older scenery remain available.
+
+In **Developer → Objects → Existing world objects**, choose **Neon signs & wall
+art** or **Wall lanterns**, then **Edit existing object**. These 25 originals
+support movement, resizing, rotation, mirroring, opacity, hiding, duplication,
+Undo/Redo and the existing project Save/Export/Import workflow. The Classroom
+label is also separate; moving a sign does not relocate its doorway/activity.
+
+Lantern sprites have transparent surrounds. Their warm halo, pulsing core and
+lighting use the same position, scale, rotation, animation and opacity as the
+sprite. Hiding a lantern hides its light; duplicating it creates another light.
+No fixed orange stain or previous lantern image remains in the empty wall.
+Moving a lantern reveals that wall's underlying amber, green, purple or blue
+material. Existing guest progress, collision, furniture and project data are
+unchanged. Legacy scenery keeps its original baked decorations.
+
+`wall-fixtures.js` records source crops, editor identities and lighting anchors.
+The generated empty wall and transparent atlas sources are retained under
+`assets/environment/source/`. Run `node scripts/build-wall-fixtures.cjs` to
+rebuild the background and 13 sprite files; `--check` verifies reproducibility.
+The builder is offline and requires Chromium with permission for local sockets.
+Validate with `node --test tests/wall-fixtures.test.cjs tests/world-lighting.test.cjs`
+and `PYTHONDONTWRITEBYTECODE=1 python3 tests/wall-fixtures-browser.py`.
+
+The following sections document the retained earlier artwork and its builders.
+
 The main arcade's refreshed environment uses `scenery: "environment-v1"` in a
 world-project export. `assets/environment/v1/empty-arcade.png` is a complete
 1672 × 941 empty-room image. Floors, carpet, masonry, trim, doorways and fixed

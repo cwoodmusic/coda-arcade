@@ -461,6 +461,7 @@ window.createCodaDeveloperConsole = function (api) {
     return [Math.min(W-16,Math.max(0,x)),Math.min(H-16,y+h+8)];
   }
   function sourcePicture(origin) {
+    if(!refreshedScenery()&&catalog.find(part=>part.name===origin.name)?.type==='wall-fixture')return null;
     const key=JSON.stringify([scenery||'legacy',origin.name,origin.bounds]); if(pictures.has(key))return pictures.get(key);
     if(refreshedScenery()){
       const environment=api.environmentArt;
@@ -502,6 +503,7 @@ window.createCodaDeveloperConsole = function (api) {
   worldArt.addEventListener('load',catalogPreview);
   foregroundArt.addEventListener('load',catalogPreview);
   function lift(origin, focus=true) {
+    if(!refreshedScenery()&&catalog.find(part=>part.name===origin.name)?.type==='wall-fixture'){message('Separate wall decorations belong to the refreshed arcade scenery. Export your current project before resetting to that scenery.');return null;}
     const existing=studio.assets.find(a=>a.origin?.name===origin.name);
     if(existing) { studio.selected=existing.id;api.refresh();refresh();message('Selected '+existing.name);return existing; }
     const a=makeOriginalAsset(origin);
@@ -515,6 +517,7 @@ window.createCodaDeveloperConsole = function (api) {
     if(part?.sample)a.origin.sample=part.sample.slice();
     if(part?.collision){const [cx,cy,cw,ch]=part.collision;a.releaseCollision=true;a.collider={x:(cx-a.x)/w*100,y:(cy-a.y)/h*100,w:cw/w*100,h:ch/h*100};}
     if(part?.ballIndex!==undefined){a.discoSpin=part.spin;a.discoRays=true;}
+    if(part?.type==='wall-fixture')a.wallFixture=part.name;
     return a;
   }
   function suppressOriginal(name) { return studio.assets.some(a=>a.origin?.name===name); }
@@ -605,6 +608,7 @@ window.createCodaDeveloperConsole = function (api) {
     return Array.isArray(o.sample)&&o.sample.length===2&&o.sample.every(Number.isInteger)&&o.sample[0]>=0&&o.sample[0]<=W-16&&o.sample[1]>=0&&o.sample[1]<=H-16;
   }
   function validateAssetExtension(a) {
+    if(a.wallFixture!==undefined&&!window.CodaWallFixtures?.has(a.wallFixture))return false;
     if(a.artwork!==undefined&&!window.CodaArtworkEditor?.validateTexture(a.artwork))return false;
     if(a.origin!==undefined&&!validateOrigin(a.origin))return false;
     if(a.releaseCollision!==undefined&&typeof a.releaseCollision!=='boolean')return false;

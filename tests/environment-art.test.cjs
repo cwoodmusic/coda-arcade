@@ -18,7 +18,7 @@ test('replacement artwork retains all furniture, palm and bollard identities and
 test('existing published prop journals remain addressable and duplicate image files load only once',()=>{
  const project=JSON.parse(fs.readFileSync(path.join(root,'published-world-project.json'),'utf8'));
  for(const item of project.assets)if(item.origin&&art.OBJECTS[item.origin.name])assert.deepEqual([art.OBJECTS[item.origin.name].width,art.OBJECTS[item.origin.name].height],item.origin.bounds.slice(2));
- assert.equal(art.FILES[0],'empty-arcade.png');assert.equal(art.FILES.length,new Set(art.FILES).size);
+ assert.equal(art.FILES[0],'empty-walls.png');assert.equal(art.FILES.length,new Set(art.FILES).size);
  assert.ok(art.FILES.includes('lounge-couch-south.png'));assert.ok(art.FILES.includes('dance-couch-left-south.png'));assert.ok(art.FILES.includes('dance-couch-right-south.png'));
  assert.equal(Object.values(art.OBJECTS).filter(item=>item.file==='table.png').length,3);
  assert.equal(Object.values(art.OBJECTS).filter(item=>item.file==='palm.png').length,21);
