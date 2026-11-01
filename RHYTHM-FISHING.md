@@ -1,14 +1,26 @@
-# Rhythm Fishing: the hidden lake
+# Rhythm Fishing: connected waters
 
 The trapdoor is in the southwest corner of the main arcade’s open room, left of the Entrance sign. Stand nearby and press **E / Interact**. The developer console can move the hatch without changing the floor art or collision.
 
-The room opens with a compact header and **Menu**. Collection, meter, practice, audio, effects, and Developer tools live inside Menu; movement pauses while it is open.
+Fishing now spans six fixed screens in a connected 2×3 map. Sail through the open waterways at a screen edge to enter the neighboring area; the discovery map shows where you are. North/south routes connect the two screens within each biome, while east/west routes lead to the next biome.
+
+| Biome | Screens | Fishing rhythm |
+| --- | --- | --- |
+| Cave Lake | Lantern Lake, Glowstone Narrows | 4/4 |
+| Underground Swamp | Mistfen Channel, Mosswater Basin | 6/8 |
+| Ocean Expanse | Tidegate Inlet, Starlit Expanse | Cut time (2/2) |
+
+Each biome has twelve eligible species: Silver Minnow, Cave Guppy and Bluegill are common to all three, while nine other species are exclusive to that biome. All thirty existing species and their catch rewards remain intact. The biome sets the encounter meter automatically; **Practice fishing** still offers every meter. Collection cards show each fish’s biome and rhythm. The swamp has drifting mist; ocean screens have broad open water.
+
+Discovered areas and away-screen boat position save under `codaFishingVoyageV1`, independently of the catch journal. Reopening fishing resumes an away-screen voyage; returning to Lantern Lake uses the familiar shore entrance. **Return to dock** brings you home from any area. Existing dock artwork, collision and character edits remain local to Lantern Lake and are not copied across the other screens.
+
+The room opens with a compact header and **Menu**. Collection, practice, audio, effects, and Developer tools live inside Menu; movement pauses while it is open.
 
 The enlarged stone landing at the ladder’s foot leads onto the lantern dock. Walk to the end of the pier before choosing **Board boat**; returning to the dock puts you back on the pier. To leave, walk to the foot of the rope ladder and press **E / Climb**, click the nearby ladder, or choose **Climb ladder**. The header’s Arcade button also remains available.
 
 Captain Cadence waits on the lantern dock. His original shanty verses explain casting, rests, and the three meters. **Board boat** starts exploring; steer with WASD/arrows, desktop floor clicks, the mobile joystick, or held-finger movement. Fish shadows swim around the lake, turn away from banks, and gently avoid the boat. Hooked fish stay fixed while their rhythm challenge plays. Move within casting range and press **E / Cast rod**, or click a nearby shadow.
 
-On phones, the cave fills the available room viewport and starts at a closer 200% view. Pinch two fingers to zoom from 100% to 300%; the camera follows your avatar or boat. The corner’s **− / percentage / +** controls offer the same zoom. Pinching stops steering and casting until both fingers lift. Rotation, cancellation, and leaving the room release captured touches. The developer camera remains independent and can zoom further.
+Each area opens as a complete fixed screen, including on phones. Pinch two fingers to zoom from 100% to 300%; the camera follows your avatar or boat. The corner’s **− / percentage / +** controls offer the same zoom. Pinching stops steering and casting until both fingers lift. Rotation, cancellation, and leaving the room release captured touches. The developer camera remains independent and can zoom further.
 
 After a bite, listen to one bar of count-in. Notes scroll left across a one-line staff, with blue lines dividing bars. Notes and rests sit between the dividers, with space after each bar line as in sheet music. The dividers adapt to the neighboring symbols; note onsets, hold lengths, and audio retain their musical timing. Press **Space**, **Enter**, the staff, or **Tap / Hold rhythm** when a notehead crosses the gold line. Short notes need a tap. Only half and whole notes need holding; quarter notes (including dotted quarters), eighths, and sixteenths are taps. The button changes to **Release when ready** near a held note’s tail. You may lift up to 180 milliseconds early (at most 35% of its length) to prepare for the next note; letting go earlier counts as a miss. The immediately following note also has a small late grace window, bounded so it cannot steal the next note or rest. Its musical timing and the held note’s reward time stay unchanged. Rests need no input. Eight complete clean bars fill the catch bar, regardless of note density or meter. Correct notes and silent rests earn progress in proportion to their written length. Misses and extra taps lower it, so recovery takes extra bars. Tapping a rest forfeits its silent credit. A catch cannot happen before the end of bar eight. Reaching 100% catches the fish; reaching zero lets it escape. An escaped shadow disappears; a new fish can appear elsewhere after 24 seconds. Pause is available, and switching away from the page pauses the hooked fish and its audio.
 
@@ -48,15 +60,17 @@ Each successful catch records the species, size, meter, result, and stable catch
 
 The catch journal saves before Notes or XP are awarded. Failed writes leave an explicit retry; stable catch IDs prevent duplicate payment after partial saves or reload. Escapes and canceled casts award nothing. Saved collection entries do not replay reward popups. All guest progress stays in this browser, alongside the existing Notes/XP journals.
 
-The cave uses a generated pixel-art background with live boat, avatar, Captain, shadows, and effects. Crystals breathe with teal/violet light, lanterns cast warm reflections, water shimmers with caustics and falling-drop rings, and the boat leaves rippling wakes. Its hull gently rocks, with rowing and paddle splashes while moving; the seated rider follows the hull. **Effects: Full / Lite / Off** shares the arcade’s saved effects setting; reduced motion keeps calm static lighting and removes drifting particles, rocking, and ripples. Effects never change catch timing or rewards. Bravura 1.482 supplies the actual music glyphs; its SIL Open Font License and source details are bundled under `assets/fonts/bravura`.
+The cave uses an arcade-style background with chunky rounded, beveled rock forms, bright crystal facets, and glossy neon water reflections. The shoreline, dock, ladder and light anchors retain their existing positions. The native texture stays at 1592×988 so existing room artwork remains compatible; gameplay uses the same 1000×620 coordinate system. Generated sources and normalization records are retained in `assets/world/source/`; the five additional screen plates are in `assets/world/fishing/`. Boat, avatar, Captain, shadows, and effects remain live layers. Crystals breathe with teal/violet light, lanterns cast warm reflections, water shimmers with caustics and falling-drop rings, and the boat leaves rippling wakes. Its hull gently rocks, with rowing and paddle splashes while moving; the seated rider follows the hull. **Effects: Full / Lite / Off** shares the arcade’s saved effects setting; reduced motion keeps calm static lighting and removes drifting particles, rocking, and ripples. Effects never change catch timing or rewards. Bravura 1.482 supplies the actual music glyphs; its SIL Open Font License and source details are bundled under `assets/fonts/bravura`.
 
 **Developer / F2** opens the cave’s editor while on shore or exploring. Select a fish shadow or a numbered fish in Objects to change its species, position, size, colors, or visibility; fish freeze during editing. The console also edits room artwork, collision, and foreground layers, with zoom up to 800% and drag-to-pan. Room edits save locally and are included in complete world project exports. See [DEVELOPER-CONSOLE.md](DEVELOPER-CONSOLE.md).
 
-The developer list includes all species and their meter requirements. A placed fish that belongs to another meter is visible while editing and waits to appear in gameplay until its allowed meter is selected. Switching meters preserves those authored fish and their customization.
+The Lantern Lake developer list includes all species and their meter and habitat requirements. A placed fish that belongs to another meter is visible while editing and waits to appear in gameplay until its allowed meter is selected. Switching meters preserves those authored fish and their customization.
 
 ## Checks
 
 ```sh
+node --test tests/fishing-biomes.test.cjs tests/fishing-biome-species.test.cjs
+python3 tests/fishing-biomes-browser.py
 node --test tests/rhythm-fishing-engine.test.cjs tests/fishing-progress.test.cjs tests/music-notation.test.cjs tests/time-signature-lesson.test.cjs tests/rhythm-beaming.test.cjs tests/fishing-cave-layout.test.cjs tests/fish-shadow-motion.test.cjs tests/fishing-cave-effects.test.cjs
 python3 tests/rhythm-fishing-browser.py
 python3 tests/fishing-world-browser.py

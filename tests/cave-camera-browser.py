@@ -18,6 +18,8 @@ class CaveCameraTests(_fish._world.WorldBrowserCase):
     walk_to=_fish.FishingWorldTests.walk_to
     board=_fish.FishingWorldTests.board
     approach_shadow=_fish.FishingWorldTests.approach_shadow
+    fishing_action=_fish.FishingWorldTests.fishing_action
+    fishing_option=_fish.FishingWorldTests.fishing_option
 
     def load(self):
         # The camera remains optional in older isolated room fixtures.
