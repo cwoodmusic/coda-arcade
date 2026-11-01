@@ -27,13 +27,16 @@ test('the wide roof source excludes its letterbox and the reviewed join copy sta
  }
 });
 
-test('the new wall masks leave every existing background journal pixel authoritative',()=>{
- const project=require('../published-world-project.json');
- for(const [tile,runs]of Object.entries(project.artwork?.['background.world']?.tiles||{})){
+test('the new wall masks leave every reviewed background journal pixel authoritative',()=>{
+ const reviewedArtwork=require('./fixtures/reviewed-wall-artwork.json');
+ let reviewedPixels=0;
+ for(const [tile,runs]of Object.entries(reviewedArtwork['background.world'].tiles)){
   const [tx,ty]=tile.split(',').map(Number);
   for(const [start,length]of runs)for(let i=start;i<start+length;i++){
    const x=tx*64+i%64,y=ty*64+Math.floor(i/64),at=y*width+x;
-   assert.equal(nwMask[at]||northMask[at],0,`Existing authored pixel ${x},${y}`);
+   reviewedPixels++;
+   assert.equal(nwMask[at]||northMask[at],0,`Reviewed authored pixel ${x},${y}`);
   }
  }
+ assert.equal(reviewedPixels,879,'Every background edit reviewed with the native wall masks is checked');
 });

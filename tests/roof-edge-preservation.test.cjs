@@ -19,13 +19,16 @@ test('Straight blue caps own the approved former lip and roof junction while pre
  }
 });
 
-test('The roof masks own no existing project background edits',()=>{
- const project=require('../published-world-project.json');
- for(const [tile,runs]of Object.entries(project.artwork?.['background.world']?.tiles||{})){
+test('The roof masks own no reviewed artwork background edits',()=>{
+ const reviewedArtwork=require('./fixtures/reviewed-wall-artwork.json');
+ let reviewedPixels=0;
+ for(const [tile,runs]of Object.entries(reviewedArtwork['background.world'].tiles)){
   const [tx,ty]=tile.split(',').map(Number);
   for(const [start,length]of runs)for(let i=start;i<start+length;i++){
    const x=tx*64+i%64,y=ty*64+Math.floor(i/64),index=y*width+x;
-   assert.equal(hallMask[index]||leftMask[index],0,`Existing authored pixel ${x},${y} must remain untouched`);
+   reviewedPixels++;
+   assert.equal(hallMask[index]||leftMask[index],0,`Reviewed authored pixel ${x},${y} must remain untouched`);
   }
  }
+ assert.equal(reviewedPixels,879,'Every background edit reviewed with the native roof masks is checked');
 });

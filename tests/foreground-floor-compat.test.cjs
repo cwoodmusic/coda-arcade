@@ -5,9 +5,10 @@ const project=JSON.parse(fs.readFileSync(path.join(__dirname,'../published-world
 const copy=value=>JSON.parse(JSON.stringify(value));
 
 test('only exact historical wall selections receive render-only floor clipping',()=>{
- const before=JSON.stringify(project),paint=project.strokes.filter(s=>s.tool==='paint');
+ const before=JSON.stringify(project),historical=project.strokes.slice(0,26),paint=historical.filter(s=>s.tool==='paint'),authored=project.strokes.slice(26);
  assert.equal(paint.length,12);assert.ok(paint.every(compat.isHistoricalWallStroke));
- assert.ok(project.strokes.filter(s=>s.tool==='erase').every(s=>!compat.isHistoricalWallStroke(s)));
+ assert.ok(historical.filter(s=>s.tool==='erase').every(s=>!compat.isHistoricalWallStroke(s)));
+ assert.equal(authored.length,7);assert.ok(authored.every(s=>!compat.isHistoricalWallStroke(s)),'Newly authored wall selections must retain their complete saved coverage');
  const known=paint.find(s=>s.selection.x===569),reordered={depth:known.depth,foreground:known.foreground,selection:{points:known.selection.points,height:known.selection.height,width:known.selection.width,y:known.selection.y,x:known.selection.x},points:known.points,size:known.size,tool:known.tool};
  assert.equal(compat.isHistoricalWallStroke(reordered),true,'Property order is not part of the stored gesture');
  for(const edit of [s=>s.depth++,s=>s.size++,s=>s.foreground=false,s=>s.points[0][0]++,s=>s.selection.points[0][0]++,s=>s.selection.width++]){const custom=copy(known);edit(custom);assert.equal(compat.isHistoricalWallStroke(custom),false,'A modified/user-authored gesture remains authoritative');}

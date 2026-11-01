@@ -37,7 +37,9 @@ class ForegroundFloorCompatibilityTests(unittest.TestCase):
         self.assertEqual(self.project(),self.current)
         self.assertIsNone(self.page.evaluate('localStorage.getItem("codaWorldProjectV1")'))
         self.assertEqual(self.page.evaluate('CodaArcadeQA.layerPixelOwner(750,570)'),-1)
-        self.assertEqual(self.page.evaluate('CodaArcadeQA.layerPixelOwner(700,570)'),12,'Keep the stage wall and signs in the foreground')
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.layerPixelOwner(700,570)'),12,'Keep the historical stage wall outside the new selection in the foreground')
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.layerPixelOwner(600,570)'),26,'Keep the newly authored stage wall selection in the foreground')
+        self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getProject().strokes.slice(26).filter(stroke=>!CodaForegroundFloorCompat.isHistoricalWallStroke(stroke)).length'),7)
         expected=self.pixel(750,570)
         self.assertTrue(self.page.evaluate('CodaArcadeQA.place(750,610)'))
         self.frames()
@@ -55,7 +57,7 @@ class ForegroundFloorCompatibilityTests(unittest.TestCase):
         self.assertEqual(self.project(),self.current,'Playback compatibility must not change any saved project field')
         self.assertTrue(self.page.evaluate("CodaArcadeQA.editForegroundAt(750,570,'paint',8,500)"))
         self.frames()
-        self.assertEqual(self.page.evaluate('CodaArcadeQA.layerPixelOwner(750,570)'),26)
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.layerPixelOwner(750,570)'),len(self.current['strokes']))
         self.assertEqual(self.pixel(750,570),expected,'New intentional foreground painting of floor still covers the avatar')
         self.assertEqual(self.project()['strokes'][:-1],self.current['strokes'])
 
@@ -83,6 +85,8 @@ class ForegroundFloorCompatibilityTests(unittest.TestCase):
     def test_local_saved_wall_selections_and_custom_floor_paint_keep_storage_priority(self):
         path=os.environ.get('CODA_FOREGROUND_EXPORT')
         local=json.loads(Path(path).read_text()) if path else copy.deepcopy(self.current)
+        wall_owner=26 if len(local['strokes'])>=33 else 12
+        custom_owner=len(local['strokes'])
         custom={'tool':'paint','size':8,'points':[[1100,600]],'depth':1000,'foreground':True}
         local['strokes'].append(custom)
         local['assets'][0]['name']='My foreground audit saved sofa'
@@ -97,7 +101,8 @@ class ForegroundFloorCompatibilityTests(unittest.TestCase):
             self.assertEqual(self.storage_record(),stored,'Rendering must never migrate or rewrite raw saved gestures')
             self.assertEqual(self.page.evaluate('CodaArcadeQA.layerPixelOwner(750,570)'),-1)
             self.assertEqual(self.page.evaluate('CodaArcadeQA.layerPixelOwner(700,570)'),12)
-            self.assertEqual(self.page.evaluate('CodaArcadeQA.layerPixelOwner(1100,600)'),26,'Custom foreground floor painting must survive reload')
+            self.assertEqual(self.page.evaluate('CodaArcadeQA.layerPixelOwner(600,570)'),wall_owner)
+            self.assertEqual(self.page.evaluate('CodaArcadeQA.layerPixelOwner(1100,600)'),custom_owner,'Custom foreground floor painting must survive reload')
 
 
 if __name__=='__main__':

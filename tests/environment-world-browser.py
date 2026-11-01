@@ -1,7 +1,9 @@
 """Published authored world: portable pixels, placements and save precedence."""
 import copy
+import base64
 import hashlib
 import importlib.util
+import io
 import json
 from pathlib import Path
 import sys
@@ -12,7 +14,7 @@ spec = importlib.util.spec_from_file_location('environment_world_fixture',
     Path(__file__).with_name('published-world-browser.py'))
 fixture = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(fixture)
-FINGERPRINT = 'ba0c511e8c2e111b43080967ac6f95d720a5a23fe3717b9c2f90376221c9c65f'
+FINGERPRINT = '7b64d89174d441bd948a341aaff7c052ad4afe03abf65d9e25e4ffe458bbe1a6'
 
 
 class EnvironmentWorldTests(unittest.TestCase):
@@ -66,17 +68,21 @@ class EnvironmentWorldTests(unittest.TestCase):
           return Array.from(g.getImageData(x,y,1,1).data);
         }''', [x,y])
 
-    def authored_background(self):
+    def authored_background(self, raw_export=False):
         from PIL import Image
-        image = Image.open(fixture.ROOT/'assets/environment/v1/empty-arcade.png').convert('RGBA')
-        pixels = image.load()
-        for tile, runs in self.current.get('artwork',{}).get('background.world',{}).get('tiles',{}).items():
-            tx, ty = map(int, tile.split(','))
-            for start, length, color in runs:
-                rgba = tuple(bytes.fromhex(color[1:]))
-                for index in range(start, start + length):
-                    pixels[tx*64+index%64, ty*64+index//64] = rgba
-        return image
+        # Gameplay resolves known historical pigments and fills alpha cutouts.
+        # The artwork editor exports the raw, portable source texture instead.
+        data=self.page.evaluate('''async({project,raw})=>{
+ const image=new Image();image.src='assets/environment/v1/empty-arcade.png';await image.decode();
+ const patch=project.artwork['background.world'];
+ if(raw)return CodaArtworkEditor.compose(image,patch).toDataURL();
+ const palette=CodaFloorPaletteCompat.create({manifest:await(await fetch('assets/environment/floor-palette-compat.json')).json()});await palette.ready;
+ const fill=CodaPathwayFloorFill.create({document,manifest:await(await fetch('assets/environment/boutique-pathway-shape.json')).json()});await fill.ready;
+ const canvas=document.createElement('canvas');canvas.width=1672;canvas.height=941;const g=canvas.getContext('2d');
+ fill.draw(g,image);g.drawImage(CodaArtworkEditor.compose(image,palette.resolveTexture('background.world',patch)),0,0);
+ return canvas.toDataURL();
+}''',{'project':self.current,'raw':raw_export})
+        return Image.open(io.BytesIO(base64.b64decode(data.split(',')[1]))).convert('RGBA')
 
     def test_reviewed_default_loads_authored_art_placements_and_all_cabinets(self):
         fingerprint=hashlib.sha256(json.dumps(self.current,sort_keys=True,separators=(',',':')).encode()).hexdigest()
@@ -85,14 +91,19 @@ class EnvironmentWorldTests(unittest.TestCase):
         self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getScenery()'),'environment-v1')
         self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getProjectSource()'),'published')
         self.assertIsNone(self.page.evaluate('localStorage.getItem("codaWorldProjectV1")'))
-        self.assertEqual((len(self.current['assets']),len(self.current['collision']),len(self.current['strokes'])),(59,2391,26))
+        self.assertEqual((len(self.current['assets']),len(self.current['collision']),len(self.current['strokes'])),(58,3067,33))
         layers=self.page.evaluate('CodaArcadeQA.layerEditor()')
-        self.assertEqual((layers['publishedStrokes'],layers['strokes']),(0,26))
+        self.assertEqual((layers['publishedStrokes'],layers['strokes']),(0,33))
         self.assertGreater(layers['paintPatches'],0)
         self.assertGreater(layers['editedPixels'],0)
         self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getCharacters()'),self.current['characters'])
         added=next(asset for asset in self.project()['assets'] if asset['id']=='asset-64')
         self.assertEqual((added['name'],added['x'],added['y'],added['flipX']),('Boombox tower',120,207,True))
+        assets={asset['id']:asset for asset in self.project()['assets']}
+        self.assertNotIn('asset-57',assets,'The uploaded project removes the neon cactus')
+        self.assertFalse(assets['asset-10']['visible'])
+        self.assertFalse(assets['asset-52']['visible'])
+        self.assertEqual((assets['asset-52']['x'],assets['asset-52']['y']),(664,616))
         games=self.page.evaluate('''()=>CodaArcadeQA.worldObjects().filter(x=>x.game).map(x=>({
           name:x.game.name,walkable:CodaArcadeQA.walkable(x.game.npcX??x.game.x,x.game.npcY??x.game.y),
           route:CodaArcadeQA.route(1180,388,x.game.x,x.game.y).length}))''')
@@ -109,6 +120,24 @@ class EnvironmentWorldTests(unittest.TestCase):
         self.assertFalse(any(part['type']=='marked-foreground' for part in depths),
                          'Authored strokes must not restore obsolete baked foreground masks')
         self.page.locator('#view').screenshot(path='/tmp/environment-world-update.png')
+
+    def test_new_pink_artwork_remains_authoritative_over_historical_compatibility(self):
+        self.load()
+        reviewed=json.loads((fixture.ROOT/'tests/fixtures/reviewed-wall-artwork.json').read_text())
+        delta=self.page.evaluate('''async reviewed=>{
+ const palette=CodaFloorPaletteCompat.create({manifest:await(await fetch('assets/environment/floor-palette-compat.json')).json()});await palette.ready;
+ const flatten=texture=>{const out=new Map();for(const [key,runs]of Object.entries(texture.tiles)){const [tx,ty]=key.split(',').map(Number);for(const [start,length,color]of runs)for(let i=start;i<start+length;i++)out.set((ty*64+Math.floor(i/64))*1672+tx*64+i%64,color.toLowerCase());}return out;};
+ const before=flatten(reviewed['background.world']),after=flatten(palette.resolveTexture('background.world',CodaDeveloperConsole.getProject().artwork['background.world']));
+ return {added:[...after].filter(([id])=>!before.has(id)).sort((a,b)=>a[0]-b[0]).map(([id,color])=>({x:id%1672,y:Math.floor(id/1672),color})),changed:[...after].filter(([id,color])=>before.has(id)&&before.get(id)!==color),removed:[...before.keys()].filter(id=>!after.has(id))};
+}''',reviewed)
+        points=[(600,635),(601,635),(600,636),(599,637),(598,638)]
+        self.assertEqual(delta,{'added':[{'x':x,'y':y,'color':'#ff5f97ff'} for x,y in points],'changed':[],'removed':[]})
+        with self.authored_background() as background:
+            for point in points:
+                self.assertEqual(background.getpixel(point),(255,95,151,255))
+                self.assertEqual(self.world_pixel(*point),[255,95,151,255],'The new authored pixels must remain visible in the actual game')
+        self.assertEqual(self.project(),self.current)
+        self.assertIsNone(self.page.evaluate('localStorage.getItem("codaWorldProjectV1")'))
 
     def test_existing_local_project_keeps_priority_over_the_new_publication(self):
         local=copy.deepcopy(self.current)
@@ -161,7 +190,7 @@ window.createCodaDeveloperConsole=api=>{const instance=originalEnvironmentConsol
         with self.page.expect_download() as pending:
             self.page.locator('[data-artwork-editor]:visible [data-artwork-export]').click()
         from PIL import Image, ImageChops
-        with Image.open(pending.value.path()) as exported, self.authored_background() as background:
+        with Image.open(pending.value.path()) as exported, self.authored_background(raw_export=True) as background:
             self.assertEqual(exported.size,background.size)
             self.assertEqual(ImageChops.difference(exported.convert('RGBA'),background.convert('RGBA')).getextrema(),((0,0),)*4,
                              'Background Export PNG must include the uploaded pixels without flattening placed assets')

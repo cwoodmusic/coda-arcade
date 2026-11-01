@@ -9,8 +9,17 @@ const finish=require('../scripts/dance-northwest-finish-regions.json');
 const boutique=require('../scripts/boutique-wall-uniform-regions.json');
 const danceMain=require('../scripts/dance-main-wall-uniform-regions.json');
 const project=require('../published-world-project.json');
+// Native finishing masks were reviewed against this authored artwork before
+// later exports restored historical overlays handled by render compatibility.
+const reviewedArtwork=require('./fixtures/reviewed-wall-artwork.json');
 const width=1672,metas=[northwest,front,green,hall,finish,boutique,danceMain],masks=metas.map(cleanupMask);
 const owns=(mask,x,y)=>mask[y*width+x];
+function* journalPixels(texture){
+ for(const [tile,runs]of Object.entries(texture?.tiles||{})){
+  const [tx,ty]=tile.split(',').map(Number);
+  for(const [start,length,color]of runs)for(let i=start;i<start+length;i++)yield [tx*64+i%64,ty*64+Math.floor(i/64),color];
+ }
+}
 
 test('northwest repair removes the obsolete upper wall and lamp while retaining the new inner wall, plaques and left lamp',()=>{
  const mask=masks[0];
@@ -105,12 +114,12 @@ test('the uniform boutique grid preserves its original brand, authored shirt art
   assert.equal(owns(mask,x,y),1,`Continuous boutique masonry ${x},${y}`);
  for(const [x,y]of [[531,315],[530,350],[397,359],[397,300],[368,280],[500,280],[675,350],[400,430],[500,450]])
   assert.equal(owns(mask,x,y),0,`Preserved boutique artwork, fixture, cap or floor ${x},${y}`);
+ const currentPixels=new Map([...journalPixels(project.artwork?.['background.world'])].map(([x,y,color])=>[`${x},${y}`,color]));
  let shirtPixels=0;
- for(const [tile,runs]of Object.entries(project.artwork?.['background.world']?.tiles||{})){
-  const [tx,ty]=tile.split(',').map(Number);
-  for(const [start,length]of runs)for(let i=start;i<start+length;i++){
-   const x=tx*64+i%64,y=ty*64+Math.floor(i/64);
-   if(x>=521&&x<541&&y>=305&&y<325){shirtPixels++;assert.equal(owns(mask,x,y),0);}
+ for(const [x,y,color]of journalPixels(reviewedArtwork['background.world'])){
+  if(x>=521&&x<541&&y>=305&&y<325){
+   shirtPixels++;assert.equal(owns(mask,x,y),0);
+   assert.equal(currentPixels.get(`${x},${y}`),color,`Original authored shirt pixel ${x},${y} is preserved in the current export`);
   }
  }
  assert.equal(shirtPixels,309,'Every existing authored shirt-emblem pixel stays authoritative');
@@ -136,18 +145,17 @@ test('all finishing passes preserve world size, furniture and existing authored 
    assert.ok(sx>=0&&sy>=0&&sw>0&&sh>0&&sx+sw<=sourceWidth&&sy+sh<=sourceHeight);
   }
  }
- for(const [tile,runs]of Object.entries(project.artwork?.['background.world']?.tiles||{})){
-  const [tx,ty]=tile.split(',').map(Number);
-  for(const [start,length]of runs)for(let i=start;i<start+length;i++){
-   const x=tx*64+i%64,y=ty*64+Math.floor(i/64);
-   for(let pass=0;pass<masks.length;pass++)assert.equal(owns(masks[pass],x,y),0,`Existing authored pixel ${x},${y} in pass ${pass}`);
-  }
+ let authoredPixels=0;
+ for(const [x,y]of journalPixels(reviewedArtwork['background.world'])){
+  authoredPixels++;
+  for(let pass=0;pass<masks.length;pass++)assert.equal(owns(masks[pass],x,y),0,`Reviewed authored pixel ${x},${y} in pass ${pass}`);
  }
+ assert.equal(authoredPixels,879,'The native masks retain every background edit in the reviewed artwork fixture');
 });
 
 test('a native-only repair rejects authored-pixel overlap before loading artwork or writing files',async()=>{
- const [tile,runs]=Object.entries(project.artwork['background.world'].tiles)[0];
- const [tx,ty]=tile.split(',').map(Number),index=runs[0][0],x=tx*64+index%64,y=ty*64+Math.floor(index/64);
+ const [x,y,color]=[...journalPixels(reviewedArtwork['background.world'])].find(([x,y])=>x>=521&&x<541&&y>=305&&y<325);
+ assert.equal([...journalPixels(project.artwork['background.world'])].find(([xx,yy])=>xx===x&&yy===y)?.[2],color,'The rejection witness remains authoritative in the current export');
  const meta={...northwest,source:'must-not-load.png',polygons:[[[x,y],[x+1,y],[x+1,y+1],[x,y+1]]],protectedPolygons:[]};
  await assert.rejects(build({meta,dryRun:true}),/Native-only repair overlaps 1 authored background pixels/);
 });

@@ -72,14 +72,22 @@ class BoutiqueJoinTests(unittest.TestCase):
             const [ax,ay]=poly[i],[bx,by]=poly[j];if((ay>y)!==(by>y)&&x<(bx-ax)*(y-ay)/(by-ay)+ax)hit=!hit;
           }return hit;};
           const owns=(meta,x,y)=>meta.polygons.some(p=>inPolygon(p,x+.5,y+.5))&&!(meta.protectedPolygons||[]).some(p=>inPolygon(p,x+.5,y+.5))&&!(meta.protectedBounds||[]).some(([left,top,width,height])=>x>=left&&x<left+width&&y>=top&&y<top+height);
-          const maskCounts=layers.map(()=>0),ownerCounts=layers.map(()=>0);let nativeMismatch=0,baseMismatch=0;
+          const maskCounts=layers.map(()=>0),ownerCounts=layers.map(()=>0),expectedNative=new Uint8ClampedArray(aa),owned=[];let nativeMismatch=0,baseMismatch=0;
           for(let y=0;y<h;y++)for(let x=0;x<w;x++){
             let owner=-1;for(let index=0;index<layers.length;index++)if(owns(layers[index],x,y)){maskCounts[index]++;owner=index;}
             if(owner<0)continue;ownerCounts[owner]++;
             const at=(y*w+x)*4,expected=expectedPixels[owner];
             if([0,1,2,3].some(k=>aa[at+k]!==expected[at+k]))nativeMismatch++;
-            if([0,1,2,3].some(k=>cc[at+k]!==expected[at+k]))baseMismatch++;
+            expectedNative.set(expected.slice(at,at+4),at);owned.push(at);
           }
+          // Authored pixels supersede reviewed native artwork without changing
+          // that artwork's independent source ownership or the raw save.
+          const expectedSource=canvas();expectedSource.getContext('2d').putImageData(new ImageData(expectedNative,w,h),0,0);
+          const palette=CodaFloorPaletteCompat.create({manifest:await(await fetch('assets/environment/floor-palette-compat.json')).json()});await palette.ready;
+          const fill=CodaPathwayFloorFill.create({document,manifest:await(await fetch('assets/environment/boutique-pathway-shape.json')).json()});await fill.ready;
+          const patch=palette.resolveTexture('background.world',CodaDeveloperConsole.getProject().artwork['background.world']);
+          const expectedBase=canvas(),eg=expectedBase.getContext('2d');fill.draw(eg,expectedSource);eg.drawImage(CodaArtworkEditor.compose(expectedSource,patch),0,0);
+          const bb=eg.getImageData(0,0,w,h).data;for(const at of owned)if([0,1,2,3].some(k=>cc[at+k]!==bb[at+k]))baseMismatch++;
           return {maskCounts,ownerCounts,nativeMismatch,baseMismatch,source:CodaDeveloperConsole.getProjectSource(),local:localStorage.getItem('codaWorldProjectV1')};
         }''',layers)
         self.assertEqual(result['maskCounts'][:2],[26000,5141])
