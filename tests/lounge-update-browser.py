@@ -106,23 +106,25 @@ class LoungeUpdateTests(unittest.TestCase):
         self.assertEqual(meta['polygons'], [POLYGON])
         self.load()
         self.quality('off')
-        result = self.page.evaluate('''async polygon=>{
+        result = self.page.evaluate('''async ({polygon,finishingMasks})=>{
  const pixels=async url=>{const image=new Image();image.src=url;await image.decode();const c=document.createElement('canvas');
   c.width=1672;c.height=941;c.getContext('2d').drawImage(image,0,0);return c.getContext('2d').getImageData(0,0,1672,941).data;};
  const before=await pixels('assets/environment/source/lounge-floor-before-glass.png'),after=await pixels('assets/environment/v1/empty-arcade.png');
- const inside=(x,y)=>{let hit=false;for(let i=0,j=polygon.length-1;i<polygon.length;j=i++){
-  const a=polygon[i],b=polygon[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])hit=!hit;}return hit;};
+ const inside=(points,x,y)=>{let hit=false;for(let i=0,j=points.length-1;i<points.length;j=i++){
+  const a=points[i],b=points[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])hit=!hit;}return hit;};
+ const inFinishing=(x,y)=>finishingMasks.some(mask=>mask.polygons.some(points=>inside(points,x,y))
+  &&!mask.protectedPolygons.some(points=>inside(points,x,y)));
  let changed=0,outside=0;for(let y=0;y<941;y++)for(let x=0;x<1672;x++){
   const at=(y*1672+x)*4;if(![0,1,2,3].some(c=>before[at+c]!==after[at+c]))continue;changed++;
-  if(!inside(x+.5,y+.5))outside++;
+  if(!inside(polygon,x+.5,y+.5)&&!inFinishing(x+.5,y+.5))outside++;
  }
  const c=document.createElement('canvas');c.width=1672;c.height=941;__danceBlendConsole.renderBase(c.getContext('2d'));
  const samples=[[100,220],[200,260],[300,300],[400,240],[300,345]].map(([x,y])=>({x,y,
   native:Array.from(after.slice((y*1672+x)*4,(y*1672+x)*4+4)),rendered:[...c.getContext('2d').getImageData(x,y,1,1).data]}));
  return {changed,outside,samples};
-}''', POLYGON)
+}''', {'polygon': POLYGON, 'finishingMasks': _fixture.FINISHING_MASKS})
         self.assertGreater(result['changed'], 50000)
-        self.assertEqual(result['outside'], 0, 'All earlier wall, floor, cap and neon fixes stay exact')
+        self.assertEqual(result['outside'], 0, 'Pixels outside the lounge floor and exact later finishing contours stay unchanged')
         for point in result['samples']:
             self.assertLess(point['native'][0], 55, 'Remove the floral carpet pigment: ' + json.dumps(point))
             self.assertLess(point['native'][1], 40, point)

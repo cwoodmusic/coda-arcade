@@ -12,7 +12,7 @@
     },
     {
       "path": "assets/environment/v1/main-counter.png",
-      "sha256": "acbd11c434715584d16ca7f8f6266a12aba358b021de60bf8da8280773dc68b7"
+      "sha256": "2c0103b75ea0d28a0d1ad5de09f07e5f897ced8af30aab96d367bc68e851ef8e"
     },
     {
       "path": "assets/environment/v1/boutique-counter.png",
@@ -189,7 +189,7 @@
       "outputs": [
         "assets/decor/v1/counter-jade-south.png"
       ],
-      "sha256": "3e4bce306a7093ebda73de4b7301cbece6f522bf03a1344f146045a5f2567f98"
+      "sha256": "14d0d592a2347a595d824d720ebfe5a47bd97579d8091cd5acb360d0f598bef7"
     },
     {
       "id": "counter-boutique-south",

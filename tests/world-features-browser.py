@@ -7,6 +7,9 @@ import functools
 import json
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+import sys
+
+sys.dont_write_bytecode = True
 from world_navigation_helpers import advance_world, enter_room, open_destination, talk_to_musician, open_settings, close_settings
 import threading
 import unittest
@@ -241,10 +244,10 @@ class WorldFeatureTests(unittest.TestCase):
           const values=[];
           for(let n=0;n<12;n++){
             await featureFrames(6);const snapshot=CodaArcadeQA.lighting();
-            const lamp=snapshot.lanterns.find(l=>l.id==='dance-passage-lantern');
+            const lamp=snapshot.lanterns.find(l=>l.id==='dance-upper-passage');
             const cam=CodaArcadeQA.camera(),g=view.getContext('2d');
             values.push({intensity:lamp.intensity,pixel:Array.from(g.getImageData(
-              Math.round((843-cam.x)*cam.zoom),Math.round((650-cam.y)*cam.zoom),1,1).data),
+              Math.round((lamp.x-cam.x)*cam.zoom),Math.round((lamp.y-cam.y)*cam.zoom),1,1).data),
               spots:snapshot.spots.map(p=>[Math.round(p.x*100),Math.round(p.y*100)]),
               closed:snapshot.spots.filter(p=>!CodaArcadeQA.walkable(p.x,p.y)).length,
               textures:snapshot.glowTextures});

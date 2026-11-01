@@ -48,7 +48,7 @@ function fixture(){
   return node;
  }};
  const host=new Element('div',doc),control=library.mount({host,canEdit:()=>editable,onAdd:async item=>{calls.push(item);return callback(item);}});
- const find=key=>{let result;const visit=node=>{if(Object.hasOwn(node.dataset||{},key))result=node;for(const child of node.children||[])visit(child);};visit(host);return result;};
+ const find=(key,value)=>{let result;const visit=node=>{if(Object.hasOwn(node.dataset||{},key)&&(value===undefined||node.dataset[key]===value))result=node;for(const child of node.children||[])visit(child);};visit(host);return result;};
  const resolve=()=>{const image=pending.shift();assert.ok(image,'Expected an explicit Add request');image.onload();};
  return {control,calls,pending,draws,find,resolve,setEditable(value){editable=value;control.refresh();},setCallback(value){callback=value;}};
 }
@@ -71,6 +71,18 @@ test('rug filtering and Add identify floor placement while preserving the source
  value.find('decorSearch').value='round';value.find('decorSearch').oninput();
  assert.equal(value.control.getState().visible,1);assert.equal(value.control.getState().selected,null);
  value.control.destroy();
+});
+
+test('the matte counter refreshes its card, preview and added image while other asset URLs keep their cache',async()=>{
+ const value=fixture(),url='assets/decor/v1/counter-jade-south.png?v=matte-counter-20261101-1';
+ assert.equal(value.find('decorItem','counter-jade-south').children[0].src,url);
+ assert.equal(value.find('decorItem','sofa-south').children[0].src,'assets/decor/v1/sofa-south.png');
+ assert.equal(value.control.select('counter-jade-south'),true);
+ assert.equal(value.find('decorPreview').children[0].src,url);
+ const adding=value.control.addSelected();assert.equal(value.pending[0].url,url);
+ value.pending[0].naturalWidth=361;value.pending[0].naturalHeight=142;value.resolve();
+ assert.equal(await adding,true);assert.equal(value.calls[0].data,'data:image/png;base64,AQID');
+ assert.deepEqual([value.calls[0].width,value.calls[0].height],[361,142]);value.control.destroy();
 });
 
 test('furniture filtering is a preview and each added sofa is an independent embedded copy',async()=>{

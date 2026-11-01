@@ -14,6 +14,18 @@ _spec = importlib.util.spec_from_file_location(
 _fixture = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_fixture)
 PUBLISHED_SHA256 = 'a9a495716023e0df56dc23db8c9bbfd09316f5f08668fbcca43a633461dc2c00'
+FINISHING_METADATA = [
+    'scripts/passage-lantern-cleanup-regions.json',
+    'scripts/lounge-center-wall-regions.json',
+    'scripts/passage-transition-cleanup-regions.json',
+    'scripts/northwest-neon-cap-regions.json',
+]
+
+
+def finishing_masks():
+    return [{key: meta.get(key, []) for key in ['polygons', 'protectedPolygons']}
+            for filename in FINISHING_METADATA
+            for meta in [json.loads((ROOT / filename).read_text())]]
 
 
 def paint_pixel(texture, x, y, color):
@@ -48,6 +60,7 @@ class DanceFloorBlendTests(unittest.TestCase):
         self.dance_reflections = json.loads((ROOT / 'scripts/dance-reflection-floor-regions.json').read_text())
         self.east_floor = json.loads((ROOT / 'scripts/east-floor-cleanup-regions.json').read_text())
         self.lounge_floor = json.loads((ROOT / 'scripts/lounge-floor-regions.json').read_text())
+        self.finishing_masks = finishing_masks()
         script = (ROOT / 'developer-console.js').read_text() + '''
 (() => { const original = window.createCodaDeveloperConsole;
 window.createCodaDeveloperConsole = api => {
@@ -94,7 +107,7 @@ window.createCodaDeveloperConsole = api => {
                          PUBLISHED_SHA256, 'The uploaded world project must remain byte-for-byte intact')
         self.load()
         self.assertEqual(self.project(), self.published)
-        result = self.page.evaluate('''async ({meta,reflections,danceReflections,eastFloor,loungeFloor}) => {
+        result = self.page.evaluate('''async ({meta,reflections,danceReflections,eastFloor,loungeFloor,finishingMasks}) => {
  const load = async url => { const image = new Image(); image.src = url; await image.decode(); return image; };
  const before = await load(meta.before), after = await load(meta.output);
  const make = image => { const c = document.createElement('canvas'); c.width = image.naturalWidth;
@@ -108,6 +121,8 @@ window.createCodaDeveloperConsole = api => {
   } return hit;
  };
  const [left, top, width, height] = meta.repairBounds;
+ const inFinishing = (x,y) => finishingMasks.some(mask => mask.polygons.some(polygon => inside(polygon,x,y))
+  && !mask.protectedPolygons.some(polygon => inside(polygon,x,y)));
  let changed = 0, danceChanged = 0, reflectionChanged = 0, outside = 0, protectedChanges = 0;
  for (let y = 0; y < a.height; y++) for (let x = 0; x < a.width; x++) {
   const at = (y * a.width + x) * 4;
@@ -130,17 +145,17 @@ window.createCodaDeveloperConsole = api => {
    && !loungeFloor.protectedPolygons.some(polygon => inside(polygon, x + .5, y + .5));
   if (danceAllowed) danceChanged++;
   if (reflectionAllowed) reflectionChanged++;
-  if (!danceAllowed && !reflectionAllowed && !loungeAllowed) outside++;
+  if (!danceAllowed && !reflectionAllowed && !loungeAllowed && !inFinishing(x+.5,y+.5)) outside++;
   // Independent architectural witnesses: the stage, east wall, colored
   // dance panels and complete red front rail must not inherit generated art.
-  if ((x >= 236 && x <= 724 && y >= 507 && y < 649)
+  if (!inFinishing(x+.5,y+.5) && ((x >= 236 && x <= 724 && y >= 507 && y < 649)
    || (x >= 808 && x < 859 && y >= 435 && y < 819)
    || (x >= 181 && x < 610 && y >= 680 && y < 814)
-   || (x >= 119 && x < 808 && y >= 837 && y < 884)) protectedChanges++;
+   || (x >= 119 && x < 808 && y >= 837 && y < 884))) protectedChanges++;
  }
  return {beforeSize: [a.width, a.height], afterSize: [b.width, b.height], changed, danceChanged, reflectionChanged, outside, protectedChanges};
 }''', {'meta': self.meta, 'reflections': self.reflections, 'danceReflections': self.dance_reflections,
-       'eastFloor': self.east_floor, 'loungeFloor': self.lounge_floor})
+       'eastFloor': self.east_floor, 'loungeFloor': self.lounge_floor, 'finishingMasks': self.finishing_masks})
         self.assertEqual(result['beforeSize'], [1672, 941])
         self.assertEqual(result['afterSize'], [1672, 941])
         self.assertGreater(result['danceChanged'], 1000, 'The reviewed dance-room floor must still receive the blended texture')

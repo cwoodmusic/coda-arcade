@@ -21,24 +21,36 @@ LOUNGE_POLYGONS = [
     [[82,203],[143,185],[181,172],[208,149],[359,149],[438,180],
      [438,271],[360,271],[360,362],[269,362],[269,314],[82,314]]
 ]
+FINISHING_MASKS = _fixture.finishing_masks()
+
+
+def reviewed_scope(bounds):
+    return {'bounds': bounds, 'loungePolygons': LOUNGE_POLYGONS,
+            'finishingMasks': FINISHING_MASKS}
+
+
 # The lounge used carpet in the old glass geometry. Its separately reviewed
-# polygon is the only new exception; surrounding bar art and caps stay exact.
+# polygon and the later exact finishing contours are separate exceptions;
+# surrounding bar art, cap faces, signs and picture cutouts stay exact.
 REVIEWED_SCOPE_JS = '''
- const {bounds,loungePolygons}=scope;
- const inLounge=(x,y)=>loungePolygons.some(polygon=>{
+ const {bounds,loungePolygons,finishingMasks}=scope;
+ const inside=(polygon,x,y)=>{
   let hit=false;for(let i=0,j=polygon.length-1;i<polygon.length;j=i++){
    const [ax,ay]=polygon[i],[bx,by]=polygon[j];
    if((ay>y)!==(by>y)&&x<(bx-ax)*(y-ay)/(by-ay)+ax)hit=!hit;
   }return hit;
- });
- const allowed=(x,y)=>inLounge(x+.5,y+.5)||(bounds.some(([l,t,w,h])=>x>=l&&x<l+w&&y>=t&&y<t+h)
+ };
+ const inLounge=(x,y)=>loungePolygons.some(polygon=>inside(polygon,x,y));
+ const inFinishing=(x,y)=>finishingMasks.some(mask=>mask.polygons.some(polygon=>inside(polygon,x,y))
+  &&!mask.protectedPolygons.some(polygon=>inside(polygon,x,y)));
+ const allowed=(x,y)=>inLounge(x+.5,y+.5)||inFinishing(x+.5,y+.5)||(bounds.some(([l,t,w,h])=>x>=l&&x<l+w&&y>=t&&y<t+h)
   &&CodaWallReflections.isGlassFloor(x+.5,y+.5));
 '''
 # Captured with the pre-update native backdrop and its prior-good palette
-# manifest, with only REPAIR_BOUNDS and LOUNGE_POLYGONS blanked. This witness
+# manifest, with only reviewed bounds and exact lounge/finishing masks blanked. This witness
 # includes earlier wall removals and floor repairs; rebuilding compatibility must not
 # resurrect their purple/red pigments elsewhere in the room.
-PRIOR_GOOD_BASE_OUTSIDE_REPAIRS_SHA256 = '021980a54c4874b8584f96798d0c9bf04a4b10c5da43196a7cdb67fb8d4ef3ae'
+PRIOR_GOOD_BASE_OUTSIDE_REPAIRS_SHA256 = 'f2caa443733afa2fa539ba7396075e560f226199dae9fe38b0ba7078c8285852'
 
 
 class ReflectionSourceTests(unittest.TestCase):
@@ -63,16 +75,18 @@ class ReflectionSourceTests(unittest.TestCase):
     def test_live_lanterns_match_current_sources_and_disco_spots_keep_their_ball(self):
         self.load()
         states = {}
-        missing = {'piano-east', 'dance-entry', 'dance-sofa-west', 'dance-corner-west'}
+        missing = {'piano-east', 'dance-entry', 'dance-sofa-west', 'dance-corner-west',
+                   'dance-west', 'dance-passage-lantern'}
         for quality in ['full', 'lite', 'off']:
             self.quality(quality)
             state = self.page.evaluate('CodaArcadeQA.lighting()')
             states[quality] = state
             lamps = {lamp['id']: lamp for lamp in state['lanterns']}
+            self.assertEqual(len(lamps), 11, 'Keep all remaining visible lantern sources')
             self.assertEqual(set(lamps).intersection(missing), set(),
                              'Removed architectural lamps must not leave floating glows')
             for name, point in {'boutique-west': (397, 359), 'dance-stage-east': (613, 549),
-                                'dance-upper-passage': (819, 502), 'dance-passage-lantern': (843, 650)}.items():
+                                'dance-upper-passage': (819, 502)}.items():
                 self.assertEqual((lamps[name]['x'], lamps[name]['y']), point,
                                  name + ' must pulse at its visible bulb')
             active = {ball['id'] for ball in state['balls']
@@ -95,6 +109,7 @@ class ReflectionSourceTests(unittest.TestCase):
         self.seed(legacy)
         self.quality('full')
         original = {lamp['id']: lamp for lamp in self.page.evaluate('CodaArcadeQA.lighting().lanterns')}
+        self.assertEqual(len(original), 17, 'Legacy artwork retains all of its original lanterns')
         self.assertTrue(missing.issubset(original))
         self.assertEqual((original['dance-upper-passage']['x'], original['dance-upper-passage']['y']), (821, 514))
         self.assertEqual(self.project(), legacy)
@@ -113,11 +128,11 @@ class ReflectionSourceTests(unittest.TestCase):
   const at=(y*1672+x)*4;if(![0,1,2,3].some(c=>a[at+c]!==b[at+c]))continue;changed++;
   if(!allowed(x,y))outside++;
   // x359 is the final reviewed lounge-floor column beside the boutique.
-  if((x>=360&&x<=681&&y>=274&&y<425)||(x>=236&&x<=724&&y>=507&&y<649)
-   ||(x>=808&&x<859&&y>=435&&y<819)||(y>=837&&y<884))protectedChanges++;
+  if(!inFinishing(x+.5,y+.5)&&((x>=360&&x<=681&&y>=274&&y<425)||(x>=236&&x<=724&&y>=507&&y<649)
+   ||(x>=808&&x<859&&y>=435&&y<819)||(y>=837&&y<884)))protectedChanges++;
  }
  return{beforeSize:[before.naturalWidth,before.naturalHeight],afterSize:[after.naturalWidth,after.naturalHeight],changed,outside,protectedChanges};
-}''', {'bounds': REPAIR_BOUNDS, 'loungePolygons': LOUNGE_POLYGONS})
+}''', reviewed_scope(REPAIR_BOUNDS))
         self.assertEqual(result['beforeSize'], [1672, 941])
         self.assertEqual(result['afterSize'], [1672, 941])
         self.assertGreater(result['changed'], 1000, 'Remove the old streaks rather than only changing runtime labels')
@@ -139,9 +154,15 @@ class ReflectionSourceTests(unittest.TestCase):
   pixels.fill(0,(y*1672+x)*4,(y*1672+x)*4+4);
  for(let y=149;y<362;y++)for(let x=82;x<438;x++)if(inLounge(x+.5,y+.5))
   pixels.fill(0,(y*1672+x)*4,(y*1672+x)*4+4);
+ for(const mask of finishingMasks){
+  const points=mask.polygons.flat(),left=Math.floor(Math.min(...points.map(p=>p[0]))),right=Math.ceil(Math.max(...points.map(p=>p[0]))),
+   top=Math.floor(Math.min(...points.map(p=>p[1]))),bottom=Math.ceil(Math.max(...points.map(p=>p[1])));
+  for(let y=top;y<bottom;y++)for(let x=left;x<right;x++)if(inFinishing(x+.5,y+.5))
+   pixels.fill(0,(y*1672+x)*4,(y*1672+x)*4+4);
+ }
  const hash=await crypto.subtle.digest('SHA-256',pixels);
  return {sha256:[...new Uint8Array(hash)].map(value=>value.toString(16).padStart(2,'0')).join(''),witnesses};
-}''', {'bounds': REPAIR_BOUNDS, 'loungePolygons': LOUNGE_POLYGONS})
+}''', reviewed_scope(REPAIR_BOUNDS))
         self.assertEqual(result['sha256'], PRIOR_GOOD_BASE_OUTSIDE_REPAIRS_SHA256,
                          'Keep every prior floor repair outside the approved masks; witnesses: '
                          + json.dumps(result['witnesses']))
@@ -160,9 +181,9 @@ class ReflectionSourceTests(unittest.TestCase):
   if(!allowed(x,y))outside++;
  }
  return {changed,outside};
-}''', {'bounds': FINISH_BOUNDS + BLUE_GHOST_BOUNDS, 'loungePolygons': LOUNGE_POLYGONS})
+}''', reviewed_scope(FINISH_BOUNDS + BLUE_GHOST_BOUNDS))
         self.assertGreater(result['changed'], 1000)
-        self.assertEqual(result['outside'], 0, 'The new pass must preserve every earlier edit outside its exact glass masks')
+        self.assertEqual(result['outside'], 0, 'Only the approved glass history and exact later finishing contours may change')
 
     def test_blue_wall_ghost_cleanup_preserves_every_pixel_outside_its_glass_mask(self):
         self.load()
@@ -177,9 +198,9 @@ class ReflectionSourceTests(unittest.TestCase):
   if(!allowed(x,y))outside++;
  }
  return {changed,outside};
-}''', {'bounds': BLUE_GHOST_BOUNDS, 'loungePolygons': LOUNGE_POLYGONS})
+}''', reviewed_scope(BLUE_GHOST_BOUNDS))
         self.assertGreater(result['changed'], 1000)
-        self.assertEqual(result['outside'], 0, 'The blue wall-fragment cleanup must keep every prior edit outside its exact mask')
+        self.assertEqual(result['outside'], 0, 'Blue-ghost cleanup and later finishing must keep all pixels outside their exact masks')
 
     def test_blue_wall_fragments_above_the_old_mask_are_gone_without_hiding_real_reflections(self):
         self.load()
@@ -234,7 +255,7 @@ class ReflectionSourceTests(unittest.TestCase):
                          'assets/environment/floor-palette-compat.json']:
             requests = [url for url in result['resources'] if resource + '?' in url]
             self.assertEqual(len(requests), 1, requests)
-            self.assertIn('v=lounge-glass-20261101-1', requests[0],
+            self.assertIn('v=arcade-finishes-20261101-1', requests[0],
                           'Return visits must fetch the new art rather than the former orange-streak cache key')
         self.quality('full')
         full = self.page.evaluate('''()=>{

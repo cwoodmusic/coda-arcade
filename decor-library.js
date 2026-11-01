@@ -80,6 +80,7 @@
   const host=api.host;if(!host?.ownerDocument)throw Error('The decor library needs an editor host.');
   const doc=host.ownerDocument,win=doc.defaultView;let selected=null,busy=false,destroyed=false,request=0;
   const baseUrl=String(api.baseUrl||'assets/decor/v1/').replace(/\/?$/,'/');
+  const imageUrl=id=>baseUrl+id+'.png'+(id==='counter-jade-south'?'?v=matte-counter-20261101-1':'');
   const el=(tag,className,text)=>{const node=doc.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
   const library=el('details','decor-library');library.dataset.decorLibrary='';
   const summary=el('summary','','Asset library · '+items.length+' items');summary.dataset.decorLibraryToggle='';library.append(summary);
@@ -95,7 +96,7 @@
   const cards=new Map();
   for(const item of items){
    const card=el('button','decor-library-card');card.type='button';card.dataset.decorItem=item.id;card.setAttribute('aria-label','Select '+item.name);card.setAttribute('aria-pressed','false');
-   const picture=el('img');picture.src=baseUrl+item.id+'.png';picture.alt='';picture.loading='lazy';picture.decoding='async';picture.width=80;picture.height=80;
+   const picture=el('img');picture.src=imageUrl(item.id);picture.alt='';picture.loading='lazy';picture.decoding='async';picture.width=80;picture.height=80;
    card.append(picture,el('span','',item.name));card.onclick=()=>select(item.id);cards.set(item.id,card);grid.append(card);
   }
   const preview=el('div','decor-library-preview');preview.hidden=true;preview.dataset.decorPreview='';
@@ -113,7 +114,7 @@
   function select(id){
    const item=items.find(value=>value.id===id);if(!item||!editable()||busy)return false;
    selected=item;for(const [key,card]of cards)card.setAttribute('aria-pressed',String(key===id));
-   image.src=baseUrl+id+'.png';image.alt=item.name;heading.textContent=item.name;size.textContent=categoryNames[item.category]+' · fits within '+item.width+' × '+item.height+' pixels';preview.hidden=false;
+   image.src=imageUrl(id);image.alt=item.name;heading.textContent=item.name;size.textContent=categoryNames[item.category]+' · fits within '+item.width+' × '+item.height+' pixels';preview.hidden=false;
    message('Ready to add '+item.name+'.');refresh();return true;
   }
   function filter(){
@@ -131,7 +132,7 @@
    if(!editable()||busy||!selected||typeof api.onAdd!=='function')return false;
    const item=selected,token=++request;busy=true;message('Loading '+item.name+'…');refresh();
    try{
-    const picture=await load(baseUrl+item.id+'.png');if(destroyed||token!==request||!editable())return false;
+    const picture=await load(imageUrl(item.id));if(destroyed||token!==request||!editable())return false;
     const width=picture.naturalWidth||picture.width,height=picture.naturalHeight||picture.height;
     if(!Number.isInteger(width)||!Number.isInteger(height)||width<1||height<1||width>8192||height>8192||width*height>16777216)throw Error('The decor image has unsupported dimensions.');
     const canvas=doc.createElement('canvas');canvas.width=width;canvas.height=height;const context=canvas.getContext('2d');context.imageSmoothingEnabled=false;context.drawImage(picture,0,0);
