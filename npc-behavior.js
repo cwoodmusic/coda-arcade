@@ -262,7 +262,7 @@
     function getConversation(value){
       const p=find(value);if(!p)return null;const state=states.get(p),dialogue=dialogueFor(p);
       const line=state.lastLine||dialogue.greetings[0],quotation=quotations?.get(state.profile.id);
-      return {id:p.id,name:p.name,description:dialogue.description,activity:p.activity,fictional:true,original:!!state.profile.unlockItem,line,quotation:quotation&&(line===quotations.line(state.profile.id)||line===quotation.text)?quotation:null,choices:dialogue.choices.map(choice=>({id:choice.id,label:choice.label}))};
+      return {id:p.id,name:p.name,description:dialogue.description,activity:p.activity,fictional:true,original:!!state.profile.unlockItem,line,quotation:quotation?.kind==='quotation'&&(line===quotations.line(state.profile.id)||line===quotation.text)?quotation:null,choices:dialogue.choices.map(choice=>({id:choice.id,label:choice.label}))};
     }
     function say(value,topic='greeting'){
       const p=find(value);if(!p)return '';const state=states.get(p),dialogue=dialogueFor(p),profile={...state.profile};

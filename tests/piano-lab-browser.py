@@ -160,7 +160,7 @@ class PianoLabTests(unittest.TestCase):
     def test_chopin_greets_with_plain_quote_and_offers_simple_advice(self):
         self.walk(800,315)
         self.page.keyboard.press('e')
-        self.assertEqual(self.page.locator('#pianoDialogueText').inner_text(),'You must sing if you wish to play')
+        self.assertEqual(self.page.locator('#pianoDialogueText').inner_text(),'You must sing if you wish to play.')
         self.page.locator('[data-piano-dialogue-action="advice"]').click()
         self.assertIn('Legato',self.page.locator('#pianoDialogueText').inner_text())
         self.assertNotIn('Source:',self.page.locator('#pianoDialogueText').inner_text())

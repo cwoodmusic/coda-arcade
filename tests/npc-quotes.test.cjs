@@ -7,10 +7,10 @@ function setup(getDialogue){
  const npcs=window.CodaMusicianCast.map(person=>({...person,x:100,y:100,userPlaced:true}));
  return {window,npcs,engine:window.createCodaNPCBehavior({npcs,inside:()=>true,route:()=>[],getDialogue,getGames:()=>[],getPlayer:()=>({x:-999,y:-999}),isUnlocked:()=>true})};
 }
-test('every historical visitor has an attributed quotation and just one simple advice choice',()=>{
+test('every historical visitor has a plain greeting and just one simple advice choice',()=>{
  const {npcs,engine}=setup();
  for(const person of npcs.filter(p=>!p.fictional)){
-  const data=engine.beginConversation(person.id);assert.equal(data.line,quotes.line(person.id));assert.equal(data.quotation.source,quotes.get(person.id).source);
+  const data=engine.beginConversation(person.id);assert.equal(data.line,quotes.line(person.id));if(quotes.get(person.id).kind==='quotation')assert.equal(data.quotation.source,quotes.get(person.id).source);else assert.equal(data.quotation,null);
   assert.equal(data.choices.length,1);assert.equal(data.choices[0].label,'Advice');assert.equal(engine.say(person.id,'advice'),quotes.advice(person.id));
   assert.ok(engine.say(person.id,'music').length>20);assert.equal(engine.getConversation(person.id).quotation,null);
   assert.ok(engine.say(person.id,'advice').length>20);assert.ok(engine.say(person.id,'games').length>20);engine.endConversation();
@@ -24,11 +24,11 @@ test('edited dialogue is respected and an edited quotation is never credited as 
  assert.equal(engine.beginConversation('bach').line,'Hello from the author.');assert.equal(engine.getConversation('bach').quotation,null);
  assert.equal(engine.say('bach','advice'),'A newly imagined line.');assert.equal(engine.getConversation('bach').quotation,null);
 });
-test('Bach’s uploaded menu and unadorned quotation retain attribution without restoring removed choices',()=>{
+test('Bach’s published greeting is authored dialogue and does not restore removed choices',()=>{
  const entry=require('../published-world-project.json').dialogue.bach;
  const editor=require('../dialogue-editor.js');assert.equal(editor.validEntry(entry),true);
  const {engine}=setup(id=>id==='bach'?entry:null);
- const data=engine.beginConversation('bach');assert.equal(data.line,quotes.get('bach').text);assert.equal(data.quotation.source,quotes.get('bach').source);
+ const data=engine.beginConversation('bach');assert.equal(data.line,quotes.get('bach').text);assert.equal(data.quotation,null);
  assert.deepEqual(Array.from(data.choices,c=>c.id),['advice']);
  assert.equal(engine.say('bach','advice'),quotes.advice('bach'));
  assert.equal(engine.getConversation('bach').quotation,null);
@@ -36,10 +36,10 @@ test('Bach’s uploaded menu and unadorned quotation retain attribution without 
 test('quotes cover the two room musicians and keep source and translation context beside G-rated words',()=>{
  assert.equal(Object.keys(quotes.byId).length,14);
  for(const entry of Object.values(quotes.byId)){
-  assert.ok(entry.text.length>0&&entry.source.length>30&&entry.note.length>20);assert.match(entry.url,/^https:\/\//);
+  assert.ok(entry.text.length>0&&entry.source.length>30&&entry.note.length>20);assert.match(entry.text,/^[A-Z].*[.!?]$/);assert.doesNotMatch(entry.text,/\b(conservative|radical|politic(?:s|al)?|ninety-four)\b/i);if(entry.kind==='quotation')assert.match(entry.url,/^https:\/\//);else{assert.equal(entry.kind,'authored');assert.match(entry.note,/not a historical quotation/);}
   assert.doesNotMatch(entry.text,/\b(god|jesus|christ|heaven|hell|religion|church|damn|shit|fuck)\b/i);
  }
- assert.match(quotes.credit('chopin'),/Niecks/);assert.match(quotes.credit('haydn'),/Griesinger/);
+ assert.match(quotes.credit('chopin'),/Niecks/);assert.equal(quotes.get('haydn').kind,'authored');
  const html=fs.readFileSync(path.join(__dirname,'../world-preview.html'),'utf8');assert.ok(html.indexOf('npc-quotes.js?')<html.indexOf('npc-behavior.js?'));
 });
 test('the four uploaded history fact edits appear in the resolved game content',()=>{

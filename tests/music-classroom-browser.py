@@ -67,7 +67,7 @@ class ClassroomTests(unittest.TestCase):
 
     def test_haydn_plain_greeting_and_advice_keep_lessons_available(self):
         self.open_lessons()
-        self.assertEqual(self.page.locator('#haydnGreeting').inner_text(),'I was forced to become original.')
+        self.assertEqual(self.page.locator('#haydnGreeting').inner_text(),'Welcome! I wrote symphonies for orchestras, and I liked surprising my listeners.')
         self.page.locator('#haydnAdvice').click()
         self.assertIn('musical question',self.page.locator('#haydnAdviceText').inner_text())
         self.assertTrue(self.page.locator('[data-start-lesson="note-naming"]').is_visible())

@@ -1,42 +1,50 @@
-# Musician quotations
+# Musician greetings and source notes
 
-The twelve historical visitors greet players with a plain-text historical quotation and offer one **Advice** choice explaining an associated musical concept in simple language. Greetings have no quotation marks or appended name. Chopin and Haydn follow this pattern in their rooms while retaining lesson/challenge controls. Source credits and biographies are kept outside the live conversation; their metadata remains in the catalogue and external content editor. Original invited visitors keep fictional dialogue. Friendship quests and facts remain available.
+Historical musicians greet players with either a source-checked quotation or game-written dialogue about their own musical work/history. Both appear as plain speech without quotation marks, author suffixes, biographies, or source credits in chat. The catalogue distinguishes `kind: quotation` from `kind: authored`; authored lines are never exposed as historical quotation metadata.
 
-These short selections avoid religious beliefs, profanity, adult themes, and insults. Preserve original wording; translations and reported recollections are identified rather than silently rewritten as modern speech. Source context matters: Vivaldi’s number is his own claim, and excerpts are not complete statements.
+Bach, Handel, Vivaldi, and Schoenberg use game-written greetings by request. Unverified quotations for Joplin, Ellington, Ella, Nina, Miles, and Haydn were also replaced. Political terminology, religious references, and the Vivaldi opera-count fragment are absent from the greetings. Mozart, Beethoven, Clara Schumann, and Chopin retain source-checked quotations.
 
-## Sources
+Every musician still has one **Advice** choice explaining an associated musical concept simply. Friendship quests and discoverable facts remain available. Chopin and Haydn keep their room lesson/challenge controls.
+
+## Catalogue
 
 ### J. S. Bach
 
-> I was made to work; if you are equally industrious you will be equally successful.
+**Game-written greeting; not a historical quotation.**
 
-J. N. Forkel, Johann Sebastian Bach: His Life, Art, and Work, chapter VIII; English translation by Charles Sanford Terry (1920).
+> Welcome! I wrote music for the organ, and I like weaving different tunes together.
 
-Reported by Bach’s biographer; translated from German.
+Game-written greeting based on the musician’s musical work and history; see music-history-data.js.
 
-[Reference](https://www.gutenberg.org/ebooks/35041)
+Original arcade dialogue, not a historical quotation.
 
 ### Mozart
 
-> but I can by tones, for I am a musician.
+**Historical quotation in translation.**
 
-Letter to his father, Mannheim, 8 November 1777; The Letters of Wolfgang Amadeus Mozart, volume I, letter 73, translated by Lady Wallace.
+> My violin has been newly strung, and I play every day.
 
-A translated excerpt from a letter about expressing thoughts and feelings through music.
+Letter from Bologna, 4 August 1770; The Letters of Wolfgang Amadeus Mozart, volume I, letter 19, translated by Lady Wallace.
+
+A complete sentence from the translated letter, checked against the source transcription.
 
 [Reference](https://www.gutenberg.org/ebooks/5307)
 
 ### Beethoven
 
-> the greater the advances we make in art, the less are we satisfied with our works of an earlier date.
+**Historical quotation in translation.**
 
-Letter to Friedrich von Matthisson, 4 August 1800; Beethoven’s Letters 1790–1826, volume I, letter 16, translated by Lady Wallace.
+> I live wholly in my music, and scarcely is one work finished when another is begun; indeed, I am now often at work on three or four things at the same time.
 
-A translated excerpt about growing as an artist.
+Letter to Franz Gerhard Wegeler; Beethoven’s Letters 1790–1826, volume I, letter 14, translated by Lady Wallace.
+
+A complete sentence from the translated letter, checked against the source transcription. The edition’s printed date is not used as an independently verified date.
 
 [Reference](https://www.gutenberg.org/ebooks/13065)
 
 ### Clara Schumann
+
+**Historical quotation in translation.**
 
 > In many free hours I used to grow enthusiastic over piano arrangements of operas and other music.
 
@@ -48,106 +56,110 @@ A translated recollection of enjoying music in her free time.
 
 ### Scott Joplin
 
-> It is never right to play Ragtime fast.
+**Game-written greeting; not a historical quotation.**
 
-Scott Joplin, School of Ragtime (1908), printed instruction above the exercises.
+> Hello! I wrote ragtime music, with a steady beat and bouncy rhythms that skip between the beats.
 
-A written instruction from Joplin’s ragtime teaching score.
+Game-written greeting based on the musician’s musical work and history; see music-history-data.js.
 
-[Reference](https://imslp.org/wiki/School_of_Ragtime_(Joplin%2C_Scott))
+Original arcade dialogue, not a historical quotation.
 
 ### Duke Ellington
 
-> Love you madly.
+**Game-written greeting; not a historical quotation.**
 
-Duke Ellington’s signature greeting and sign-off, also used throughout Music Is My Mistress (1973).
+> Welcome! I wrote music for my jazz orchestra, giving each player a chance to share their own sound.
 
-Ellington’s familiar affectionate greeting to his audiences.
+Game-written greeting based on the musician’s musical work and history; see music-history-data.js.
 
-[Reference](https://www.si.edu/spotlight/duke-ellington)
+Original arcade dialogue, not a historical quotation.
 
 ### Ella Fitzgerald
 
-> The only thing better than singing is more singing.
+**Game-written greeting; not a historical quotation.**
 
-Ella Fitzgerald; quoted in The New York Times, “Ella Fitzgerald, the Voice of Jazz, Dies at 79” (16 June 1996).
+> Hello! I love turning my voice into an instrument with playful scat singing.
 
-A remembered remark about her love of singing.
+Game-written greeting based on the musician’s musical work and history; see music-history-data.js.
 
-[Reference](https://www.nytimes.com/1996/06/16/nyregion/ella-fitzgerald-the-voice-of-jazz-dies-at-79.html)
+Original arcade dialogue, not a historical quotation.
 
 ### Nina Simone
 
-> I’ll tell you what freedom is to me: no fear.
+**Game-written greeting; not a historical quotation.**
 
-Nina Simone, filmed interview with Peter Rodis (1968).
+> Hello! I learned classical piano as a child and grew up to make music in many different styles.
 
-A spoken interview excerpt. Simone is describing what freedom means to her.
+Game-written greeting based on the musician’s musical work and history; see music-history-data.js.
 
-[Reference](https://www.ninasimone.com/biography/)
+Original arcade dialogue, not a historical quotation.
 
 ### Miles Davis
 
-> The thing to judge in any jazz artist is, does the man project and does he have ideas.
+**Game-written greeting; not a historical quotation.**
 
-Nat Hentoff, “An Afternoon with Miles Davis,” The Jazz Review, volume 1, number 2 (December 1958).
+> Hello! My trumpet helped me explore new sounds in jazz. A few notes can tell a big story.
 
-A spoken interview excerpt about musical expression and ideas.
+Game-written greeting based on the musician’s musical work and history; see music-history-data.js.
 
-[Reference](https://www.jazzstudiesonline.org/)
+Original arcade dialogue, not a historical quotation.
 
 ### Arnold Schoenberg
 
-> I am a conservative who was forced to become a radical.
+**Game-written greeting; not a historical quotation.**
 
-Quoted in H. H. Stuckenschmidt, Schoenberg: His Life, World and Work (English translation, 1977).
+> Hello! I explored new sounds by putting all twelve notes in a special order.
 
-A translated remark about how his musical style developed, reported by his biographer.
+Game-written greeting based on the musician’s musical work and history; see music-history-data.js.
 
-[Reference](https://www.schoenberg.at/)
+Original arcade dialogue, not a historical quotation.
 
 ### George Frideric Handel
 
-> I should be sorry if I only entertained them; I wished to make them better.
+**Game-written greeting; not a historical quotation.**
 
-John Hawkins, A General History of the Science and Practice of Music (1776), account of Handel’s conversation with Lord Kinnoull.
+> Welcome! I wrote Water Music for musicians to play on the River Thames.
 
-Reported by a biographer, rather than preserved in Handel’s handwriting.
+Game-written greeting based on the musician’s musical work and history; see music-history-data.js.
 
-[Reference](https://www.gutenberg.org/ebooks/search/?query=John+Hawkins+music)
+Original arcade dialogue, not a historical quotation.
 
 ### Antonio Vivaldi
 
-> ninety-four operas composed by me
+**Game-written greeting; not a historical quotation.**
 
-Letter to Marchese Guido Bentivoglio, 2 January 1737; discussed in Michael Talbot, The Vivaldi Compendium (2011).
+> Welcome! In The Four Seasons, my violin music paints pictures of birds, storms, and chilly winter days.
 
-A translated phrase from a letter about his opera work. This was Vivaldi’s own count; scholars discuss which versions and works he included.
+Game-written greeting based on the musician’s musical work and history; see music-history-data.js.
 
-[Reference](https://boydellandbrewer.com/9781843836704/the-vivaldi-compendium/)
+Original arcade dialogue, not a historical quotation.
 
 ### Frédéric Chopin
 
-> You must sing if you wish to play
+**Historical quotation in translation.**
+
+> You must sing if you wish to play.
 
 Chopin’s advice to Madame Rubio, reported in Frederick Niecks, Frederick Chopin as a Man and Musician, volume II, chapter XXIX.
 
-Translated advice reported by his pupil: listen for singing phrases when playing piano.
+Translated advice reported by his pupil: listen for singing phrases when playing piano. Final punctuation is normalized; the words are unchanged.
 
 [Reference](https://www.gutenberg.org/ebooks/4972)
 
 ### Joseph Haydn
 
-> I was forced to become original.
+**Game-written greeting; not a historical quotation.**
 
-Georg August Griesinger, Biographische Notizen über Joseph Haydn (1810), recollection of Haydn’s work at Eszterháza.
+> Welcome! I wrote symphonies for orchestras, and I liked surprising my listeners.
 
-A translated excerpt reported by his biographer. Haydn was describing the freedom to try new musical ideas.
+Game-written greeting based on the musician’s musical work and history; see music-history-data.js.
 
-[Reference](https://archive.org/details/biographischeno00grie)
+Original arcade dialogue, not a historical quotation.
 
 ## Verification and maintenance
 
-The public-domain transcriptions for Bach, Mozart, Beethoven, Clara Schumann, and Chopin were checked against GITenberg text editions during implementation. Other entries carry bibliographic or recording references; their external reference pages were not retrieved in this restricted environment. Do not describe all external links as independently checked. English wording varies between translations. Source links are for reference; gameplay does not fetch them.
+The retained quotations were checked against GITenberg transcriptions of Project Gutenberg books 5307 (Mozart), 13065 (Beethoven), 20571 (Clara Schumann), and 4972 (Chopin). Mozart and Beethoven use complete source sentences. Chopin’s imperative has unchanged words with a normalized final period. English translations vary.
 
-`npc-quotes.js` is the shared catalogue. `npc-behavior.js` exposes quotation metadata only for an exact catalogue match; `musician-ui.js` presents the plain greeting and Advice without source notes or biography text in the chat panel. Source names and note text are rendered as plain text. Quotation source/context can also be edited in the external workshop’s remaining text catalogue, with application review needed before changing an attribution.
+Authored greetings use established musical background already represented in `music-history-data.js` and the musician profiles. They are fictional first-person dialogue, not paraphrases presented as quotations. Keep this distinction when editing, exporting, and applying content.
+
+`npc-quotes.js` remains the shared catalogue for compatibility. `npc-behavior.js` only exposes quotation metadata when the entry kind is quotation and the spoken words match. The live chat stays simple. See the [greeting audit](musician-greeting-audit.md).
