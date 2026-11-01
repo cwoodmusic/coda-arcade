@@ -2,7 +2,7 @@
 
 The connected world’s historical visitor pool includes J. S. Bach, Mozart, Beethoven, Clara Schumann, Scott Joplin, Duke Ellington, Ella Fitzgerald, Nina Simone, Miles Davis, Arnold Schoenberg, George Frideric Handel, and Antonio Vivaldi. Walk nearby and press **E** to talk; the Profile can help you find musicians. Conversations offer musical background, a practice tip, their current activity, and preferred games.
 
-These are original, imagined conversations with historically grounded musical facts, not quotations, recordings, or endorsements. The implementation does not establish likeness, publicity, trademark, or other rights clearance.
+Historical musicians greet the player with their own words, shown as plain speech without quotation marks or an appended name. Their only general chat choice is **Advice**, a short explanation of a musical concept associated with that person, using familiar examples for young children. Biography and quotation credits stay out of the chat panel; biographies remain in the roster and source notes remain in the content files and [quotation sources](docs/musician-quotes.md). Chopin and Haydn use the same plain greeting and Advice pattern while keeping their room activities. Friendship quests and discoverable facts remain available. In the main arcade, the history action replaces the legacy mission/trivia chat buttons. The three original invited visitors keep fictional greetings.
 
 ## Characters
 

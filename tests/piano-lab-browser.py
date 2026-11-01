@@ -29,6 +29,7 @@ class PianoLabTests(unittest.TestCase):
         self.page.add_script_tag(path=str(ROOT/'character-renderer.js'))
         self.page.add_script_tag(path=str(ROOT/'piano-melodies.js'))
         self.page.add_script_tag(path=str(ROOT/'piano-wall-notation.js'))
+        self.page.add_script_tag(path=str(ROOT/'npc-quotes.js'))
         self.page.add_script_tag(path=str(ROOT/'piano-lab.js'))
         self.page.evaluate('''()=>{
           window.entries=new Map();window.challengeStarts=[];window.challengeCompletions=[];window.rewards=[];window.rewardCalls=[];window.rewardLedger=new Set();window.rewardMode='success';window.exits=0;
@@ -155,6 +156,16 @@ class PianoLabTests(unittest.TestCase):
         self.page.locator('[data-piano-dialogue-action="play"]').click();self.play_sequence([61,60,64])
         event=self.page.evaluate('challengeCompletions.at(-1)')
         self.assertEqual((event['kind'],event['lessonId'],event['mistakes']),('interval','up-4',1))
+
+    def test_chopin_greets_with_plain_quote_and_offers_simple_advice(self):
+        self.walk(800,315)
+        self.page.keyboard.press('e')
+        self.assertEqual(self.page.locator('#pianoDialogueText').inner_text(),'You must sing if you wish to play')
+        self.page.locator('[data-piano-dialogue-action="advice"]').click()
+        self.assertIn('Legato',self.page.locator('#pianoDialogueText').inner_text())
+        self.assertNotIn('Source:',self.page.locator('#pianoDialogueText').inner_text())
+        self.page.locator('[data-piano-dialogue-action="talk"]').click()
+        self.assertTrue(self.page.locator('[data-piano-dialogue-action="melodies"]').is_visible())
 
     def test_main_room_is_uncluttered_and_chopin_offers_several_melodies_in_dialogue(self):
         self.assertFalse(self.state()['menuOpen']);self.assertFalse(self.state()['dialogueOpen'])

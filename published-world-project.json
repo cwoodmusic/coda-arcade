@@ -145984,7 +145984,11 @@
       "bach-02": "Bach was very good at playing the pipe organ. He also played the harpsichord, clavichord, violin, and viola.",
       "bach-10": "Bach wrote six sets of pieces for cello. A cello is a large stringed instrument that sits upright when you play.",
       "bach-15": "A pipe organ is a large keyboard instrument. Its sound is made by air passing through large pipes.",
-      "bach-28": "Bach composed music during the Baroque era. The Baroque era lasted from the early 1600s to about 1750."
+      "bach-28": "Bach composed music during the Baroque era. The Baroque era lasted from the early 1600s to about 1750.",
+      "beethoven-03": "Beethoven became known in Vienna for playing piano.",
+      "beethoven-05": "Beethoven’s Fifth Symphony starts with a short musical idea called a \"motif.\"",
+      "clara-06": "Clara started her Piano Concerto in A minor as a teen. In a concerto, one instrument is featured alongside with an orchestra.",
+      "joplin-03": "Ragtime often puts strong notes between the main beats. Another part keeps a steady beat. This is called syncopation."
     },
     "quizzes": {
       "bach-quiz-02": {
@@ -148301,6 +148305,21 @@
       ],
       "strokes": [],
       "entities": {}
+    }
+  },
+  "dialogue": {
+    "bach": {
+      "description": "Baroque composer and keyboard player, known for counterpoint: independent melodies sounding together.",
+      "greetings": [
+        "I was made to work; if you are equally industrious you will be equally successful."
+      ],
+      "choices": [
+        {
+          "id": "advice",
+          "label": "Advice",
+          "reply": "Counterpoint is like two friends singing different tunes together. Each tune has its own path, but they fit together. Listen to one tune, then try to hear the other."
+        }
+      ]
     }
   }
 }

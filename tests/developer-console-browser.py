@@ -359,8 +359,8 @@ class WorldEditorTests(unittest.TestCase):
         self.assertTrue(self.page.evaluate('CodaArcadeQA.characters().npcs.every(p=>p.hidden||CodaArcadeQA.walkable(p.x,p.y))'))
         talk_to_musician(self.page,'miles')
         self.assertEqual(self.page.locator('#who').inner_text(),'Miles Davis')
-        self.assertTrue(self.page.locator('.musician-description').inner_text())
-        self.assertTrue(self.page.locator('.musician-choices').get_by_role('button',name='mission',exact=False).is_visible())
+        self.assertFalse(self.page.locator('.musician-description').is_visible())
+        self.assertTrue(self.page.locator('[data-history-owner-prompt="miles"]').is_visible())
         self.page.keyboard.press('Escape')
         self.assertFalse(self.page.evaluate('CodaArcadeQA.conversation().open'))
 
@@ -369,10 +369,9 @@ class WorldEditorTests(unittest.TestCase):
         talk_to_musician(self.page,'miles')
         self.assertEqual(self.page.locator('#who').inner_text(),'Miles Davis')
         self.assertTrue(self.page.locator('#dialog').is_visible())
-        self.assertIn('Imagined dialogue',self.page.locator('#dialog').inner_text())
-        self.page.get_by_role('button',name='Tell me about your music',exact=True).click()
-        self.assertIn('Kind of Blue',self.page.locator('#words').inner_text())
-        self.assertIn('1959',self.page.locator('#words').inner_text())
+        self.assertEqual(self.page.locator('#words').inner_text(),self.page.evaluate("CodaMusicianQuotes.line('miles')"))
+        self.page.get_by_role('button',name='Advice',exact=True).click()
+        self.assertIn('Improvising',self.page.locator('#words').inner_text())
         start=self.page.evaluate('CodaArcadeQA.characters().npcs')
         self.page.wait_for_timeout(600)
         end=self.page.evaluate('CodaArcadeQA.characters().npcs')
@@ -380,8 +379,8 @@ class WorldEditorTests(unittest.TestCase):
         self.assertEqual((a['x'],a['y'],a['phase']),(b['x'],b['y'],b['phase']))
         self.assertEqual(b['activity'],'chatting')
         self.assertTrue(any(abs(x['x']-y['x'])+abs(x['y']-y['y'])>1 for x,y in zip(start,end) if x['id']!='miles'))
-        self.page.get_by_role('button',name='Give me a musical tip',exact=True).click()
-        self.assertIn('pause',self.page.locator('#words').inner_text())
+        self.page.get_by_role('button',name='Advice',exact=True).click()
+        self.assertIn('Stop and listen',self.page.locator('#words').inner_text())
         # E completes the animated line before a second E closes the dialogue.
         # Check whether animation is active so this also works if the line
         # happened to finish naturally before the first keypress.

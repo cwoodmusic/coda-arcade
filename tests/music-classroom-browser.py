@@ -13,7 +13,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path!='/classroom-harness':
             return super().do_GET()
-        html='''<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="/music-classroom.css"><link rel="stylesheet" href="/classroom-tutorials.css"><button id="entrance">Enter classroom</button><section id="room" hidden></section><script src="/character-renderer.js"></script><link rel="stylesheet" href="/music-notation.css"><script src="/music-notation.js"></script><link rel="stylesheet" href="/time-signature-lesson.css"><script src="/time-signature-lesson.js"></script><script src="/classroom-tutorials.js"></script><script src="/room-fullscreen.js"></script><script src="/music-classroom.js"></script><script>window.roomUI=createCodaMusicClassroom({host:document.querySelector('#room'),backgroundSrc:'/assets/world/music-classroom-room.png',renderer:createCodaCharacterRenderer(),getAvatar:()=>({}),getVibe:()=>window.fixtureVibe||null});entrance.onclick=()=>roomUI.open();</script>'''
+        html='''<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="/music-classroom.css"><link rel="stylesheet" href="/classroom-tutorials.css"><button id="entrance">Enter classroom</button><section id="room" hidden></section><script src="/character-renderer.js"></script><link rel="stylesheet" href="/music-notation.css"><script src="/music-notation.js"></script><link rel="stylesheet" href="/time-signature-lesson.css"><script src="/time-signature-lesson.js"></script><script src="/classroom-tutorials.js"></script><script src="/room-fullscreen.js"></script><script src="/npc-quotes.js"></script><script src="/music-classroom.js"></script><script>window.roomUI=createCodaMusicClassroom({host:document.querySelector('#room'),backgroundSrc:'/assets/world/music-classroom-room.png',renderer:createCodaCharacterRenderer(),getAvatar:()=>({}),getVibe:()=>window.fixtureVibe||null});entrance.onclick=()=>roomUI.open();</script>'''
         self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.end_headers();self.wfile.write(html.encode())
 
 class ClassroomTests(unittest.TestCase):
@@ -64,6 +64,13 @@ class ClassroomTests(unittest.TestCase):
         self.assertTrue(all(call['scale']==1 for call in glows))
         self.assertEqual([call['kind'] for call in calls[:4]],['atmosphere','glow','atmosphere','glow'])
         self.page.evaluate("()=>{window.fixtureVibe=null;const host=document.createElement('section');document.body.append(host);const bare=createCodaMusicClassroom({host,getAvatar:()=>({})});bare.open();bare.destroy();host.remove();}")
+
+    def test_haydn_plain_greeting_and_advice_keep_lessons_available(self):
+        self.open_lessons()
+        self.assertEqual(self.page.locator('#haydnGreeting').inner_text(),'I was forced to become original.')
+        self.page.locator('#haydnAdvice').click()
+        self.assertIn('musical question',self.page.locator('#haydnAdviceText').inner_text())
+        self.assertTrue(self.page.locator('[data-start-lesson="note-naming"]').is_visible())
 
     def test_room_moves_and_professor_interaction_opens_a_real_book(self):
         self.assertTrue(self.page.evaluate('roomUI.getState().open'))
