@@ -3,7 +3,7 @@
  'use strict';
  const JOURNAL='codaRhythmFishingV1',W=1000,H=620;
  const LAYOUT=typeof module==='object'&&module.exports?require('./fishing-cave-layout.js'):root.CodaFishingCaveLayout;
- const LAKE=LAYOUT.LAKE,DOCK={x:290,y:415},SHORE=LAYOUT.SPAWN;
+ const LAKE=LAYOUT.LAKE,DOCK=LAYOUT.BOAT_DOCK,SHORE=LAYOUT.SPAWN;
  const CAPTAIN={id:'captain-cadence',name:'Captain Cadence',x:125,y:335,appearance:{name:'Captain Cadence',skin:'#bb835d',hair:'#bec3cf',hairstyle:'long',shirt:'#397c83',lowerColor:'#24374e',outfit:'coat',headwear:'pirate',headwearColor:'#243851',accessory:'accordion',shoes:'boots'}};
  const METERS={'4/4':{label:'4/4 · Four quarter-note beats',pulse:'ONE · TWO · THREE · FOUR',tip:'Four steady quarter-note beats fill a bar.'},'6/8':{label:'6/8 · Two swaying beats',pulse:'ONE-la-li · TWO-la-li',tip:'Feel two big beats. Each big beat divides into three eighth notes.'},'2/2':{label:'Cut time · Two half-note beats',pulse:'ONE-and · TWO-and',tip:'Feel two half-note beats in a bar. Each big beat holds two quarter notes.'}};
  const clamp=(value,min,max)=>Math.max(min,Math.min(max,value)),copy=value=>JSON.parse(JSON.stringify(value));
@@ -27,7 +27,7 @@
   const renderer=api.renderer,captainActor={...CAPTAIN,visible:true,appearance:{...CAPTAIN.appearance}};
   let editor=null;
   let opened=false,destroyed=false,priorFocus=null,phase='shore',mobileView='room',lastNow=null,clock=0,frame=0,paused=false,hiddenPause=false;
-  let player={...SHORE,facing:'down',phase:0},boat={...DOCK,facing:'left',phase:0},keys=new Set(),touchHeld=new Set(),destination=null;
+  let player={...SHORE,facing:'down',phase:0},boat={...DOCK,facing:'down',phase:0},keys=new Set(),touchHeld=new Set(),destination=null;
   const joystick={x:0,y:0};
   const companion=win.CodaPetCompanion?.create({getProfile:api.getAvatar,reducedMotion:reduced});
   const clearJoystick=()=>{joystick.x=joystick.y=0;};
@@ -134,7 +134,7 @@
    const image=new win.Image();record.image=image;
    image.onload=()=>{record.ready=image.naturalWidth>0;if(id===HOME)homeBackdrop=image;if(screenId===id){backdrop=image;backdropReady=record.ready;if(opened)drawScene();}if(pendingTravel?.toId===id){const crossing=pendingTravel;pendingTravel=null;activateScreen(id,crossing.entry,true);}};
    image.onerror=()=>{record.error=true;if(pendingTravel?.toId===id){pendingTravel=null;travelUntil=clock+1;setNotice('That waterway could not load. Try the passage again.');}};
-   image.src=src+(id===HOME?'':(src.includes('?')?'&':'?')+'v=fishing-world-20261031-1');
+   image.src=src+(id===HOME?'':(src.includes('?')?'&':'?')+'v=fishing-snes-20261031-1');
    return record;
   }
   function preloadNeighbors(){if(!biomeWorld)return;for(const id of Object.values(activeScreen().neighbors||{}))if(id)loadBackground(id);}
@@ -156,7 +156,7 @@
    if(saved?.version===1&&Array.isArray(saved.discovered))for(const id of saved.discovered)if(biomeWorld.screenFor(id))discovered.add(id);
    const target=saved?.version===1&&saved.screenId!==HOME&&biomeWorld.screenFor(saved.screenId),point=target&&saved.boat;
    if(target){const safe=Number.isFinite(point?.x)&&Number.isFinite(point?.y)&&point.x>=26&&point.x<=974&&point.y>=26&&point.y<=594&&biomeWorld.isBoatWater(target.id,point.x,point.y)?point:{x:550,y:350};activateScreen(target.id,safe,false);}
-   else{if(!isHome())activateScreen(HOME,{...DOCK},false);meter=activeBiome().meter;const image=loadBackground(HOME);backdrop=image.image;backdropReady=image.ready;preloadNeighbors();}
+   else{boat={...DOCK,facing:'down',phase:0};if(!isHome())activateScreen(HOME,boat,false);meter=activeBiome().meter;const image=loadBackground(HOME);backdrop=image.image;backdropReady=image.ready;preloadNeighbors();}
    syncWorldHud();
   }
   function drawPassages(){
@@ -197,8 +197,8 @@
    el('fishingBoatBoard').hidden=phase!=='shore';el('fishingCast').hidden=phase!=='explore';el('fishingMoor').hidden=phase!=='explore';el('fishingTalkCaptain').hidden=phase!=='shore';el('fishingTalkCaptain').disabled=editing||!nearCaptain();el('fishingMoor').disabled=editing;
    const closest=phase==='explore'?nearestShadow():null;el('fishingCast').disabled=editing||!!pendingTravel||phase!=='explore'||!closest;el('fishingLocation').textContent=phase==='shore'?(shoreTarget()?.type==='ladder'?'The ladder · E to climb out':shoreTarget()?.type==='boat'?'The pier · E to board':shoreTarget()?.type==='captain'?'Captain Cadence · E to talk':'The stone landing · Walk down to the dock'):closest?'A fish shadow is in casting range':(biomeWorld?'Sail through the edge passages to explore':'The underground lake');
   }
-  function board(){if(!opened||editor?.isEditing()||phase!=='shore')return;if(!nearBoard()){setNotice('Walk down the dock to the boat before boarding.');return;}clearInputs();phase='explore';boat={...DOCK,facing:'left',phase:0};setMobileView('room');syncExplore();ensureAudio();setNotice('You’re aboard! Steer toward a little fish shadow, then cast your rod.');canvas.focus({preventScroll:true});}
-  function moor(){if(!opened||editor?.isEditing()||phase!=='explore')return;clearInputs();if(biomeWorld)activateScreen(HOME,{...DOCK},false);phase='shore';player={x:LAYOUT.BOARDING.x,y:LAYOUT.BOARDING.y,facing:'left',phase:0};setMobileView('room');syncExplore();saveVoyage();setNotice('Back at the dock. Captain Cadence is ready for a chat.');}
+  function board(){if(!opened||editor?.isEditing()||phase!=='shore')return;if(!nearBoard()){setNotice('Walk down the dock to the boat before boarding.');return;}clearInputs();phase='explore';boat={...DOCK,facing:'down',phase:0};setMobileView('room');syncExplore();ensureAudio();setNotice('You’re aboard! Steer toward a little fish shadow, then cast your rod.');canvas.focus({preventScroll:true});}
+  function moor(){if(!opened||editor?.isEditing()||phase!=='explore')return;clearInputs();boat={...DOCK,facing:'down',phase:0};if(biomeWorld)activateScreen(HOME,boat,false);phase='shore';player={x:LAYOUT.BOARDING.x,y:LAYOUT.BOARDING.y,facing:'up',phase:0};setMobileView('room');syncExplore();saveVoyage();setNotice('Back at the dock. Captain Cadence is ready for a chat.');}
   function captain(topic='hello'){
    if(!opened||editor?.isEditing()||!['shore','captain'].includes(phase)||phase==='shore'&&!nearCaptain())return;clearInputs();phase='captain';setMobileView('captain');drawCaptainPortrait();captainLine++;
    const lines={hello:'Ahoy, young beat-keeper, come sail with me,\nWhere lanterns shine over a secret sea.\nKeep one steady pulse as the notes draw near,\nAnd listen for treasure with a patient ear.',fishing:'Seek out a shadow, bring your boat near,\nCast out your line and lend me your ear.\nWhen your float gives a tug, let the rhythm begin—\nFour perfect bars, and we’ll reel a fish in!\n\nPlay four full bars with no mistakes to catch the fish. After a mistake, keep going until the meter fills: it takes at least eight bars. An empty meter means the fish swims free. You can always try again.',rhythm:'Tap on the note at the gold line’s light,\nKeep quiet for rests and you’ll steer it right.\nHold half and whole notes, then lift near the end;\nTap quarters and shorter as new notes descend!\n\nYou have a little grace time to lift your finger and get ready for the next note. Watch for “Release when ready” on the button.\n\nMissed notes and extra taps lower your bar.\n\nTempo means the music’s speed. Accelerando means gradually getting faster. Ritardando means gradually getting slower. Presto means very fast! The strongest fish may change speed, so watch the notes and keep listening.',meters:(meter==='6/8'?'In six-eight we sway as the lanterns glow,\nONE-la-li, TWO-la-li—there we go!\nThree little eighth notes to each big beat,\nTwo big beats make the bar complete.':meter==='2/2'?'In cut time, two half-note beats guide our way,\nONE-and, TWO-and, our oars gently sway.\nTwo quarter notes fit in each big beat,\nTwo big beats make the bar complete.':'In four-four, four steady quarter beats flow,\nONE, TWO, THREE, FOUR—away we go!\nKeep that pulse even from shore to shore,\nThen start the next bar and count four more.')+'\n\n'+METERS[meter].tip+' The rarer the fish, the trickier its rhythm! Some fish only bite in one meter. Look at your collection cards to find their favorite rhythm waters.'};
@@ -333,8 +333,9 @@
   function drawFallback(){
    if(biomeWorld&&!isHome()){g.fillStyle=activeBiome().waterColor;g.fillRect(0,0,W,H);return;}
    g.fillStyle='#11152d';g.fillRect(0,0,W,H);const water=g.createRadialGradient(550,330,20,550,330,430);water.addColorStop(0,'#146875');water.addColorStop(.5,'#11465e');water.addColorStop(1,'#101b37');g.fillStyle=water;g.beginPath();g.ellipse(LAKE.x,LAKE.y,LAKE.rx+10,LAKE.ry+12,0,0,Math.PI*2);g.fill();
+   if(LAYOUT.DEPARTURE_WATER){g.beginPath();g.moveTo(...LAYOUT.DEPARTURE_WATER[0]);for(const point of LAYOUT.DEPARTURE_WATER.slice(1))g.lineTo(...point);g.closePath();g.fill();}
    for(let i=0;i<70;i++){const x=(i*137)%1000,y=(i*83)%620;if(insideLake(x,y))continue;g.fillStyle=i%3?'#25223b':'#38304e';g.fillRect(x,y,38+i%5*7,22+i%4*7);g.fillStyle='#4a3c59';g.fillRect(x,y,38+i%5*7,3);}
-   for(const [polygon,color,wood]of [[LAYOUT.LAND,'#35344f',false],[LAYOUT.DOCK,'#735849',true]]){g.save();g.beginPath();g.moveTo(...polygon[0]);for(const point of polygon.slice(1))g.lineTo(...point);g.closePath();g.fillStyle=color;g.fill();g.clip();for(let y=235;y<420;y+=wood?9:16){g.fillStyle=wood?'#b1845d':'#58506d';g.fillRect(65,y,185,wood?2:1);if(!wood)for(let x=70;x<245;x+=24)g.fillRect(x+(y%32?12:0),y,1,16);}g.restore();}g.strokeStyle='#cca26d';g.lineWidth=4;g.beginPath();g.moveTo(91,95);g.lineTo(91,270);g.moveTo(111,95);g.lineTo(111,270);for(let y=100;y<270;y+=17){g.moveTo(91,y);g.lineTo(111,y);}g.stroke();
+   for(const [polygon,color,wood]of [[LAYOUT.LAND,'#35344f',false],[LAYOUT.DOCK,'#735849',true]]){const left=Math.min(...polygon.map(point=>point[0])),right=Math.max(...polygon.map(point=>point[0])),top=Math.min(...polygon.map(point=>point[1])),bottom=Math.max(...polygon.map(point=>point[1]));g.save();g.beginPath();g.moveTo(...polygon[0]);for(const point of polygon.slice(1))g.lineTo(...point);g.closePath();g.fillStyle=color;g.fill();g.clip();for(let y=top;y<=bottom;y+=wood?9:16){g.fillStyle=wood?'#b1845d':'#58506d';g.fillRect(left,y,right-left,wood?2:1);if(!wood)for(let x=left;x<right;x+=24)g.fillRect(x+(y%32?12:0),y,1,16);}g.restore();}g.strokeStyle='#cca26d';g.lineWidth=4;g.beginPath();g.moveTo(91,95);g.lineTo(91,270);g.moveTo(111,95);g.lineTo(111,270);for(let y=100;y<270;y+=17){g.moveTo(91,y);g.lineTo(111,y);}g.stroke();
    for(const [x,y,color]of [[330,115,'#8d77f1'],[790,145,'#56dddb'],[900,420,'#b57adf'],[410,535,'#64c7c1'],[70,455,'#b97bd1']]){const glow=g.createRadialGradient(x,y,0,x,y,85);glow.addColorStop(0,color+'65');glow.addColorStop(1,color+'00');g.fillStyle=glow;g.fillRect(x-85,y-85,170,170);g.fillStyle=color;g.beginPath();g.moveTo(x-12,y+16);g.lineTo(x-6,y-23);g.lineTo(x+9,y-33);g.lineTo(x+17,y+15);g.fill();g.fillStyle='#e4ffff99';g.fillRect(x+2,y-20,3,25);}
    g.fillStyle='#d89b54';g.fillRect(160,278,5,30);g.fillRect(151,278,22,24);g.fillStyle='#ffe4a2';g.fillRect(156,282,12,16);
   }
@@ -348,7 +349,7 @@
    companion?.draw(g,clock);
    if(phase==='shore'||phase==='captain'){if(renderer){renderer.drawPlayer(g,api.getAvatar?.()||{},{x:player.x,y:player.y,facing:player.facing,walking:playerMoving,phase:player.phase},clock);vibe?.drawCharacterGlow?.(g,{x:player.x,y:player.y,scale:1,facing:player.facing,time:clock});}else{g.fillStyle='#d7a87f';g.fillRect(player.x-7,player.y-37,14,13);g.fillStyle='#9d9fa8';g.fillRect(player.x-9,player.y-23,18,23);}}
    if(phase==='shore'){const selected=shoreTarget();g.save();g.strokeStyle=selected?.type==='ladder'?'#f4d78a':'#7bdedc99';g.lineWidth=2;g.beginPath();g.ellipse(LAYOUT.LADDER.x,LAYOUT.LADDER.y+2,16,7,0,0,Math.PI*2);g.stroke();if(nearLadder()){g.font='bold 11px monospace';g.textAlign='center';g.fillStyle='#fff0bf';g.fillText('E · CLIMB',LAYOUT.LADDER.x,LAYOUT.LADDER.y+23);}g.restore();}
-   if(phase==='shore'){g.strokeStyle='#b8a580aa';g.lineWidth=1.5;g.beginPath();g.moveTo(LAYOUT.BOARDING.x+13,LAYOUT.BOARDING.y+7);g.lineTo(boat.x-23,boat.y+1);g.stroke();}
+   if(phase==='shore'){g.strokeStyle='#b8a580aa';g.lineWidth=1;g.beginPath();g.moveTo(LAYOUT.BOARDING.x,Math.max(...LAYOUT.DOCK.map(point=>point[1])));g.lineTo(boat.x,boat.y-12);g.stroke();}
    drawBoat();
    if(phase==='bite'&&selectedShadow){g.strokeStyle='#ead7a5';g.lineWidth=1.2;g.beginPath();g.moveTo(boat.x+10,boat.y-25);g.quadraticCurveTo(boat.x+40,boat.y-65,selectedShadow.x,selectedShadow.y);g.stroke();g.fillStyle='#f8c584';g.fillRect(selectedShadow.x-3,selectedShadow.y-5+Math.sin(clock*12)*2,6,7);}
    if(isHome())editor?.afterScene(g,phase==='shore'?player.y:boat.y);if(travelUntil>clock&&!reduced()){g.fillStyle='rgba(3,8,20,'+Math.min(.7,(travelUntil-clock)*2)+')';g.fillRect(0,0,W,H);}if(!editor?.isEditing())caveCamera?.end(g);

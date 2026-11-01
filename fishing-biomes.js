@@ -50,7 +50,8 @@
   const screen=screenFor(value);if(!screen||!Number.isFinite(x)||!Number.isFinite(y))return false;
   if(screen.id===DEFAULT_SCREEN&&layout?.isShore(x,y))return false;
   const lake=layout?.LAKE||{x:550,y:350,rx:360,ry:185};
-  if(((x-lake.x)/lake.rx)**2+((y-lake.y)/lake.ry)**2<.97)return true;
+  const lakeWater=((x-lake.x)/lake.rx)**2+((y-lake.y)/lake.ry)**2<.97;
+  if(screen.id===DEFAULT_SCREEN&&typeof layout?.isWater==='function'?layout.isWater(x,y):lakeWater)return true;
   return directions.some(side=>{
    if(!screen.neighbors[side])return false;const c=CORRIDORS[side];
    return x>=c.x&&x<=c.x+c.width&&y>=c.y&&y<=c.y+c.height;

@@ -17,7 +17,13 @@ _spec.loader.exec_module(_fish)
 
 
 class FishingBiomeWorldTests(_fish._world.WorldBrowserCase):
-    setUp = _fish.FishingWorldTests.setUp
+    def setUp(self):
+        _fish.FishingWorldTests.setUp(self)
+        # Advance only through run_for: image decoding and state reads must
+        # not keep a steering key moving past its intended passage approach.
+        self.page.clock.pause_at(self.page.evaluate('Date.now()/1000') + 1)
+        self.page.clock.run_for(64)
+
     state = _fish.FishingWorldTests.state
     portal = _fish.FishingWorldTests.portal
     place = _fish.FishingWorldTests.place
@@ -53,7 +59,14 @@ class FishingBiomeWorldTests(_fish._world.WorldBrowserCase):
         self.assertAlmostEqual(self.state()['boat'][axis], target, delta=5,
                                msg='The real boat must reach the passage approach')
 
+    def clear_home_dock(self):
+        if self.screen_id() == 'lantern-lake' and self.state()['boat']['x'] < 400:
+            # The south-facing pier remains solid. Row out beside it before
+            # turning north toward an east/west screen passage.
+            self.sail_axis('x', 400)
+
     def cross(self, direction, expected):
+        self.clear_home_dock()
         if direction in ('east', 'west'):
             self.sail_axis('y', 350)
         else:
@@ -179,6 +192,7 @@ class FishingBiomeWorldTests(_fish._world.WorldBrowserCase):
         self.context.route(pattern, delay)
         self.enter()
         self.board()
+        self.clear_home_dock()
         self.sail_axis('y', 350)
         self.page.locator('#fishingLakeCanvas').focus()
         self.page.keyboard.down('d')

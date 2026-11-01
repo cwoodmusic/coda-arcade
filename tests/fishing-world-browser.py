@@ -129,7 +129,7 @@ class FishingWorldTests(_world.WorldBrowserCase):
     def board(self):
         if self.page.locator('#fishingBoatBoard').is_disabled():
             landing=self.state().get('shore',{}).get('spawn',{'x':135,'y':285});self.walk_to(landing['x'],landing['y'])
-        pier=self.state().get('boardingPoint',{'x':218,'y':380});self.walk_to(pier['x'],pier['y'])
+        pier=self.state().get('boardingPoint',{'x':270,'y':395});self.walk_to(pier['x'],pier['y'])
         self.assertFalse(self.page.locator('#fishingBoatBoard').is_disabled())
         self.fishing_action('#fishingBoatBoard');self.page.clock.run_for(40)
 

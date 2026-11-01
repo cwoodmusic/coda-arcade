@@ -20,13 +20,25 @@ test('six fishing screens form a connected two-row map with reversible passages 
  assert.ok(Object.isFrozen(world.BIOMES)&&Object.isFrozen(world.SCREENS)&&Object.isFrozen(world.SCREENS[0].neighbors));
 });
 
-test('home landing, dock and ladder remain dry while its existing boat spawn stays in water',()=>{
+test('home landing, dock and ladder remain dry while the south-facing berth stays in water',()=>{
  for(const p of [layout.SPAWN,layout.LADDER,layout.BOARDING,{x:125,y:335}]){
   assert.equal(layout.isShore(p.x,p.y),true);assert.equal(world.isWater(world.DEFAULT_SCREEN,p.x,p.y),false);
  }
- assert.equal(world.isBoatWater(world.DEFAULT_SCREEN,290,415),true);
+ assert.equal(world.isBoatWater(world.DEFAULT_SCREEN,layout.BOAT_DOCK.x,layout.BOAT_DOCK.y),true);
+ for(const dx of [-18,0,18])for(const dy of [-12,0,12])assert.equal(world.isWater(world.DEFAULT_SCREEN,layout.BOAT_DOCK.x+dx,layout.BOAT_DOCK.y+dy),true);
  assert.equal(world.isWater(world.DEFAULT_SCREEN,100,200),false,'The upper ladder shelf is still rock');
- for(let y=235;y<=402;y+=3)for(let x=70;x<=228;x+=3)if(layout.isShore(x,y))assert.equal(world.isWater(world.DEFAULT_SCREEN,x,y),false);
+ for(let y=235;y<=410;y+=3)for(let x=70;x<=330;x+=3)if(layout.isShore(x,y))assert.equal(world.isWater(world.DEFAULT_SCREEN,x,y),false);
+});
+
+test('only the home lake gains the dock departure channel and its banks stay dry',()=>{
+ const path=[];for(let y=435;y<=490;y++)path.push([270,y]);for(let x=270;x<=550;x++)path.push([x,490]);
+ for(const [x,y]of path){
+  assert.equal(world.isBoatWater(world.DEFAULT_SCREEN,x,y),true,`Home departure ${x},${y}`);
+  for(const dx of [-18,0,18])for(const dy of [-12,0,12])assert.equal(world.isWater(world.DEFAULT_SCREEN,x+dx,y+dy),true);
+ }
+ assert.equal(world.isWater(world.DEFAULT_SCREEN,230,470),true,'The dock channel extends beyond the old ellipse');
+ for(const screen of world.SCREENS.filter(screen=>screen.id!==world.DEFAULT_SCREEN))assert.equal(world.isWater(screen,230,470),false,screen.id+' keeps its original bank');
+ for(const [x,y]of [[270,350],[270,395],[219,490],[270,511]])assert.equal(world.isWater(world.DEFAULT_SCREEN,x,y),false,'Landing, pier and departure banks remain blocked');
 });
 
 test('only connected edges have complete water corridors for a boat footprint',()=>{

@@ -57,7 +57,7 @@ class CaveMobileTests(_fish._world.WorldBrowserCase):
         self.page.screenshot(path='/tmp/coda-cave36-mobile.png')
 
     def test_close_view_boat_steering_and_pinch_are_correct_and_editor_stays_independent_phone(self):
-        self.enter();self.walk(218,380)
+        self.enter();pier=self.state()['boardingPoint'];self.walk(pier['x'],pier['y'])
         _fish.FishingWorldTests.fishing_action(self,'#fishingBoatBoard');self.page.clock.run_for(32)
         self.assertEqual(self.state()['phase'],'explore');self.assert_visible_actor('boat')
         before=self.state()['boat'];point={'id':1,**self.point(before['x']+28,before['y'])}
