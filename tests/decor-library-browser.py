@@ -148,8 +148,7 @@ class DecorLibraryBrowserTests(unittest.TestCase):
         original = self.project()
         directional = self.page.evaluate("CodaDecorLibrary.items.filter(item=>item.id.endsWith('-east')||item.id.endsWith('-west'))")
         self.assertEqual(len(directional), 12)
-        names = {item['name'] for item in directional}
-        self.assertFalse(any(asset['name'] in names for asset in original['assets']))
+        self.assertEqual(original, json.loads((ROOT/'published-world-project.json').read_text()), 'Keep the uploaded placements exactly')
         self.library()
         self.page.locator('[data-decor-category]').select_option('furniture')
         self.page.locator('[data-decor-search]').fill('east')
@@ -201,7 +200,7 @@ class DecorLibraryBrowserTests(unittest.TestCase):
         self.load(seed=False)
         published = json.loads((ROOT/'published-world-project.json').read_text())
         self.assertEqual(self.project(), published)
-        self.assertEqual(len(published['assets']), 93)
+        self.assertEqual(len(published['assets']), 97)
         rigs = [asset for asset in published['assets'] if asset.get('floodLights')]
         self.assertEqual(len(rigs), 1)
         rig = rigs[0]
@@ -209,9 +208,6 @@ class DecorLibraryBrowserTests(unittest.TestCase):
         self.assertAlmostEqual(rig['x'], dj['x'], delta=1)
         self.assertLess(rig['y'] + rig['h']/2, dj['y'] - 40, 'The fixture is mounted above the DJ')
         self.assertEqual(len(self.page.evaluate('CodaDecorLibrary.items')), 91)
-        new_names = set(self.page.evaluate("CodaDecorLibrary.items.slice(79).map(item=>item.name)"))
-        self.assertTrue(all(asset['name'] not in new_names for asset in published['assets']),
-                        'New library art is available as separate assets without auto-placement')
         self.assertTrue(all(asset.get('data', '').startswith('data:image/png;base64,')
                             for asset in published['assets'] if asset['kind'] == 'image'),
                         'Placed images are embedded rather than tied to a library URL')

@@ -5,7 +5,7 @@
   "source": "assets/environment/source/east-floor-clean.png",
   "sourcePlacement": [650, 600, 215, 220],
   "output": "assets/environment/v1/empty-arcade.png",
-  "reviewedProjectSha256": "4ba0462dba016d295cf60292057da9112dc69da18f1d121ebe9da98c18b61b72",
+  "reviewedProjectSha256": "e3e8271f6b2daad5af6d4e56b913c601f676273aaf9665c26cdc7d7aad4ee655",
   "passes": [
     {
       "id": "dance-east-cap-ghost",

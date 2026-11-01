@@ -38,7 +38,8 @@ No additional turntable desks are included.
 Open **Objects → Asset library → Furniture** and search **east** or **west**.
 Each search lists six pieces. Add the pieces you want; browsing leaves your
 layout unchanged. Copies support the existing move, size, flip, layer, Undo,
-Save and Export controls. The uploaded project does not auto-place them.
+Save and Export controls. The editor does not auto-place them; the published layout retains the pieces
+chosen in the latest uploaded project.
 
 The source sheet is `assets/decor/source/handdrawn-east-west-furniture.png`.
 The hand-drawn collection now has 86 extracted sprites across twelve sheets;
@@ -80,7 +81,7 @@ The following sections document the retained earlier artwork and its builders.
 
 ## Rectangular lounge table and music collection
 
-The published layout follows uploaded world project (11), including its
+The published layout follows uploaded world project (12), including its
 arranged lounge and Notes counter accessories. The upload is retained exactly;
 new library assets are available for manual placement.
 

@@ -13,7 +13,7 @@ _spec = importlib.util.spec_from_file_location(
     'dance_blend_world_fixture', Path(__file__).with_name('published-world-browser.py'))
 _fixture = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_fixture)
-PUBLISHED_SHA256 = '4ba0462dba016d295cf60292057da9112dc69da18f1d121ebe9da98c18b61b72'
+PUBLISHED_SHA256 = 'e3e8271f6b2daad5af6d4e56b913c601f676273aaf9665c26cdc7d7aad4ee655'
 FINISHING_METADATA = [
     'scripts/passage-lantern-cleanup-regions.json',
     'scripts/lounge-center-wall-regions.json',

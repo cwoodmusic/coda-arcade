@@ -15,7 +15,7 @@ test('northwest cap route owns the upper join, old lower rail and removed lamp b
 test('reviewed northwest source and baseline retain their exact logical crop and immutable project data',()=>{
  assert.deepEqual(meta.worldSize,[1672,941]);
  assert.equal(sha(read(meta.before)),meta.beforeSha256);
- assert.equal(sha(read('published-world-project.json')),'4ba0462dba016d295cf60292057da9112dc69da18f1d121ebe9da98c18b61b72');
+ assert.equal(sha(read('published-world-project.json')),'e3e8271f6b2daad5af6d4e56b913c601f676273aaf9665c26cdc7d7aad4ee655');
  assert.equal(sha(read('assets/environment/floor-palette-compat.json')),'8135e15d9907eacadfacac92e2f52e3d03a041ae3ba394edeff04af8aef38a44');
  const[w,h]=pngSize(read(meta.source));assert.ok(Math.abs(w/h-300/225)<.01);
 });

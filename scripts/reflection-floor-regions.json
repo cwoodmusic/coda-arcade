@@ -7,7 +7,7 @@
   "before": "assets/environment/source/reflections-before-alignment.png",
   "journalReference": "assets/environment/source/reflection-floor-journal.json",
   "journalProjectSha256": "a9a495716023e0df56dc23db8c9bbfd09316f5f08668fbcca43a633461dc2c00",
-  "reviewedProjectSha256": "4ba0462dba016d295cf60292057da9112dc69da18f1d121ebe9da98c18b61b72",
+  "reviewedProjectSha256": "e3e8271f6b2daad5af6d4e56b913c601f676273aaf9665c26cdc7d7aad4ee655",
   "output": "assets/environment/v1/empty-arcade.png",
   "passes": [
     {
