@@ -78,9 +78,10 @@ async function compose({meta,mask,previewOnly},tileEdgeWeight,floorFeatherWeight
 async function build(options={}){
  const root=path.resolve(__dirname,'..'),meta=options.meta||JSON.parse(await fs.readFile(path.join(__dirname,'walkway-cleanup-regions.json'),'utf8')),mask=cleanupMask(meta),projectPath=path.join(root,'published-world-project.json');
  const originalProject=JSON.parse(await fs.readFile(projectPath,'utf8')),rebased=rebaseArtwork(originalProject,mask,meta.worldSize[0]);
- // Native-only finishing passes must not silently consume an authored edit.
- // Reject overlap before starting the compositor or writing either file.
- if(meta.preserveProject&&rebased.removed)throw Error('Native-only repair overlaps '+rebased.removed+' authored background pixels; project data must remain unchanged');
+ // Native-only finishing passes cannot consume authored edits. A reviewed
+ // floor pass may preserve overlapping journals when exact-color render
+ // compatibility exposes its replacement; it still never writes the project.
+ if(meta.preserveProject&&rebased.removed&&!meta.allowAuthoredFloorCompatibility)throw Error('Native-only repair overlaps '+rebased.removed+' authored background pixels; project data must remain unchanged');
  const files={'/before':meta.output,'/source':meta.source,'/feather-base':meta.before};
  const server=http.createServer(async(req,res)=>{try{
   if(req.url==='/'){res.setHeader('Content-Type','text/html');res.end('<!doctype html><title>Walkway cleanup compositor</title>');return;}
@@ -106,7 +107,7 @@ async function build(options={}){
    await fs.writeFile(path.join(root,meta.output),Buffer.from(image.split(',')[1],'base64'));
    if(rebased.removed&&!meta.preserveProject)await fs.writeFile(projectPath,JSON.stringify(rebased.project,null,2)+'\n');
   }
-  process.stdout.write(JSON.stringify({walkwayCleanup:{...report,removedCoveredJournalPixels:rebased.removed,retainedJournalPixels:rebased.retained},dryRun:!!options.dryRun,previewOnly:!!options.previewOnly})+'\n');return report;
+  process.stdout.write(JSON.stringify({walkwayCleanup:{...report,removedCoveredJournalPixels:meta.preserveProject?0:rebased.removed,retainedJournalPixels:rebased.retained+(meta.preserveProject?rebased.removed:0),...(meta.preserveProject?{preservedAuthoredOverlapPixels:rebased.removed}:{})},dryRun:!!options.dryRun,previewOnly:!!options.previewOnly})+'\n');return report;
  }finally{socket?.close();browser.kill('SIGTERM');server.close();if(browser.exitCode===null)await new Promise(resolve=>browser.once('exit',resolve));await fs.rm(profile,{recursive:true,force:true,maxRetries:10,retryDelay:100});}
 }
 if(require.main===module)build({dryRun:process.argv.includes('--dry-run'),previewOnly:process.argv.includes('--preview-mask')}).catch(error=>{process.stderr.write(error.stack+'\n');process.exitCode=1;});

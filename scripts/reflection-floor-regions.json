@@ -1,0 +1,75 @@
+{
+  "description": "Quiet baked floor streaks without a matching visible emitter. Source-derived wall reflections remain live; actual lamp glass, architecture, painted panels and rails are protected.",
+  "worldSize": [
+    1672,
+    941
+  ],
+  "before": "assets/environment/source/reflections-before-alignment.png",
+  "journalReference": "assets/environment/source/reflection-floor-journal.json",
+  "reviewedProjectSha256": "a9a495716023e0df56dc23db8c9bbfd09316f5f08668fbcca43a633461dc2c00",
+  "output": "assets/environment/v1/empty-arcade.png",
+  "passes": [
+    {
+      "id": "boutique",
+      "source": "assets/environment/source/reflection-boutique-clean.png",
+      "sourcePlacement": [
+        340,
+        320,
+        500,
+        235
+      ],
+      "repairBounds": [
+        435,
+        426,
+        246,
+        80
+      ],
+      "floorFeather": {
+        "right": [
+          669,
+          681
+        ],
+        "bottom": [
+          494,
+          506
+        ],
+        "leftBelow": [
+          435,
+          447,
+          426
+        ]
+      }
+    },
+    {
+      "id": "stage",
+      "source": "assets/environment/source/reflection-stage-clean.png",
+      "sourcePlacement": [
+        590,
+        480,
+        450,
+        390
+      ],
+      "repairBounds": [
+        750,
+        649,
+        57,
+        157
+      ],
+      "floorFeather": {
+        "right": [
+          797,
+          807
+        ],
+        "bottom": [
+          790,
+          806
+        ],
+        "leftBelow": [
+          750,
+          762,
+          649
+        ]
+      }
+    }
+  ]
+}

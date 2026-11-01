@@ -44,6 +44,7 @@ class DanceFloorBlendTests(unittest.TestCase):
     def setUp(self):
         _fixture.PublishedWorldTests.setUp(self)
         self.meta = json.loads((ROOT / 'scripts/dance-floor-blend-regions.json').read_text())
+        self.reflections = json.loads((ROOT / 'scripts/reflection-floor-regions.json').read_text())
         script = (ROOT / 'developer-console.js').read_text() + '''
 (() => { const original = window.createCodaDeveloperConsole;
 window.createCodaDeveloperConsole = api => {
@@ -90,7 +91,7 @@ window.createCodaDeveloperConsole = api => {
                          PUBLISHED_SHA256, 'The uploaded world project must remain byte-for-byte intact')
         self.load()
         self.assertEqual(self.project(), self.published)
-        result = self.page.evaluate('''async meta => {
+        result = self.page.evaluate('''async ({meta,reflections}) => {
  const load = async url => { const image = new Image(); image.src = url; await image.decode(); return image; };
  const before = await load(meta.before), after = await load(meta.output);
  const make = image => { const c = document.createElement('canvas'); c.width = image.naturalWidth;
@@ -104,15 +105,25 @@ window.createCodaDeveloperConsole = api => {
   } return hit;
  };
  const [left, top, width, height] = meta.repairBounds;
- let changed = 0, outside = 0, protectedChanges = 0;
+ let changed = 0, danceChanged = 0, reflectionChanged = 0, outside = 0, protectedChanges = 0;
  for (let y = 0; y < a.height; y++) for (let x = 0; x < a.width; x++) {
   const at = (y * a.width + x) * 4;
   if (![0, 1, 2, 3].some(channel => old[at + channel] !== current[at + channel])) continue;
   changed++;
-  const allowed = x >= left && x < left + width && y >= top && y < top + height
-   && CodaWallReflections.isGlassFloor(x + .5, y + .5)
+  const glass = CodaWallReflections.isGlassFloor(x + .5, y + .5);
+  const danceAllowed = x >= left && x < left + width && y >= top && y < top + height
+   && glass
    && !meta.protectedPolygons.some(polygon => inside(polygon, x + .5, y + .5));
-  if (!allowed) outside++;
+  // Subsequent approved cleanup removes orphaned reflections from the same
+  // native backdrop. Its compositor clips these exact bounds to the shared
+  // glass geometry; neither pass owns architecture outside that union.
+  const reflectionAllowed = glass && reflections.passes.some(pass => {
+   const [left,top,width,height] = pass.repairBounds;
+   return x >= left && x < left + width && y >= top && y < top + height;
+  });
+  if (danceAllowed) danceChanged++;
+  if (reflectionAllowed) reflectionChanged++;
+  if (!danceAllowed && !reflectionAllowed) outside++;
   // Independent architectural witnesses: the stage, east wall, colored
   // dance panels and complete red front rail must not inherit generated art.
   if ((x >= 236 && x <= 724 && y >= 507 && y < 649)
@@ -120,12 +131,12 @@ window.createCodaDeveloperConsole = api => {
    || (x >= 181 && x < 610 && y >= 680 && y < 814)
    || (x >= 119 && x < 808 && y >= 837 && y < 884)) protectedChanges++;
  }
- return {beforeSize: [a.width, a.height], afterSize: [b.width, b.height], changed, outside, protectedChanges};
-}''', self.meta)
+ return {beforeSize: [a.width, a.height], afterSize: [b.width, b.height], changed, danceChanged, reflectionChanged, outside, protectedChanges};
+}''', {'meta': self.meta, 'reflections': self.reflections})
         self.assertEqual(result['beforeSize'], [1672, 941])
         self.assertEqual(result['afterSize'], [1672, 941])
-        self.assertGreater(result['changed'], 1000, 'The reviewed floor must actually receive the blended texture')
-        self.assertEqual(result['outside'], 0, 'No pixel outside the reviewed glass mask may change')
+        self.assertGreater(result['danceChanged'], 1000, 'The reviewed dance-room floor must still receive the blended texture')
+        self.assertEqual(result['outside'], 0, 'No pixel outside the approved floor-blend and reflection-cleanup masks may change')
         self.assertEqual(result['protectedChanges'], 0, 'Preserve walls, dance tiles and neon borders exactly')
         self.assertTrue(self.page.evaluate('CodaArcadeQA.place(760,710)'))
         self.frames()

@@ -1,0 +1,186 @@
+"""Floor reflections retain visible light sources and saved-paint priority."""
+import copy
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+import sys
+import unittest
+
+sys.dont_write_bytecode = True
+ROOT = Path(__file__).resolve().parents[1]
+_spec = importlib.util.spec_from_file_location(
+    'reflection_sources_fixture', Path(__file__).with_name('dance-floor-blend-browser.py'))
+_fixture = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_fixture)
+PUBLISHED_SHA256 = 'a9a495716023e0df56dc23db8c9bbfd09316f5f08668fbcca43a633461dc2c00'
+REPAIR_BOUNDS = [[435, 426, 246, 80], [750, 649, 57, 157]]
+# Captured with the pre-update native backdrop and its prior-good palette
+# manifest, with only REPAIR_BOUNDS blanked. This immutable witness includes
+# earlier wall removals and floor repairs; rebuilding compatibility must not
+# resurrect their purple/red pigments elsewhere in the room.
+PRIOR_GOOD_BASE_OUTSIDE_REPAIRS_SHA256 = '7e858bc7e06e7ec39190f9f3bdc0c8a5dea4d164f3d811291559af05cf3d8064'
+
+
+class ReflectionSourceTests(unittest.TestCase):
+    setUpClass = classmethod(_fixture.DanceFloorBlendTests.setUpClass.__func__)
+    tearDownClass = classmethod(_fixture.DanceFloorBlendTests.tearDownClass.__func__)
+    setUp = _fixture.DanceFloorBlendTests.setUp
+    tearDown = _fixture.DanceFloorBlendTests.tearDown
+    load = _fixture.DanceFloorBlendTests.load
+    project = _fixture.DanceFloorBlendTests.project
+    frames = _fixture.DanceFloorBlendTests.frames
+    seed = _fixture.DanceFloorBlendTests.seed
+    storage_record = _fixture.DanceFloorBlendTests.storage_record
+
+    def quality(self, name):
+        for _ in range(3):
+            if self.page.evaluate('CodaArcadeQA.lighting().quality') == name:
+                return
+            self.page.locator('#fxBtn').evaluate('button=>button.click()')
+            self.frames()
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.lighting().quality'), name)
+
+    def test_live_lanterns_match_current_sources_and_disco_spots_keep_their_ball(self):
+        self.load()
+        states = {}
+        missing = {'piano-east', 'dance-entry', 'dance-sofa-west', 'dance-corner-west'}
+        for quality in ['full', 'lite', 'off']:
+            self.quality(quality)
+            state = self.page.evaluate('CodaArcadeQA.lighting()')
+            states[quality] = state
+            lamps = {lamp['id']: lamp for lamp in state['lanterns']}
+            self.assertEqual(set(lamps).intersection(missing), set(),
+                             'Removed architectural lamps must not leave floating glows')
+            for name, point in {'boutique-west': (397, 359), 'dance-stage-east': (613, 549),
+                                'dance-upper-passage': (819, 502), 'dance-passage-lantern': (843, 650)}.items():
+                self.assertEqual((lamps[name]['x'], lamps[name]['y']), point,
+                                 name + ' must pulse at its visible bulb')
+            active = {ball['id'] for ball in state['balls']
+                      if ball['visible'] and ball['rays'] and ball['opacity'] > 0}
+            for spot in state['spots']:
+                self.assertIn(spot['ballId'], active,
+                              'A colored moving floor pin must retain its visible disco-ball source')
+            for beam in state['beams']:
+                self.assertIn(beam['ballId'], active)
+            if quality != 'off':
+                self.assertGreater(state['spotCount'], 0, 'Keep the requested live disco lighting')
+                self.assertGreater(state['rayCount'], 0)
+            else:
+                self.assertEqual(state['spotCount'], 0)
+                self.assertEqual(state['rayCount'], 0)
+        self.assertGreater(states['full']['spotCount'], states['lite']['spotCount'])
+        self.assertEqual(self.project(), self.published)
+        # The original artwork still owns its original lamps in legacy rooms.
+        legacy = json.loads((ROOT / 'assets/environment/legacy-world-project.json').read_text())
+        self.seed(legacy)
+        self.quality('full')
+        original = {lamp['id']: lamp for lamp in self.page.evaluate('CodaArcadeQA.lighting().lanterns')}
+        self.assertTrue(missing.issubset(original))
+        self.assertEqual((original['dance-upper-passage']['x'], original['dance-upper-passage']['y']), (821, 514))
+        self.assertEqual(self.project(), legacy)
+
+    def test_native_cleanup_preserves_every_pixel_outside_reviewed_glass(self):
+        self.assertEqual(hashlib.sha256((ROOT / 'published-world-project.json').read_bytes()).hexdigest(), PUBLISHED_SHA256)
+        self.load()
+        result = self.page.evaluate('''async bounds => {
+ const load = async url => { const image = new Image(); image.src = url; await image.decode(); return image; };
+ const before = await load('assets/environment/source/reflections-before-alignment.png');
+ const after = await load('assets/environment/v1/empty-arcade.png');
+ const pixels = image => {const c=document.createElement('canvas');c.width=image.naturalWidth;c.height=image.naturalHeight;
+  c.getContext('2d').drawImage(image,0,0);return c.getContext('2d').getImageData(0,0,c.width,c.height).data;};
+ const a=pixels(before),b=pixels(after);let changed=0,outside=0,protectedChanges=0;
+ for(let y=0;y<941;y++)for(let x=0;x<1672;x++){
+  const at=(y*1672+x)*4;if(![0,1,2,3].some(c=>a[at+c]!==b[at+c]))continue;changed++;
+  if(!bounds.some(([l,t,w,h])=>x>=l&&x<l+w&&y>=t&&y<t+h)||!CodaWallReflections.isGlassFloor(x+.5,y+.5))outside++;
+  if((x>=359&&x<=681&&y>=274&&y<425)||(x>=236&&x<=724&&y>=507&&y<649)
+   ||(x>=808&&x<859&&y>=435&&y<819)||(y>=837&&y<884))protectedChanges++;
+ }
+ return{beforeSize:[before.naturalWidth,before.naturalHeight],afterSize:[after.naturalWidth,after.naturalHeight],changed,outside,protectedChanges};
+}''', REPAIR_BOUNDS)
+        self.assertEqual(result['beforeSize'], [1672, 941])
+        self.assertEqual(result['afterSize'], [1672, 941])
+        self.assertGreater(result['changed'], 1000, 'Remove the old streaks rather than only changing runtime labels')
+        self.assertEqual(result['outside'], 0)
+        self.assertEqual(result['protectedChanges'], 0, 'Walls, dance tiles and neon borders stay intact')
+        self.assertEqual(self.project(), self.published)
+        self.assertIsNone(self.page.evaluate('localStorage.getItem("codaWorldProjectV1")'))
+
+    def test_every_rendered_base_pixel_outside_the_repairs_keeps_prior_floor_cleanup(self):
+        self.load()
+        self.quality('off')
+        result = self.page.evaluate('''async bounds => {
+ const canvas=document.createElement('canvas');canvas.width=1672;canvas.height=941;
+ const g=canvas.getContext('2d');__danceBlendConsole.renderBase(g);
+ const pixels=g.getImageData(0,0,1672,941).data;
+ const witnesses=[[300,450],[360,445],[700,480],[750,480],[800,500],[805,520],[805,548],[840,460]]
+  .map(([x,y])=>({x,y,rgba:Array.from(pixels.slice((y*1672+x)*4,(y*1672+x)*4+4))}));
+ for(const [left,top,width,height] of bounds)for(let y=top;y<top+height;y++)for(let x=left;x<left+width;x++)
+  pixels.fill(0,(y*1672+x)*4,(y*1672+x)*4+4);
+ const hash=await crypto.subtle.digest('SHA-256',pixels);
+ return {sha256:[...new Uint8Array(hash)].map(value=>value.toString(16).padStart(2,'0')).join(''),witnesses};
+}''', REPAIR_BOUNDS)
+        self.assertEqual(result['sha256'], PRIOR_GOOD_BASE_OUTSIDE_REPAIRS_SHA256,
+                         'Keep every prior floor repair outside the two approved rectangles; witnesses: '
+                         + json.dumps(result['witnesses']))
+        self.assertEqual(self.project(), self.published)
+
+    def test_known_old_floor_pigments_are_render_only_and_custom_paint_keeps_priority(self):
+        manifest = json.loads((ROOT / 'assets/environment/floor-palette-compat.json').read_text())
+        patch = self.published['artwork']['background.world']
+        candidates = []
+        for key, runs in patch['tiles'].items():
+            tx, ty = map(int, key.split(','))
+            rules = manifest['tiles'].get(key, [])
+            for start, length, color in runs:
+                if not color.lower().endswith('ff'):
+                    continue
+                for index in range(start, start + length):
+                    x, y = tx * 64 + index % 64, ty * 64 + index // 64
+                    if not any(l <= x < l + w and t <= y < t + h for l, t, w, h in REPAIR_BOUNDS):
+                        continue
+                    if any(a <= index < a + n and old.lower() == color.lower() and target is None
+                           for a, n, old, target in rules):
+                        candidates.append([x, y])
+            if len(candidates) >= 6:
+                break
+        self.assertGreaterEqual(len(candidates), 3, 'Exercise actual exact-color compatibility for authored old floor')
+        points = candidates[:6]
+        self.load()
+        self.quality('off')
+        matched = self.page.evaluate('''async points=>{
+ const image=new Image();image.src='assets/environment/v1/empty-arcade.png';await image.decode();
+ const base=document.createElement('canvas');base.width=1672;base.height=941;__danceBlendConsole.renderBase(base.getContext('2d'));
+ const raw=document.createElement('canvas');raw.width=1672;raw.height=941;raw.getContext('2d').drawImage(image,0,0);
+ const sample=(c,x,y)=>[...c.getContext('2d').getImageData(x,y,1,1).data];
+ return points.map(([x,y])=>({x,y,base:sample(base,x,y),raw:sample(raw,x,y)}));
+}''', points)
+        for point in matched:
+            self.assertEqual(point['base'], point['raw'], point)
+        local = copy.deepcopy(self.published)
+        local['assets'][0]['name'] = 'My saved reflection layout'
+        local['assets'][0]['x'] += 7
+        painted = local['artwork']['background.world']
+        _fixture.paint_pixel(painted, 540, 475, '#17c379ff')
+        _fixture.paint_pixel(painted, 775, 740, '#a342c6ff')
+        _fixture.paint_pixel(painted, 1100, 650, '#cf7a22ff')
+        stored = self.seed(local)
+        for _ in range(2):
+            self.quality('off')
+            self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getProjectSource()'), 'local')
+            self.assertEqual(self.project(), local)
+            self.assertEqual(self.storage_record(), stored)
+            colors = self.page.evaluate('''()=>{
+ const c=document.createElement('canvas');c.width=1672;c.height=941;const g=c.getContext('2d');__danceBlendConsole.renderBase(g);
+ return [[540,475],[775,740],[1100,650]].map(([x,y])=>[...g.getImageData(x,y,1,1).data]);
+}''')
+            self.assertEqual(colors, [[23, 195, 121, 255], [163, 66, 198, 255], [207, 122, 34, 255]],
+                             'Intentional saved colors remain above the cleaned native floor')
+            self.page.reload(wait_until='domcontentloaded')
+            self.page.wait_for_function('CodaDeveloperConsole.ready()&&CodaArcadeQA.characters().spriteState.ready')
+            self.frames()
+        self.assertEqual(hashlib.sha256((ROOT / 'published-world-project.json').read_bytes()).hexdigest(), PUBLISHED_SHA256)
+
+
+if __name__ == '__main__':
+    unittest.main(verbosity=2)
