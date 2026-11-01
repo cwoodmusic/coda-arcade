@@ -50,7 +50,7 @@ REVIEWED_SCOPE_JS = '''
 # manifest, with only reviewed bounds and exact lounge/finishing masks blanked. This witness
 # includes earlier wall removals and floor repairs; rebuilding compatibility must not
 # resurrect their purple/red pigments elsewhere in the room.
-PRIOR_GOOD_BASE_OUTSIDE_REPAIRS_SHA256 = 'f2caa443733afa2fa539ba7396075e560f226199dae9fe38b0ba7078c8285852'
+PRIOR_GOOD_BASE_OUTSIDE_REPAIRS_SHA256 = 'eec4a2d3f1d43ad690859f6f82cbd9f178831f61bee4dcb286cd97201abf25cc'
 
 
 class ReflectionSourceTests(unittest.TestCase):
@@ -255,7 +255,7 @@ class ReflectionSourceTests(unittest.TestCase):
                          'assets/environment/floor-palette-compat.json']:
             requests = [url for url in result['resources'] if resource + '?' in url]
             self.assertEqual(len(requests), 1, requests)
-            self.assertIn('v=arcade-finishes-20261101-1', requests[0],
+            self.assertIn('v=west-neon-20261101-1', requests[0],
                           'Return visits must fetch the new art rather than the former orange-streak cache key')
         self.quality('full')
         full = self.page.evaluate('''()=>{

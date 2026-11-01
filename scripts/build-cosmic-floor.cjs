@@ -169,6 +169,7 @@ async function main(){
  if(!previewOnly&&!dryRun)await require('./build-east-floor-cleanup.cjs').build();
  if(!previewOnly&&!dryRun)await require('./build-lounge-floor.cjs').build();
  if(!previewOnly&&!dryRun)await require('./build-arcade-finishes.cjs').build();
+ if(!previewOnly&&!dryRun)await require('./build-west-neon-uniform.cjs').build();
 }
 if(require.main===module)main().catch(error=>{process.stderr.write(error.stack+'\n');process.exitCode=1;});
 module.exports={inside,floorMask,authoredShapeMask,rebaseArtwork,repairPoints,recolorRepairs};

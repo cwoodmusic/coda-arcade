@@ -34,6 +34,7 @@ class ArcadeFinishingTests(unittest.TestCase):
         _fixture.ReflectionSourceTests.setUp(self)
         self.registry = json.loads((ROOT / 'scripts/arcade-finish-passes.json').read_text())
         self.regions = [json.loads((ROOT / name).read_text()) for name in self.registry['metadata']]
+        self.followup_masks = _fixture.FINISHING_MASKS[len(self.regions):]
         html = (ROOT / 'world-preview.html').read_text()
         hook = '''window.__arcadeFinishProbe=()=>{
  const previous=g,oldCamera={...cam};const make=()=>{const c=document.createElement('canvas');c.width=W;c.height=H;return c;};
@@ -59,16 +60,17 @@ class ArcadeFinishingTests(unittest.TestCase):
 
     def test_native_finishes_change_only_the_four_reviewed_regions_and_leave_a_blue_unlit_cap(self):
         self.assertEqual(len(self.regions), 4)
+        self.assertEqual(len(self.followup_masks), 1, 'The only later exception is the narrow west-neon contour')
         self.assertEqual(hashlib.sha256((ROOT / self.registry['before']).read_bytes()).hexdigest(), BASELINE_SHA256)
         self.load()
         self.quality('off')
-        result = self.page.evaluate('''async ({registry,regions})=>{
+        result = self.page.evaluate('''async ({registry,regions,followupMasks})=>{
  const pixels=async url=>{const image=new Image();image.src=url;await image.decode();const c=document.createElement('canvas');c.width=1672;c.height=941;
   c.getContext('2d').drawImage(image,0,0);return c.getContext('2d').getImageData(0,0,1672,941).data;};
  const before=await pixels(registry.before),after=await pixels(registry.output);
  const inside=(polygon,x,y)=>{let hit=false;for(let i=0,j=polygon.length-1;i<polygon.length;j=i++){
   const a=polygon[i],b=polygon[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])hit=!hit;}return hit;};
- const allowed=(x,y)=>regions.some(meta=>meta.polygons.some(p=>inside(p,x,y))&&!(meta.protectedPolygons||[]).some(p=>inside(p,x,y)));
+ const allowed=(x,y)=>[...regions,...followupMasks].some(meta=>meta.polygons.some(p=>inside(p,x,y))&&!(meta.protectedPolygons||[]).some(p=>inside(p,x,y)));
  let changed=0,outside=0,protectedChanged=0;
  for(let y=0;y<941;y++)for(let x=0;x<1672;x++){
   const at=(y*1672+x)*4;if(![0,1,2,3].some(c=>before[at+c]!==after[at+c]))continue;changed++;
@@ -83,9 +85,9 @@ class ArcadeFinishingTests(unittest.TestCase):
  const topNeon=[[76,508],[160,508],[245,508],[251,508]].map(([x,y])=>({x,y,before:sample(before,x,y),after:sample(after,x,y)}));
  const oldNeon=[[150,650],[225,650]].map(([x,y])=>({x,y,before:sample(before,x,y),after:sample(after,x,y)}));
  return {changed,outside,protectedChanged,cap,floor,topNeon,oldNeon,westLamp:{before:sample(before,83,551),after:sample(after,83,551)}};
-}''', {'registry': self.registry, 'regions': self.regions})
+}''', {'registry': self.registry, 'regions': self.regions, 'followupMasks': self.followup_masks})
         self.assertGreater(result['changed'], 10000)
-        self.assertEqual(result['outside'], 0, 'All prior room edits outside the exact four masks remain byte-for-pixel unchanged')
+        self.assertEqual(result['outside'], 0, 'Pixels outside the four historical masks and the narrow west-neon contour remain unchanged')
         self.assertEqual(result['protectedChanged'], 0, 'Both angled lounge walls, its sign, upper passage lamp and lower corner stay intact')
         for point in result['cap']:
             self.assertLess(point['after'][0], 70, 'The cap must be unlit blue rather than pink, gold or white: ' + json.dumps(point))

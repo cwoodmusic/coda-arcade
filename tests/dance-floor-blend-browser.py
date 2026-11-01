@@ -19,6 +19,7 @@ FINISHING_METADATA = [
     'scripts/lounge-center-wall-regions.json',
     'scripts/passage-transition-cleanup-regions.json',
     'scripts/northwest-neon-cap-regions.json',
+    'scripts/west-neon-uniform-regions.json',
 ]
 
 
