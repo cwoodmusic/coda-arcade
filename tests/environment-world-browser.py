@@ -222,7 +222,7 @@ window.createCodaDeveloperConsole=api=>{const instance=originalEnvironmentConsol
                                 'A cabinet restored to its original position must keep its body')
         self.assertEqual(len(self.page.evaluate('CodaArcadeQA.worldObjects().filter(x=>x.game)')),4)
 
-    def test_big_curved_lounge_couch_keeps_its_native_width_and_portable_pixels(self):
+    def test_south_facing_lounge_couch_keeps_its_native_width_and_portable_pixels(self):
         self.load();sofa=next(asset for asset in self.project()['assets'] if asset.get('origin',{}).get('name')=='lounge_sofa')
         self.assertEqual((sofa['w'],sofa['h']),(288,105))
         self.page.evaluate('CodaDeveloperConsole.open("artwork")')
@@ -233,7 +233,7 @@ window.createCodaDeveloperConsole=api=>{const instance=originalEnvironmentConsol
         from PIL import Image
         with Image.open(pending.value.path()) as image:
             self.assertEqual(image.size,(288,105));box=image.getchannel('A').getbbox()
-            self.assertGreater(box[2]-box[0],225,'The large curved couch must not shrink into a small straight sofa')
+            self.assertGreater(box[2]-box[0],225,'The south-facing couch must keep its wide native footprint')
         self.assertEqual(self.project(),self.current,'Viewing/exporting replacement art must not save a local override')
 
 

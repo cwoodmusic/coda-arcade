@@ -4,9 +4,9 @@
  'use strict';
  const WORLD=Object.freeze({width:1672,height:941}),BACKGROUND='empty-arcade.png';
  const rows=[
-  ['lounge_sofa','lounge-couch.png',288,105],
-  ['dance_left_couch','dance-couch-left.png',164,131],
-  ['dance_right_couch','dance-couch-right.png',162,109],
+  ['lounge_sofa','lounge-couch-south.png',288,105],
+  ['dance_left_couch','dance-couch-left-south.png',164,131],
+  ['dance_right_couch','dance-couch-right-south.png',162,109],
   ['lounge_center_candle_table','table.png',86,70],
   ['lounge_northwest_candle_table','table.png',63,61],
   ['lounge_west_candle_table','table.png',52,41],
@@ -78,7 +78,7 @@
      finish();
     }catch(error){finish(Error('Environment artwork could not decode: '+file+'. '+(error.message||'')));}
    }
-   image.addEventListener('load',onload);image.addEventListener('error',onerror);image.src=baseUrl+file+((file===BACKGROUND||file==='main-counter.png')?'?v=north-walls-20261031-1':'');
+   image.addEventListener('load',onload);image.addEventListener('error',onerror);image.src=baseUrl+file+(file===BACKGROUND?'?v=five-cleanups-20261031-1':file==='main-counter.png'?'?v=north-walls-20261031-1':'');
    if(image.complete&&image.naturalWidth)onload();
   }));
   const ready=Promise.all(tasks).then(()=>{loaded=true;});

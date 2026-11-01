@@ -156,6 +156,10 @@ async function main(){
  if(!previewOnly&&!dryRun)await require('./build-lounge-club-roof.cjs').build();
  if(!previewOnly&&!dryRun)await require('./build-dance-northwest-south-wall.cjs').build();
  if(!previewOnly&&!dryRun)await require('./build-arcade-north-straight-cap.cjs').build();
+ if(!previewOnly&&!dryRun)await require('./build-five-northwest-cleanup.cjs').build();
+ if(!previewOnly&&!dryRun)await require('./build-front-wall-depth.cjs').build();
+ if(!previewOnly&&!dryRun)await require('./build-sign-green-completion.cjs').build();
+ if(!previewOnly&&!dryRun)await require('./build-hall-floor-repair.cjs').build();
 }
 if(require.main===module)main().catch(error=>{process.stderr.write(error.stack+'\n');process.exitCode=1;});
 module.exports={inside,floorMask,authoredShapeMask,rebaseArtwork,repairPoints,recolorRepairs};

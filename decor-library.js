@@ -49,26 +49,33 @@
   ['rug-lightning-runner','Lightning runner rug','rug',280,90],
   ['rug-starburst','Arcade starburst rug','rug',130,110],
   ['rug-controller','Game controller rug','rug',160,90],
-  ['rug-hex-grid','Synth grid hexagon rug','rug',130,110]
+  ['rug-hex-grid','Synth grid hexagon rug','rug',130,110],
+  ['sofa-south','South-facing sofa','furniture',164,131],
+  ['sofa-compact-south','South-facing compact sofa','furniture',162,109],
+  ['sofa-lounge-south','South-facing lounge sofa','furniture',288,105],
+  ['counter-jade-south','South-facing jade counter','furniture',361,142],
+  ['counter-boutique-south','South-facing boutique counter','furniture',127,81],
+  ['desk-dj-south','South-facing DJ desk','furniture',121,62],
+  ['table-candle-south','South-facing candle table','furniture',86,70]
  ];
  const items=Object.freeze(records.map(([id,name,category,width,height])=>Object.freeze({id,name,category,width,height})));
- const categoryNames={floor:'Floor decor',tabletop:'Tabletop',wall:'Wall decor',rug:'Rugs'};
+ const categoryNames={floor:'Floor decor',tabletop:'Tabletop',wall:'Wall decor',rug:'Rugs',furniture:'South-facing furniture'};
  function mount(api={}){
   const host=api.host;if(!host?.ownerDocument)throw Error('The decor library needs an editor host.');
   const doc=host.ownerDocument,win=doc.defaultView;let selected=null,busy=false,destroyed=false,request=0;
   const baseUrl=String(api.baseUrl||'assets/decor/v1/').replace(/\/?$/,'/');
   const el=(tag,className,text)=>{const node=doc.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
   const library=el('details','decor-library');library.dataset.decorLibrary='';
-  const summary=el('summary','','Asset library · '+items.length+' decor');summary.dataset.decorLibraryToggle='';library.append(summary);
-  library.append(el('p','decor-library-help','Choose decor or a floor rug, then add a copy to your layout. Move, resize, duplicate, replace, or edit its pixels using Objects.'));
+  const summary=el('summary','','Asset library · '+items.length+' items');summary.dataset.decorLibraryToggle='';library.append(summary);
+  library.append(el('p','decor-library-help','Choose furniture, decor, or a floor rug, then add a copy to your layout. Move, resize, duplicate, replace, or edit its pixels using Objects.'));
   const filters=el('div','decor-library-filters'),category=el('select'),search=el('input');
   category.dataset.decorCategory='';category.setAttribute('aria-label','Decor category');
-  for(const [value,label]of [['all','All decor'],...Object.entries(categoryNames)]){const option=el('option','',label);option.value=value;category.append(option);}category.value='all';
-  search.type='search';search.placeholder='Search decor';search.dataset.decorSearch='';search.setAttribute('aria-label','Search decor');search.maxLength=80;
+  for(const [value,label]of [['all','All assets'],...Object.entries(categoryNames)]){const option=el('option','',label);option.value=value;category.append(option);}category.value='all';
+  search.type='search';search.placeholder='Search assets';search.dataset.decorSearch='';search.setAttribute('aria-label','Search assets');search.maxLength=80;
   const field=(text,node)=>{const label=el('label','decor-library-field');label.append(doc.createTextNode(text),node);return label;};
   filters.append(field('Category',category),field('Search',search));library.append(filters);
-  const count=el('p','decor-library-count'),grid=el('div','decor-library-grid'),empty=el('p','decor-library-empty','No decor matches this search.');
-  count.dataset.decorCount='';count.setAttribute('aria-live','polite');grid.dataset.decorGrid='';grid.setAttribute('role','group');grid.setAttribute('aria-label','Decor choices');empty.hidden=true;library.append(count,grid,empty);
+  const count=el('p','decor-library-count'),grid=el('div','decor-library-grid'),empty=el('p','decor-library-empty','No assets match this search.');
+  count.dataset.decorCount='';count.setAttribute('aria-live','polite');grid.dataset.decorGrid='';grid.setAttribute('role','group');grid.setAttribute('aria-label','Asset choices');empty.hidden=true;library.append(count,grid,empty);
   const cards=new Map();
   for(const item of items){
    const card=el('button','decor-library-card');card.type='button';card.dataset.decorItem=item.id;card.setAttribute('aria-label','Select '+item.name);card.setAttribute('aria-pressed','false');
@@ -97,7 +104,7 @@
    const query=search.value.trim().toLocaleLowerCase();let visible=0;
    for(const item of items){const matches=(category.value==='all'||category.value===item.category)&&(!query||(item.name+' '+item.id+' '+categoryNames[item.category]).toLocaleLowerCase().includes(query));cards.get(item.id).hidden=!matches;if(matches)visible++;}
    if(selected&&cards.get(selected.id).hidden){cards.get(selected.id).setAttribute('aria-pressed','false');selected=null;preview.hidden=true;message('Select an item to preview it.');}
-   count.textContent=visible+' of '+items.length+' decor items';empty.hidden=visible!==0;refresh();
+   count.textContent=visible+' of '+items.length+' assets';empty.hidden=visible!==0;refresh();
   }
   function load(source){return new Promise((resolve,reject)=>{const picture=new win.Image();let timer;
    const finish=(fn,value)=>{win.clearTimeout(timer);picture.onload=picture.onerror=null;fn(value);};

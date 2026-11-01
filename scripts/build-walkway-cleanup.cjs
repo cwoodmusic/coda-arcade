@@ -63,6 +63,9 @@ async function compose({meta,mask,previewOnly}){
 async function build(options={}){
  const root=path.resolve(__dirname,'..'),meta=options.meta||JSON.parse(await fs.readFile(path.join(__dirname,'walkway-cleanup-regions.json'),'utf8')),mask=cleanupMask(meta),projectPath=path.join(root,'published-world-project.json');
  const originalProject=JSON.parse(await fs.readFile(projectPath,'utf8')),rebased=rebaseArtwork(originalProject,mask,meta.worldSize[0]);
+ // Native-only finishing passes must not silently consume an authored edit.
+ // Reject overlap before starting the compositor or writing either file.
+ if(meta.preserveProject&&rebased.removed)throw Error('Native-only repair overlaps '+rebased.removed+' authored background pixels; project data must remain unchanged');
  const files={'/before':meta.output,'/source':meta.source,'/feather-base':meta.before};
  const server=http.createServer(async(req,res)=>{try{
   if(req.url==='/'){res.setHeader('Content-Type','text/html');res.end('<!doctype html><title>Walkway cleanup compositor</title>');return;}
@@ -86,7 +89,7 @@ async function build(options={}){
   await fs.writeFile('/tmp/coda-walkway-cleanup-mask.png',Buffer.from(preview.split(',')[1],'base64'));
   if(!options.dryRun&&!options.previewOnly){
    await fs.writeFile(path.join(root,meta.output),Buffer.from(image.split(',')[1],'base64'));
-   if(rebased.removed)await fs.writeFile(projectPath,JSON.stringify(rebased.project,null,2)+'\n');
+   if(rebased.removed&&!meta.preserveProject)await fs.writeFile(projectPath,JSON.stringify(rebased.project,null,2)+'\n');
   }
   process.stdout.write(JSON.stringify({walkwayCleanup:{...report,removedCoveredJournalPixels:rebased.removed,retainedJournalPixels:rebased.retained},dryRun:!!options.dryRun,previewOnly:!!options.previewOnly})+'\n');return report;
  }finally{socket?.close();browser.kill('SIGTERM');server.close();if(browser.exitCode===null)await new Promise(resolve=>browser.once('exit',resolve));await fs.rm(profile,{recursive:true,force:true,maxRetries:10,retryDelay:100});}

@@ -220,3 +220,33 @@ PYTHONDONTWRITEBYTECODE=1 python3 tests/published-world-browser.py
 
 The last suite explicitly serves the archived export to retain the previous
 world's compatibility checks. The environment suite exercises current defaults.
+
+## South-facing furniture
+
+The three sofas use new front-facing PNGs, while the original angled and curved
+source files remain available. Logical sizes, placements and foot baselines are
+preserved. The counters, DJ desk and candle table already face south and retain
+their accepted artwork. All seven pieces are reusable under **Asset library →
+South-facing furniture**, where each placement creates an independent copy.
+
+`node scripts/build-south-facing-furniture.cjs` rebuilds the transparent cutouts
+from `scripts/south-facing-furniture.json`; `--check` verifies the outputs and
+their provenance manifest. Sofa sprites are bottom-aligned within the original
+canvases. The other four designs use the same centered fit as the runtime.
+This build does not modify the backdrop, project data or original sprites.
+
+
+## Room finishing repairs
+
+The last four passes in `build-cosmic-floor.cjs` own only reviewed native-art
+regions: the obsolete wall band above the dance-room inner cap and its neon
+corner, deeper front exterior courses, the exposed masonry beside the Coda
+sign, and continuous glass beside Hall of Fame. The removed upper dance lamp
+and the removed east Piano lamp have no refreshed-scene glow emitters.
+
+Each finishing pass declares `preserveProject: true`; the compositor rejects
+any overlap with authored background pixels before writing files. The world
+remains 1672×941, with furniture, collisions, and saved-project data unchanged.
+The Hall floor uses an immutable sparse before-image to feather its outer
+edges without accumulating changes on repeated builds. Source dimensions and
+placements are recorded in the four `*-regions.json` files.

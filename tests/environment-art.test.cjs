@@ -19,10 +19,18 @@ test('existing published prop journals remain addressable and duplicate image fi
  const project=JSON.parse(fs.readFileSync(path.join(root,'published-world-project.json'),'utf8'));
  for(const item of project.assets)if(item.origin&&art.OBJECTS[item.origin.name])assert.deepEqual([art.OBJECTS[item.origin.name].width,art.OBJECTS[item.origin.name].height],item.origin.bounds.slice(2));
  assert.equal(art.FILES[0],'empty-arcade.png');assert.equal(art.FILES.length,new Set(art.FILES).size);
- assert.ok(art.FILES.includes('lounge-couch.png'));assert.ok(art.FILES.includes('dance-couch-left.png'));assert.ok(art.FILES.includes('dance-couch-right.png'));
+ assert.ok(art.FILES.includes('lounge-couch-south.png'));assert.ok(art.FILES.includes('dance-couch-left-south.png'));assert.ok(art.FILES.includes('dance-couch-right-south.png'));
  assert.equal(Object.values(art.OBJECTS).filter(item=>item.file==='table.png').length,3);
  assert.equal(Object.values(art.OBJECTS).filter(item=>item.file==='palm.png').length,21);
  for(const name of ['cabinet_pitch_race','cabinet_music_triad','disco_ball_arcade','rhythm_fishing_trapdoor','dance_passage_plant_leaves'])assert.equal(art.OBJECTS[name],undefined,'Legacy/procedural sources must remain available through fallback');
+});
+
+test('south-facing sofas retain legacy texture dimensions and the accepted counter, table and DJ designs',()=>{
+ for(const [name,file,width,height]of [
+  ['lounge_sofa','lounge-couch-south.png',288,105],['dance_left_couch','dance-couch-left-south.png',164,131],['dance_right_couch','dance-couch-right-south.png',162,109]
+ ])assert.deepEqual(art.OBJECTS[name],{file,width,height,mirror:false});
+ for(const file of ['lounge-couch.png','dance-couch-left.png','dance-couch-right.png'])assert.ok(fs.existsSync(path.join(root,'assets/environment/v1',file)),'Keep the earlier source '+file);
+ for(const [name,file]of [['main_counter','main-counter.png'],['boutique_counter','boutique-counter.png'],['dance_dj_console','dj-console.png'],['lounge_center_candle_table','table.png']])assert.equal(art.OBJECTS[name].file,file);
 });
 
 test('contain fitting preserves proportions without cropping or leaking outside legacy source bounds',()=>{

@@ -141,13 +141,20 @@ test('a scenery-specific lantern position follows rebuilt masonry and restores t
   assert.deepEqual(lighting.snapshot().lanterns.filter(lamp=>lamp.id==='boutique-west').map(({x,y})=>[x,y]),[[364,404]]);
 });
 
-test('removing one refreshed-scene lamp preserves every other lantern anchor and pulse',()=>{
-  let refreshed=true;
-  const original=createCodaWorldLighting({}).snapshot().lanterns;
-  const lighting=createCodaWorldLighting({isLanternVisible:id=>!refreshed||id!=='piano-east'});
-  assert.deepEqual(lighting.snapshot().lanterns,original.filter(lamp=>lamp.id!=='piano-east'));
-  refreshed=false;
-  assert.deepEqual(lighting.snapshot().lanterns,original);
+test('removing two refreshed-scene lamps preserves every other lantern anchor and pulse',()=>{
+  let refreshed=true,time=0;
+  const original=createCodaWorldLighting({getTime:()=>time});
+  const removed=new Set(['piano-east','dance-entry']);
+  const lighting=createCodaWorldLighting({getTime:()=>time,isLanternVisible:id=>!refreshed||!removed.has(id)});
+  for(time of [0,1.5,4]){
+    const expected=original.snapshot().lanterns;
+    refreshed=true;
+    const visible=lighting.snapshot().lanterns;
+    assert.deepEqual(visible,expected.filter(lamp=>!removed.has(lamp.id)));
+    assert.ok(visible.some(lamp=>lamp.id==='dance-west'),'The lower west fixture stays visible');
+    refreshed=false;
+    assert.deepEqual(lighting.snapshot().lanterns,expected,'Legacy scenery retains every fixture and its original phase');
+  }
 });
 
 test('beam clips are batched by room and the smaller raster is reused until geometry changes',()=>{

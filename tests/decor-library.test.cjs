@@ -2,13 +2,14 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const library=require('../decor-library.js');
 
-test('the library retains forty decor sources and adds eight rugs at varied world sizes',()=>{
- assert.equal(library.items.length,48);assert.equal(new Set(library.items.map(item=>item.id)).size,48);
- assert.deepEqual(library.items.reduce((counts,item)=>(counts[item.category]=(counts[item.category]||0)+1,counts),{}),{floor:16,tabletop:16,wall:8,rug:8});
+test('the library retains its original decor and rugs and adds seven south-facing furniture sources',()=>{
+ assert.equal(library.items.length,55);assert.equal(new Set(library.items.map(item=>item.id)).size,55);
+ assert.deepEqual(library.items.reduce((counts,item)=>(counts[item.category]=(counts[item.category]||0)+1,counts),{}),{floor:16,tabletop:16,wall:8,rug:8,furniture:7});
  for(const item of library.items){
   assert.match(item.id,/^[a-z0-9]+(?:-[a-z0-9]+)*$/);assert.ok(item.name.length>3);
-  assert.ok(Number.isInteger(item.width)&&Number.isInteger(item.height)&&item.width>=16&&item.height>=18&&item.width<=360&&item.height<=200);
-  if(item.category!=='rug')assert.ok(item.width<=100&&item.height<=105);
+  assert.ok(Number.isInteger(item.width)&&Number.isInteger(item.height)&&item.width>=16&&item.height>=18&&item.width<=400&&item.height<=200);
+  if(!['rug','furniture'].includes(item.category))assert.ok(item.width<=100&&item.height<=105);
+  if(item.category==='rug')assert.ok(item.width<=360);
   if(item.category==='floor')assert.ok(item.height>=80);if(item.category==='tabletop')assert.ok(item.width<=36&&item.height<=32);
   if(item.category==='rug')assert.match(item.id,/^rug-/);
   assert.ok(Object.isFrozen(item));
@@ -18,6 +19,14 @@ test('the library retains forty decor sources and adds eight rugs at varied worl
  assert.ok(rugs.some(item=>item.width/item.height>2),'Include a wide shop rug');
  const runner=rugs.find(item=>item.id==='rug-lightning-runner');assert.ok(runner.width/runner.height>2,'Include a long runner that can be quarter-turned');
  assert.ok(Object.isFrozen(library.items));
+});
+
+test('south-facing furniture is appended without changing the original forty-eight catalog entries',()=>{
+ assert.deepEqual(library.items.slice(0,48).reduce((counts,item)=>(counts[item.category]=(counts[item.category]||0)+1,counts),{}),{floor:16,tabletop:16,wall:8,rug:8});
+ assert.deepEqual(library.items.slice(48).map(({id,category,width,height})=>[id,category,width,height]),[
+  ['sofa-south','furniture',164,131],['sofa-compact-south','furniture',162,109],['sofa-lounge-south','furniture',288,105],
+  ['counter-jade-south','furniture',361,142],['counter-boutique-south','furniture',127,81],['desk-dj-south','furniture',121,62],['table-candle-south','furniture',86,70]
+ ]);
 });
 
 class Element{
@@ -62,6 +71,21 @@ test('rug filtering and Add identify floor placement while preserving the source
  value.find('decorSearch').value='round';value.find('decorSearch').oninput();
  assert.equal(value.control.getState().visible,1);assert.equal(value.control.getState().selected,null);
  value.control.destroy();
+});
+
+test('furniture filtering is a preview and each added sofa is an independent embedded copy',async()=>{
+ const value=fixture();value.find('decorCategory').value='furniture';value.find('decorCategory').onchange();
+ assert.equal(value.control.getState().visible,7);assert.equal(value.calls.length,0);
+ value.find('decorSearch').value='sofa';value.find('decorSearch').oninput();
+ assert.equal(value.control.getState().visible,3);assert.equal(value.control.select('sofa-south'),true);assert.equal(value.calls.length,0);
+ for(let count=0;count<2;count++){
+  const adding=value.control.addSelected();value.pending[0].naturalWidth=164;value.pending[0].naturalHeight=131;value.resolve();assert.equal(await adding,true);
+ }
+ assert.equal(value.calls.length,2);assert.notEqual(value.calls[0],value.calls[1]);
+ assert.deepEqual(value.calls[0],{id:'sofa-south',name:'South-facing sofa',category:'furniture',width:164,height:131,data:'data:image/png;base64,AQID'});
+ value.calls[0].width=100;value.calls[0].name='My sofa';
+ assert.equal(value.calls[1].width,164);assert.equal(value.calls[1].name,'South-facing sofa');
+ assert.equal(library.items.find(item=>item.id==='sofa-south').width,164);value.control.destroy();
 });
 
 test('filtering is a preview action and clears a hidden selection instead of placing a stale item',()=>{

@@ -23,11 +23,14 @@ class BoutiqueJoinTests(unittest.TestCase):
         layers=[json.loads((fixture.ROOT/'scripts'/name).read_text()) for name in [
             'boutique-join-regions.json','boutique-corner-cap-regions.json',
             'hall-roof-cap-regions.json','lounge-club-roof-regions.json',
-            'dance-northwest-south-wall-regions.json','arcade-north-straight-cap-regions.json']]
+            'dance-northwest-south-wall-regions.json','arcade-north-straight-cap-regions.json',
+            'five-northwest-cleanup-regions.json','front-wall-depth-regions.json',
+            'sign-green-completion-regions.json','hall-floor-repair-regions.json']]
         self.load()
         result=self.page.evaluate('''async layers=>{
           const load=src=>new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=reject;image.src=src;});
           const [native,...sources]=await Promise.all([load(layers[0].output),...layers.map(meta=>load(meta.source))]),[w,h]=layers[0].worldSize;
+          const featherSources=await Promise.all(layers.map(meta=>meta.floorFeather&&meta.before?load(meta.before):null));
           const canvas=()=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
           const a=canvas(),c=canvas();a.getContext('2d').drawImage(native,0,0);__paletteConsole.renderBase(c.getContext('2d'));
           const aa=a.getContext('2d').getImageData(0,0,w,h).data,cc=c.getContext('2d').getImageData(0,0,w,h).data;
@@ -35,7 +38,18 @@ class BoutiqueJoinTests(unittest.TestCase):
             const c=canvas(),g=c.getContext('2d'),meta=layers[index],placement=meta.sourcePlacement||[0,0,w,h];g.imageSmoothingEnabled=false;
             if(meta.sourceRect)g.drawImage(source,...meta.sourceRect,...placement);else g.drawImage(source,...placement);
             for(const region of meta.sourceCopies||[])g.drawImage(c,...region);
-            return g.getImageData(0,0,w,h).data;
+            const data=g.getImageData(0,0,w,h).data;
+            if(meta.floorFeather){
+              if(!featherSources[index])throw Error('A reviewed feather needs its immutable reference artwork');
+              const reference=canvas(),rg=reference.getContext('2d');rg.drawImage(featherSources[index],0,0);
+              const before=rg.getImageData(0,0,w,h).data,{right:[r0,r1],bottom:[b0,b1],leftBelow:[l0,l1,below]}=meta.floorFeather;
+              for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+                let weight=Math.max(0,Math.min(1,(r1-x-.5)/(r1-r0),(b1-y-.5)/(b1-b0)));
+                if(y>=below)weight=Math.max(0,Math.min(weight,(x+.5-l0)/(l1-l0)));
+                const at=(y*w+x)*4;for(let channel=0;channel<4;channel++)data[at+channel]=Math.round(before[at+channel]*(1-weight)+data[at+channel]*weight);
+              }
+            }
+            return data;
           });
           const inPolygon=(poly,x,y)=>{let hit=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){
             const [ax,ay]=poly[i],[bx,by]=poly[j];if((ay>y)!==(by>y)&&x<(bx-ax)*(y-ay)/(by-ay)+ax)hit=!hit;
