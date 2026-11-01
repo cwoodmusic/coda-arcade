@@ -2,13 +2,15 @@
  * Positions stay inside exposed floor; this pass runs below props and actors. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaFloorStars=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
+ const LOUNGE_POINTS=Object.freeze([[155,236],[245,189],[332,224],[291,309],[410,248]].map(Object.freeze));
  const POINTS=Object.freeze([
   [569,218],[720,169],[943,188],[1122,216],[1284,192],[1508,356],[1370,391],[1193,346],
   [1014,368],[827,293],[723,403],[516,450],[299,408],[903,470],[1068,481],[1262,465],
   [1507,515],[1413,585],[1176,575],[987,591],[886,644],[1064,710],[1269,692],[1513,731],
   [1401,772],[1186,762],[944,772],[755,779],[111,767],[521,226],[795,436],[1464,431],
   [617,237],[701,319],[900,299],[1109,301],[1290,292],[1534,638],[1035,421],[955,527],
-  [1151,430],[879,556],[1380,673],[1113,638],[999,668],[1554,784],[1302,765],[908,344]
+  [1151,430],[879,556],[1380,673],[1113,638],[999,668],[1554,784],[1302,765],[908,344],
+  ...LOUNGE_POINTS
  ].map(Object.freeze));
  const COLORS=Object.freeze(['#fff1cd','#cdeeff','#e7f7ff']);
  function brightness(index,time){
@@ -44,5 +46,5 @@
   }
   return {draw,snapshot};
  }
- return Object.freeze({POINTS,COLORS,brightness,create});
+ return Object.freeze({POINTS,LOUNGE_POINTS,COLORS,brightness,create});
 });

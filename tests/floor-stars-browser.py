@@ -15,7 +15,9 @@ class FloorStarTests(world.WorldBrowserCase):
         self.context.add_init_script("localStorage.setItem('codaArcadeFXV1','full')")
         self.load()
         first = self.page.evaluate('CodaArcadeQA.floorStars()')
-        self.assertEqual(first['count'], 48)
+        self.assertEqual(first['count'], 53)
+        self.assertEqual([(star['x'], star['y']) for star in first['stars'][-5:]],
+                         [(155, 236), (245, 189), (332, 224), (291, 309), (410, 248)])
         self.assertTrue(first['visible'] and first['animated'])
         self.page.wait_for_timeout(350)
         second = self.page.evaluate('CodaArcadeQA.floorStars()')
@@ -25,11 +27,12 @@ class FloorStarTests(world.WorldBrowserCase):
           const g=canvas.getContext('2d');let time=0;
           const stars=CodaFloorStars.create({getTime:()=>time});
           const draw=()=>{g.fillStyle='#091d38';g.fillRect(0,0,1672,941);stars.draw(g);
-            return [...g.getImageData(569,218,1,1).data];};
+            return {main:[...g.getImageData(569,218,1,1).data],lounge:[...g.getImageData(155,236,1,1).data]};};
           const first=draw();time=3;const second=draw();
           return {first,second,clear:[...g.getImageData(577,226,1,1).data]};
         }''')
         self.assertNotEqual(pixels['first'],pixels['second'])
+        self.assertNotEqual(pixels['first']['lounge'],pixels['second']['lounge'], 'Lounge glass uses the same sparse animated star effect')
         self.assertEqual(pixels['clear'],[9,29,56,255], 'Only the tiny star points may paint the glass floor')
         self.page.evaluate("localStorage.setItem('arcadeAnimations','off')")
         fixed = self.page.evaluate('CodaArcadeQA.floorStars()')

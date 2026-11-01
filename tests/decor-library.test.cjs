@@ -2,9 +2,9 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const library=require('../decor-library.js');
 
-test('the library retains its original decor and rugs and adds seven south-facing furniture sources',()=>{
- assert.equal(library.items.length,55);assert.equal(new Set(library.items.map(item=>item.id)).size,55);
- assert.deepEqual(library.items.reduce((counts,item)=>(counts[item.category]=(counts[item.category]||0)+1,counts),{}),{floor:16,tabletop:16,wall:8,rug:8,furniture:7});
+test('the library retains its original decor and adds separate lounge furniture, rugs and counter art',()=>{
+ assert.equal(library.items.length,71);assert.equal(new Set(library.items.map(item=>item.id)).size,71);
+ assert.deepEqual(library.items.reduce((counts,item)=>(counts[item.category]=(counts[item.category]||0)+1,counts),{}),{floor:16,tabletop:22,wall:12,rug:11,furniture:10});
  for(const item of library.items){
   assert.match(item.id,/^[a-z0-9]+(?:-[a-z0-9]+)*$/);assert.ok(item.name.length>3);
   assert.ok(Number.isInteger(item.width)&&Number.isInteger(item.height)&&item.width>=16&&item.height>=18&&item.width<=400&&item.height<=200);
@@ -23,7 +23,7 @@ test('the library retains its original decor and rugs and adds seven south-facin
 
 test('south-facing furniture is appended without changing the original forty-eight catalog entries',()=>{
  assert.deepEqual(library.items.slice(0,48).reduce((counts,item)=>(counts[item.category]=(counts[item.category]||0)+1,counts),{}),{floor:16,tabletop:16,wall:8,rug:8});
- assert.deepEqual(library.items.slice(48).map(({id,category,width,height})=>[id,category,width,height]),[
+ assert.deepEqual(library.items.slice(48,55).map(({id,category,width,height})=>[id,category,width,height]),[
   ['sofa-south','furniture',164,131],['sofa-compact-south','furniture',162,109],['sofa-lounge-south','furniture',288,105],
   ['counter-jade-south','furniture',361,142],['counter-boutique-south','furniture',127,81],['desk-dj-south','furniture',121,62],['table-candle-south','furniture',86,70]
  ]);
@@ -64,7 +64,7 @@ test('browsing never places decor and Add creates one independent source image w
 
 test('rug filtering and Add identify floor placement while preserving the source image proportions',async()=>{
  const value=fixture();value.find('decorCategory').value='rug';value.find('decorCategory').onchange();
- assert.equal(value.control.getState().visible,8);assert.equal(value.calls.length,0);
+ assert.equal(value.control.getState().visible,11);assert.equal(value.calls.length,0);
  assert.equal(value.control.select('rug-notes-rectangle'),true);
  const adding=value.control.addSelected();value.pending[0].naturalWidth=720;value.pending[0].naturalHeight=280;value.resolve();
  assert.equal(await adding,true);assert.deepEqual(value.calls[0],{id:'rug-notes-rectangle',name:'Notes shop arcade rug',category:'rug',width:360,height:140,data:'data:image/png;base64,AQID'});
@@ -75,7 +75,7 @@ test('rug filtering and Add identify floor placement while preserving the source
 
 test('furniture filtering is a preview and each added sofa is an independent embedded copy',async()=>{
  const value=fixture();value.find('decorCategory').value='furniture';value.find('decorCategory').onchange();
- assert.equal(value.control.getState().visible,7);assert.equal(value.calls.length,0);
+ assert.equal(value.control.getState().visible,10);assert.equal(value.calls.length,0);
  value.find('decorSearch').value='sofa';value.find('decorSearch').oninput();
  assert.equal(value.control.getState().visible,3);assert.equal(value.control.select('sofa-south'),true);assert.equal(value.calls.length,0);
  for(let count=0;count<2;count++){
@@ -91,7 +91,7 @@ test('furniture filtering is a preview and each added sofa is an independent emb
 test('filtering is a preview action and clears a hidden selection instead of placing a stale item',()=>{
  const value=fixture();value.control.select('rocket-statue');
  value.find('decorCategory').value='tabletop';value.find('decorCategory').onchange();
- assert.equal(value.control.getState().visible,16);assert.equal(value.control.getState().selected,null);assert.equal(value.calls.length,0);
+ assert.equal(value.control.getState().visible,22);assert.equal(value.control.getState().selected,null);assert.equal(value.calls.length,0);
  value.find('decorSearch').value='token';value.find('decorSearch').oninput();assert.equal(value.control.getState().visible,1);
  value.find('decorSearch').value='no matching decor';value.find('decorSearch').oninput();assert.equal(value.control.getState().visible,0);assert.equal(value.find('decorAdd').disabled,true);value.control.destroy();
 });

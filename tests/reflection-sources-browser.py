@@ -17,11 +17,28 @@ PUBLISHED_SHA256 = 'a9a495716023e0df56dc23db8c9bbfd09316f5f08668fbcca43a633461dc
 FINISH_BOUNDS = [[94, 659, 57, 147], [685, 649, 122, 157]]
 BLUE_GHOST_BOUNDS = [[725, 628, 82, 178]]
 REPAIR_BOUNDS = [[435, 426, 246, 80], [750, 649, 57, 157]] + FINISH_BOUNDS + BLUE_GHOST_BOUNDS
+LOUNGE_POLYGONS = [
+    [[82,203],[143,185],[181,172],[208,149],[359,149],[438,180],
+     [438,271],[360,271],[360,362],[269,362],[269,314],[82,314]]
+]
+# The lounge used carpet in the old glass geometry. Its separately reviewed
+# polygon is the only new exception; surrounding bar art and caps stay exact.
+REVIEWED_SCOPE_JS = '''
+ const {bounds,loungePolygons}=scope;
+ const inLounge=(x,y)=>loungePolygons.some(polygon=>{
+  let hit=false;for(let i=0,j=polygon.length-1;i<polygon.length;j=i++){
+   const [ax,ay]=polygon[i],[bx,by]=polygon[j];
+   if((ay>y)!==(by>y)&&x<(bx-ax)*(y-ay)/(by-ay)+ax)hit=!hit;
+  }return hit;
+ });
+ const allowed=(x,y)=>inLounge(x+.5,y+.5)||(bounds.some(([l,t,w,h])=>x>=l&&x<l+w&&y>=t&&y<t+h)
+  &&CodaWallReflections.isGlassFloor(x+.5,y+.5));
+'''
 # Captured with the pre-update native backdrop and its prior-good palette
-# manifest, with only REPAIR_BOUNDS blanked. This immutable witness includes
-# earlier wall removals and floor repairs; rebuilding compatibility must not
+# manifest, with only REPAIR_BOUNDS and LOUNGE_POLYGONS blanked. This witness
+# includes earlier wall removals and floor repairs; rebuilding compatibility must not
 # resurrect their purple/red pigments elsewhere in the room.
-PRIOR_GOOD_BASE_OUTSIDE_REPAIRS_SHA256 = '0223c0b06367574b05e42643558007910456658e9e5298611b56fe3375a2424f'
+PRIOR_GOOD_BASE_OUTSIDE_REPAIRS_SHA256 = '021980a54c4874b8584f96798d0c9bf04a4b10c5da43196a7cdb67fb8d4ef3ae'
 
 
 class ReflectionSourceTests(unittest.TestCase):
@@ -85,7 +102,7 @@ class ReflectionSourceTests(unittest.TestCase):
     def test_native_cleanup_preserves_every_pixel_outside_reviewed_glass(self):
         self.assertEqual(hashlib.sha256((ROOT / 'published-world-project.json').read_bytes()).hexdigest(), PUBLISHED_SHA256)
         self.load()
-        result = self.page.evaluate('''async bounds => {
+        result = self.page.evaluate('''async scope => {''' + REVIEWED_SCOPE_JS + '''
  const load = async url => { const image = new Image(); image.src = url; await image.decode(); return image; };
  const before = await load('assets/environment/source/reflections-before-alignment.png');
  const after = await load('assets/environment/v1/empty-arcade.png');
@@ -94,12 +111,13 @@ class ReflectionSourceTests(unittest.TestCase):
  const a=pixels(before),b=pixels(after);let changed=0,outside=0,protectedChanges=0;
  for(let y=0;y<941;y++)for(let x=0;x<1672;x++){
   const at=(y*1672+x)*4;if(![0,1,2,3].some(c=>a[at+c]!==b[at+c]))continue;changed++;
-  if(!bounds.some(([l,t,w,h])=>x>=l&&x<l+w&&y>=t&&y<t+h)||!CodaWallReflections.isGlassFloor(x+.5,y+.5))outside++;
-  if((x>=359&&x<=681&&y>=274&&y<425)||(x>=236&&x<=724&&y>=507&&y<649)
+  if(!allowed(x,y))outside++;
+  // x359 is the final reviewed lounge-floor column beside the boutique.
+  if((x>=360&&x<=681&&y>=274&&y<425)||(x>=236&&x<=724&&y>=507&&y<649)
    ||(x>=808&&x<859&&y>=435&&y<819)||(y>=837&&y<884))protectedChanges++;
  }
  return{beforeSize:[before.naturalWidth,before.naturalHeight],afterSize:[after.naturalWidth,after.naturalHeight],changed,outside,protectedChanges};
-}''', REPAIR_BOUNDS)
+}''', {'bounds': REPAIR_BOUNDS, 'loungePolygons': LOUNGE_POLYGONS})
         self.assertEqual(result['beforeSize'], [1672, 941])
         self.assertEqual(result['afterSize'], [1672, 941])
         self.assertGreater(result['changed'], 1000, 'Remove the old streaks rather than only changing runtime labels')
@@ -111,7 +129,7 @@ class ReflectionSourceTests(unittest.TestCase):
     def test_every_rendered_base_pixel_outside_the_repairs_keeps_prior_floor_cleanup(self):
         self.load()
         self.quality('off')
-        result = self.page.evaluate('''async bounds => {
+        result = self.page.evaluate('''async scope => {''' + REVIEWED_SCOPE_JS + '''
  const canvas=document.createElement('canvas');canvas.width=1672;canvas.height=941;
  const g=canvas.getContext('2d');__danceBlendConsole.renderBase(g);
  const pixels=g.getImageData(0,0,1672,941).data;
@@ -119,17 +137,19 @@ class ReflectionSourceTests(unittest.TestCase):
   .map(([x,y])=>({x,y,rgba:Array.from(pixels.slice((y*1672+x)*4,(y*1672+x)*4+4))}));
  for(const [left,top,width,height] of bounds)for(let y=top;y<top+height;y++)for(let x=left;x<left+width;x++)
   pixels.fill(0,(y*1672+x)*4,(y*1672+x)*4+4);
+ for(let y=149;y<362;y++)for(let x=82;x<438;x++)if(inLounge(x+.5,y+.5))
+  pixels.fill(0,(y*1672+x)*4,(y*1672+x)*4+4);
  const hash=await crypto.subtle.digest('SHA-256',pixels);
  return {sha256:[...new Uint8Array(hash)].map(value=>value.toString(16).padStart(2,'0')).join(''),witnesses};
-}''', REPAIR_BOUNDS)
+}''', {'bounds': REPAIR_BOUNDS, 'loungePolygons': LOUNGE_POLYGONS})
         self.assertEqual(result['sha256'], PRIOR_GOOD_BASE_OUTSIDE_REPAIRS_SHA256,
-                         'Keep every prior floor repair outside the approved rectangles; witnesses: '
+                         'Keep every prior floor repair outside the approved masks; witnesses: '
                          + json.dumps(result['witnesses']))
         self.assertEqual(self.project(), self.published)
 
     def test_finishing_pass_changes_only_its_two_reviewed_glass_masks(self):
         self.load()
-        result = self.page.evaluate('''async bounds=>{
+        result = self.page.evaluate('''async scope=>{''' + REVIEWED_SCOPE_JS + '''
  const pixels=async url=>{const image=new Image();image.src=url;await image.decode();
   const c=document.createElement('canvas');c.width=1672;c.height=941;c.getContext('2d').drawImage(image,0,0);
   return c.getContext('2d').getImageData(0,0,1672,941).data;};
@@ -137,16 +157,16 @@ class ReflectionSourceTests(unittest.TestCase):
  const after=await pixels('assets/environment/v1/empty-arcade.png');let changed=0,outside=0;
  for(let y=0;y<941;y++)for(let x=0;x<1672;x++){
   const at=(y*1672+x)*4;if(![0,1,2,3].some(c=>before[at+c]!==after[at+c]))continue;changed++;
-  if(!bounds.some(([l,t,w,h])=>x>=l&&x<l+w&&y>=t&&y<t+h)||!CodaWallReflections.isGlassFloor(x+.5,y+.5))outside++;
+  if(!allowed(x,y))outside++;
  }
  return {changed,outside};
-}''', FINISH_BOUNDS + BLUE_GHOST_BOUNDS)
+}''', {'bounds': FINISH_BOUNDS + BLUE_GHOST_BOUNDS, 'loungePolygons': LOUNGE_POLYGONS})
         self.assertGreater(result['changed'], 1000)
         self.assertEqual(result['outside'], 0, 'The new pass must preserve every earlier edit outside its exact glass masks')
 
     def test_blue_wall_ghost_cleanup_preserves_every_pixel_outside_its_glass_mask(self):
         self.load()
-        result = self.page.evaluate('''async bounds=>{
+        result = self.page.evaluate('''async scope=>{''' + REVIEWED_SCOPE_JS + '''
  const pixels=async url=>{const image=new Image();image.src=url;await image.decode();
   const c=document.createElement('canvas');c.width=1672;c.height=941;c.getContext('2d').drawImage(image,0,0);
   return c.getContext('2d').getImageData(0,0,1672,941).data;};
@@ -154,10 +174,10 @@ class ReflectionSourceTests(unittest.TestCase):
  const after=await pixels('assets/environment/v1/empty-arcade.png');let changed=0,outside=0;
  for(let y=0;y<941;y++)for(let x=0;x<1672;x++){
   const at=(y*1672+x)*4;if(![0,1,2,3].some(c=>before[at+c]!==after[at+c]))continue;changed++;
-  if(!bounds.some(([l,t,w,h])=>x>=l&&x<l+w&&y>=t&&y<t+h)||!CodaWallReflections.isGlassFloor(x+.5,y+.5))outside++;
+  if(!allowed(x,y))outside++;
  }
  return {changed,outside};
-}''', BLUE_GHOST_BOUNDS)
+}''', {'bounds': BLUE_GHOST_BOUNDS, 'loungePolygons': LOUNGE_POLYGONS})
         self.assertGreater(result['changed'], 1000)
         self.assertEqual(result['outside'], 0, 'The blue wall-fragment cleanup must keep every prior edit outside its exact mask')
 
@@ -214,7 +234,7 @@ class ReflectionSourceTests(unittest.TestCase):
                          'assets/environment/floor-palette-compat.json']:
             requests = [url for url in result['resources'] if resource + '?' in url]
             self.assertEqual(len(requests), 1, requests)
-            self.assertIn('v=east-floor-cleanup-20261101-1', requests[0],
+            self.assertIn('v=lounge-glass-20261101-1', requests[0],
                           'Return visits must fetch the new art rather than the former orange-streak cache key')
         self.quality('full')
         full = self.page.evaluate('''()=>{

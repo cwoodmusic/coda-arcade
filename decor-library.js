@@ -56,7 +56,23 @@
   ['counter-jade-south','South-facing jade counter','furniture',361,142],
   ['counter-boutique-south','South-facing boutique counter','furniture',127,81],
   ['desk-dj-south','South-facing DJ desk','furniture',121,62],
-  ['table-candle-south','South-facing candle table','furniture',86,70]
+  ['table-candle-south','South-facing candle table','furniture',86,70],
+  ['rug-lounge-constellation','Lounge constellation rug','rug',210,112],
+  ['rug-lounge-sunset','Lounge sunset oval rug','rug',200,104],
+  ['rug-lounge-jade','Lounge jade geometric rug','rug',180,112],
+  ['clothes-rack-south','South-facing clothes rack','furniture',132,94],
+  ['wardrobe-south','South-facing wardrobe','furniture',112,132],
+  ['table-rectangle-south','South-facing rectangular table','furniture',156,66],
+  ['notes-register','Notes counter register','tabletop',36,32],
+  ['notes-receipt-printer','Notes receipt printer','tabletop',30,26],
+  ['notes-pen-cup','Notes pen cup','tabletop',20,28],
+  ['notes-ledger','Notes open ledger','tabletop',36,24],
+  ['notes-price-display','Notes price display','tabletop',30,30],
+  ['notes-display-tray','Notes display tray','tabletop',36,22],
+  ['wall-art-orbit','Framed orbit wall art','wall',68,68],
+  ['wall-art-equalizer','Framed equalizer wall art','wall',56,56],
+  ['wall-art-keyboard','Framed keyboard wall art','wall',60,60],
+  ['wall-art-sunset','Framed sunset wall art','wall',68,68]
  ];
  const items=Object.freeze(records.map(([id,name,category,width,height])=>Object.freeze({id,name,category,width,height})));
  const categoryNames={floor:'Floor decor',tabletop:'Tabletop',wall:'Wall decor',rug:'Rugs',furniture:'South-facing furniture'};

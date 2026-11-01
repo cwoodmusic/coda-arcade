@@ -47,6 +47,7 @@ class DanceFloorBlendTests(unittest.TestCase):
         self.reflections = json.loads((ROOT / 'scripts/reflection-floor-regions.json').read_text())
         self.dance_reflections = json.loads((ROOT / 'scripts/dance-reflection-floor-regions.json').read_text())
         self.east_floor = json.loads((ROOT / 'scripts/east-floor-cleanup-regions.json').read_text())
+        self.lounge_floor = json.loads((ROOT / 'scripts/lounge-floor-regions.json').read_text())
         script = (ROOT / 'developer-console.js').read_text() + '''
 (() => { const original = window.createCodaDeveloperConsole;
 window.createCodaDeveloperConsole = api => {
@@ -93,7 +94,7 @@ window.createCodaDeveloperConsole = api => {
                          PUBLISHED_SHA256, 'The uploaded world project must remain byte-for-byte intact')
         self.load()
         self.assertEqual(self.project(), self.published)
-        result = self.page.evaluate('''async ({meta,reflections,danceReflections,eastFloor}) => {
+        result = self.page.evaluate('''async ({meta,reflections,danceReflections,eastFloor,loungeFloor}) => {
  const load = async url => { const image = new Image(); image.src = url; await image.decode(); return image; };
  const before = await load(meta.before), after = await load(meta.output);
  const make = image => { const c = document.createElement('canvas'); c.width = image.naturalWidth;
@@ -123,9 +124,13 @@ window.createCodaDeveloperConsole = api => {
    const [left,top,width,height] = pass.repairBounds;
    return x >= left && x < left + width && y >= top && y < top + height;
   });
+  // The later lounge update has its own floor-only polygon. Carpet was not
+  // in the old reflection-glass mask; do not exempt its bar, walls or caps.
+  const loungeAllowed = loungeFloor.polygons.some(polygon => inside(polygon, x + .5, y + .5))
+   && !loungeFloor.protectedPolygons.some(polygon => inside(polygon, x + .5, y + .5));
   if (danceAllowed) danceChanged++;
   if (reflectionAllowed) reflectionChanged++;
-  if (!danceAllowed && !reflectionAllowed) outside++;
+  if (!danceAllowed && !reflectionAllowed && !loungeAllowed) outside++;
   // Independent architectural witnesses: the stage, east wall, colored
   // dance panels and complete red front rail must not inherit generated art.
   if ((x >= 236 && x <= 724 && y >= 507 && y < 649)
@@ -135,7 +140,7 @@ window.createCodaDeveloperConsole = api => {
  }
  return {beforeSize: [a.width, a.height], afterSize: [b.width, b.height], changed, danceChanged, reflectionChanged, outside, protectedChanges};
 }''', {'meta': self.meta, 'reflections': self.reflections, 'danceReflections': self.dance_reflections,
-       'eastFloor': self.east_floor})
+       'eastFloor': self.east_floor, 'loungeFloor': self.lounge_floor})
         self.assertEqual(result['beforeSize'], [1672, 941])
         self.assertEqual(result['afterSize'], [1672, 941])
         self.assertGreater(result['danceChanged'], 1000, 'The reviewed dance-room floor must still receive the blended texture')

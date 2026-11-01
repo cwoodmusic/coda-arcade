@@ -24,7 +24,7 @@ class SouthFurnitureTests(unittest.TestCase):
     add_decor=fixture.DecorLibraryBrowserTests.add_decor
 
     def ready(self):
-        self.page.wait_for_function('window.CodaDeveloperConsole?.ready() && window.CodaArcadeQA?.characters().spriteState.ready && window.CodaDecorLibrary?.items.length===55')
+        self.page.wait_for_function('window.CodaDeveloperConsole?.ready() && window.CodaArcadeQA?.characters().spriteState.ready && window.CodaDecorLibrary?.items.length===71')
 
     def test_default_uses_south_sofas_and_furniture_library_without_changing_the_project(self):
         self.load(seed=False)
@@ -47,14 +47,14 @@ class SouthFurnitureTests(unittest.TestCase):
  }));
  return {sources,sofas,furnitureCount:CodaDecorLibrary.items.filter(item=>item.category==='furniture').length};
 }''')
-        self.assertEqual(actual['furnitureCount'],7)
+        self.assertEqual(actual['furnitureCount'],10)
         self.assertEqual([(item['width'],item['height']) for item in actual['sources']],[(164,131),(162,109),(288,105),(361,142),(127,81),(121,62),(86,70)])
         self.assertTrue(all(item['clear'] and item['visible'] for item in actual['sources']),actual['sources'])
         self.assertEqual([item['file'] for item in actual['sofas']],['lounge-couch-south.png','dance-couch-left-south.png','dance-couch-right-south.png'])
         self.assertTrue(all(item['samePixels'] for item in actual['sofas']),'Native sofa canvases must keep their normalized pixels and bounds')
         self.library()
         self.page.locator('[data-decor-category]').select_option('furniture')
-        self.assertEqual(self.page.locator('[data-decor-item]:visible').count(),7)
+        self.assertEqual(self.page.locator('[data-decor-item]:visible').count(),10)
         self.page.locator('[data-decor-search]').fill('sofa')
         self.assertEqual(self.page.locator('[data-decor-item]:visible').count(),3)
         self.page.locator('[data-decor-item="sofa-south"]').click()

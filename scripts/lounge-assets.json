@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "alphaThreshold": 8,
+  "manifest": "assets/decor/lounge-assets.json",
+  "sheets": [
+    {
+      "source": "assets/decor/source/lounge-furnishings.png",
+      "rows": 2,
+      "columns": 3,
+      "ids": ["rug-lounge-constellation", "rug-lounge-sunset", "rug-lounge-jade", "clothes-rack-south", "wardrobe-south", "table-rectangle-south"]
+    },
+    {
+      "source": "assets/decor/source/notes-counter-decor.png",
+      "rows": 2,
+      "columns": 3,
+      "ids": ["notes-register", "notes-receipt-printer", "notes-pen-cup", "notes-ledger", "notes-price-display", "notes-display-tray"]
+    },
+    {
+      "source": "assets/decor/source/lounge-wall-art.png",
+      "rows": 1,
+      "columns": 4,
+      "ids": ["wall-art-orbit", "wall-art-equalizer", "wall-art-keyboard", "wall-art-sunset"]
+    }
+  ]
+}

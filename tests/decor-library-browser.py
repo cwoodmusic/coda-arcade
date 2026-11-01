@@ -6,6 +6,9 @@ import json
 from pathlib import Path
 import threading
 import unittest
+import sys
+
+sys.dont_write_bytecode = True
 
 from playwright.sync_api import sync_playwright
 from world_navigation_helpers import open_settings, close_settings
@@ -68,7 +71,7 @@ class DecorLibraryBrowserTests(unittest.TestCase):
         self.page.evaluate("CodaDeveloperConsole.open('objects')")
 
     def ready(self):
-        self.page.wait_for_function('window.CodaDeveloperConsole?.ready() && window.CodaArcadeQA?.characters().spriteState.ready && window.CodaDecorLibrary?.items.length===40')
+        self.page.wait_for_function('window.CodaDeveloperConsole?.ready() && window.CodaArcadeQA?.characters().spriteState.ready && window.CodaDecorLibrary?.items.length===71')
 
     def frames(self):
         self.page.evaluate('''()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))''')
@@ -121,21 +124,21 @@ class DecorLibraryBrowserTests(unittest.TestCase):
         self.page.evaluate("CodaDeveloperConsole.open('objects')")
         self.frames()
 
-    def test_fresh_layout_places_the_requested_rig_and_shop_rug_only(self):
+    def test_fresh_layout_preserves_the_published_rig_decor_and_unplaced_expansion(self):
         self.load(seed=False)
         published = json.loads((ROOT/'published-world-project.json').read_text())
         self.assertEqual(self.project(), published)
-        self.assertEqual(len(published['assets']), 20)
+        self.assertEqual(len(published['assets']), 58)
         rigs = [asset for asset in published['assets'] if asset.get('floodLights')]
         self.assertEqual(len(rigs), 1)
         rig = rigs[0]
         dj = self.page.evaluate('CodaArcadeQA.dj()')
         self.assertAlmostEqual(rig['x'], dj['x'], delta=1)
         self.assertLess(rig['y'] + rig['h']/2, dj['y'] - 40, 'The fixture is mounted above the DJ')
-        self.assertEqual(len(self.page.evaluate('CodaDecorLibrary.items')), 48)
-        names = set(self.page.evaluate('CodaDecorLibrary.items.map(item=>item.name)'))
-        self.assertEqual([asset['name'] for asset in published['assets'] if asset['name'] in names],['Notes shop arcade rug'],
-                         'Only the requested shop rug is placed; other library decor stays unplaced')
+        self.assertEqual(len(self.page.evaluate('CodaDecorLibrary.items')), 71)
+        new_names = set(self.page.evaluate('CodaDecorLibrary.items.slice(55).map(item=>item.name)'))
+        self.assertTrue(all(asset['name'] not in new_names for asset in published['assets']),
+                        'New library art is available as separate assets without auto-placement')
         self.assertTrue(all(asset.get('data', '').startswith('data:image/png;base64,')
                             for asset in published['assets'] if asset['kind'] == 'image'),
                         'Placed images are embedded rather than tied to a library URL')
@@ -144,7 +147,7 @@ class DecorLibraryBrowserTests(unittest.TestCase):
     def test_all_library_cutouts_load_and_filtering_or_preview_does_not_place_them(self):
         original = self.project()
         self.library()
-        self.assertEqual(self.page.locator('[data-decor-item]:visible').count(), 48)
+        self.assertEqual(self.page.locator('[data-decor-item]:visible').count(), 71)
         images = self.page.evaluate('''async()=>Promise.all(CodaDecorLibrary.items.map(async item=>{
           const image=new Image();image.src='assets/decor/v1/'+item.id+'.png';await image.decode();
           const canvas=document.createElement('canvas');canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;
@@ -152,9 +155,9 @@ class DecorLibraryBrowserTests(unittest.TestCase):
           let clear=false,visible=false;for(let i=3;i<pixels.length;i+=4){if(pixels[i]===0)clear=true;if(pixels[i]>0)visible=true;if(clear&&visible)break;}
           return {id:item.id,width:canvas.width,height:canvas.height,clear,visible};
         }))''')
-        self.assertEqual(len(images), 48)
+        self.assertEqual(len(images), 71)
         self.assertTrue(all(image['width'] > 1 and image['height'] > 1 and image['clear'] and image['visible'] for image in images), images)
-        for category, count in [('floor',16), ('tabletop',16), ('wall',8), ('rug',8)]:
+        for category, count in [('floor',16), ('tabletop',22), ('wall',12), ('rug',11), ('furniture',10)]:
             self.page.locator('[data-decor-category]').select_option(category)
             self.assertEqual(self.page.locator('[data-decor-item]:visible').count(), count)
         self.page.locator('[data-decor-category]').select_option('all')

@@ -6,6 +6,9 @@ import json
 from pathlib import Path
 import threading
 import unittest
+import sys
+
+sys.dont_write_bytecode = True
 
 from playwright.sync_api import sync_playwright
 from world_navigation_helpers import open_settings, close_settings
@@ -239,13 +242,13 @@ class RugsAssetTransformsTests(unittest.TestCase):
         self.assertEqual(rug['rotation'],90)
         self.assertFalse(bool(rug.get('collider')))
 
-    def test_rug_library_has_eight_transparent_shapes_and_adds_background_copies(self):
+    def test_rug_library_has_eleven_transparent_shapes_and_adds_background_copies(self):
         original = self.project()
         library = self.page.locator('[data-decor-library]')
         library.locator('summary').click()
         self.page.locator('[data-decor-category]').select_option('rug')
-        self.assertEqual(self.page.locator('[data-decor-item]:visible').count(), 8)
-        self.assertEqual(self.page.evaluate('CodaDecorLibrary.items.length'), 48)
+        self.assertEqual(self.page.locator('[data-decor-item]:visible').count(), 11)
+        self.assertEqual(self.page.evaluate('CodaDecorLibrary.items.length'), 71)
         rugs = self.page.evaluate('''async()=>Promise.all(CodaDecorLibrary.items.filter(item=>item.category==='rug').map(async item=>{
           const image=new Image();image.src='assets/decor/v1/'+item.id+'.png';await image.decode();
           const c=document.createElement('canvas');c.width=image.naturalWidth;c.height=image.naturalHeight;
@@ -253,7 +256,7 @@ class RugsAssetTransformsTests(unittest.TestCase):
           let clear=false,opaque=false;for(let n=3;n<data.length;n+=4){if(data[n]===0)clear=true;if(data[n]>200)opaque=true;if(clear&&opaque)break;}
           return {id:item.id,width:c.width,height:c.height,clear,opaque};
         }))''')
-        self.assertEqual(len(rugs), 8)
+        self.assertEqual(len(rugs), 11)
         self.assertTrue(all(rug['clear'] and rug['opaque'] and rug['width']>4 and rug['height']>4 for rug in rugs), rugs)
         self.page.locator('[data-decor-item="rug-pixel-round"]').click()
         self.assertEqual(self.project(), original, 'Looking at a rug does not place it')
@@ -269,7 +272,7 @@ class RugsAssetTransformsTests(unittest.TestCase):
     def test_fresh_layout_places_only_the_big_rug_in_front_of_the_notes_store(self):
         self.load(seed=False)
         project = self.project()
-        self.assertEqual(len(project['assets']), 20)
+        self.assertEqual(len(project['assets']), 58)
         names = set(self.page.evaluate("CodaDecorLibrary.items.filter(item=>item.category==='rug').map(item=>item.name)"))
         placed = [asset for asset in project['assets'] if asset['name'] in names]
         self.assertEqual(len(placed), 1)
