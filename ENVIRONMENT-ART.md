@@ -81,7 +81,7 @@ The following sections document the retained earlier artwork and its builders.
 
 ## Rectangular lounge table and music collection
 
-The published layout follows uploaded world project (12), including its
+The published layout follows uploaded world project (13), including its
 arranged lounge and Notes counter accessories. The upload is retained exactly;
 new library assets are available for manual placement.
 
