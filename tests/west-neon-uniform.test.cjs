@@ -16,7 +16,7 @@ test('the uniform tube owns the entire west vertical but excludes north referenc
 test('the west style pass retains the immutable current room and exact generated crop composition',()=>{
  assert.equal(sha(read(meta.before)),meta.beforeSha256);
  assert.equal(meta.beforeSha256,'9281fd551b53d7dd8575e7d5b9d2860ac57c2009a9998b96fe89b4a19c2cd385');
- assert.equal(sha(read('published-world-project.json')),'6930fb4986341a37c2acd169dee854593721c53fc71a08ea63631ef09df35bef');
+ assert.equal(sha(read('published-world-project.json')),'4ba0462dba016d295cf60292057da9112dc69da18f1d121ebe9da98c18b61b72');
  assert.equal(sha(read('assets/environment/floor-palette-compat.json')),'8135e15d9907eacadfacac92e2f52e3d03a041ae3ba394edeff04af8aef38a44');
  assert.deepEqual(meta.sourcePlacement,[40,490,250,355]);const[w,h]=pngSize(read(meta.source));assert.ok(Math.abs(w/h-250/355)<.01);
 });

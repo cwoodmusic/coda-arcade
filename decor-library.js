@@ -81,10 +81,22 @@
   ['wall-art-gold-record','Gold record award','wall',68,80],
   ['wall-art-saxophone','Framed golden saxophone','wall',64,80],
   ['wall-art-electric-guitars','Crossed electric guitars wall art','wall',72,80],
-  ['wall-art-drum-kit','Framed drum kit','wall',74,80]
+  ['wall-art-drum-kit','Framed drum kit','wall',74,80],
+  ['couch-coral-east','East-facing coral two-seater couch','furniture',76,144],
+  ['couch-coral-west','West-facing coral two-seater couch','furniture',76,144],
+  ['couch-navy-east','East-facing navy round-arm two-seater','furniture',80,144],
+  ['couch-navy-west','West-facing navy round-arm two-seater','furniture',80,144],
+  ['armchair-amber-east','East-facing amber club armchair','furniture',66,96],
+  ['armchair-amber-west','West-facing amber club armchair','furniture',66,96],
+  ['chair-teal-east','East-facing teal wooden chair','furniture',58,84],
+  ['chair-teal-west','West-facing teal wooden chair','furniture',58,84],
+  ['counter-jade-east','East-facing vertical jade counter','furniture',72,164],
+  ['counter-jade-west','West-facing vertical jade counter','furniture',72,164],
+  ['table-lounge-east','East-facing vertical walnut table','furniture',60,132],
+  ['table-lounge-west','West-facing vertical walnut table','furniture',60,132]
  ];
  const items=Object.freeze(records.map(([id,name,category,width,height])=>Object.freeze({id,name,category,width,height})));
- const categoryNames={floor:'Floor decor',tabletop:'Tabletop',wall:'Wall decor',rug:'Rugs',furniture:'South-facing furniture'};
+ const categoryNames={floor:'Floor decor',tabletop:'Tabletop',wall:'Wall decor',rug:'Rugs',furniture:'Furniture'};
  function mount(api={}){
   const host=api.host;if(!host?.ownerDocument)throw Error('The decor library needs an editor host.');
   const doc=host.ownerDocument,win=doc.defaultView;let selected=null,busy=false,destroyed=false,request=0;

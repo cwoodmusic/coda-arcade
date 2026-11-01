@@ -71,7 +71,7 @@ class DecorLibraryBrowserTests(unittest.TestCase):
         self.page.evaluate("CodaDeveloperConsole.open('objects')")
 
     def ready(self):
-        self.page.wait_for_function('window.CodaDeveloperConsole?.ready() && window.CodaArcadeQA?.characters().spriteState.ready && window.CodaDecorLibrary?.items.length===79')
+        self.page.wait_for_function('window.CodaDeveloperConsole?.ready() && window.CodaArcadeQA?.characters().spriteState.ready && window.CodaDecorLibrary?.items.length===91')
 
     def frames(self):
         self.page.evaluate('''()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))''')
@@ -143,14 +143,39 @@ class DecorLibraryBrowserTests(unittest.TestCase):
         self.ready()
         self.assertEqual(self.project(), expected)
 
-    def test_music_wall_art_is_separate_and_the_rectangular_table_replaces_only_the_round_table(self):
+    def test_directional_furniture_is_unplaced_and_saves_as_independent_east_west_assets(self):
         self.load(seed=False)
-        table = next(asset for asset in self.project()['assets'] if asset['id'] == 'asset-7')
-        self.assertEqual((table['name'], table['kind'], table['x'], table['y'], table['w'], table['h'], table['visible']),
-                         ('Rectangular walnut lounge table', 'image', 328, 238, 156, 66, True))
-        self.assertEqual(table['origin']['name'], 'lounge_center_candle_table')
-        self.assertTrue(table['releaseCollision'])
-        self.assertGreater(table['collider']['w'], 0)
+        original = self.project()
+        directional = self.page.evaluate("CodaDecorLibrary.items.filter(item=>item.id.endsWith('-east')||item.id.endsWith('-west'))")
+        self.assertEqual(len(directional), 12)
+        names = {item['name'] for item in directional}
+        self.assertFalse(any(asset['name'] in names for asset in original['assets']))
+        self.library()
+        self.page.locator('[data-decor-category]').select_option('furniture')
+        self.page.locator('[data-decor-search]').fill('east')
+        self.assertEqual(self.page.locator('[data-decor-item]:visible').count(), 6)
+        self.page.locator('[data-decor-search]').fill('west')
+        self.assertEqual(self.page.locator('[data-decor-item]:visible').count(), 6)
+        self.assertEqual(self.project(), original, 'Browsing must leave the uploaded layout unchanged')
+        for item in directional:
+            asset = self.add_decor(item['id'])
+            self.assertGreater(asset['h'], asset['w'])
+            self.assertEqual(asset['rotation'], 0, 'Side-view artwork must not be a rotated south-facing sprite')
+            self.assertFalse(asset.get('origin'))
+            self.assertIn('East-facing' if item['id'].endswith('-east') else 'West-facing', self.page.locator('[data-decor-preview]').inner_text())
+        self.assertEqual(self.project()['assets'][:-12], original['assets'])
+        expected = self.project()
+        self.assertTrue(self.page.evaluate('CodaDeveloperConsole.save()'))
+        self.page.reload(wait_until='domcontentloaded')
+        self.ready()
+        self.assertEqual(self.project(), expected)
+
+    def test_music_wall_art_is_separate_and_the_rectangular_table_preserves_the_uploaded_layout(self):
+        self.load(seed=False)
+        table = next(asset for asset in self.project()['assets'] if asset['id'] == 'asset-90')
+        self.assertEqual((table['name'], table['kind'], table['visible']), ('Rectangular walnut lounge table', 'image', True))
+        self.assertTrue(table['data'].startswith('data:image/png;base64,'))
+        self.assertFalse(next(asset for asset in self.project()['assets'] if asset['id'] == 'asset-7')['visible'])
         additions = ['wall-art-treble-clef', 'wall-art-bass-clef', 'wall-art-grand-staff',
                      'wall-art-gold-record', 'wall-art-saxophone', 'wall-art-electric-guitars', 'wall-art-drum-kit']
         before = self.project()
@@ -176,15 +201,15 @@ class DecorLibraryBrowserTests(unittest.TestCase):
         self.load(seed=False)
         published = json.loads((ROOT/'published-world-project.json').read_text())
         self.assertEqual(self.project(), published)
-        self.assertEqual(len(published['assets']), 80)
+        self.assertEqual(len(published['assets']), 93)
         rigs = [asset for asset in published['assets'] if asset.get('floodLights')]
         self.assertEqual(len(rigs), 1)
         rig = rigs[0]
         dj = self.page.evaluate('CodaArcadeQA.dj()')
         self.assertAlmostEqual(rig['x'], dj['x'], delta=1)
         self.assertLess(rig['y'] + rig['h']/2, dj['y'] - 40, 'The fixture is mounted above the DJ')
-        self.assertEqual(len(self.page.evaluate('CodaDecorLibrary.items')), 79)
-        new_names = set(self.page.evaluate("CodaDecorLibrary.items.slice(55).filter(item=>item.id!=='table-lounge-walnut').map(item=>item.name)"))
+        self.assertEqual(len(self.page.evaluate('CodaDecorLibrary.items')), 91)
+        new_names = set(self.page.evaluate("CodaDecorLibrary.items.slice(79).map(item=>item.name)"))
         self.assertTrue(all(asset['name'] not in new_names for asset in published['assets']),
                         'New library art is available as separate assets without auto-placement')
         self.assertTrue(all(asset.get('data', '').startswith('data:image/png;base64,')
@@ -195,7 +220,7 @@ class DecorLibraryBrowserTests(unittest.TestCase):
     def test_all_library_cutouts_load_and_filtering_or_preview_does_not_place_them(self):
         original = self.project()
         self.library()
-        self.assertEqual(self.page.locator('[data-decor-item]:visible').count(), 79)
+        self.assertEqual(self.page.locator('[data-decor-item]:visible').count(), 91)
         images = self.page.evaluate('''async()=>Promise.all(CodaDecorLibrary.items.map(async item=>{
           const image=new Image();image.src=CodaDecorLibrary.imageURL(item.id);await image.decode();
           const canvas=document.createElement('canvas');canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;
@@ -203,9 +228,9 @@ class DecorLibraryBrowserTests(unittest.TestCase):
           let clear=false,visible=false;for(let i=3;i<pixels.length;i+=4){if(pixels[i]===0)clear=true;if(pixels[i]>0)visible=true;if(clear&&visible)break;}
           return {id:item.id,width:canvas.width,height:canvas.height,clear,visible};
         }))''')
-        self.assertEqual(len(images), 79)
+        self.assertEqual(len(images), 91)
         self.assertTrue(all(image['width'] > 1 and image['height'] > 1 and image['clear'] and image['visible'] for image in images), images)
-        for category, count in [('floor',16), ('tabletop',22), ('wall',19), ('rug',11), ('furniture',11)]:
+        for category, count in [('floor',16), ('tabletop',22), ('wall',19), ('rug',11), ('furniture',23)]:
             self.page.locator('[data-decor-category]').select_option(category)
             self.assertEqual(self.page.locator('[data-decor-item]:visible').count(), count)
         self.page.locator('[data-decor-category]').select_option('all')

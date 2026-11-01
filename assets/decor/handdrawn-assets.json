@@ -45,6 +45,10 @@
     {
       "path": "assets/decor/source/handdrawn-rugs-b.png",
       "sha256": "4a2fe157ec7b798554dc6fc2288705d2ed52803fa53bcf273fd8f7387c6f3c59"
+    },
+    {
+      "path": "assets/decor/source/handdrawn-east-west-furniture.png",
+      "sha256": "982b2ffe7aea3429a7036ac53e038817fbfbccdf4f51a3ae32848d19cf868ac6"
     }
   ],
   "items": [
@@ -3377,6 +3381,546 @@
       "output": "assets/decor/handdrawn/v1/rug-lounge-jade.png",
       "facing": "top",
       "sha256": "3fc38dfbf2e9131db08d1ef4fdfdfc9dba0a389dda6caedfaca0377c87f1dba4"
+    },
+    {
+      "id": "couch-coral-east",
+      "name": "East-facing coral two-seater couch",
+      "category": "furniture",
+      "width": 76,
+      "height": 144,
+      "source": "assets/decor/source/handdrawn-east-west-furniture.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "cell": [
+        0,
+        0,
+        413,
+        352
+      ],
+      "crop": [
+        145,
+        30,
+        194,
+        306
+      ],
+      "placement": [
+        2,
+        28,
+        72,
+        114
+      ],
+      "visibleBounds": [
+        3,
+        29,
+        70,
+        112
+      ],
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "output": "assets/decor/handdrawn/v1/couch-coral-east.png",
+      "facing": "east",
+      "sha256": "c91b80c8fa0e97595e6e54c443666efc6c4c4feb40f23b701e883c5494576954"
+    },
+    {
+      "id": "couch-coral-west",
+      "name": "West-facing coral two-seater couch",
+      "category": "furniture",
+      "width": 76,
+      "height": 144,
+      "source": "assets/decor/source/handdrawn-east-west-furniture.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "cell": [
+        413,
+        0,
+        341,
+        352
+      ],
+      "crop": [
+        487,
+        30,
+        167,
+        306
+      ],
+      "placement": [
+        2,
+        10,
+        72,
+        132
+      ],
+      "visibleBounds": [
+        3,
+        11,
+        70,
+        130
+      ],
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "output": "assets/decor/handdrawn/v1/couch-coral-west.png",
+      "facing": "west",
+      "sha256": "f84aae5b4cbc9a2f166b2cd371266ec5351ee4d2e8f80ee8b83d0b3dde696708"
+    },
+    {
+      "id": "couch-navy-east",
+      "name": "East-facing navy round-arm two-seater",
+      "category": "furniture",
+      "width": 80,
+      "height": 144,
+      "source": "assets/decor/source/handdrawn-east-west-furniture.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "cell": [
+        754,
+        0,
+        372,
+        352
+      ],
+      "crop": [
+        855,
+        44,
+        189,
+        292
+      ],
+      "placement": [
+        2,
+        25,
+        76,
+        117
+      ],
+      "visibleBounds": [
+        3,
+        26,
+        74,
+        115
+      ],
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "output": "assets/decor/handdrawn/v1/couch-navy-east.png",
+      "facing": "east",
+      "sha256": "10ac31f5cb77a6ef4cc40d338568af615103a79b6d7a25b1fd218c3437462c16"
+    },
+    {
+      "id": "couch-navy-west",
+      "name": "West-facing navy round-arm two-seater",
+      "category": "furniture",
+      "width": 80,
+      "height": 144,
+      "source": "assets/decor/source/handdrawn-east-west-furniture.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "cell": [
+        1126,
+        0,
+        410,
+        352
+      ],
+      "crop": [
+        1209,
+        44,
+        189,
+        292
+      ],
+      "placement": [
+        2,
+        25,
+        76,
+        117
+      ],
+      "visibleBounds": [
+        3,
+        26,
+        74,
+        115
+      ],
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "output": "assets/decor/handdrawn/v1/couch-navy-west.png",
+      "facing": "west",
+      "sha256": "cd11e5a5e7295d06dcb9fbc8a788ae02a3cde40ac6e41fd4fa5206aabd7741a7"
+    },
+    {
+      "id": "armchair-amber-east",
+      "name": "East-facing amber club armchair",
+      "category": "furniture",
+      "width": 66,
+      "height": 96,
+      "source": "assets/decor/source/handdrawn-east-west-furniture.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "cell": [
+        0,
+        352,
+        414,
+        271
+      ],
+      "crop": [
+        146,
+        376,
+        200,
+        230
+      ],
+      "placement": [
+        2,
+        23,
+        62,
+        71
+      ],
+      "visibleBounds": [
+        3,
+        24,
+        60,
+        69
+      ],
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "output": "assets/decor/handdrawn/v1/armchair-amber-east.png",
+      "facing": "east",
+      "sha256": "5ee57cb73fa9948a3023fc9ae5ef465a268ec3f7fd4c3220645d2d763af44297"
+    },
+    {
+      "id": "armchair-amber-west",
+      "name": "West-facing amber club armchair",
+      "category": "furniture",
+      "width": 66,
+      "height": 96,
+      "source": "assets/decor/source/handdrawn-east-west-furniture.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "cell": [
+        414,
+        352,
+        362,
+        271
+      ],
+      "crop": [
+        482,
+        376,
+        195,
+        230
+      ],
+      "placement": [
+        2,
+        21,
+        62,
+        73
+      ],
+      "visibleBounds": [
+        3,
+        22,
+        60,
+        71
+      ],
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "output": "assets/decor/handdrawn/v1/armchair-amber-west.png",
+      "facing": "west",
+      "sha256": "09f8672cda03a53ebd222c24b7734a89601da777b82068ef7a84f9b1484c32cb"
+    },
+    {
+      "id": "chair-teal-east",
+      "name": "East-facing teal wooden chair",
+      "category": "furniture",
+      "width": 58,
+      "height": 84,
+      "source": "assets/decor/source/handdrawn-east-west-furniture.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "cell": [
+        776,
+        352,
+        347,
+        271
+      ],
+      "crop": [
+        875,
+        370,
+        168,
+        242
+      ],
+      "placement": [
+        2,
+        4,
+        54,
+        78
+      ],
+      "visibleBounds": [
+        3,
+        5,
+        52,
+        76
+      ],
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "output": "assets/decor/handdrawn/v1/chair-teal-east.png",
+      "facing": "east",
+      "sha256": "1706e8bee443c3d49766fcd96b642d7ee2ab2dac3f8d4c24332cc94cb108bc07"
+    },
+    {
+      "id": "chair-teal-west",
+      "name": "West-facing teal wooden chair",
+      "category": "furniture",
+      "width": 58,
+      "height": 84,
+      "source": "assets/decor/source/handdrawn-east-west-furniture.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "cell": [
+        1123,
+        352,
+        413,
+        271
+      ],
+      "crop": [
+        1204,
+        369,
+        164,
+        243
+      ],
+      "placement": [
+        2,
+        2,
+        54,
+        80
+      ],
+      "visibleBounds": [
+        3,
+        3,
+        52,
+        78
+      ],
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "output": "assets/decor/handdrawn/v1/chair-teal-west.png",
+      "facing": "west",
+      "sha256": "71d36da6b780cbc1fadf35bb147b20106fa48105fc98896dc813c503ebed0838"
+    },
+    {
+      "id": "counter-jade-east",
+      "name": "East-facing vertical jade counter",
+      "category": "furniture",
+      "width": 72,
+      "height": 164,
+      "source": "assets/decor/source/handdrawn-east-west-furniture.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "cell": [
+        0,
+        623,
+        411,
+        401
+      ],
+      "crop": [
+        153,
+        634,
+        155,
+        344
+      ],
+      "placement": [
+        2,
+        11,
+        68,
+        151
+      ],
+      "visibleBounds": [
+        3,
+        12,
+        66,
+        149
+      ],
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "output": "assets/decor/handdrawn/v1/counter-jade-east.png",
+      "facing": "east",
+      "sha256": "f6655479b105aa0b81b7bbb4cb0b6346d0d26bb2ffe7a3d45b20a62086d71e3f"
+    },
+    {
+      "id": "counter-jade-west",
+      "name": "West-facing vertical jade counter",
+      "category": "furniture",
+      "width": 72,
+      "height": 164,
+      "source": "assets/decor/source/handdrawn-east-west-furniture.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "cell": [
+        411,
+        623,
+        358,
+        401
+      ],
+      "crop": [
+        514,
+        634,
+        158,
+        344
+      ],
+      "placement": [
+        2,
+        14,
+        68,
+        148
+      ],
+      "visibleBounds": [
+        3,
+        15,
+        66,
+        146
+      ],
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "output": "assets/decor/handdrawn/v1/counter-jade-west.png",
+      "facing": "west",
+      "sha256": "a42980658aa562a74645eab73e736ae3889a4aafe45695d6ac19cfed10085750"
+    },
+    {
+      "id": "table-lounge-east",
+      "name": "East-facing vertical walnut table",
+      "category": "furniture",
+      "width": 60,
+      "height": 132,
+      "source": "assets/decor/source/handdrawn-east-west-furniture.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "cell": [
+        769,
+        623,
+        353,
+        401
+      ],
+      "crop": [
+        866,
+        653,
+        176,
+        297
+      ],
+      "placement": [
+        2,
+        35,
+        56,
+        95
+      ],
+      "visibleBounds": [
+        3,
+        36,
+        54,
+        93
+      ],
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "output": "assets/decor/handdrawn/v1/table-lounge-east.png",
+      "facing": "east",
+      "sha256": "7a79d888fb260fc9499458b47d060fb2771c344a6e4af5699b9d91fc5e44618e"
+    },
+    {
+      "id": "table-lounge-west",
+      "name": "West-facing vertical walnut table",
+      "category": "furniture",
+      "width": 60,
+      "height": 132,
+      "source": "assets/decor/source/handdrawn-east-west-furniture.png",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "cell": [
+        1122,
+        623,
+        414,
+        401
+      ],
+      "crop": [
+        1203,
+        653,
+        177,
+        297
+      ],
+      "placement": [
+        2,
+        36,
+        56,
+        94
+      ],
+      "visibleBounds": [
+        3,
+        37,
+        54,
+        92
+      ],
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "output": "assets/decor/handdrawn/v1/table-lounge-west.png",
+      "facing": "west",
+      "sha256": "b09da71ee341ffb65d47e2cb44a2373f8b2d13298820d9d23588eef273859656"
     }
   ]
 }

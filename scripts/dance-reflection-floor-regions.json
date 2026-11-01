@@ -5,7 +5,7 @@
   "source": "assets/environment/source/dance-reflections-clean.png",
   "sourcePlacement": [40, 500, 820, 390],
   "output": "assets/environment/v1/empty-arcade.png",
-  "reviewedProjectSha256": "6930fb4986341a37c2acd169dee854593721c53fc71a08ea63631ef09df35bef",
+  "reviewedProjectSha256": "4ba0462dba016d295cf60292057da9112dc69da18f1d121ebe9da98c18b61b72",
   "passes": [
     {
       "id": "dance-west-glass",

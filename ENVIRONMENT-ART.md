@@ -2,7 +2,7 @@
 
 ## Hand-drawn library style and facing
 
-All 79 library items now use the chunky hand-drawn pixel style established by
+The original 79 library items use the chunky hand-drawn pixel style established by
 the Notes pencil cup, ledger and price display. Seventy-four have new artwork;
 the five matching Notes accessories keep their existing art. Props use simpler
 teal, coral, cream, muted purple and ochre shapes with fewer glossy highlights.
@@ -25,6 +25,25 @@ sprites and their provenance manifest; `--check` verifies reproduction. The
 earlier artwork builders still reproduce the retained original collection.
 Validate the active collection with `node --test tests/pixel-style.test.cjs`
 and `python3 tests/decor-library-browser.py`.
+
+## Vertical east- and west-facing furniture
+
+The library includes twelve additional hand-drawn furniture assets: coral
+box-style two-seaters, navy round-arm two-seaters with cream cushions, amber
+club armchairs, teal wooden chairs, jade counters and walnut tables. Each has
+an east-facing (right) and west-facing (left) version. The long footprint runs
+north–south; the artwork is a side view rather than a rotated front sprite.
+No additional turntable desks are included.
+
+Open **Objects → Asset library → Furniture** and search **east** or **west**.
+Each search lists six pieces. Add the pieces you want; browsing leaves your
+layout unchanged. Copies support the existing move, size, flip, layer, Undo,
+Save and Export controls. The uploaded project does not auto-place them.
+
+The source sheet is `assets/decor/source/handdrawn-east-west-furniture.png`.
+The hand-drawn collection now has 86 extracted sprites across twelve sheets;
+five preferred Notes accessories retain their original sources. Rebuild with
+`node scripts/build-pixel-style-assets.cjs`, or verify with `--check`.
 
 ## Empty walls and movable decorations
 
@@ -61,13 +80,11 @@ The following sections document the retained earlier artwork and its builders.
 
 ## Rectangular lounge table and music collection
 
-The published layout uses the uploaded world project (10), with its round
-lounge table replaced by a rectangular walnut coffee table in front of the
-sofa. The table remains independently editable and has a matching collision
-footprint. All other uploaded asset placements, wall art, NPCs, collision edits
-and room projects are retained.
+The published layout follows uploaded world project (11), including its
+arranged lounge and Notes counter accessories. The upload is retained exactly;
+new library assets are available for manual placement.
 
-The **Asset library** now contains 79 items. **South-facing furniture** includes
+The **Asset library** now contains 91 items. **Furniture** includes
 the new walnut table. **Wall decor** adds framed treble and bass clefs, grand
 staff sheet music, a gold record award, a golden saxophone, crossed electric
 guitars and a drum kit. Each is a separate transparent image; adding, moving,

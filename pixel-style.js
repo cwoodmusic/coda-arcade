@@ -2,7 +2,7 @@
  * portable; the original source collection stays available in decor/v1. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.CodaPixelStyle=api;})(typeof window==='undefined'?null:window,function(){
  'use strict';
- const VERSION='handdrawn-20261101-1';
+ const VERSION='east-west-20261101-1';
  const groups=[
   ['audio-register',1,3,['boombox','boombox-tower','notes-register']],
   ['floor-a',2,4,['neon-jukebox','rocket-statue','gumball-machine','star-pedestal','alien-statue','prize-capsule-machine','record-pedestal','neon-cactus']],
@@ -14,7 +14,8 @@
   ['furniture-b',2,4,['clothes-rack-south','wardrobe-south','table-rectangle-south','wall-art-sunset','table-lounge-walnut','wall-art-treble-clef','wall-art-bass-clef','wall-art-grand-staff']],
   ['wall-b',1,4,['wall-art-gold-record','wall-art-saxophone','wall-art-electric-guitars','wall-art-drum-kit']],
   ['rugs-a',2,4,['rug-notes-rectangle','rug-neon-oval','rug-pixel-round','rug-checker-square','rug-lightning-runner','rug-starburst','rug-controller','rug-hex-grid']],
-  ['rugs-b',1,3,['rug-lounge-constellation','rug-lounge-sunset','rug-lounge-jade']]
+  ['rugs-b',1,3,['rug-lounge-constellation','rug-lounge-sunset','rug-lounge-jade']],
+  ['east-west-furniture',3,4,['couch-coral-east','couch-coral-west','couch-navy-east','couch-navy-west','armchair-amber-east','armchair-amber-west','chair-teal-east','chair-teal-west','counter-jade-east','counter-jade-west','table-lounge-east','table-lounge-west']]
  ];
  const SHEETS=Object.freeze(groups.map(([name,rows,columns,ids])=>Object.freeze({name,source:'assets/decor/source/handdrawn-'+name+'.png',rows,columns,ids:Object.freeze(ids)})));
  const ids=new Set(SHEETS.flatMap(sheet=>sheet.ids));
@@ -29,7 +30,7 @@
  });
  const has=id=>ids.has(id);
  const imageURL=id=>'assets/decor/'+(has(id)?'handdrawn/v1/':'v1/')+id+'.png'+(has(id)?'?v='+VERSION:'');
- const facing=(id,category)=>id==='notes-register'?'north':category==='rug'?'top':'south';
- const facingLabel=(id,category)=>facing(id,category)==='north'?'North-facing · rear view':facing(id,category)==='top'?'Top-down':'South-facing · front view';
+ const facing=(id,category)=>id.endsWith('-east')?'east':id.endsWith('-west')?'west':id==='notes-register'?'north':category==='rug'?'top':'south';
+ const facingLabel=(id,category)=>({east:'East-facing · right',west:'West-facing · left',north:'North-facing · rear view',top:'Top-down',south:'South-facing · front view'})[facing(id,category)];
  return Object.freeze({VERSION,SHEETS,ENVIRONMENT,ENVIRONMENT_FIT,has,imageURL,facing,facingLabel});
 });

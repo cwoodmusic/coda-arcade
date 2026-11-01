@@ -5,8 +5,8 @@ const root=path.resolve(__dirname,'..'),manifest=require('../assets/decor/handdr
 const digest=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
 test('the full library uses hand-drawn replacements while keeping the preferred Notes accessories',()=>{
  const preserved=['notes-receipt-printer','notes-pen-cup','notes-ledger','notes-price-display','notes-display-tray'];
- assert.equal(library.items.length,79);assert.equal(manifest.items.length,74);
- assert.equal(new Set(style.SHEETS.flatMap(sheet=>sheet.ids)).size,74);
+ assert.equal(library.items.length,91);assert.equal(manifest.items.length,86);
+ assert.equal(new Set(style.SHEETS.flatMap(sheet=>sheet.ids)).size,86);
  for(const item of library.items){
   assert.equal(style.has(item.id),!preserved.includes(item.id));
   assert.match(library.imageURL(item.id),style.has(item.id)?/assets\/decor\/handdrawn\/v1\//:/assets\/decor\/v1\//);
@@ -26,7 +26,7 @@ test('cash register faces north, floor textiles stay top-down and equipment face
  for(const item of library.items){
   const facing=style.facing(item.id,item.category);
   if(item.id==='notes-register')continue;
-  assert.equal(facing,item.category==='rug'?'top':'south');
+  assert.equal(facing,item.id.endsWith('-east')?'east':item.id.endsWith('-west')?'west':item.category==='rug'?'top':'south');
  }
  for(const id of ['boombox','boombox-tower','notes-register'])assert.ok(manifest.items.some(item=>item.id===id));
 });
@@ -37,5 +37,19 @@ test('shared furniture uses the hand-drawn designs without replacing legacy PNG 
  for(const[name,id,target]of [['lounge_sofa','sofa-lounge-south',[13,38,262,67]],['dance_left_couch','sofa-south',[12,66,139,65]],['dance_right_couch','sofa-compact-south',[20,52,121,57]]]){
   assert.deepEqual(style.ENVIRONMENT_FIT[name].target,target,'Retain the existing world sofa footprint and foot baseline');
   assert.deepEqual(style.ENVIRONMENT_FIT[name].source,manifest.items.find(item=>item.id===id).visibleBounds,'Use the full reviewed hand-drawn silhouette');
+ }
+});
+
+test('twelve new pieces provide east and west chairs, two-seaters, tables and counters as vertical assets',()=>{
+ const items=library.items.slice(79);
+ assert.equal(items.length,12);assert.equal(items.filter(item=>item.id.endsWith('-east')).length,6);assert.equal(items.filter(item=>item.id.endsWith('-west')).length,6);
+ assert.equal(items.filter(item=>item.id.startsWith('couch-')).length,4);
+ assert.equal(items.filter(item=>item.id.startsWith('armchair-')||item.id.startsWith('chair-')).length,4);
+ assert.ok(items.every(item=>item.category==='furniture'&&item.height>item.width));
+ assert.ok(items.every(item=>!item.id.includes('dj')));
+ for(const item of items){
+  const record=manifest.items.find(record=>record.id===item.id);
+  assert.equal(record.facing,item.id.endsWith('-east')?'east':'west');
+  assert.ok(record.visibleBounds[3]>record.visibleBounds[2],'The actual artwork must run vertically');
  }
 });

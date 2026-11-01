@@ -20,7 +20,7 @@ test('the aggregate pass keeps four independent reviewed masks within their own 
 test('aggregate provenance remains the approved native with unchanged project and palette',()=>{
  const digest=file=>crypto.createHash('sha256').update(fs.readFileSync(path.join(root,file))).digest('hex');
  assert.equal(digest(registry.before),registry.beforeSha256);
- assert.equal(digest('published-world-project.json'),'6930fb4986341a37c2acd169dee854593721c53fc71a08ea63631ef09df35bef');
+ assert.equal(digest('published-world-project.json'),'4ba0462dba016d295cf60292057da9112dc69da18f1d121ebe9da98c18b61b72');
  assert.equal(digest('assets/environment/floor-palette-compat.json'),'8135e15d9907eacadfacac92e2f52e3d03a041ae3ba394edeff04af8aef38a44');
  const invalid={...readPasses()[0].meta,sourcePlacement:[1,1,2,2]};
  assert.throws(()=>validatePass(invalid),/outside its source placement/);

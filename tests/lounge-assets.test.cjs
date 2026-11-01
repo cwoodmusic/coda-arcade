@@ -13,9 +13,9 @@ test('the lounge expansion is twenty-four separate placeable assets with front-f
   'table-lounge-walnut','wall-art-treble-clef','wall-art-bass-clef','wall-art-grand-staff','wall-art-gold-record','wall-art-saxophone','wall-art-electric-guitars','wall-art-drum-kit'
  ];
  assert.deepEqual(validateMetadata(meta).ids,expected);
- assert.deepEqual(library.items.slice(55).map(item=>item.id),expected);
- assert.deepEqual(library.items.slice(55).reduce((counts,item)=>(counts[item.category]=(counts[item.category]||0)+1,counts),{}),{rug:3,furniture:4,tabletop:6,wall:11});
- assert.ok(library.items.slice(55).filter(item=>item.category==='tabletop').every(item=>item.width<=36&&item.height<=32),'Counter items stay small enough to arrange separately');
+ assert.deepEqual(library.items.slice(55,79).map(item=>item.id),expected);
+ assert.deepEqual(library.items.slice(55,79).reduce((counts,item)=>(counts[item.category]=(counts[item.category]||0)+1,counts),{}),{rug:3,furniture:4,tabletop:6,wall:11});
+ assert.ok(library.items.slice(55,79).filter(item=>item.category==='tabletop').every(item=>item.width<=36&&item.height<=32),'Counter items stay small enough to arrange separately');
  assert.throws(()=>validateMetadata({...meta,sheets:[{...meta.sheets[0],ids:Array(6).fill(expected[0])}]}),/duplicate/);
  assert.throws(()=>validateMetadata({...meta,sheets:[{...meta.sheets[0],source:'published-world-project.json'}]}),/Invalid/);
 });

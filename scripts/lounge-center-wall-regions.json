@@ -6,7 +6,7 @@
   "source": "assets/environment/source/lounge-center-flat.png",
   "sourcePlacement": [160, 5, 300, 180],
   "output": "assets/environment/v1/empty-arcade.png",
-  "reviewedProjectSha256": "6930fb4986341a37c2acd169dee854593721c53fc71a08ea63631ef09df35bef",
+  "reviewedProjectSha256": "4ba0462dba016d295cf60292057da9112dc69da18f1d121ebe9da98c18b61b72",
   "polygons": [
     [[233,33],[361,33],[361,147],[233,147]]
   ],
