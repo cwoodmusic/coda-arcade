@@ -46,6 +46,7 @@ class DanceFloorBlendTests(unittest.TestCase):
         self.meta = json.loads((ROOT / 'scripts/dance-floor-blend-regions.json').read_text())
         self.reflections = json.loads((ROOT / 'scripts/reflection-floor-regions.json').read_text())
         self.dance_reflections = json.loads((ROOT / 'scripts/dance-reflection-floor-regions.json').read_text())
+        self.east_floor = json.loads((ROOT / 'scripts/east-floor-cleanup-regions.json').read_text())
         script = (ROOT / 'developer-console.js').read_text() + '''
 (() => { const original = window.createCodaDeveloperConsole;
 window.createCodaDeveloperConsole = api => {
@@ -92,7 +93,7 @@ window.createCodaDeveloperConsole = api => {
                          PUBLISHED_SHA256, 'The uploaded world project must remain byte-for-byte intact')
         self.load()
         self.assertEqual(self.project(), self.published)
-        result = self.page.evaluate('''async ({meta,reflections,danceReflections}) => {
+        result = self.page.evaluate('''async ({meta,reflections,danceReflections,eastFloor}) => {
  const load = async url => { const image = new Image(); image.src = url; await image.decode(); return image; };
  const before = await load(meta.before), after = await load(meta.output);
  const make = image => { const c = document.createElement('canvas'); c.width = image.naturalWidth;
@@ -118,7 +119,7 @@ window.createCodaDeveloperConsole = api => {
   // Subsequent approved cleanup removes orphaned reflections from the same
   // native backdrop. Its compositor clips these exact bounds to the shared
   // glass geometry; neither pass owns architecture outside that union.
-  const reflectionAllowed = glass && [...reflections.passes,...danceReflections.passes].some(pass => {
+  const reflectionAllowed = glass && [...reflections.passes,...danceReflections.passes,...eastFloor.passes].some(pass => {
    const [left,top,width,height] = pass.repairBounds;
    return x >= left && x < left + width && y >= top && y < top + height;
   });
@@ -133,7 +134,8 @@ window.createCodaDeveloperConsole = api => {
    || (x >= 119 && x < 808 && y >= 837 && y < 884)) protectedChanges++;
  }
  return {beforeSize: [a.width, a.height], afterSize: [b.width, b.height], changed, danceChanged, reflectionChanged, outside, protectedChanges};
-}''', {'meta': self.meta, 'reflections': self.reflections, 'danceReflections': self.dance_reflections})
+}''', {'meta': self.meta, 'reflections': self.reflections, 'danceReflections': self.dance_reflections,
+       'eastFloor': self.east_floor})
         self.assertEqual(result['beforeSize'], [1672, 941])
         self.assertEqual(result['afterSize'], [1672, 941])
         self.assertGreater(result['danceChanged'], 1000, 'The reviewed dance-room floor must still receive the blended texture')

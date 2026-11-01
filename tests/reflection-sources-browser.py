@@ -15,12 +15,13 @@ _fixture = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_fixture)
 PUBLISHED_SHA256 = 'a9a495716023e0df56dc23db8c9bbfd09316f5f08668fbcca43a633461dc2c00'
 FINISH_BOUNDS = [[94, 659, 57, 147], [685, 649, 122, 157]]
-REPAIR_BOUNDS = [[435, 426, 246, 80], [750, 649, 57, 157]] + FINISH_BOUNDS
+BLUE_GHOST_BOUNDS = [[725, 628, 82, 178]]
+REPAIR_BOUNDS = [[435, 426, 246, 80], [750, 649, 57, 157]] + FINISH_BOUNDS + BLUE_GHOST_BOUNDS
 # Captured with the pre-update native backdrop and its prior-good palette
 # manifest, with only REPAIR_BOUNDS blanked. This immutable witness includes
 # earlier wall removals and floor repairs; rebuilding compatibility must not
 # resurrect their purple/red pigments elsewhere in the room.
-PRIOR_GOOD_BASE_OUTSIDE_REPAIRS_SHA256 = '11099d315c7e652e3c9b20a801927a5a6498f58c8a5b7f81eabfa833b650eb8d'
+PRIOR_GOOD_BASE_OUTSIDE_REPAIRS_SHA256 = '0223c0b06367574b05e42643558007910456658e9e5298611b56fe3375a2424f'
 
 
 class ReflectionSourceTests(unittest.TestCase):
@@ -139,9 +140,59 @@ class ReflectionSourceTests(unittest.TestCase):
   if(!bounds.some(([l,t,w,h])=>x>=l&&x<l+w&&y>=t&&y<t+h)||!CodaWallReflections.isGlassFloor(x+.5,y+.5))outside++;
  }
  return {changed,outside};
-}''', FINISH_BOUNDS)
+}''', FINISH_BOUNDS + BLUE_GHOST_BOUNDS)
         self.assertGreater(result['changed'], 1000)
         self.assertEqual(result['outside'], 0, 'The new pass must preserve every earlier edit outside its exact glass masks')
+
+    def test_blue_wall_ghost_cleanup_preserves_every_pixel_outside_its_glass_mask(self):
+        self.load()
+        result = self.page.evaluate('''async bounds=>{
+ const pixels=async url=>{const image=new Image();image.src=url;await image.decode();
+  const c=document.createElement('canvas');c.width=1672;c.height=941;c.getContext('2d').drawImage(image,0,0);
+  return c.getContext('2d').getImageData(0,0,1672,941).data;};
+ const before=await pixels('assets/environment/source/east-floor-before-cleanup.png');
+ const after=await pixels('assets/environment/v1/empty-arcade.png');let changed=0,outside=0;
+ for(let y=0;y<941;y++)for(let x=0;x<1672;x++){
+  const at=(y*1672+x)*4;if(![0,1,2,3].some(c=>before[at+c]!==after[at+c]))continue;changed++;
+  if(!bounds.some(([l,t,w,h])=>x>=l&&x<l+w&&y>=t&&y<t+h)||!CodaWallReflections.isGlassFloor(x+.5,y+.5))outside++;
+ }
+ return {changed,outside};
+}''', BLUE_GHOST_BOUNDS)
+        self.assertGreater(result['changed'], 1000)
+        self.assertEqual(result['outside'], 0, 'The blue wall-fragment cleanup must keep every prior edit outside its exact mask')
+
+    def test_blue_wall_fragments_above_the_old_mask_are_gone_without_hiding_real_reflections(self):
+        self.load()
+        self.quality('off')
+        result = self.page.evaluate('''async()=>{
+ const load=async url=>{const image=new Image();image.src=url;await image.decode();
+  const c=document.createElement('canvas');c.width=1672;c.height=941;c.getContext('2d').drawImage(image,0,0);return c;};
+ const before=await load('assets/environment/source/east-floor-before-cleanup.png');
+ const native=await load('assets/environment/v1/empty-arcade.png');
+ const base=document.createElement('canvas');base.width=1672;base.height=941;__danceBlendConsole.renderBase(base.getContext('2d'));
+ const sample=(c,x,y)=>[...c.getContext('2d').getImageData(x,y,1,1).data];
+ const points=[[728,647],[776,641],[768,651],[765,653]].map(([x,y])=>({x,y,before:sample(before,x,y),native:sample(native,x,y),off:sample(base,x,y)}));
+ const projected=document.createElement('canvas');projected.width=1672;projected.height=941;
+ CodaWallReflections.create({document,getQuality:()=> 'full'}).draw(projected.getContext('2d'),native);
+ const pixels=projected.getContext('2d').getImageData(0,0,1672,941).data;
+ let bareEastInk=0,totalInk=0;for(let y=0;y<941;y++)for(let x=0;x<1672;x++)if(pixels[(y*1672+x)*4+3]){
+  totalInk++;if(x>=736&&x<807&&y>=628&&y<806)bareEastInk++;
+ }
+ return {points,bareEastInk,totalInk};
+}''')
+        for point in result['points']:
+            self.assertLess(point['native'][2], 100, 'Remove the blue cap/tile silhouette: ' + json.dumps(point))
+            self.assertLess(point['native'][2], point['before'][2] - 15, point)
+            self.assertEqual(point['off'], point['native'], point)
+        self.assertEqual(result['bareEastInk'], 0, 'A wall ending at x725 cannot project a detached floor wall on the bare eastern walkway')
+        self.assertGreater(result['totalInk'], 1000, 'Preserve actual wall reflections throughout the room')
+        self.quality('full')
+        full = self.page.evaluate('''()=>{
+ const c=document.createElement('canvas');c.width=1672;c.height=941;const g=c.getContext('2d');__danceBlendConsole.renderBase(g);
+ return [[728,647],[776,641],[768,651],[765,653]].map(([x,y])=>[...g.getImageData(x,y,1,1).data]);
+}''')
+        self.assertEqual(full, [point['off'] for point in result['points']],
+                         'Full effects must not reintroduce the removed detached wall fragments')
 
     def test_reported_streaks_are_gone_with_effects_off_and_browser_fetches_fresh_art(self):
         self.load()
@@ -163,7 +214,7 @@ class ReflectionSourceTests(unittest.TestCase):
                          'assets/environment/floor-palette-compat.json']:
             requests = [url for url in result['resources'] if resource + '?' in url]
             self.assertEqual(len(requests), 1, requests)
-            self.assertIn('v=phantom-reflections-20261101-1', requests[0],
+            self.assertIn('v=east-floor-cleanup-20261101-1', requests[0],
                           'Return visits must fetch the new art rather than the former orange-streak cache key')
         self.quality('full')
         full = self.page.evaluate('''()=>{
@@ -214,6 +265,7 @@ class ReflectionSourceTests(unittest.TestCase):
         _fixture.paint_pixel(painted, 775, 740, '#a342c6ff')
         _fixture.paint_pixel(painted, 113, 700, '#38a964ff')
         _fixture.paint_pixel(painted, 703, 680, '#c57a28ff')
+        _fixture.paint_pixel(painted, 776, 641, '#49a3efff')
         _fixture.paint_pixel(painted, 1100, 650, '#cf7a22ff')
         stored = self.seed(local)
         for _ in range(2):
@@ -223,10 +275,10 @@ class ReflectionSourceTests(unittest.TestCase):
             self.assertEqual(self.storage_record(), stored)
             colors = self.page.evaluate('''()=>{
  const c=document.createElement('canvas');c.width=1672;c.height=941;const g=c.getContext('2d');__danceBlendConsole.renderBase(g);
- return [[540,475],[775,740],[113,700],[703,680],[1100,650]].map(([x,y])=>[...g.getImageData(x,y,1,1).data]);
+ return [[540,475],[775,740],[113,700],[703,680],[776,641],[1100,650]].map(([x,y])=>[...g.getImageData(x,y,1,1).data]);
 }''')
             self.assertEqual(colors, [[23, 195, 121, 255], [163, 66, 198, 255], [56, 169, 100, 255],
-                                      [197, 122, 40, 255], [207, 122, 34, 255]],
+                                      [197, 122, 40, 255], [73, 163, 239, 255], [207, 122, 34, 255]],
                              'Intentional saved colors remain above the cleaned native floor')
             self.page.reload(wait_until='domcontentloaded')
             self.page.wait_for_function('CodaDeveloperConsole.ready()&&CodaArcadeQA.characters().spriteState.ready')
