@@ -228,6 +228,21 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
         self.assertFalse(self.state()['active'])
         self.assertEqual(self.page.evaluate('CodaArcadeQA.position()'), before['position'])
 
+    def test_default_124_bpm_club_loop_pauses_for_dance_and_stops_all_contexts(self):
+        self.page.evaluate('''()=>{const Native=window.AudioContext;window.musicContexts=[];window.AudioContext=class extends Native{constructor(...args){super(...args);musicContexts.push(this);}};}''')
+        self.page.locator('#musicBtn').click()
+        self.page.wait_for_function("CodaArcadeQA.jukebox().playing&&CodaArcadeQA.jukebox().audioState==='running'")
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.jukebox().bpm'),124)
+        self.start('hard')
+        self.assertFalse(self.page.evaluate('CodaArcadeQA.jukebox().playing'))
+        self.page.wait_for_function("musicContexts[0].state==='closed'")
+        self.page.keyboard.press('Escape')
+        self.page.wait_for_function("CodaArcadeQA.jukebox().playing&&CodaArcadeQA.jukebox().audioState==='running'")
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.jukebox().bpm'),124)
+        self.page.locator('#musicBtn').click()
+        self.page.wait_for_function("musicContexts.every(context=>context.state==='closed')")
+        self.assertFalse(self.page.evaluate('CodaArcadeQA.jukebox().playing'))
+
     def test_closing_restores_the_original_camera_player_npcs_and_looping_jukebox_track(self):
         open_destination(self.page, 'dj')
         self.page.locator('[data-jukebox-track="neon-afterhours"]').click()

@@ -4,7 +4,7 @@ Walk to DJ Coda and interact. Choose **Play DJ Coda's Line Dance**, then Easy, N
 
 The camera fits the whole dance floor. The player joins a line with up to three randomly selected available NPCs. Correct presses animate larger directional dance steps with a more pronounced bounce. Wrong or missed arrows cause a short stumble, then the player gets back up; the NPCs keep dancing to the chart. Reduced motion uses smaller steps without bouncing or the fall rotation.
 
-Easy uses quarter-note steps at 80 BPM. Normal adds eighth notes at 92 BPM. Hard adds paired sixteenths, dotted notes, and syncopation at a more manageable 88 BPM. Every round shuffles that difficulty's rhythm patterns across all eight bars, including the opening. Patterns do not repeat immediately, and each pattern appears before the pool reshuffles. Each group of two or four sixteenth notes uses the same arrow direction; tap that arrow once for each note. All modes have written rests, bar lines, actual Bravura note glyphs, and appropriate beams. Long notes require one press at the beginning. The result shows score, accuracy, best streak, saved XP, and newly earned unlocks.
+Easy uses quarter-note steps at 80 BPM. Normal adds eighth notes at 92 BPM. Hard focuses on eighth-note syncopation and dotted-quarter notes at 88 BPM, with no sixteenth-note runs, at most five steps per bar, and a forgiving 170 ms hit window. Every round shuffles that difficulty's rhythm patterns across all eight bars, including the opening. Patterns do not repeat immediately, and each pattern appears before the pool reshuffles. All modes have written rests, bar lines, actual Bravura note glyphs, and appropriate beams. Long notes require one press at the beginning. The result shows score, accuracy, best streak, saved XP, and newly earned unlocks.
 
 Completed eight-bar dances with at least one correct step earn practice XP. The Hall of Fame's **DJ Line Dance** category lists six one-time achievements:
 
@@ -24,3 +24,9 @@ Disco-ball beams and reflections circle at elapsed-time speed, independently of 
 Exit with Escape or the close button. Exiting restores the borrowed actor positions, camera, and previously playing jukebox/arcade track. Backgrounding the page, changing profile, or leaving the game stops its audio and input. Those interruptions do not restart music in the background. Temporary dance state never changes the saved world layout or avatar appearance.
 
 The pure chart/timing engine is `dance-rhythm-engine.js`. Actor staging is `dance-floor-stage.js`; notation, controls, and audio are `dance-rhythm-game.js/css`; `dance-floor-world.js` coordinates the existing world and camera.
+
+## Sound
+
+The dance game has an original synthesized EDM backing with four-on-the-floor kick, clap, offbeat hi-hats, sub-bass, chord stabs, and a synth hook. A distinct metronome click marks every quarter-note beat, including the count-in, with a higher downbeat accent. **EDM music** and **Metronome click** can be muted independently. Both use the chart’s clock and tempo; exit, results, and backgrounding stop the audio.
+
+The default main-arcade music is a 16-bar club loop at 124 BPM. Four-bar phrases introduce variations, pare back the hook in the middle, and return with brighter synths and fills. Jukebox dance selections also retain their 16-bar arrangements with stronger drums. Dance-game rounds remain eight bars and use their own playable tempo.

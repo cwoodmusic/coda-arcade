@@ -29,6 +29,7 @@
  const min=root=>({root,third:3}),maj=root=>({root,third:4});
  function house(id,title,bpm,tonic,hook,sound,progressions,style){
   const b=builder(bpm,'4/4',[['Lead',sound,sound===0?.27:.34],['Bass',7,.35],['Harmony',style==='lounge'?2:4,.12],['Counter melody',style==='lounge'?3:8,.10]]);
+  if(style!=='lounge'){b.drums[0].volume=.35;b.drums[1].volume=.20;b.drums[2].volume=.085;}
   const opening=progressions[0][0],openingPalette=[0,opening.third,7,12,14,opening.third+12],firstPitch=tonic+opening.root+12+openingPalette[hook[0]];
   for(let bar=0;bar<16;bar++){
    const part=Math.floor(bar/4),within=bar%4,chord=progressions[part][within],root=tonic+chord.root,palette=[0,chord.third,7,12,14,chord.third+12];

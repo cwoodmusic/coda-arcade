@@ -141,13 +141,8 @@ class DanceRhythmGameTests(unittest.TestCase):
         self.assertTrue(self.page.evaluate('async()=>{await CodaMusicNotation.load(document);return CodaMusicNotation.isReady(document)}'))
         self.assertGreater(int(self.page.locator('.dance-rhythm-staff').get_attribute('data-beam-groups')),0)
         state=self.state()['engine']
-        sixteenth_runs=[list(notes) for is_sixteenth,notes in groupby(
-            state['chart']['events'],lambda note:not note['rest'] and note['duration']==.25)
-            if is_sixteenth]
-        self.assertTrue({2,4}.issubset({len(notes) for notes in sixteenth_runs}))
-        for notes in sixteenth_runs:
-            self.assertEqual(len({note['direction'] for note in notes}),1,
-                             'Quick sixteenth taps must stay on the same arrow.')
+        self.assertTrue(all(note['duration']>=.5 for note in state['chart']['events']))
+        self.assertTrue(any(note['beatInBar']%1==.5 and note['duration']>=1 for note in state['notes']))
         for note in state['notes']:
             self.advance(self.event_time(note))
             self.page.keyboard.press('Arrow'+note['direction'].capitalize())
@@ -193,6 +188,31 @@ class DanceRhythmGameTests(unittest.TestCase):
         self.assertFalse(self.state()['open'])
         self.assertFalse(self.state()['audioPlaying'])
         self.assertEqual(self.page.evaluate('closes.at(-1).reason'),'paused')
+
+    def test_edm_and_metronome_schedule_together_and_can_be_muted_independently(self):
+        self.page.evaluate('''()=>{
+          const Native=window.AudioContext;window.audioEvents=[];window.noiseEvents=0;
+          window.AudioContext=class extends Native{
+            createOscillator(){const osc=super.createOscillator(),set=osc.frequency.setValueAtTime.bind(osc.frequency);osc.frequency.setValueAtTime=(f,t)=>{audioEvents.push({f,t});return set(f,t);};return osc;}
+            createBufferSource(){noiseEvents++;return super.createBufferSource();}
+          };
+        }''')
+        self.start('hard');state=self.state()['engine'];beat=state['beatSeconds'];origin=state['startedAt']
+        for index in range(1,5):self.advance(origin+index*beat)
+        events=self.page.evaluate('audioEvents');clicks=[e for e in events if e['f'] in (1000,1400)]
+        self.assertGreaterEqual(len(clicks),5)
+        for a,b in zip(clicks[1:],clicks[2:]):self.assertAlmostEqual(b['t']-a['t'],beat,places=5)
+        self.assertTrue(any(e['f']==145 for e in events),'The music includes a pitched kick drum')
+        self.page.locator('[data-dance-music]').uncheck();self.page.evaluate('audioEvents=[];noiseEvents=0')
+        self.advance(origin+5*beat)
+        self.assertTrue(self.state()['metronome']);self.assertFalse(self.state()['music'])
+        self.assertTrue(self.page.evaluate('audioEvents.length>0&&audioEvents.every(e=>e.f===1000||e.f===1400)'))
+        self.assertEqual(self.page.evaluate('noiseEvents'),0)
+        self.page.locator('[data-dance-music]').check();self.page.locator('[data-dance-metronome]').uncheck();self.page.evaluate('audioEvents=[];noiseEvents=0')
+        self.advance(origin+6*beat)
+        self.assertFalse(self.state()['metronome']);self.assertTrue(self.state()['music'])
+        self.assertTrue(self.page.evaluate('audioEvents.some(e=>e.f===145)&&audioEvents.every(e=>e.f!==1000&&e.f!==1400)'))
+        self.page.keyboard.press('Escape');self.assertFalse(self.state()['audioPlaying'])
 
     def test_blocked_dance_floor_keeps_the_menu_and_stops_audio(self):
         self.page.evaluate('blockStart=true')

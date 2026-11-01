@@ -8,7 +8,7 @@
  'use strict';
  const ARROWS=Object.freeze({left:'←',down:'↓',up:'↑',right:'→'});
  const DIRECTIONS=Object.freeze(Object.keys(ARROWS));
- const MODES=Object.freeze([{id:'easy',title:'Easy',help:'One step on the beat.'},{id:'normal',title:'Normal',help:'Add steps between the beats.'},{id:'hard',title:'Hard',help:'Quick steps and surprise rhythms.'}].map(Object.freeze));
+ const MODES=Object.freeze([{id:'easy',title:'Easy',help:'One step on the beat.'},{id:'normal',title:'Normal',help:'Add steps between the beats.'},{id:'hard',title:'Hard',help:'Off-beat steps and syncopation. No sixteenth notes.'}].map(Object.freeze));
  const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
  function create(api={}){
   const doc=api.document||api.host?.ownerDocument||document,win=doc.defaultView;
@@ -16,35 +16,58 @@
   const ownHost=!api.host,host=api.host||doc.createElement('section');if(ownHost)doc.body.append(host);
   host.classList.add('dance-rhythm-game');host.hidden=true;host.setAttribute('aria-label','DJ line dance');
   let opened=false,destroyed=false,phase='closed',mode='easy',engine=null,state=null,frame=0,priorFocus=null,finished=false,runId=null;
-  let audio=null,master=null,audioStart=0,nextClick=-4,voices=new Set(),feedbackTimer=0,lastPointer=null,music=true;
+  let audio=null,master=null,musicBus=null,clickBus=null,audioStart=0,nextClick=-8,voices=new Set(),feedbackTimer=0,lastPointer=null,music=true,metronome=true,noiseBuffer=null;
   let canvas=null,ctx=null,scoreText=null,feedbackText=null,countText=null,beatText=null,progress=null,statusText='',nextCue=0;
   const held=new Set(),clock=()=>typeof api.now==='function'?api.now():win.performance.now()/1000;
   const node=(tag,className,text)=>{const item=doc.createElement(tag);if(className)item.className=className;if(text!==undefined)item.textContent=text;return item;};
   const button=(text,action,name,value='')=>{const item=node('button','',text);item.type='button';if(name)item.setAttribute('data-dance-'+name,value);item.onclick=action;return item;};
   const allowed=()=>{try{return api.canPlay?.()!==false;}catch{return false;}};
-  function getState(){return {open:opened,phase,difficulty:mode,runId,music,audioPlaying:!!audio,engine:engine?.getState()||state,lastFeedback:statusText};}
+  function getState(){return {open:opened,phase,difficulty:mode,runId,music,metronome,audioPlaying:audio?.state==='running',engine:engine?.getState()||state,lastFeedback:statusText};}
   function changed(){api.onChange?.(getState());}
   function safeCallback(name,...args){try{return api[name]?.(...args);}catch(error){win.console?.error?.('Dance callback failed:',error);return false;}}
   function stopAudio(){
    for(const voice of voices)try{voice.stop();}catch{}voices.clear();
-   if(audio){const old=audio;audio=null;master=null;old.close().catch(()=>{});}
+   if(audio){const old=audio;audio=null;master=null;musicBus=null;clickBus=null;noiseBuffer=null;old.close().catch(()=>{});}
   }
-  function tone(frequency,at,duration,gain=.035,type='sine'){
-   if(!audio||!master||!music)return;
-   try{const context=audio,osc=context.createOscillator(),envelope=context.createGain();osc.type=type;osc.frequency.setValueAtTime(frequency,at);envelope.gain.setValueAtTime(.0001,at);envelope.gain.exponentialRampToValueAtTime(gain,at+.006);envelope.gain.exponentialRampToValueAtTime(.0001,at+duration);osc.connect(envelope).connect(master);voices.add(osc);osc.onended=()=>{voices.delete(osc);try{osc.disconnect();envelope.disconnect();}catch{}};osc.start(at);osc.stop(at+duration+.012);}catch{}
+  function tone(frequency,at,duration,gain=.035,type='sine',channel='music',slide=null){
+   if(!audio||!master||(channel==='click'?!metronome:!music))return;
+   try{const context=audio,osc=context.createOscillator(),envelope=context.createGain();osc.type=type;osc.frequency.setValueAtTime(frequency,at);if(slide)osc.frequency.exponentialRampToValueAtTime(slide,at+duration*.75);envelope.gain.setValueAtTime(.0001,at);envelope.gain.exponentialRampToValueAtTime(gain,at+.006);envelope.gain.exponentialRampToValueAtTime(.0001,at+duration);osc.connect(envelope).connect(channel==='click'?clickBus:musicBus);voices.add(osc);osc.onended=()=>{voices.delete(osc);try{osc.disconnect();envelope.disconnect();}catch{}};osc.start(at);osc.stop(at+duration+.012);}catch{}
   }
   function startAudio(startTime){
    stopAudio();const Constructor=api.AudioContext||win.AudioContext||win.webkitAudioContext;if(!Constructor)return;
-   try{audio=new Constructor();master=audio.createGain();master.gain.value=.7;master.connect(audio.destination);audioStart=audio.currentTime-startTime;audio.resume().catch(()=>{});}catch{stopAudio();}
+   try{audio=new Constructor();master=audio.createGain();master.gain.value=.7;master.connect(audio.destination);musicBus=audio.createGain();musicBus.gain.value=music?1:0;musicBus.connect(master);clickBus=audio.createGain();clickBus.gain.value=metronome?1:0;clickBus.connect(master);audioStart=audio.currentTime-startTime;audio.resume().catch(()=>{});}catch{stopAudio();}
+  }
+  function noise(at,duration,gain,frequency){
+   if(!audio||!master||!music)return;
+   const context=audio;
+   if(!noiseBuffer){noiseBuffer=context.createBuffer(1,Math.ceil(context.sampleRate*.25),context.sampleRate);const samples=noiseBuffer.getChannelData(0);for(let i=0;i<samples.length;i++)samples[i]=Math.random()*2-1;}
+   const source=context.createBufferSource(),filter=context.createBiquadFilter(),envelope=context.createGain();source.buffer=noiseBuffer;filter.type='highpass';filter.frequency.value=frequency;
+   envelope.gain.setValueAtTime(.0001,at);envelope.gain.exponentialRampToValueAtTime(gain,at+.002);envelope.gain.exponentialRampToValueAtTime(.0001,at+duration);
+   source.connect(filter).connect(envelope).connect(musicBus);voices.add(source);source.onended=()=>{voices.delete(source);source.disconnect();filter.disconnect();envelope.disconnect();};source.start(at);source.stop(at+duration+.01);
   }
   function scheduleAudio(now){
    if(!audio||!state)return;const beatSeconds=state.beatSeconds;
-   while(nextClick<state.chart.totalBeats&&nextClick<=state.beat+.18/beatSeconds){
-    const due=audioStart+now+(nextClick-state.beat)*beatSeconds;if(due<audio.currentTime-.08){nextClick++;continue;}
-    const at=Math.max(audio.currentTime+.004,due),barBeat=((nextClick%4)+4)%4;
-    tone(barBeat===0?1100:800,at,.04,nextClick<0?.047:.024);
-    if(nextClick>=0){const chord=[130.81,174.61,196,164.81][Math.floor(nextClick/8)%4];tone(chord,at,.18,barBeat===0?.055:.035,'triangle');if(barBeat===1||barBeat===3){tone(150,at,.08,.028,'square');tone(940,at,.035,.012);}if(nextClick%2===0)tone(chord*2,at+.05,.22,.016,'triangle');}
-    nextClick++;
+   // Eighth-note grid shares the chart's absolute start, including its count-in.
+   // Skip stale events after a stalled frame instead of playing a burst of beats.
+   while(nextClick/2<state.chart.totalBeats&&nextClick/2<=state.beat+.18/beatSeconds){
+    const beat=nextClick/2,due=audioStart+state.startedAt+(beat+state.chart.countInBeats)*beatSeconds;nextClick++;
+    if(due<audio.currentTime-.08)continue;
+    const at=Math.max(audio.currentTime+.004,due),whole=Number.isInteger(beat),barBeat=((beat%4)+4)%4;
+    if(whole)tone(barBeat===0?1400:1000,at,.035,beat<0?.075:.055,'sine','click');
+    if(beat<0)continue;
+    // Original dance groove: four-on-the-floor kick, backbeat clap, off-beat
+    // hi-hats, pumping chords, sub-bass and a repeating bright synth hook.
+    const chord=[[130.81,155.56,196],[103.83,130.81,155.56],[155.56,196,233.08],[116.54,146.83,174.61]][Math.floor(beat/16)%4];
+    if(whole){
+     tone(145,at,.17,.19,'sine','music',45);
+     if(barBeat===1||barBeat===3){noise(at,.12,.07,1400);noise(at+.018,.075,.035,1700);}
+     tone(chord[0]/2,at+.035,beatSeconds*.37,.08,'triangle');
+     for(const frequency of chord)tone(frequency*2,at+.075,beatSeconds*.48,.018,'sawtooth');
+    }else{
+     noise(at,.055,.035,6500);
+     tone(chord[0]/2,at,beatSeconds*.26,.055,'triangle');
+     const hook=[0,2,1,2,0,1,2,1][Math.floor(beat)%8];tone(chord[hook]*4,at,beatSeconds*.22,.025,'triangle');
+    }
    }
   }
   function header(title){const top=node('header','dance-rhythm-heading');top.append(node('h2','',title),button('×',()=>close('exit'),'close'));top.querySelector('button').setAttribute('aria-label','Exit dance game');host.append(top);}
@@ -61,7 +84,11 @@
    host.replaceChildren();header('DJ line dance');const line=node('div','dance-rhythm-stats');scoreText=node('span','','Score 0');beatText=node('span','','8 bars');line.append(scoreText,beatText);host.append(line);
    const score=node('div','dance-rhythm-score');canvas=node('canvas','dance-rhythm-staff');canvas.width=680;canvas.height=177;canvas.setAttribute('role','img');canvas.setAttribute('aria-label','Rhythm notes and direction arrows scroll left toward the glowing line.');ctx=canvas.getContext('2d');score.append(canvas);countText=node('div','dance-rhythm-count');countText.setAttribute('aria-live','off');score.append(countText);host.append(score);
    const bottom=node('div','dance-rhythm-status');feedbackText=node('p','dance-rhythm-feedback','Get ready…');feedbackText.setAttribute('role','status');progress=node('progress');progress.max=32;progress.value=0;progress.setAttribute('aria-label','Dance progress');bottom.append(feedbackText,progress);host.append(bottom);
-   const settings=node('div','dance-rhythm-options'),label=node('label'),toggle=node('input');toggle.type='checkbox';toggle.checked=music;toggle.dataset.danceMusic='';toggle.onchange=()=>{music=toggle.checked;if(master)master.gain.setTargetAtTime(music?.7:0,audio.currentTime,.025);changed();};label.append(toggle,doc.createTextNode('Music & beat'));settings.append(label);host.append(settings);
+   const settings=node('div','dance-rhythm-options');
+   for(const [key,title]of [['music','EDM music'],['metronome','Metronome click']]){
+    const label=node('label'),toggle=node('input');toggle.type='checkbox';toggle.checked=key==='music'?music:metronome;toggle.setAttribute('data-dance-'+key,'');
+    toggle.onchange=()=>{if(key==='music')music=toggle.checked;else metronome=toggle.checked;const bus=key==='music'?musicBus:clickBus;if(bus)bus.gain.setTargetAtTime(toggle.checked?1:0,audio.currentTime,.015);changed();};label.append(toggle,doc.createTextNode(title));settings.append(label);
+   }host.append(settings);
    const controls=node('div','dance-rhythm-controls');controls.setAttribute('role','group');controls.setAttribute('aria-label','Dance arrows');
    for(const direction of ['up','left','right','down']){const control=button(ARROWS[direction],null,'arrow',direction);control.setAttribute('aria-label',direction+' dance step');control.addEventListener('pointerdown',event=>{if(event.button!==0)return;event.preventDefault();lastPointer={id:event.pointerId,direction};control.setPointerCapture?.(event.pointerId);control.classList.add('is-pressed');input(direction);});for(const type of ['pointerup','pointercancel','lostpointercapture'])control.addEventListener(type,()=>{control.classList.remove('is-pressed');lastPointer=null;});controls.append(control);}host.append(controls);
    notation?.load?.(doc);position();
@@ -85,7 +112,7 @@
   function start(difficulty='easy'){
    if(destroyed||!opened||!allowed())return false;mode=MODES.some(item=>item.id===difficulty)?difficulty:'easy';
    runId=win.crypto?.randomUUID?.()||'dance-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
-   engine?.destroy();engine=engineModule.create({difficulty:mode,seed:api.seed??Math.floor(Math.random()*0xffffffff)});finished=false;held.clear();statusText='Get ready…';nextClick=-4;nextCue=0;
+   engine?.destroy();engine=engineModule.create({difficulty:mode,seed:api.seed??Math.floor(Math.random()*0xffffffff)});finished=false;held.clear();statusText='Get ready…';nextClick=-8;nextCue=0;
    const now=clock();engine.start(now);state=engine.getState();phase='countin';startAudio(now);renderGame();const ready=safeCallback('onStart',{runId,difficulty:mode,chart:state.chart,bpm:state.bpm});
    if(ready===false){renderMenu();const help=node('p','dance-rhythm-feedback','The dance floor needs a little more space. Try again in a moment.');help.setAttribute('role','status');host.append(help);return false;}
    win.cancelAnimationFrame(frame);tick();changed();return true;
@@ -133,7 +160,7 @@
    const choices=node('div','dance-rhythm-result-actions');choices.append(button('Dance again',()=>start(mode),'again'),button('Choose difficulty',renderMenu,'choose'),button('Back to the arcade',()=>close('finished'),'done'));host.append(choices);position();changed();host.querySelector('[data-dance-again]')?.focus({preventScroll:true});
   }
   function open(options={}){
-   if(destroyed||!allowed())return false;if(opened)return true;priorFocus=doc.activeElement;opened=true;host.hidden=false;host.dataset.danceOpen='true';music=options.music!==false;renderMenu();safeCallback('onOpen',{});return true;
+   if(destroyed||!allowed())return false;if(opened)return true;priorFocus=doc.activeElement;opened=true;host.hidden=false;host.dataset.danceOpen='true';music=options.music!==false;metronome=options.metronome!==false;renderMenu();safeCallback('onOpen',{});return true;
   }
   function close(reason='exit'){
    if(!opened)return false;opened=false;phase='closed';win.cancelAnimationFrame(frame);win.clearTimeout(feedbackTimer);stopAudio();engine?.destroy();engine=null;held.clear();lastPointer=null;host.hidden=true;host.dataset.danceOpen='false';host.replaceChildren();canvas=ctx=scoreText=feedbackText=countText=beatText=progress=null;safeCallback('onClose',{reason});if(priorFocus?.isConnected)priorFocus.focus({preventScroll:true});changed();return true;

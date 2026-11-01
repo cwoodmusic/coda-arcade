@@ -23,3 +23,5 @@
 /* The game supplies its own arrow buttons while the floor remains visible. */
 .dance-floor-open #codaTouchControls{display:none!important}
 .dance-floor-open>footer{visibility:hidden}
+
+.dance-rhythm-options{display:flex;flex-wrap:wrap;gap:8px 20px}.dance-rhythm-options label{min-height:44px;display:flex;align-items:center;gap:7px}

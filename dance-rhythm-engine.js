@@ -6,14 +6,14 @@
  const DIFFICULTIES=Object.freeze({
   easy:Object.freeze({id:'easy',label:'Easy',bpm:80,window:.19,perfectWindow:.08}),
   normal:Object.freeze({id:'normal',label:'Normal',bpm:92,window:.16,perfectWindow:.08}),
-  hard:Object.freeze({id:'hard',label:'Hard',bpm:88,window:.14,perfectWindow:.07})
+  hard:Object.freeze({id:'hard',label:'Hard',bpm:88,window:.17,perfectWindow:.08})
  });
  // Positive values are sounding quarter-note units; negative values are rests.
- // Every pattern is exactly one 4/4 bar. Sixteenths arrive in pairs or fours.
+ // Every pattern is exactly one 4/4 bar. Hard uses spaced eighth-note syncopation.
  const PATTERNS=Object.freeze({
   easy:Object.freeze([[1,-1,-1,-1],[1,-1,1,-1],[1,-1,-1,1],[-1,1,-1,-1]].map(Object.freeze)),
   normal:Object.freeze([[1,1,1,1],[.5,.5,1,-1,1],[1,.5,.5,1,-1],[1,-.5,.5,1,1],[.5,.5,.5,.5,1,1],[-1,1,.5,.5,1]].map(Object.freeze)),
-  hard:Object.freeze([[.5,.25,.25,.5,.5,1,1],[.25,.25,.25,.25,1,.5,.5,1],[1.5,.5,.5,.5,1],[.5,1,.5,1,-1],[.5,-.5,.25,.25,.5,1,1],[1,.5,.25,.25,.5,.5,1]].map(Object.freeze))
+  hard:Object.freeze([[.5,1,.5,1,-1],[1.5,.5,1,-1],[-.5,1,.5,1,1],[1,-.5,1,.5,1],[.5,.5,1.5,.5,-1],[1,.5,1,.5,1]].map(Object.freeze))
  });
  const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
  function difficultyFor(value){return DIFFICULTIES[value]||DIFFICULTIES.easy;}

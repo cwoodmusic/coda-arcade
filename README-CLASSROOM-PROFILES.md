@@ -14,6 +14,21 @@ authentication providers, and published origin were checked. When connecting a
 different Firebase project, keep `classroom.enabled: false` until those checks
 are complete. Classroom privacy protections also apply while enrollment is off.
 
+## Send profile links through Google Classroom
+
+In the teacher profile manager, select a class and choose **Create student profile**.
+The new card shows a clickable **Open [alias]’s profile** link and a selectable
+**Student sign-in link** field. Use **Copy sign-in link** and send that URL to the
+individual student in Google Classroom. The student opens their saved arcade
+profile without typing a code or signing in with Google.
+
+Each link grants access to one generated profile. Keep the distribution private
+and keep track of which alias was assigned to each child. Copy the link before
+hiding the card: raw passes are not retained in the roster. For an existing
+profile whose link was not saved, use **Replace pass**; progress stays with the
+same profile, while its old link and signed-in devices are revoked. Printed QR
+cards remain available as an alternative.
+
 ## Quest validation update — 2026-10-27
 
 The current client supports 29 authored musician quests and level rewards

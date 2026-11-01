@@ -36,14 +36,14 @@ test('each difficulty shuffles its whole rhythm vocabulary, with varied openings
  }
 });
 
-test('easy leaves space to learn; normal adds eighths; hard keeps its richer rhythms at a gentler 88 BPM',()=>{
- for(let seed=0;seed<40;seed++){
+test('hard uses spaced eighth-note syncopation at 88 BPM without sixteenth-note runs',()=>{
+ for(let seed=0;seed<80;seed++){
   const easy=engine.generateChart({difficulty:'easy',seed}),normal=engine.generateChart({difficulty:'normal',seed}),hard=engine.generateChart({difficulty:'hard',seed});
-  assert.ok(easy.events.every(event=>event.duration===1));assert.ok(easy.events.filter(event=>event.rest).length>easy.notesTotal);
-  assert.ok(normal.events.every(event=>[1,.5].includes(event.duration)));assert.ok(normal.events.some(event=>event.duration===.5&&!event.rest));
-  assert.equal(hard.bpm,88);assert.equal(hard.beatSeconds,60/88);assert.ok(hard.events.some(event=>event.duration===.25));assert.ok(hard.events.some(event=>event.dots===1&&event.duration===1.5));
-  assert.ok(hard.events.some(event=>event.beatInBar%1!==0&&event.duration>=1&&!event.rest),'A held note begins off the main beat');
-  let run=0;for(const event of hard.events){if(event.duration===.25&&!event.rest)run++;else if(run){assert.ok([2,4,6].includes(run));run=0;}}if(run)assert.ok([2,4,6].includes(run));
+  assert.ok(easy.events.every(event=>event.duration===1));assert.ok(normal.events.every(event=>[1,.5].includes(event.duration)));
+  assert.equal(hard.bpm,88);assert.ok(hard.events.every(event=>event.duration>=.5));assert.ok(hard.notesTotal<=40);
+  assert.ok(hard.events.some(event=>event.dots===1));assert.ok(hard.events.some(event=>!event.rest&&event.beatInBar%1===.5&&event.duration>=1));
+  const notes=hard.events.filter(event=>!event.rest);for(let i=1;i<notes.length;i++)assert.ok(notes[i].beat-notes[i-1].beat>=.5);
+  assert.ok(engine.DIFFICULTIES.hard.window>=.16);
  }
 });
 
@@ -57,41 +57,6 @@ test('beam metadata joins real consecutive short notes within a beat, never rest
   for(const event of events)assert.equal(event.beamLevel,event.duration===.25?2:1);
  }
  const loneEighth=chart.events.find(event=>event.duration===.5&&event.beatInBar===1.5&&event.beamGroup===null);assert.ok(loneEighth);assert.equal(loneEighth.beamLevel,1);
-});
-
-test('hard sixteenth runs share one arrow while other steps and new runs change direction',()=>{
- const sizes=new Set(),pairPositions=new Set();let mixedBeamGroups=0,beatBoundaries=0,barBoundaries=0;
- for(let seed=0;seed<128;seed++){
-  const chart=engine.generateChart({difficulty:'hard',seed});let previous=null;
-  const groups=[];let group=[];
-  function finishGroup(){if(group.length){groups.push(group);group=[];}}
-  for(const event of chart.events){
-   if(event.rest){finishGroup();continue;}
-   // A written beat or barline does not interrupt consecutive sixteenths.
-   const sameSixteenthGroup=event.duration===.25&&previous?.duration===.25&&previous.beat+previous.duration===event.beat;
-   if(previous){
-    if(sameSixteenthGroup)assert.equal(event.direction,previous.direction,`Seed ${seed}: one sixteenth group must keep its arrow`);
-    else assert.notEqual(event.direction,previous.direction,`Seed ${seed}: a new step or sixteenth run must still change direction`);
-    if(previous.bar!==event.bar)barBoundaries++;
-    else if(Math.floor(previous.beatInBar)!==Math.floor(event.beatInBar))beatBoundaries++;
-   }
-   if(event.duration===.25){if(!sameSixteenthGroup)finishGroup();group.push(event);}else finishGroup();
-   previous=event;
-  }
-  finishGroup();
-  for(const events of groups){
-   sizes.add(events.length);assert.ok([2,4].includes(events.length));
-   if(events.length===2)pairPositions.add(events[0].beatInBar%1);
-   assert.equal(new Set(events.map(event=>event.direction)).size,1);
-   const beam=chart.events.filter(event=>event.beamGroup===events[0].beamGroup);
-   if(beam.some(event=>event.duration===.5)){
-    mixedBeamGroups++;
-    assert.ok(beam.some(event=>event.duration===.5&&event.direction!==events[0].direction),'A beamed eighth stays a separate step');
-   }
-  }
- }
- assert.deepEqual([...sizes].sort(),[2,4]);assert.deepEqual([...pairPositions].sort(),[0,.5]);
- assert.ok(mixedBeamGroups>0);assert.ok(beatBoundaries>0);assert.ok(barBoundaries>0);
 });
 
 test('four-count preparation says 1, 2, 3, GO and accepts an early first note without a premature penalty',()=>{
