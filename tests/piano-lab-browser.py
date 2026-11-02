@@ -26,10 +26,14 @@ class PianoLabTests(unittest.TestCase):
         self.page.on('pageerror', lambda error:self.errors.append(str(error)))
         self.page.set_content('<button id="returnFocus">Enter lab</button><section id="pianoroom" hidden></section>')
         self.page.add_style_tag(path=str(ROOT/'piano-lab.css'))
+        font=base64.b64encode((ROOT/'assets/fonts/bravura/Bravura.woff2').read_bytes()).decode()
+        self.page.add_style_tag(content='@font-face{font-family:CodaBravura;src:url(data:font/woff2;base64,'+font+')}')
+        self.page.evaluate('document.fonts.load(\'36px CodaBravura\')')
         self.page.add_script_tag(path=str(ROOT/'character-renderer.js'))
         self.page.add_script_tag(path=str(ROOT/'piano-melodies.js'))
         self.page.add_script_tag(path=str(ROOT/'piano-wall-notation.js'))
         self.page.add_script_tag(path=str(ROOT/'npc-quotes.js'))
+        self.page.add_script_tag(path=str(ROOT/'piano-sight-reading.js'))
         self.page.add_script_tag(path=str(ROOT/'piano-lab.js'))
         self.page.evaluate('''()=>{
           window.entries=new Map();window.challengeStarts=[];window.challengeCompletions=[];window.rewards=[];window.rewardCalls=[];window.rewardLedger=new Set();window.rewardMode='success';window.exits=0;
@@ -85,6 +89,63 @@ class PianoLabTests(unittest.TestCase):
           button.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
           button.dispatchEvent(new KeyboardEvent('keyup',{key:'Enter',bubbles:true}));
         }}''',midis)
+
+    def start_reading(self,clef='treble',difficulty='easy'):
+        self.menu('games')
+        self.page.locator('#pianoReadingClef').select_option(clef)
+        self.page.locator('#pianoReadingDifficulty').select_option(difficulty)
+        self.page.evaluate('Math.random=()=>0')
+        self.page.locator('#pianoStartReading').click()
+        self.assertEqual(self.state()['reading']['remaining'],10)
+        self.page.locator('[data-piano-dialogue-action="play"]').click()
+
+    def test_note_dash_requires_e_on_floor_and_awards_three_seconds(self):
+        self.start_reading()
+        self.assertFalse(self.state()['keyHighlight']['visible'])
+        self.walk(160,530);self.page.keyboard.press('e')
+        self.assertEqual(self.state()['reading']['score'],0)
+        self.walk(209,530)
+        self.assertEqual(self.state()['floorNote'],62)
+        self.assertEqual(self.state()['reading']['score'],0)
+        before=self.state()['reading']['remaining'];self.page.keyboard.press('e');after=self.state()['reading']
+        self.assertEqual(after['score'],1);self.assertAlmostEqual(after['remaining']-before,3,delta=.2)
+        self.assertEqual(after['turns'],1)
+        self.play_sequence([62]);self.assertEqual(self.state()['reading']['score'],1)
+
+    def test_note_dash_bass_keys_multiple_pitches_and_mobile_play_control(self):
+        self.start_reading('bass','hard')
+        state=self.state();self.assertEqual(state['octave'],3)
+        self.assertEqual(state['reading']['turn']['notes'][0]['midi'],49)
+        self.assertEqual(len(state['reading']['turn']['notes']),2)
+        self.assertEqual(state['wallStaff']['reading']['clef'],'bass')
+        self.assertEqual(state['reading']['turn']['key'],-1)
+        self.walk(166,420);self.assertEqual(self.state()['floorNote'],49)
+        self.page.evaluate("lab.control('e',true);lab.control('e',false)")
+        self.assertEqual(self.state()['reading']['score'],1)
+        self.assertEqual(self.state()['reading']['turn']['index'],1)
+        self.assertEqual(self.state()['reading']['turns'],0)
+        self.page.set_viewport_size({'width':390,'height':844})
+        self.page.wait_for_timeout(80)
+        self.assertTrue(self.page.locator('#pianoWallStaff').is_visible())
+        self.assertGreaterEqual(self.page.locator('#pianoWallStaff').bounding_box()['height'],96)
+        self.page.screenshot(path='/tmp/coda-note-dash-bass-phone.png')
+
+    def test_note_dash_pauses_in_menu_expires_retries_and_cancels_on_exit(self):
+        self.page.clock.install()
+        self.start_reading();self.page.clock.run_for(1000)
+        self.menu('games');before=self.state()['reading']['remaining']
+        self.page.clock.run_for(12000)
+        self.assertEqual(self.state()['reading']['remaining'],before)
+        self.close_panels();self.page.clock.run_for(11000)
+        self.assertTrue(self.state()['reading']['ended'])
+        self.assertEqual(self.state()['dialogueKind'],'reading-result')
+        self.assertIn('Time’s up',self.page.locator('#pianoDialogueText').inner_text())
+        self.page.locator('[data-piano-dialogue-action="reading-retry"]').click()
+        self.assertEqual(self.state()['reading']['remaining'],10)
+        self.assertEqual(self.state()['reading']['score'],0)
+        self.page.evaluate('lab.close();lab.open()')
+        self.assertIsNone(self.state()['reading'])
+        self.assertEqual(self.state()['challengeMode'],'free')
 
     def test_optional_vibe_paints_native_room_then_glows_in_each_actors_scaled_context(self):
         self.page.evaluate('''()=>{window.vibeCalls=[];window.fixtureVibe={

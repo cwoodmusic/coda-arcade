@@ -94,3 +94,11 @@ Six regular visitors take turns in the arcade, walking through the entrance when
 The compact header offers Profile, Developer, music, and Settings. Enter rooms through their doors, visit the boutique to customize, and talk to the DJ to choose jukebox music. A selected jukebox song loops continuously until stopped or replaced. Escape closes the top dialogue or store, and Tab opens settings during play.
 
 Song Machine opens in Simple mode: one grid with three octaves and three drum rows, plus note-length icons. Advanced mode preserves the original full editor and the same composition, including tracks and notes outside the Simple grid.
+
+### Chopin’s note dash
+
+Talk to Chopin and choose **Play note dash**, or open **Menu → Chopin games**. Choose treble or bass clef and one of four difficulties. Walk onto the pitch shown on the wall staff and press **E** (touch: **Play note**). Keyboard-panel playing and recording playback do not submit answers.
+
+The countdown starts at 10 seconds. Every correct pitch adds 3 seconds; incorrect pitches leave the current target in place while the clock continues. Read pairs and three-pitch turns from left to right, one pitch at a time. The game shows the score when time runs out and offers a restart or new settings. Menus, conversations, editing, and a hidden page pause the timer. Leaving the lab cancels the run.
+
+Easy uses natural notes. Medium adds written sharps and flats. Hard adds key signatures of up to two sharps or flats and two-pitch turns. Expert uses up to four sharps or flats and three-pitch turns. Natural signs cancel key-signature alterations when needed. Treble and bass ranges both fit the existing floor piano; grand staff is omitted. The target piano key is not highlighted.

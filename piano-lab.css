@@ -281,3 +281,8 @@
 #pianoroom.piano-lab .piano-room-heading-actions [data-room-dev-open]{background:#324a42;border-color:#9ce7b9;color:#e1ffed}
 #pianoroom.piano-lab .piano-room-heading-actions [data-room-dev-open][aria-expanded=true]{background:#365f50;border-color:#c9ffe6}
 @media(max-width:480px){#pianoroom.piano-lab .piano-room-heading>div:first-child{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}#pianoroom.piano-lab .piano-room-heading-actions{width:100%;margin-left:0;justify-content:space-between;gap:4px}}
+
+/* Keep the score readable while walking on a zoomed or small-screen piano. */
+.piano-room-canvas-viewport{position:relative}
+.piano-walk-room canvas.piano-wall-staff-mirror{position:absolute;top:6px;left:50%;transform:translateX(-50%);width:min(94%,428px);height:auto;min-height:96px;max-height:none;aspect-ratio:428/120;object-fit:fill;pointer-events:none;border:1px solid #86ecd9;border-radius:5px;z-index:2}
+.piano-wall-staff-mirror[hidden]{display:none!important}
