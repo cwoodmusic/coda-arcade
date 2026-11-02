@@ -189,6 +189,36 @@ class DanceRhythmGameTests(unittest.TestCase):
         self.assertFalse(self.state()['audioPlaying'])
         self.assertEqual(self.page.evaluate('closes.at(-1).reason'),'paused')
 
+    def test_strike_line_pulses_on_beats_and_notation_uses_screen_pixels(self):
+        self.page.set_viewport_size({'width':390,'height':844});self.start('hard')
+        state=self.state()['engine'];origin=state['startedAt'];seconds=state['beatSeconds'];count=state['chart']['countInBeats']
+        self.advance(origin+count*seconds)
+        staff=self.page.locator('.dance-rhythm-staff')
+        self.assertAlmostEqual(float(staff.get_attribute('data-beat-pulse')),1,places=5)
+        self.assertEqual(staff.get_attribute('data-beat-index'),'0')
+        self.assertEqual(staff.get_attribute('data-notation-size'),'74')
+        self.assertLessEqual(abs(staff.evaluate('e=>e.width-e.getBoundingClientRect().width')),1)
+        self.advance(origin+(count+.5)*seconds)
+        self.assertEqual(float(staff.get_attribute('data-beat-pulse')),0)
+        self.advance(origin+(count+1)*seconds)
+        self.assertAlmostEqual(float(staff.get_attribute('data-beat-pulse')),1,places=5)
+        self.assertEqual(staff.get_attribute('data-beat-index'),'1')
+
+    def test_real_game_uses_audio_transport_instead_of_wall_clock(self):
+        self.page.evaluate("""()=>{
+          game.destroy();window.audioVirtualTime=0;const Native=AudioContext;
+          class Transport extends Native{get currentTime(){return audioVirtualTime;}get baseLatency(){return 0;}get outputLatency(){return 0;}}
+          window.game=CodaDanceRhythmGame.create({AudioContext:Transport});game.open();game.start('easy');
+        }""")
+        self.page.wait_for_function('game.getState().audioPlaying')
+        self.assertEqual(self.state()['clockSource'],'audio')
+        self.page.evaluate('audioVirtualTime=1');self.page.wait_for_timeout(50)
+        self.assertAlmostEqual(self.state()['engine']['elapsed'],1,places=5)
+        self.page.wait_for_timeout(150)
+        self.assertAlmostEqual(self.state()['engine']['elapsed'],1,places=5)
+        self.page.evaluate('audioVirtualTime=2');self.page.wait_for_timeout(50)
+        self.assertAlmostEqual(self.state()['engine']['elapsed'],2,places=5)
+
     def test_edm_and_metronome_schedule_together_and_can_be_muted_independently(self):
         self.page.evaluate('''()=>{
           const Native=window.AudioContext;window.audioEvents=[];window.noiseEvents=0;

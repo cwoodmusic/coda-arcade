@@ -18,11 +18,17 @@
   let opened=false,destroyed=false,phase='closed',mode='easy',engine=null,state=null,frame=0,priorFocus=null,finished=false,runId=null;
   let audio=null,master=null,musicBus=null,clickBus=null,audioStart=0,nextClick=-8,voices=new Set(),feedbackTimer=0,lastPointer=null,music=true,metronome=true,noiseBuffer=null;
   let canvas=null,ctx=null,scoreText=null,feedbackText=null,countText=null,beatText=null,progress=null,statusText='',nextCue=0;
-  const held=new Set(),clock=()=>typeof api.now==='function'?api.now():win.performance.now()/1000;
+  const held=new Set(),clock=()=>{
+   if(typeof api.now==='function')return api.now();
+   // Use the audio transport for cues, input judging, scrolling, and beat pulses.
+   // Compensate device output latency so visuals follow the sound being heard.
+   if(audio){if(audio.state!=='running')return state?.startedAt!==null&&state?.startedAt!==undefined?state.startedAt+(state.elapsed||0):win.performance.now()/1000;return audio.currentTime-audioStart-(audio.baseLatency||0)-(audio.outputLatency||0);}
+   return win.performance.now()/1000;
+  };
   const node=(tag,className,text)=>{const item=doc.createElement(tag);if(className)item.className=className;if(text!==undefined)item.textContent=text;return item;};
   const button=(text,action,name,value='')=>{const item=node('button','',text);item.type='button';if(name)item.setAttribute('data-dance-'+name,value);item.onclick=action;return item;};
   const allowed=()=>{try{return api.canPlay?.()!==false;}catch{return false;}};
-  function getState(){return {open:opened,phase,difficulty:mode,runId,music,metronome,audioPlaying:audio?.state==='running',engine:engine?.getState()||state,lastFeedback:statusText};}
+  function getState(){return {open:opened,phase,difficulty:mode,runId,music,metronome,audioPlaying:audio?.state==='running',clockSource:typeof api.now==='function'?'custom':audio?'audio':'performance',engine:engine?.getState()||state,lastFeedback:statusText};}
   function changed(){api.onChange?.(getState());}
   function safeCallback(name,...args){try{return api[name]?.(...args);}catch(error){win.console?.error?.('Dance callback failed:',error);return false;}}
   function stopAudio(){
@@ -46,7 +52,7 @@
    source.connect(filter).connect(envelope).connect(musicBus);voices.add(source);source.onended=()=>{voices.delete(source);source.disconnect();filter.disconnect();envelope.disconnect();};source.start(at);source.stop(at+duration+.01);
   }
   function scheduleAudio(now){
-   if(!audio||!state)return;const beatSeconds=state.beatSeconds;
+   if(!audio||audio.state!=='running'||!state)return;const beatSeconds=state.beatSeconds;
    // Eighth-note grid shares the chart's absolute start, including its count-in.
    // Skip stale events after a stalled frame instead of playing a burst of beats.
    while(nextClick/2<state.chart.totalBeats&&nextClick/2<=state.beat+.18/beatSeconds){
@@ -61,8 +67,8 @@
     if(whole){
      tone(145,at,.17,.19,'sine','music',45);
      if(barBeat===1||barBeat===3){noise(at,.12,.07,1400);noise(at+.018,.075,.035,1700);}
-     tone(chord[0]/2,at+.035,beatSeconds*.37,.08,'triangle');
-     for(const frequency of chord)tone(frequency*2,at+.075,beatSeconds*.48,.018,'sawtooth');
+     tone(chord[0]/2,at,beatSeconds*.37,.08,'triangle');
+     for(const frequency of chord)tone(frequency*2,at,beatSeconds*.48,.018,'sawtooth');
     }else{
      noise(at,.055,.035,6500);
      tone(chord[0]/2,at,beatSeconds*.26,.055,'triangle');
@@ -82,7 +88,7 @@
   function renderGame(){
    host.classList.add('is-playing');
    host.replaceChildren();header('DJ line dance');const line=node('div','dance-rhythm-stats');scoreText=node('span','','Score 0');beatText=node('span','','8 bars');line.append(scoreText,beatText);host.append(line);
-   const score=node('div','dance-rhythm-score');canvas=node('canvas','dance-rhythm-staff');canvas.width=680;canvas.height=177;canvas.setAttribute('role','img');canvas.setAttribute('aria-label','Rhythm notes and direction arrows scroll left toward the glowing line.');ctx=canvas.getContext('2d');score.append(canvas);countText=node('div','dance-rhythm-count');countText.setAttribute('aria-live','off');score.append(countText);host.append(score);
+   const score=node('div','dance-rhythm-score');canvas=node('canvas','dance-rhythm-staff');canvas.width=680;canvas.height=220;canvas.setAttribute('role','img');canvas.setAttribute('aria-label','Rhythm notes and direction arrows scroll left toward the glowing line.');ctx=canvas.getContext('2d');score.append(canvas);countText=node('div','dance-rhythm-count');countText.setAttribute('aria-live','off');score.append(countText);host.append(score);
    const bottom=node('div','dance-rhythm-status');feedbackText=node('p','dance-rhythm-feedback','Get ready…');feedbackText.setAttribute('role','status');progress=node('progress');progress.max=32;progress.value=0;progress.setAttribute('aria-label','Dance progress');bottom.append(feedbackText,progress);host.append(bottom);
    const settings=node('div','dance-rhythm-options');
    for(const [key,title]of [['music','EDM music'],['metronome','Metronome click']]){
@@ -127,18 +133,27 @@
    if(progress)progress.value=clamp(state.beat,0,state.chart.totalBeats);if(countText){countText.textContent=state.countIn?.active?state.countIn.label:'';countText.hidden=!state.countIn?.active;}
   }
   function draw(){
-   if(!ctx||!state)return;const width=canvas.width,height=canvas.height,target=122,scale=mode==='hard'?82:90,beat=state.beat,y=86;
-   ctx.clearRect(0,0,width,height);ctx.fillStyle='rgba(10,21,36,.28)';ctx.fillRect(0,0,width,height);
+   if(!ctx||!state)return;const measured=Math.max(280,Math.round(canvas.getBoundingClientRect().width));if(canvas.width!==measured)canvas.width=measured;const width=canvas.width,height=canvas.height,target=100,scale=mode==='hard'?100:112,beat=state.beat,y=105;
+   ctx.clearRect(0,0,width,height);ctx.fillStyle='rgba(10,21,36,.88)';ctx.fillRect(0,0,width,height);
    ctx.strokeStyle='#9bb1cb';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(73,y);ctx.lineTo(width-12,y);ctx.stroke();
-   notation?.drawTimeSignature?.(ctx,{x:35,y:69,fontSize:52,meter:'4/4',color:'#f4e9d4'});
+   notation?.drawTimeSignature?.(ctx,{x:30,y:82,fontSize:68,meter:'4/4',color:'#f4e9d4'});
    const notes=(state.events||state.chart.events).map(note=>({...note,onset:note.beat,judgement:note.status==='hit'?'hit':['wrong','miss'].includes(note.status)?'miss':null}));
    const xFor=note=>target+(note.beat-beat)*scale;
+   ctx.save();
+   const fraction=(((beat+1e-7)%1)+1)%1,pulse=Math.max(0,1-fraction/.24),downbeat=((Math.floor(beat+1e-7)%4)+4)%4===0,reduced=win.matchMedia?.('(prefers-reduced-motion:reduce)').matches;
+   const strength=reduced?0:pulse;
+   ctx.shadowColor=downbeat?'#ffe79b':'#86ffe0';ctx.shadowBlur=8+strength*18;ctx.strokeStyle=downbeat?'#ffe79b':'#99ffdf';ctx.lineWidth=3+strength*(downbeat?7:5);ctx.beginPath();ctx.moveTo(target,25);ctx.lineTo(target,192);ctx.stroke();ctx.restore();
    ctx.save();ctx.beginPath();ctx.rect(75,8,width-84,height-12);ctx.clip();
    for(let bar=0;bar<=state.chart.bars;bar++){const x=target+(bar*4-beat)*scale-17;if(x<72||x>width)continue;ctx.strokeStyle='#768ba5';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,y-25);ctx.lineTo(x,y+25);ctx.stroke();if(bar<state.chart.bars){ctx.font='12px system-ui';ctx.textAlign='left';ctx.fillStyle='#b8cce0';ctx.fillText(String(bar+1),x+5,24);}}
-   beaming?.draw?.(ctx,{notes,meter:'4/4',fontSize:52,y,left:76,right:width-10,top:8,height:height-12,xForNote:xFor});
-   ctx.font='bold 36px system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
-   for(const note of notes){const x=xFor(note);if(x<78||x>width-10||note.rest)continue;ctx.fillStyle=note.status==='hit'?'#a5ffd5':['miss','wrong'].includes(note.status)?'#ff94b0':'#f4eaff';ctx.fillText(ARROWS[note.direction]||'',x,139);}
-   ctx.restore();ctx.save();ctx.shadowColor='#86ffe0';ctx.shadowBlur=9;ctx.strokeStyle='#99ffdf';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(target,16);ctx.lineTo(target,160);ctx.stroke();ctx.restore();ctx.font='11px system-ui';ctx.textAlign='center';ctx.fillStyle='#b5ffe6';ctx.fillText('STEP',target,174);
+   beaming?.draw?.(ctx,{notes,meter:'4/4',fontSize:74,y,left:76,right:width-10,top:8,height:height-12,xForNote:xFor});
+   ctx.font='bold 44px system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+   for(const note of notes){const x=xFor(note);if(x<78||x>width-10||note.rest)continue;ctx.fillStyle=note.status==='hit'?'#a5ffd5':['miss','wrong'].includes(note.status)?'#ff94b0':'#f4eaff';ctx.fillText(ARROWS[note.direction]||'',x,170);}
+   ctx.restore();
+   ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.fillStyle='#eafff5';ctx.fillText('STEP',target,213);
+   // A fixed four-beat indicator reinforces the pulse even with reduced motion.
+   const current=((Math.floor(beat+1e-7)%4)+4)%4;for(let i=0;i<4;i++){ctx.fillStyle=i===current?(i===0?'#ffe79b':'#99ffdf'):'#53647a';ctx.fillRect(width-74+i*16,205,10,6);}
+   canvas.dataset.beatPulse=String(pulse);canvas.dataset.beatIndex=String(current);canvas.dataset.notationSize='74';
+
    canvas.dataset.visibleNotes=String(notes.filter(note=>xFor(note)>=76&&xFor(note)<=width-10).length);canvas.dataset.beamGroups=String(beaming?.plan?.(notes,{meter:'4/4'})?.groups.length||0);
   }
   function tick(){

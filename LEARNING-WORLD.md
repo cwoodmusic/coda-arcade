@@ -95,12 +95,12 @@ The compact header offers Profile, Developer, music, and Settings. Enter rooms t
 
 Song Machine opens in Simple mode: one grid with three octaves and three drum rows, plus note-length icons. Advanced mode preserves the original full editor and the same composition, including tracks and notes outside the Simple grid.
 
-### Chopin’s note dash
+### Chopin’s Note Rush
 
-Talk to Chopin and choose **Play note dash**, or open **Menu → Chopin games**. Choose treble or bass clef and one of four difficulties. Walk onto the pitch shown on the wall staff and press **E** (touch: **Play note**). Keyboard-panel playing and recording playback do not submit answers.
+Use the main **Note Rush**, **Scales**, and **Melodies** buttons, or talk to Chopin for his greeting, advice, and music-history friendship quests. Note Rush also appears in **Menu → Chopin games**. Choose treble or bass clef; difficulty increases automatically every ten correct pitches. Walk onto the pitch shown on the wall staff and press **E** (touch: **Play note**). Keyboard-panel playing and recording playback do not submit answers.
 
-The countdown starts at 10 seconds. Every correct pitch adds 3 seconds; incorrect pitches leave the current target in place while the clock continues. Read pairs and three-pitch turns from left to right, one pitch at a time. The game shows the score when time runs out and offers a restart or new settings. Menus, conversations, editing, and a hidden page pause the timer. Leaving the lab cancels the run.
+The countdown starts at 10 seconds. Every correct pitch adds 3 seconds; incorrect pitches subtract one second and leave the current target in place while the clock continues. Read pairs and three-pitch turns from left to right, one pitch at a time. The game shows the score when time runs out and offers a restart or new settings. Menus, conversations, editing, and a hidden page pause the timer. Leaving the lab cancels the run.
 
-Easy uses natural notes. Medium adds written sharps and flats. Hard adds key signatures of up to two sharps or flats and two-pitch turns. Expert uses up to four sharps or flats and three-pitch turns. Natural signs cancel key-signature alterations when needed. Both clefs use the fixed C4–B5 floor-piano range (bass-clef notes use ledger lines above the staff); grand staff is omitted. The target piano key is not highlighted.
+Pitches 1–10 use natural notes. Pitches 11–20 introduce sharps and flats. Pitches 21–30 add key signatures. From pitch 31, natural signs can cancel key signatures. From pitch 41, turns contain two pitches; from pitch 51, they contain three. Each pitch is answered in order and earns its own three-second bonus. Both clefs use the fixed C4–B5 floor-piano range (bass-clef notes use ledger lines above the staff); grand staff is omitted. The target piano key is not highlighted.
 
 All melody, scale, and interval challenges use C4–B5. Frère Jacques is arranged one octave higher throughout so its closing low G remains below the opening C while staying on the keyboard. Written notation, demonstrations, guided targets, and memory pitches share that arrangement.

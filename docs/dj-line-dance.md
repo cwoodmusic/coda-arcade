@@ -31,4 +31,6 @@ The dance game has an original synthesized EDM backing with four-on-the-floor ki
 
 The default main-arcade music is a 16-bar club loop at 124 BPM. Four-bar phrases introduce variations, pare back the hook in the middle, and return with brighter synths and fills. Jukebox dance selections also retain their 16-bar arrangements with stronger drums. Dance-game rounds remain eight bars and use their own playable tempo.
 
-During count-in and play, the rhythm panel and staff are translucent and the camera frames the dancers behind the notation. Menus and results retain their solid backgrounds.
+During count-in and play, the rhythm panel is translucent, with a darker backing behind the enlarged staff and the camera frames the dancers behind the notation. Menus and results retain their solid backgrounds.
+
+Gameplay, NPC cues, and scrolling follow the Web Audio transport with device-output latency compensation. The strike line pulses on each quarter-note beat, with a stronger gold pulse on beat one. A four-beat indicator remains readable with reduced motion. Notation is rendered at its displayed width with larger note symbols and direction arrows.

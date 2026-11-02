@@ -286,3 +286,16 @@
 .piano-room-canvas-viewport{position:relative}
 .piano-walk-room canvas.piano-wall-staff-mirror{position:absolute;top:6px;left:50%;transform:translateX(-50%);width:min(94%,428px);height:auto;min-height:96px;max-height:none;aspect-ratio:428/120;object-fit:fill;pointer-events:none;border:1px solid #86ecd9;border-radius:5px;z-index:2}
 .piano-wall-staff-mirror[hidden]{display:none!important}
+
+#pianoroom.piano-lab .piano-main-games{display:flex;gap:8px;margin:0 0 8px;flex-wrap:nowrap}
+#pianoroom.piano-lab .piano-main-games button{flex:1;min-width:0;min-height:44px;background:#20524e;border-color:#83decb;color:#e0fff5;font-size:14px}
+#pianoroom.piano-lab .piano-game-choice,#pianoroom.piano-lab .piano-extra-practice{margin:10px 0;padding:12px;border:1px solid #668c94;border-radius:8px;background:#142c38}
+#pianoroom.piano-lab .piano-game-choice summary,#pianoroom.piano-lab .piano-extra-practice summary{cursor:pointer;font-weight:bold;font-size:17px;min-height:32px}
+#pianoroom.piano-lab .piano-extra-practice{background:transparent;border-color:#575b71}
+#pianoroom.piano-lab .piano-extra-practice summary{font-size:13px}
+@media(orientation:landscape) and (max-height:600px){#pianoroom.piano-lab .piano-main-games{margin-bottom:4px}#pianoroom.piano-lab .piano-main-games button{min-height:36px}}
+
+#pianoroom.piano-lab .piano-room-shell{grid-template-rows:52px 52px minmax(0,1fr)}
+#pianoroom.piano-lab .piano-room-canvas-viewport{width:min(100%,calc((100dvh - 132px) * 1000 / 620))}
+@media(max-width:760px),(pointer:coarse){#pianoroom.piano-lab.piano-follow-camera:not(.room-developer-open) .piano-room-canvas-viewport{height:max(140px,calc(100dvh - 132px - var(--coda-touch-room-controls-height,var(--coda-touch-controls-height,220px)) - env(safe-area-inset-bottom,0px)))}}
+@media(orientation:landscape) and (max-height:600px){#pianoroom.piano-lab .piano-room-shell{grid-template-rows:48px 40px minmax(0,1fr)}#pianoroom.piano-lab.piano-follow-camera:not(.room-developer-open) .piano-room-canvas-viewport{height:calc(100dvh - 112px);min-height:100px}}

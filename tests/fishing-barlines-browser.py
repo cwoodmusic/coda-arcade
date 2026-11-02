@@ -204,6 +204,21 @@ class FishingBarLineTests(_tempo._upgrade._fish._world.WorldBrowserCase):
         self.assertEqual(state['challenge']['meter'],meter)
         return state
 
+    def test_practice_fishing_is_on_main_screen_for_desktop_and_phone(self):
+        self.enter()
+        for size in [{'width':1300,'height':900},{'width':390,'height':844},{'width':844,'height':390}]:
+            self.page.set_viewport_size(size);self.page.clock.run_for(32)
+            self.assertFalse(self.state()['menuOpen'])
+            button=self.page.locator('#fishingPractice');self.assertTrue(button.is_visible())
+            box=button.bounding_box();self.assertGreaterEqual(box['x'],0);self.assertLessEqual(box['x']+box['width'],size['width'])
+            button.click();self.assertTrue(self.page.locator('#fishingPracticePanel').is_visible())
+            self.assertFalse(self.state()['menuOpen'])
+            self.page.locator('#fishingPracticeClose').click()
+        self.page.locator('#fishingPractice').click()
+        self.page.locator('#fishingPracticeStart').click();self.page.clock.run_for(32)
+        self.assertTrue(self.state()['practice'])
+        self.assertFalse(self.page.locator('#fishingPractice').is_visible())
+
     def test_counts_scroll_with_notes_in_simple_compound_and_cut_time(self):
         for meter in ['4/4','6/8','2/2']:
             self.start_engraving_practice(meter,'rare');state=self.state();drawing=state['beaming'];counts=drawing['countings']

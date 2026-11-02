@@ -97,3 +97,5 @@ The browser tests use actual keyboard/touch input and a controlled browser clock
 Rhythm notation includes a scrolling counting row aligned with the notes. Compound 6/8 uses “1 la li 2 la li” and accompaniment grouped into two dotted-quarter pulses, with lighter eighth-note subdivisions.
 
 Fishing songs develop over sixteen bars with stronger bass and low drum downbeats, sustained chord backing, flowing arpeggios, and question-and-answer lead melodies. Fast and legendary encounters retain a lead melody. The 6/8 backing emphasizes two dotted-quarter pulses.
+
+**Practice fishing** is available directly in the main room heading, beside Menu and Arcade, on desktop and phones. It opens practice settings without opening the fishing menu and returns to the main screen when practice ends.
