@@ -219,7 +219,8 @@ class RhythmFishingTests(unittest.TestCase):
 
     def test_challenge_start_fires_once_for_real_bites_and_never_for_practice(self):
         self.assertEqual(self.page.evaluate('challengeStarts'),[])
-        self.page.locator('#fishingMenuButton').click();self.page.locator('#fishingPractice').click()
+        self.page.locator('#fishingPractice').click()
+        self.page.locator('#fishingPracticeNext').click(force=True)
         self.page.locator('#fishingPracticeStart').click(force=True);self.page.clock.run_for(64)
         self.assertTrue(self.state()['practice']);self.assertEqual(self.page.evaluate('challengeStarts'),[])
         self.page.locator('#fishingCancel').click(force=True);self.page.clock.run_for(32)

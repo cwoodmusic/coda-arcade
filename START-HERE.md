@@ -120,7 +120,7 @@ See [Private classroom profiles](README-CLASSROOM-PROFILES.md) for activation,
 the allowed progress data, printable cards, and lost-card recovery. The rules
 fragment must be merged into a backup of the full live rules before deployment.
 
-Piano Lab’s **Menu → Challenges** has four large choices: **Note Rush**, **Melodies**, **Scales**, and **Intervals**. Each opens a short setup with a clear Play button. In Melodies, choose a song, hear it first, or choose **Learn this song**. Browsing and previews do not start attempts or award progress. **Play from memory** unlocks for each learned song or scale. **Back to challenges** returns to the choices; **Back to Piano Lab** resumes the room. Keyboard, recording, and settings remain separate menu tabs.
+Talk to Chopin and choose **See challenges**, or open **Menu → Challenges**, for the same four large choices: **Note Rush**, **Melodies**, **Scales**, and **Intervals**. Each opens a short setup with a clear Play button. In Melodies, choose a song, hear it first, or choose **Learn this song**. Browsing and previews do not start attempts or award progress. **Play from memory** unlocks for each learned song or scale. **Back to challenges** returns to the choices; **Back to Piano Lab** resumes the room. Keyboard, recording, and settings remain separate menu tabs.
 
 For local development, run `python3 -m http.server 8000 --bind 127.0.0.1` from
 the repository. This is a static site; no application installation or build

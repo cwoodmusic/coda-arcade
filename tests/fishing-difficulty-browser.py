@@ -63,6 +63,7 @@ class FishingDifficultyBrowserTests(_world._world.WorldBrowserCase):
         for meter in ['4/4','6/8','2/2']:
             self.fishing_action('#fishingPractice')
             self.page.locator('input[name="fishingPracticeMeter"][value="'+meter+'"]').check(force=True)
+            self.page.locator('#fishingPracticeNext').click(force=True)
             self.page.locator('input[name="fishingPracticeRarity"][value="legendary"]').check(force=True)
             self.page.locator('#fishingPracticeStart').click(force=True)
             self.page.clock.run_for(64)

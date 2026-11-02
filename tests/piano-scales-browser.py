@@ -103,7 +103,8 @@ class PianoScaleTests(_world.WorldBrowserCase):
     def start_scale(self,identifier,via_chopin=False):
         if via_chopin:
             self.close_panels();self.walk(780,306);self.page.keyboard.press('e')
-            self.page.locator('[data-piano-dialogue-action="scales"]').click()
+            self.page.locator('[data-piano-dialogue-action="challenges"]').click()
+            self.page.locator('[data-piano-challenge="scales"]').click()
         else:
             self.menu(challenge='scales')
         self.page.locator('#pianoScale').select_option(identifier)

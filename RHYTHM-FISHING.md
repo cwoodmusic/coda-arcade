@@ -30,7 +30,7 @@ A small boat, rod, line, and fish illustrate the battle above the staff. Good ta
 
 ## Endless practice
 
-Choose **Menu → Practice fishing** at the lake. Pick **4/4**, **6/8**, or **cut time**, then **Common**, **Uncommon**, **Rare**, **Epic**, or **Legendary**. Practice starts directly with a count-in; no boat or wild fish is needed. The rhythms, tempo changes, notation, holds, music, and metronome use the normal game rules.
+Choose **Practice fishing** in the room heading. The setup has two steps: pick **4/4**, **6/8**, or **cut time**, then choose **Next: choose a challenge** for **Common**, **Uncommon**, **Rare**, **Epic**, or **Legendary**. Large beat pictures and short descriptions explain each choice. **Back to rhythms** changes the beat without losing the selected challenge; **Back to fishing** closes setup. Only **Start practice** begins the count-in. No boat or wild fish is needed. The rhythms, tempo changes, notation, holds, music, and metronome use the normal game rules.
 
 Practice continues at both zero and full progress, generating new bars for as long as you want. **Pause** and **Audio** remain available. **End practice** (or Escape) returns to your previous place at the lake. It keeps the practice choices for your next visit to the settings during this page session. Practice does not catch fish, remove shadows, or award Notes, XP, or achievements.
 
