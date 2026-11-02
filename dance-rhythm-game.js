@@ -2,9 +2,9 @@
  * notation, touch/keyboard input and short-lived Web Audio voices. */
 (function(root,factory){
  const node=typeof module==='object'&&module.exports;
- const api=factory(node?require('./dance-rhythm-engine.js'):root?.CodaDanceRhythmEngine,node?require('./music-notation.js'):root?.CodaMusicNotation,node?require('./rhythm-beaming.js'):root?.CodaRhythmBeaming,node?require('./dance-campaign.js'):root?.CodaDanceCampaign);
+ const api=factory(node?require('./dance-rhythm-engine.js'):root?.CodaDanceRhythmEngine,node?require('./music-notation.js'):root?.CodaMusicNotation,node?require('./rhythm-beaming.js'):root?.CodaRhythmBeaming,node?require('./dance-campaign.js'):root?.CodaDanceCampaign,node?require('./dance-song-audio.js'):root?.CodaDanceSongAudio);
  if(node)module.exports=api;if(root)root.CodaDanceRhythmGame=api;
-})(typeof window==='undefined'?null:window,function(engineModule,notation,beaming,campaign){
+})(typeof window==='undefined'?null:window,function(engineModule,notation,beaming,campaign,songAudio){
  'use strict';
  const ARROWS=Object.freeze({left:'←',down:'↓',up:'↑',right:'→'});
  const DIRECTIONS=Object.freeze(Object.keys(ARROWS));
@@ -16,7 +16,7 @@
   const ownHost=!api.host,host=api.host||doc.createElement('section');if(ownHost)doc.body.append(host);
   host.classList.add('dance-rhythm-game');host.hidden=true;host.setAttribute('aria-label','DJ line dance');
   let opened=false,destroyed=false,phase='closed',mode='normal',stageId=campaign.STAGES[0].id,watching=false,menuTier='normal',nextMusicBeat=0,nextRhythmCue=0,engine=null,state=null,frame=0,priorFocus=null,finished=false,runId=null;
-  let audio=null,master=null,musicBus=null,clickBus=null,audioStart=0,nextClick=-8,voices=new Set(),feedbackTimer=0,lastPointer=null,music=true,metronome=true,noiseBuffer=null;
+  let audio=null,master=null,musicBus=null,clickBus=null,audioStart=0,nextClick=-8,voices=new Set(),feedbackTimer=0,lastPointer=null,music=true,metronome=true;
   let nextWatch=0;
   let canvas=null,ctx=null,scoreText=null,feedbackText=null,countText=null,beatText=null,progress=null,statusText='',nextCue=0;
   const held=new Set(),clock=()=>{
@@ -34,7 +34,7 @@
   function safeCallback(name,...args){try{return api[name]?.(...args);}catch(error){win.console?.error?.('Dance callback failed:',error);return false;}}
   function stopAudio(){
    for(const voice of voices)try{voice.stop();}catch{}voices.clear();
-   if(audio){const old=audio;audio=null;master=null;musicBus=null;clickBus=null;noiseBuffer=null;old.close().catch(()=>{});}
+   if(audio){const old=audio;audio=null;master=null;musicBus=null;clickBus=null;old.close().catch(()=>{});}
   }
   function tone(frequency,at,duration,gain=.035,type='sine',channel='music',slide=null,part='backing'){
    if(!audio||!master||(channel==='click'?!metronome:!music))return;
@@ -43,14 +43,6 @@
   function startAudio(startTime){
    stopAudio();const Constructor=api.AudioContext||win.AudioContext||win.webkitAudioContext;if(!Constructor)return;
    try{audio=new Constructor();master=audio.createGain();master.gain.value=.7;master.connect(audio.destination);musicBus=audio.createGain();musicBus.gain.value=music?1:0;musicBus.connect(master);clickBus=audio.createGain();clickBus.gain.value=metronome?1:0;clickBus.connect(master);audioStart=audio.currentTime-startTime;audio.resume().catch(()=>{});}catch{stopAudio();}
-  }
-  function noise(at,duration,gain,frequency){
-   if(!audio||!master||!music)return;
-   const context=audio;
-   if(!noiseBuffer){noiseBuffer=context.createBuffer(1,Math.ceil(context.sampleRate*.25),context.sampleRate);const samples=noiseBuffer.getChannelData(0);for(let i=0;i<samples.length;i++)samples[i]=Math.random()*2-1;}
-   const source=context.createBufferSource(),filter=context.createBiquadFilter(),envelope=context.createGain();source.buffer=noiseBuffer;filter.type='highpass';filter.frequency.value=frequency;
-   envelope.gain.setValueAtTime(.0001,at);envelope.gain.exponentialRampToValueAtTime(gain,at+.002);envelope.gain.exponentialRampToValueAtTime(.0001,at+duration);
-   source.connect(filter).connect(envelope).connect(musicBus);voices.add(source);source.onended=()=>{voices.delete(source);source.disconnect();filter.disconnect();envelope.disconnect();};source.start(at);source.stop(at+duration+.01);
   }
   function scheduleAudio(now){
    if(!audio||audio.state!=='running'||!state)return;
@@ -61,12 +53,9 @@
    }
    for(const event of campaign.musicEvents(stageId,nextMusicBeat,until)){
     const due=when(event.beat);if(due<audio.currentTime-.08)continue;const at=Math.max(audio.currentTime+.004,due),duration=event.duration*seconds;
-    if(event.part==='drum'){
-     if(event.track===0)tone(145,at,.17,event.volume*.55,'sine','music',45);
-     else noise(at,event.track===1?.12:.055,event.volume*.4,event.track===1?1400:6500);
-    }else{
-     const frequency=440*2**((event.midi-69)/12);tone(frequency,at,Math.max(.04,duration),event.volume*.22,['square','triangle','triangle','sine','sawtooth','sawtooth','sine','triangle','square','sawtooth'][event.sound]||'triangle');
-    }
+    if(music)songAudio.schedule(audio,event,at,duration,musicBus,campaign.stageFor(stageId).style.id,(source,nodes)=>{
+     voices.add(source);source.onended=()=>{voices.delete(source);try{source.disconnect();for(const node of nodes)node.disconnect();}catch{}};
+    });
    }
    nextMusicBeat=Math.max(nextMusicBeat,until);
    // A soft woodblock-like synth doubles the exact notated tapping rhythm.
@@ -83,7 +72,7 @@
    const saved=savedProgress();host.append(node('p','dance-rhythm-help','Ten stages per difficulty · 16 bars each · Score 80% to pass. A perfect score unlocks the song in the jukebox.'));
    const choices=node('div','dance-rhythm-modes');for(const option of MODES){const tier=saved.tiers.find(item=>item.difficulty===option.id),choice=button('',()=>{menuTier=option.id;renderMenu();},'mode',option.id);choice.disabled=!tier?.unlocked;choice.setAttribute('aria-pressed',String(menuTier===option.id));choice.append(node('strong','',option.title),node('span','',tier?.unlocked?tier.passed.length+' / 10 passed':'Pass all ten '+MODES[MODES.findIndex(m=>m.id===option.id)-1].title+' stages'));choices.append(choice);}host.append(choices);
    const tier=saved.tiers.find(item=>item.difficulty===menuTier)||saved.tiers[0],list=node('div','dance-stage-list');
-   for(const stage of campaign.STAGES){const row=node('div','dance-stage-row'),passed=tier.passed.includes(stage.id),play=button((stage.index+1)+'. '+stage.title+' · '+stage.meter+(passed?' · Passed':''),()=>start(menuTier,stage.id),'stage',stage.id);play.disabled=!campaign.canPlay(menuTier,stage.id,saved);row.append(play);if(passed)row.append(button('Watch dance',()=>start(menuTier,stage.id,true),'watch',stage.id));if(saved.songs.includes(stage.id))row.append(node('span','dance-song-earned','♫ Song unlocked'));list.append(row);}host.append(list);
+   for(const stage of campaign.STAGES){const row=node('div','dance-stage-row'),passed=tier.passed.includes(stage.id),play=button((stage.index+1)+'. '+stage.title+' · '+stage.style.label+' · '+stage.meter+(passed?' · Passed':''),()=>start(menuTier,stage.id),'stage',stage.id);play.disabled=!campaign.canPlay(menuTier,stage.id,saved);row.append(play);if(passed)row.append(button('Watch dance',()=>start(menuTier,stage.id,true),'watch',stage.id));if(saved.songs.includes(stage.id))row.append(node('span','dance-song-earned','♫ Song unlocked'));list.append(row);}host.append(list);
    host.append(node('p','dance-rhythm-small','Arrow keys or touch arrows · Watch unlocked dances for fun, without scoring.'));changed();position();
   }
 

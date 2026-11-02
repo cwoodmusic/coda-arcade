@@ -16,7 +16,7 @@ HARNESS = '''<!doctype html><meta charset="utf-8"><meta name="viewport" content=
 <style>body{margin:0;background:#0f2130;color:white}#arcade{width:100vw;height:100vh}#launch{margin:450px 20px 0}</style>
 <main id="arcade"><button id="launch">Talk to DJ</button></main>
 <script src="music-notation.js"></script><script src="rhythm-beaming.js"></script>
-<script src="dance-campaign.js"></script><script src="dance-rhythm-engine.js"></script><script src="player-progression.js"></script><script src="dance-rhythm-game.js"></script><script>
+<script src="dance-campaign.js"></script><script src="dance-song-audio.js"></script><script src="dance-rhythm-engine.js"></script><script src="player-progression.js"></script><script src="dance-rhythm-game.js"></script><script>
 window.gameTime=100;window.canPlay=true;window.blockStart=false;window.steps=[];window.misses=[];window.cues=[];window.results=[];window.closes=[];
 window.fixtureEvents=CodaDanceCampaign.DIFFICULTIES.flatMap(d=>CodaDanceCampaign.STAGES.map(s=>({id:'dance-stage:'+d+':'+s.id,xp:1,reason:'fixture'})));localStorage.setItem(CodaPlayerProgression.KEY,JSON.stringify({version:1,xp:fixtureEvents.length,events:fixtureEvents}));window.progress=CodaPlayerProgression.create({storage:localStorage});
 window.game=CodaDanceRhythmGame.create({getProgress:()=>progress.refresh().dance,now:()=>gameTime,seed:123,canPlay:()=>canPlay,onStart:()=>!blockStart,onStep:e=>steps.push(e),onMiss:e=>misses.push(e),onCue:e=>cues.push(e),onFinish:e=>{results.push(e);return progress.recordDanceResult(e.runId,e);},onClose:e=>closes.push(e)});
