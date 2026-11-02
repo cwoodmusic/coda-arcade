@@ -762,7 +762,7 @@ window.createCodaCharacterRenderer=function(api){
     if(own(custom,'hairstyle')&&custom.hairstyle!==base.hairstyle)delete appearance.hairDetail;
     if(own(custom,'outfit')&&custom.outfit!==base.outfit)delete appearance.neckwear;
     if(own(custom,'accessory'))appearance.earrings=custom.accessory==='earrings';
-    const activity=p.activity||'',emote=activity==='dancing'?'dance':activity==='chatting'||p.conversation?'talk':activity==='playing'?'playing':activity==='relaxing'?'sit':p.emote;
+    const activity=p.activity||'',emote=activity==='dancing'?(EMOTES.includes(p.danceStyle)?p.danceStyle:'dance'):activity==='chatting'||p.conversation?'talk':activity==='playing'?'playing':activity==='relaxing'?'sit':p.emote;
     const seed=String(base.id).split('').reduce((a,c)=>a+c.charCodeAt(0),0);
     const pose={x:p.x,y:p.y,facing:p.facing,walking:p.walking,phase:p.phase,emote,emoteTime:p.emoteTime,seed};render(ctx,appearance,pose,time,pixelPoints(p.id||base.id,pose));return true;
   }

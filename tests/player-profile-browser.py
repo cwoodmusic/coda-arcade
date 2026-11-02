@@ -14,7 +14,7 @@ class Handler(SimpleHTTPRequestHandler):
         html='''<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/player-profile.css">
 <style>body{margin:0;background:#101526;color:#eee;font:15px system-ui}button{color:#fff;background:#413253;border:1px solid #aaa;padding:9px;border-radius:6px}#panel{width:min(540px,calc(100vw - 16px));box-sizing:border-box;margin:8px auto;padding:12px;border:1px solid #7d678e;background:#211c36;max-height:calc(100dvh - 16px);overflow:auto}#panel[hidden]{display:none}</style>
 <button id="openProfile">Open profile</button><section id="panel" hidden role="dialog" aria-labelledby="panelTitle"><h1 id="panelTitle"></h1><button id="closeProfile">Close profile</button><div id="panelBody"></div></section>
-<script src="/character-renderer.js"></script><script src="/player-progression.js"></script><script src="/notes-shop.js"></script><script src="/musician-missions.js"></script><script src="/player-profile.js"></script><script>
+<script src="/character-renderer.js"></script><script src="/dance-campaign.js"></script><script src="/dance-rhythm-engine.js"></script><script src="/player-progression.js"></script><script src="/notes-shop.js"></script><script src="/musician-missions.js"></script><script src="/player-profile.js"></script><script>
 window.fixtureMissions=CodaMusicianMissions.DEFINITIONS.map(m=>({...m,status:m.id==='ellington-rhythm-streak'?'active':'available',progress:m.id==='ellington-rhythm-streak'?12:0}));
 window.fixtureTutorials={version:1,lessons:[{id:'note-naming',title:'Note naming',step:4,total:4,completed:true},{id:'rhythm-tree',title:'The rhythm tree',step:1,total:5,completed:false}],completed:['note-naming']};
 window.calls=[];window.progression=CodaPlayerProgression.create();window.wallet=CodaNotesShop.createWallet();
@@ -46,7 +46,7 @@ class PlayerProfileTests(unittest.TestCase):
         self.page.evaluate("progression.awardXP('quest:profile-test',130,'A musical mission')")
         self.assertEqual(self.page.locator('.profile-level').inner_text(),'Level 2')
         self.assertEqual(self.page.locator('.profile-xp-to-go').inner_text(),'50 XP to go!')
-        self.assertEqual(self.page.locator('.profile-prize strong').all_inner_texts(),['Artist beret','Neon Marimba','4 new quests at Level 3'])
+        self.assertEqual(self.page.locator('.profile-prize strong').all_inner_texts(),['Artist beret','Neon Marimba','6 new quests at Level 3'])
         self.assertIn('Note naming · Finished',self.page.locator('.profile-lessons').inner_text())
         self.assertIn('1 / 5 steps',self.page.locator('.profile-lessons').inner_text())
         self.assertIn('XP means experience points',self.page.locator('.profile-experience .profile-help').inner_text())

@@ -3,9 +3,9 @@ const assert=require('node:assert/strict');
 const library=require('../dj-library.js');
 
 test('the guest DJ collection contains distinct playable original arrangements',()=>{
-  assert.equal(library.songs.length,7);
-  assert.equal(new Set(library.songs.map(song=>song.id)).size,7);
-  assert.equal(new Set(library.songs.map(song=>JSON.stringify(song.composition))).size,7);
+  assert.equal(library.songs.length,17);
+  assert.equal(new Set(library.songs.map(song=>song.id)).size,17);
+  assert.equal(new Set(library.songs.map(song=>JSON.stringify(song.composition))).size,17);
   for(const song of library.songs){assert.ok(library.valid(song.composition));assert.ok(song.composition.tracks.some(track=>track.notes.length>0));}
 });
 
@@ -95,7 +95,7 @@ test('built-in arrangements use the ten guest voices with bounded density and ba
   const events=[...song.tracks,...song.drums].flatMap(track=>track.notes.flatMap(note=>[[note.t,1,track.volume],[note.t+note.d,-1,track.volume]])).sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
   let voices=0,peakVoices=0,level=0,peakLevel=0;for(const [time,direction,volume]of events){voices+=direction;level+=direction*volume;peakVoices=Math.max(peakVoices,voices);peakLevel=Math.max(peakLevel,level);}
   assert.ok(peakVoices<=10,record.id+' avoids excessive simultaneous voices');assert.ok(peakLevel<=1.7+1e-8,record.id+' combined note levels stay bounded');
-  assert.ok(events.length/2<400,record.id+' keeps the original synthesis light');
+  assert.ok(events.length/2<(record.unlock?.kind==='dance'?700:400),record.id+' keeps the original synthesis light');
  }
 });
 

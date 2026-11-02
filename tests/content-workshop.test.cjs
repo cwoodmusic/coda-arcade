@@ -7,7 +7,7 @@ test('the external workshop includes the complete current classroom, history and
  assert.equal(checks.validate(pack).ok,true);assert.equal(pack.content.classroom.document.exam.questions.length,800);
  assert.equal(Object.keys(pack.content.classroom.document.lessons).length,9);
  assert.equal(Object.keys(pack.content.history.collections).length,18);assert.equal(pack.content.history.questions.length,180);assert.equal(pack.content.historyProgression.quests.length,180);
- assert.equal(pack.content.missions.length,29);assert.equal(pack.content.piano.LESSONS.length,9);assert.equal(pack.content.fishing.FISH.length,30);
+ assert.equal(pack.content.missions.length,35);assert.equal(pack.content.piano.LESSONS.length,9);assert.equal(pack.content.fishing.FISH.length,30);
  assert.equal(pack.content.conversations.length,15);assert.equal(pack.content.playerProgression.THRESHOLDS.length,50);
  for(const file of ['piano-lab.js','rhythm-fishing.js','musician-ui.js','music-classroom.js','world-preview.html'])assert.ok(pack.content.additionalCopy.some(item=>item.file===file),'Include remaining inline dialogue in '+file);
  assert.ok(pack.content.advancedValues.some(item=>item.file==='music-history-progress.js'));

@@ -30,3 +30,7 @@
 .dance-rhythm-game.is-playing{background:rgba(12,24,40,.34);box-shadow:0 8px 30px #050b2540}
 .dance-rhythm-game.is-playing .dance-rhythm-score{background:transparent;border-color:#a2d2e690}
 .dance-rhythm-game.is-playing .dance-rhythm-stats,.dance-rhythm-game.is-playing .dance-rhythm-feedback{color:#fff;text-shadow:0 1px 3px #000,0 0 5px #000}
+
+.dance-stage-list{display:grid;gap:8px;margin-top:12px}.dance-stage-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.dance-stage-row>[data-dance-stage]{flex:1;text-align:left;min-width:180px;font-size:16px}.dance-rhythm-game button:disabled{opacity:.45;cursor:not-allowed}.dance-song-earned{font-size:12px;color:#baffda}.dance-rhythm-modes button[aria-pressed=true]{border:2px solid #ffe79b}.dance-rhythm-game.is-watching>.dance-rhythm-controls{display:none}.dance-rhythm-game.is-watching{grid-template-columns:minmax(0,1fr)}
+
+.dance-rhythm-game.is-watching .dance-rhythm-score,.dance-rhythm-game.is-watching .dance-rhythm-feedback{display:none}.dance-rhythm-game.is-watching .dance-rhythm-options{grid-row:auto}

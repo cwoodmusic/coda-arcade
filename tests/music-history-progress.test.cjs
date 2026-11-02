@@ -18,7 +18,8 @@ function complete(f,person){const accepted=f.store.acceptQuest(person);assert.eq
   if(quest.game==='pitch')result=f.store.recordResult('pitch',id,pitch(quest.target),token);
   if(quest.game==='triad')result=f.store.recordResult('triad',id,triad,token);
   if(quest.game==='rhythm')result=f.store.recordResult('rhythm',id,rhythm,token);
-  if(quest.game==='piano')result=f.store.recordActivity('piano',{runId:id,kind:'melody',mode:'guided',mistakes:0},token);
+  if(quest.game==='piano')result=f.store.recordActivity('piano',{runId:id,kind:quest.activityKind||'melody',mode:'guided',mistakes:0,correct:quest.target,clef:'treble',complete:true,scaleType:'major'},token);
+  if(quest.game==='dance')result=f.store.recordActivity('dance',{runId:id,version:2,complete:true,bars:16,passed:true,scorePercent:100},token);
   if(quest.game==='fishing')result=f.store.recordActivity('fishing',{id,fishId:'test-minnow',rarity:'common',meter:'4/4',caught:true,outcome:'caught',hits:8,misses:0,extras:0,perfect:true},token);
   assert.equal(result,true);
  }assert.equal(f.store.conversation(person).hasNewFact,true);return quest;}
@@ -33,7 +34,7 @@ function oldCollectionAwards(person){return [...oldIds(person).map(id=>({id:'sch
 
 test('every collection has ten progressively priced friendship quests and no click-only facts',()=>{
  const f=fixture();assert.equal(Object.keys(history.PEOPLE).length,18);assert.equal(f.store.snapshot().total,180);
- for(const person of Object.keys(history.PEOPLE)){assert.equal(f.store.learnFact(person).ok,false);assert.equal(history.PEOPLE[person].facts.length,10);const quests=history.PEOPLE[person].facts.map((_,i)=>history.questFor(person,i));assert.equal(new Set(quests.map(q=>q.game)).size,5);assert.equal(quests[0].reward,50);assert.equal(quests[9].reward,110);assert.deepEqual(quests.map(q=>q.tier),[0,0,1,1,2,2,3,3,4,4]);}
+ for(const person of Object.keys(history.PEOPLE)){assert.equal(f.store.learnFact(person).ok,false);assert.equal(history.PEOPLE[person].facts.length,10);const quests=history.PEOPLE[person].facts.map((_,i)=>history.questFor(person,i));assert.equal(new Set(quests.map(q=>q.game)).size,person==='chopin'?1:6);assert.equal(quests[0].reward,50);assert.equal(quests[9].reward,110);assert.deepEqual(quests.map(q=>q.tier),[0,0,1,1,2,2,3,3,4,4]);}
  assert.equal(f.store.snapshot().count,0);assert.equal(f.wallet.snapshot().balance,150);
 });
 test('Bach starts with ten notes, one completed quest unlocks exactly one fact, and a global active quest cannot stack',()=>{
@@ -132,4 +133,13 @@ test('the complete eighteen-person reward ledger stays valid through all 252 ide
  const deposit=f.store.deposit();assert.equal(deposit.ok,true,deposit.error);assert.equal(f.store.snapshot().recordedCount,180);
  for(const person of Object.keys(history.PEOPLE)){assert.equal(f.store.startQuiz(person).ok,true);answerAll(f);assert.equal(f.store.finishQuiz().ok,true);}
  const snapshot=f.store.snapshot();assert.equal(snapshot.ok,true,snapshot.error);assert.equal(snapshot.paid.length,252);assert.equal(snapshot.pendingAmount,0);assert.equal(f.wallet.snapshot().balance,86550);assert.equal(f.store.deposit().amount,0);
+});
+
+test('Chopin friendship includes Note Rush and new later rhythm quests include dancing',()=>{
+ const f=fixture();complete(f,'chopin');f.store.learnFact('chopin');complete(f,'chopin');f.store.learnFact('chopin');const accepted=f.store.acceptQuest('chopin');assert.equal(accepted.quest.activityKind,'reading');const token=f.store.beginRun('piano');assert.equal(f.store.recordActivity('piano',{runId:'read-friend',kind:'reading',complete:true,correct:20,mistakes:1,clef:'bass'},token),true);assert.equal(f.store.conversation('chopin').hasNewFact,true);
+ const g=fixture();for(let i=0;i<6;i++){complete(g,'bach');g.store.learnFact('bach');}const dance=g.store.acceptQuest('bach');assert.equal(dance.quest.game,'dance');const t=g.store.beginRun('dance'),event={runId:'dance-friend',version:2,complete:true,bars:16,passed:true,scorePercent:80};assert.equal(g.store.recordActivity('dance',{...event,watching:true},t),false);assert.equal(g.store.recordActivity('dance',event,t),true);assert.equal(g.store.conversation('bach').hasNewFact,true);
+});
+
+test('accepted v3 friendship quests without the new rule marker keep their original activity',()=>{
+ const f=fixture();f.store.acceptQuest('chopin');const raw=JSON.parse(f.values.get(history.KEY));delete raw.active.ruleVersion;f.values.set(history.KEY,JSON.stringify(raw));const expected=history.questFor('chopin',0,0,1);assert.equal(f.store.snapshot().active.game,expected.game);assert.equal(f.store.snapshot().active.ruleVersion,1);assert.ok(f.store.beginRun(expected.game));
 });

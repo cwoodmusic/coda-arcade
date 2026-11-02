@@ -6,7 +6,7 @@
  'use strict';
  const KEY='codaMusicHistoryV1',PERSON_IDS=Object.keys(PEOPLE),FACTS=Object.values(PEOPLE).flatMap(person=>person.facts),BY_ID=new Map(FACTS.map(fact=>[fact.id,fact])),IDS=new Set(BY_ID.keys()),MAX_SEEN=4096;
  const OLD_FACTS=Object.fromEntries(PERSON_IDS.map(person=>[person,Array.from({length:30},(_,index)=>person+'-'+String(index+1).padStart(2,'0'))])),OLD_IDS=new Set(Object.values(OLD_FACTS).flat()),OLD_MAX_AWARDS=OLD_IDS.size+PERSON_IDS.length*6,MAX_AWARDS=OLD_MAX_AWARDS+IDS.size+PERSON_IDS.length*4;
- const GAMES=['pitch','rhythm','triad','piano','fishing'],GAME_NAMES={pitch:'Pitch Race',rhythm:'Rhythm Room',triad:'Music Triad',piano:'Piano Lab',fishing:'Rhythm Fishing'};
+ const GAMES=['pitch','rhythm','triad','piano','fishing','dance'],GAME_NAMES={pitch:'Pitch Race',rhythm:'Rhythm Room',triad:'Music Triad',piano:'Piano Lab',fishing:'Rhythm Fishing',dance:'DJ Line Dance'};
  const COLLECTION_BONUSES=Object.freeze({10:2000}),QUIZ_PRIZE=2000,PASS_SCORE=80,QUESTION_COUNT=10;
  const REWARDS=Object.freeze({factBase:50,factStep:15,factsPerTier:2,milestones:COLLECTION_BONUSES,quiz:QUIZ_PRIZE});
  const QUESTIONS=Array.isArray(QUIZ_DATA)?QUIZ_DATA:QUIZ_DATA?.QUESTIONS||[];
@@ -15,14 +15,17 @@
  // Migrated recorded facts/sets are already credited. Historical awards retain
  // their original IDs and amounts so an interrupted old payment can retry.
  const blank=()=>({version:3,earned:[],learned:[],recorded:[],legacy:[],credited:[],completed:[],historicalAwards:[],active:null,quizzes:{},seen:[],pending:[],paid:[]});
- function questFor(person,index,progress=0){
-  const tier=Math.floor(index/REWARDS.factsPerTier),game=GAMES[(index+PERSON_IDS.indexOf(person))%GAMES.length];let goal,target;
+ function questFor(person,index,progress=0,ruleVersion=2){
+  const tier=Math.floor(index/REWARDS.factsPerTier);let game=GAMES[(index+PERSON_IDS.indexOf(person))%5],activityKind=null;let goal,target;
+  if(ruleVersion>=2&&person==='chopin'){game='piano';activityKind=['melody','scale','reading'][index%3];}
+  if(ruleVersion>=2&&index>=5&&game==='rhythm')game='dance';
   if(game==='pitch'){target=10+tier*5;goal='Identify '+target+' notes correctly in one completed solo Pitch Race run.';}
   if(game==='rhythm'){target=75+tier*3;goal='Finish a Tap Practice round of at least 8 notes with '+target+'% accuracy or better.';}
   if(game==='triad'){target=1+Math.floor(tier/2);goal=(tier>=3?'Win':'Finish')+' a Music Triad computer match with at least '+target+' capture'+(target===1?'':'s')+'.';}
-  if(game==='piano'){target=1;goal='Complete a melody, scale, or interval challenge in Piano Lab. Free play does not count.';}
+  if(game==='piano'){target=activityKind==='reading'?10+tier*5:1;goal=activityKind==='reading'?'Play '+target+' correct pitches in one completed Note Rush run.':activityKind==='scale'?'Complete a major or natural minor scale in Piano Lab.':activityKind==='melody'?'Complete a melody challenge in Piano Lab.':ruleVersion>=2?'Complete a melody or scale, or play ten correct pitches in Note Rush.':'Complete a melody, scale, or interval challenge in Piano Lab. Free play does not count.';}
+  if(game==='dance'){target=80;goal='Pass a sixteen-bar DJ Line Dance stage with at least 80% of the points. Watching does not count.';}
   if(game==='fishing'){target=1+Math.floor(tier/2);goal='Catch '+target+' fish after accepting this quest. Practice catches do not count.';}
-  return {id:'history-quest:'+person+':'+index,person,index,tier,game,title:PEOPLE[person].name+' · Friendship quest '+(index+1),goal,target,progress,reward:factReward(PEOPLE[person].facts[index].id),gameName:GAME_NAMES[game]};
+  return {activityKind,ruleVersion,id:'history-quest:'+person+':'+index,person,index,tier,game,title:PEOPLE[person].name+' · Friendship quest '+(index+1),goal,target,progress,reward:factReward(PEOPLE[person].facts[index].id),gameName:GAME_NAMES[game]};
  }
  function relationship(count,total){return {count,total,name:count>=total?'Lifelong friend':count>=Math.ceil(total*5/6)?'Close friend':count>=Math.ceil(total/2)?'Trusted friend':count>=Math.ceil(total/6)?'Friend':count>0?'Acquaintance':'New acquaintance'};}
  function validIds(value,ids=IDS){return Array.isArray(value)&&value.length<=ids.size&&new Set(value).size===value.length&&value.every(id=>ids.has(id));}
@@ -57,7 +60,7 @@
   for(const person of PERSON_IDS)if(idsFor(person).filter(id=>state.earned.includes(id)&&!state.learned.includes(id)).length>1)throw Error('Too many ready facts');
   if(value.active!==null){const active=value.active;if(!active||!own(PEOPLE,active.person)||!integer(active.index,idsFor(active.person).length-1)||typeof active.nonce!=='string'||active.nonce.length>100||!active.nonce||!integer(active.progress,3)||!Array.isArray(active.seen)||active.seen.length>3||active.seen.some(id=>typeof id!=='string'||id.length>160))throw Error('Invalid active quest');
    const id=idsFor(active.person)[active.index];if(state.earned.includes(id)||state.legacy.includes(id)||idsFor(active.person).some(id=>state.earned.includes(id)&&!state.learned.includes(id)))throw Error('Invalid active fact');
-   state.active={person:active.person,index:active.index,nonce:active.nonce,progress:active.progress,seen:active.seen.slice()};
+   state.active={ruleVersion:active.ruleVersion===2?2:1,person:active.person,index:active.index,nonce:active.nonce,progress:active.progress,seen:active.seen.slice()};
   }
  }
  function migrate(old){
@@ -98,41 +101,44 @@
   function personView(state,person,people=PEOPLE){
    const list=people[person].facts,ready=list.filter(fact=>state.earned.includes(fact.id)&&!state.learned.includes(fact.id)),learnedCount=list.filter(fact=>state.learned.includes(fact.id)).length,recordedCount=list.filter(fact=>state.recorded.includes(fact.id)).length,earnedCount=list.filter(fact=>state.earned.includes(fact.id)).length;
    const index=list.findIndex(fact=>!state.earned.includes(fact.id)&&!state.legacy.includes(fact.id)),sameActive=state.active?.person===person;
-   const quest=index<0?null:{...questFor(person,index,sameActive?state.active.progress:0),status:ready.length?'ready':sameActive?'active':state.active?'blocked':'available'};
+   const quest=index<0?null:{...questFor(person,index,sameActive?state.active.progress:0,sameActive?state.active.ruleVersion:2),status:ready.length?'ready':sameActive?'active':state.active?'blocked':'available'};
    return {id:person,name:PEOPLE[person].name,count:learnedCount,learnedCount,recordedCount,earnedCount,readyCount:ready.length,hasNewFact:ready.length>0,relationship:relationship(earnedCount+list.filter(fact=>state.legacy.includes(fact.id)).length,list.length),quest,quiz:{eligible:recordedCount===list.length,best:state.quizzes[person]?.best??0,passed:state.quizzes[person]?.passed??false,prize:QUIZ_PRIZE},facts:list.map((fact,index)=>({id:fact.id,number:index+1,locked:!state.learned.includes(fact.id),recorded:state.recorded.includes(fact.id),carried:state.learned.includes(fact.id)&&!state.recorded.includes(fact.id),...(state.learned.includes(fact.id)?{text:fact.text}:{})}))};
   }
-  function snapshot(){const reading=read();if(!reading.ok)return {...reading,total:IDS.size,count:0,recordedCount:0,carriedIDs:[],active:null,people:[],pending:[],pendingRewards:[],pendingAmount:0};const state=reading.state,people=authoredPeople();return {ok:true,error:'',total:IDS.size,count:state.learned.length,recordedCount:state.recorded.length,carriedIDs:state.learned.filter(id=>!state.recorded.includes(id)),active:state.active?{...questFor(state.active.person,state.active.index,state.active.progress),status:'active'}:null,people:PERSON_IDS.map(person=>personView(state,person,people)),pending:state.pending.map(item=>({...item})),pendingRewards:state.pending.map(item=>({...item})),pendingAmount:state.pending.reduce((sum,item)=>sum+item.amount,0),paid:state.paid.slice()};}
+  function snapshot(){const reading=read();if(!reading.ok)return {...reading,total:IDS.size,count:0,recordedCount:0,carriedIDs:[],active:null,people:[],pending:[],pendingRewards:[],pendingAmount:0};const state=reading.state,people=authoredPeople();return {ok:true,error:'',total:IDS.size,count:state.learned.length,recordedCount:state.recorded.length,carriedIDs:state.learned.filter(id=>!state.recorded.includes(id)),active:state.active?{...questFor(state.active.person,state.active.index,state.active.progress,state.active.ruleVersion),status:'active'}:null,people:PERSON_IDS.map(person=>personView(state,person,people)),pending:state.pending.map(item=>({...item})),pendingRewards:state.pending.map(item=>({...item})),pendingAmount:state.pending.reduce((sum,item)=>sum+item.amount,0),paid:state.paid.slice()};}
   function conversation(person){if(!own(PEOPLE,person))return fail('This character has no music history collection.');const reading=read();if(!reading.ok)return reading;const view=personView(reading.state,person,authoredPeople());return {ok:true,...view,message:view.hasNewFact?'A new fact is ready to learn!':view.learnedCount===view.facts.length?'You have learned all '+view.facts.length+' facts. Bring any carried facts to the scholar.':view.quest?.status==='active'?'No new facts yet. Finish our friendship quest first.':'No new facts are unlocked yet. Complete a friendship quest to earn one.'};}
   function acceptQuest(person){
    if(!own(PEOPLE,person)||!near(person))return fail('Talk to this musician nearby to accept a friendship quest.');const reading=read();if(!reading.ok)return reading;const state=reading.state,view=personView(state,person);
    if(state.active)return fail('Finish your current friendship quest for '+PEOPLE[state.active.person].name+' first.');if(view.hasNewFact)return fail('Learn the new fact you already earned before accepting another quest.');if(!view.quest)return fail('You have completed this musician’s fact collection.');
-   state.active={person,index:view.quest.index,progress:0,seen:[],nonce:'quest-'+(++serial)+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10)};const saved=save(reading,state);return saved.ok?{ok:true,quest:{...view.quest,status:'active'}}:saved;
+   state.active={ruleVersion:2,person,index:view.quest.index,progress:0,seen:[],nonce:'quest-'+(++serial)+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10)};const saved=save(reading,state);return saved.ok?{ok:true,quest:{...view.quest,status:'active'}}:saved;
   }
   function learnFact(person){
    if(!own(PEOPLE,person)||!near(person))return fail('Walk over to '+(PEOPLE[person]?.name||'this musician')+' to learn a new fact.');const reading=read();if(!reading.ok)return reading;const state=reading.state,fact=PEOPLE[person].facts.find(item=>state.earned.includes(item.id)&&!state.learned.includes(item.id));
    if(!fact)return {ok:false,noNewFact:true,error:'No new facts are unlocked yet. Complete a friendship quest to earn one.'};state.learned.push(fact.id);const saved=save(reading,state);return saved.ok?{ok:true,fact:CONTENT?.resolvedFact(authored(),fact.id)||{...fact},person,count:personView(state,person).learnedCount,reward:factReward(fact.id)}:saved;
   }
-  function beginRun(game){const reading=read();if(!reading.ok||!reading.state.active||!GAMES.includes(game)||questFor(reading.state.active.person,reading.state.active.index).game!==game)return null;const token='history-run-'+(++serial)+'-'+Date.now().toString(36);tokens.set(game,{token,owner:reading.owner,nonce:reading.state.active.nonce});return token;}
+  function beginRun(game){const reading=read();if(!reading.ok||!reading.state.active||!GAMES.includes(game)||questFor(reading.state.active.person,reading.state.active.index,reading.state.active.progress,reading.state.active.ruleVersion).game!==game)return null;const token='history-run-'+(++serial)+'-'+Date.now().toString(36);tokens.set(game,{token,owner:reading.owner,nonce:reading.state.active.nonce});return token;}
   function validResult(game,value){
-   if(!value||typeof value!=='object'||value.practice===true||value.developer===true)return false;
+   if(!value||typeof value!=='object'||value.practice===true||value.watching===true||value.developer===true)return false;
    if(game==='pitch')return ['classic','endless','levels','level'].includes(value.mode)&&integer(value.correct)&&integer(value.misses)&&integer(value.streak)&&value.streak<=value.correct&&integer(value.score)&&typeof value.won==='boolean'&&typeof value.perfect==='boolean';
    if(game==='triad')return ['computer','advanced'].includes(value.mode)&&integer(value.captures,1000)&&integer(value.score,16)&&typeof value.won==='boolean'&&typeof value.comeback==='boolean';
    return game==='rhythm'&&value.mode==='tap'&&integer(value.total,128)&&value.total>=8&&integer(value.hits,128)&&value.hits<=value.total&&integer(value.extra,1000)&&integer(value.early,128)&&integer(value.late,128)&&value.early+value.late<=value.hits;
   }
   function validActivity(game,value){
-   if(!value||typeof value!=='object'||value.practice===true||value.developer===true)return false;
+   if(!value||typeof value!=='object'||value.practice===true||value.watching===true||value.developer===true)return false;
+   if(game==='dance')return value.version===2&&value.complete===true&&value.bars===16&&value.passed===true&&Number.isFinite(value.scorePercent)&&value.scorePercent>=80&&value.scorePercent<=100;
+   if(game==='piano'&&value.kind==='reading')return value.complete===true&&['treble','bass'].includes(value.clef)&&integer(value.correct)&&value.correct>=1&&integer(value.mistakes,10000);
    if(game==='piano')return typeof value.runId==='string'&&['melody','scale','interval'].includes(value.kind)&&['guided','memory'].includes(value.mode)&&integer(value.mistakes,10000)&&(value.kind!=='scale'||['major','minor'].includes(value.scaleType));
    return game==='fishing'&&typeof value.id==='string'&&typeof value.fishId==='string'&&['common','uncommon','rare','epic','legendary'].includes(value.rarity)&&['4/4','6/8','2/2'].includes(value.meter)&&value.caught===true&&value.outcome==='caught'&&(value.reason===undefined||value.reason===null)&&integer(value.hits)&&value.hits>0&&integer(value.misses)&&integer(value.extras)&&typeof value.perfect==='boolean'&&value.perfect===(value.misses===0&&value.extras===0);
   }
   function record(game,runId,value,token,activity){
    if(typeof runId!=='string'||!/^[a-z0-9:_-]{1,128}$/i.test(runId)||(activity?!validActivity(game,value):!validResult(game,value)))return false;
    const reading=read(),context=tokens.get(game);if(!reading.ok||!context||context.token!==token||context.owner!==reading.owner||!reading.state.active||context.nonce!==reading.state.active.nonce)return false;
-   const state=reading.state,active=state.active,quest=questFor(active.person,active.index,active.progress);if(quest.game!==game)return false;const key=game+':'+runId;if(state.seen.includes(key))return false;
+   const state=reading.state,active=state.active,quest=questFor(active.person,active.index,active.progress,active.ruleVersion);if(quest.game!==game)return false;const key=game+':'+runId;if(state.seen.includes(key))return false;
    state.seen.push(key);state.seen=state.seen.slice(-MAX_SEEN);let success=false;
    if(game==='pitch')success=value.correct>=quest.target;
    else if(game==='rhythm')success=100*value.hits/(value.total+value.extra)>=quest.target;
    else if(game==='triad')success=value.captures>=quest.target&&(quest.tier<3||value.won);
-   else if(game==='piano')success=true;
+   else if(game==='dance')success=value.passed===true&&value.scorePercent>=quest.target;
+   else if(game==='piano')success=quest.activityKind==='reading'?value.kind==='reading'&&value.correct>=quest.target:quest.activityKind?value.kind===quest.activityKind:quest.ruleVersion>=2?['melody','scale'].includes(value.kind)||value.kind==='reading'&&value.correct>=10:true;
    else if(game==='fishing'){active.progress++;active.seen.push(key);success=active.progress>=quest.target;}
    let fact=null;if(success){fact=PEOPLE[active.person].facts[active.index];state.earned.push(fact.id);state.active=null;}
    const saved=save(reading,state);if(!saved.ok)return false;if(success)try{api.onFactReady?.({person:quest.person,factId:fact.id});}catch{}return true;

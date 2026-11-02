@@ -18,16 +18,16 @@
    const dj=api.getDJ(),cam=api.getCamera(),box=api.canvas.getBoundingClientRect();
    return {x:box.left+(dj.x-cam.x)*cam.zoom*box.width/api.width,y:box.top+(dj.y-55-cam.y)*cam.zoom*box.height/api.height};
   }
-  const game=win.CodaDanceRhythmGame.create({canPlay:()=>active&&api.canPlay?.()!==false,getAnchor:anchor,
+  const game=win.CodaDanceRhythmGame.create({canPlay:()=>active&&api.canPlay?.()!==false,getAnchor:anchor,getProgress:api.getProgress,
    onStart(event){
     run=null;
     if(stage.getState().active)stage.close();
-    if(!stage.start()){api.onError?.('The dance floor is blocked. Leave some clear space in the middle.');return false;}
-    run={id:event.runId,owner:api.getIdentity?.()};
+    if(!stage.start({style:win.CodaDanceCampaign?.stageFor(event.stageId).index||0})){api.onError?.('The dance floor is blocked. Leave some clear space in the middle.');return false;}
+    run=event.watching?null:{id:event.runId,owner:api.getIdentity?.()};if(!event.watching)api.onStart?.(event);
     api.clearInput?.();api.onChange?.();return true;
    },
-   onCue:event=>stage.cue(event.direction),
-   onStep:event=>stage.step(event.direction,{actorId:'player'}),
+   onCue:event=>event.watching?stage.step(event.direction):stage.cue(event.direction),
+   onStep:event=>{if(!event.watching)stage.step(event.direction,{actorId:'player'});},
    onMiss:event=>stage.miss(event.direction),
    onFinish:event=>{
     stage.cue('down');
@@ -44,7 +44,7 @@
     if(game.open()===false){cleanup();return false;}api.onChange?.();return true;
    },
    isOpen:()=>active,
-   update(dt){if(!active)return;if(api.canPlay?.()===false){game.close('profile');cleanup('profile');return;}stage.update(dt);},
+   update(dt){if(!active)return;if(api.canPlay?.()===false){game.close('profile');cleanup('profile');return;}stage.transport?.(game.getState().engine?.beat||0);stage.update(dt);},
    updateCamera(viewport){
     if(!active||!stage.getState().active)return false;
     const panel=game.getBounds?.(),image=api.canvas?.getBoundingClientRect(),floor=win.CodaDanceFloorStage.FLOOR_BOUNDS;

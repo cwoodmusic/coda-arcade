@@ -457,3 +457,5 @@ admin access, anonymous users, unknown fields, expired leases, stale revisions,
 and unrelated namespaces. Keep security-test downloads under normal TLS and
 verify emulator artifacts; do not disable signature/checksum or TLS checks to
 work around a blocked download.
+
+The Line Dance tours update adds six optional musician-mission entries to the private profile schema: `nina-note-rush-ten`, `clara-note-rush-bass`, `joplin-dance-pass`, `ellington-dance-perfect`, `ella-dance-hard`, and `miles-dance-tour`. Regenerate and deploy the reviewed `classroom-database.rules.json` using the existing merge/deployment procedure before syncing those new mission entries. Dance stage passes and song unlocks use existing XP-journal IDs, so no new profile store or personal fields are introduced. Old mission fields remain optional and previously accepted music-history friendship quests retain their original rules.

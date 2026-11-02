@@ -172,6 +172,18 @@ class PianoLabTests(unittest.TestCase):
         self.assertIsNone(self.state()['reading'])
         self.assertEqual(self.state()['challengeMode'],'free')
 
+    def test_note_rush_finished_run_reports_verified_pitches_for_quests(self):
+        self.start_reading();self.walk(209,530)
+        for _ in range(10):self.page.keyboard.press('e')
+        self.assertEqual(self.state()['reading']['score'],10)
+        self.menu('games');self.page.locator('#pianoFinishReading').click()
+        event=self.page.evaluate('challengeCompletions.at(-1)')
+        self.assertEqual(event['kind'],'reading');self.assertEqual(event['correct'],10)
+        self.assertEqual(event['clef'],'treble');self.assertTrue(event['complete'])
+        self.assertEqual(self.page.evaluate('challengeCompletions.length'),1)
+        self.page.locator('[data-piano-dialogue-action="close"]').click()
+        self.assertIsNone(self.state()['reading'])
+
     def test_all_melodies_scales_and_intervals_use_fixed_floor_range(self):
         for lesson in self.page.evaluate('CodaPianoMelodies.LESSONS.map(l=>l.id)'):
             self.choose_melody(lesson);state=self.state()

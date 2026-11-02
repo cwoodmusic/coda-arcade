@@ -18,6 +18,7 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
     def setUp(self):
         super().setUp()
         self.page.wait_for_function('window.CodaArcadeQA?.danceGame?.()')
+        self.page.evaluate('''()=>{const key=CodaPlayerProgression.KEY,old=JSON.parse(localStorage.getItem(key)||'{"version":1,"events":[]}');const ids=new Set(old.events.map(e=>e.id));for(const tier of CodaDanceCampaign.DIFFICULTIES)for(const stage of CodaDanceCampaign.STAGES){const id='dance-stage:'+tier+':'+stage.id;if(!ids.has(id))old.events.push({id,xp:1,reason:'fixture'});}old.xp=old.events.reduce((n,e)=>n+e.xp,0);localStorage.setItem(key,JSON.stringify(old));}''')
         self.page.on('console', lambda message: self.errors.append(message.text)
                      if message.type == 'error' and 'Dance callback failed:' in message.text else None)
 
@@ -32,11 +33,12 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
         self.assertFalse(self.page.locator('#panel').is_visible())
         self.assertEqual(self.page.locator('[data-dance-mode]').count(), 3)
 
-    def start(self, mode='normal'):
+    def start(self, mode='hard'):
         self.chooser()
         before = self.page.evaluate('''()=>({position:CodaArcadeQA.position(),camera:CodaArcadeQA.camera(),
           npcs:CodaArcadeQA.characters().npcs,jukebox:CodaArcadeQA.jukebox()})''')
         self.page.locator('[data-dance-mode="' + mode + '"]').click()
+        self.page.locator('[data-dance-stage="neon-first-light"]').click()
         self.page.wait_for_function('CodaArcadeQA.danceGame().stage.active')
         self.page.wait_for_timeout(65)
         return before
@@ -107,14 +109,14 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
         self.page.keyboard.press(KEYS[direction or note['direction']])
 
     def test_the_physical_dj_offers_three_difficulties_and_stages_three_unique_npcs(self):
-        for mode, bpm in [('easy', 80), ('normal', 92), ('hard', 88)]:
+        for mode, bpm in [('normal', 80), ('hard', 92), ('extreme', 88)]:
             with self.subTest(mode=mode):
                 before = self.start(mode)
                 state = self.state()
                 self.assertTrue(state['active'])
                 self.assertEqual(state['game']['difficulty'], mode)
                 self.assertEqual(state['game']['engine']['bpm'], bpm)
-                self.assertEqual(state['game']['engine']['chart']['bars'], 8)
+                self.assertEqual(state['game']['engine']['chart']['bars'], 16)
                 dancers = state['stage']['dancers']
                 self.assertEqual(len(dancers), 4)
                 self.assertEqual(sum(dancer['isPlayer'] for dancer in dancers), 1)
@@ -155,7 +157,7 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
           get currentTime(){return performance.now()/1000-(this.origin??performance.now()/1000);}
           get baseLatency(){return 0;}get outputLatency(){return 0;}
         };}''')
-        self.start('normal')
+        self.start('hard')
         state = self.state()
         notes = state['game']['engine']['notes']
         first,second = notes[:2]
@@ -203,7 +205,7 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
     def test_phone_keeps_the_whole_floor_visible_and_replaces_world_movement_with_touch_arrows(self):
         self.page.set_viewport_size({'width': 390, 'height': 844})
         self.page.wait_for_function('CodaArcadeQA.touch().mobile')
-        before = self.start('easy')
+        before = self.start('normal')
         self.assert_floor_fits()
         self.assert_directional_pad()
         buttons = self.page.locator('[data-dance-arrow]')
@@ -242,7 +244,7 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
         self.page.wait_for_function("CodaArcadeQA.jukebox().playing&&CodaArcadeQA.jukebox().audioState==='running'")
         self.assertEqual(self.page.evaluate('CodaArcadeQA.jukebox().bpm'),110)
         self.assertEqual(self.page.evaluate('CodaArcadeQA.jukebox().title'),'Neon Afterhours')
-        self.start('hard')
+        self.start('extreme')
         self.assertFalse(self.page.evaluate('CodaArcadeQA.jukebox().playing'))
         self.page.wait_for_function("musicContexts[0].state==='closed'")
         self.page.keyboard.press('Escape')
@@ -253,6 +255,34 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
         self.page.wait_for_function("musicContexts.every(context=>context.state==='closed')")
         self.assertFalse(self.page.evaluate('CodaArcadeQA.jukebox().playing'))
 
+    def test_fresh_stage_pass_unlocks_real_jukebox_song_and_watch_changes_no_rewards(self):
+        self.page.evaluate('''()=>{const key=CodaPlayerProgression.KEY;localStorage.removeItem(key);}''')
+        self.page.clock.install();self.page.clock.pause_at(self.page.evaluate('Date.now()/1000')+1)
+        self.page.evaluate('''()=>{const Native=AudioContext;window.AudioContext=class extends Native{
+          constructor(){super();this.origin=performance.now()/1000;}
+          get currentTime(){return performance.now()/1000-(this.origin??performance.now()/1000);}
+          get baseLatency(){return 0;}get outputLatency(){return 0;}
+        };}''')
+        self.chooser();self.assertTrue(self.page.locator('[data-dance-mode="hard"]').is_disabled())
+        self.page.locator('[data-dance-stage="neon-first-light"]').click();self.page.clock.run_for(32)
+        state=self.state()['game']['engine']
+        for note in state['notes']:self.press_at_note(note)
+        end=state['startedAt']+(state['chart']['countInBeats']+state['chart']['totalBeats'])*state['beatSeconds']+.03
+        self.page.clock.run_for(max(0,round((end-self.page.evaluate('performance.now()/1000'))*1000)))
+        self.assertEqual(self.state()['game']['phase'],'result')
+        self.assertIn('Perfect score',self.page.locator('.dance-rhythm-result').inner_text())
+        self.assertIn('neon-first-light',self.page.evaluate('CodaArcadeQA.progression().dance.songs'))
+        xp=self.page.evaluate('CodaArcadeQA.progression().xp')
+        self.page.locator('[data-dance-choose]').click();self.page.locator('[data-dance-watch="neon-first-light"]').click()
+        self.page.clock.run_for(1200)
+        self.assertTrue(self.state()['game']['watching']);self.assertEqual(self.state()['stage']['style'],'dance')
+        self.page.keyboard.press('Escape');self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),xp)
+        open_destination(self.page,'dj')
+        play=self.page.locator('[data-jukebox-track="dance-neon-first-light"]');self.assertFalse(play.is_disabled());play.click()
+        self.page.clock.run_for(80);self.assertEqual(self.page.evaluate('CodaArcadeQA.jukebox().title'),'Neon First Light')
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),xp)
+        self.page.locator('#jukeboxStop').click()
+
     def test_closing_restores_the_original_camera_player_npcs_and_looping_jukebox_track(self):
         open_destination(self.page, 'dj')
         self.page.locator('[data-jukebox-track="neon-afterhours"]').click()
@@ -260,7 +290,8 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
         before = self.page.evaluate('''()=>({position:CodaArcadeQA.position(),camera:CodaArcadeQA.camera(),
           npcs:CodaArcadeQA.characters().npcs,jukebox:CodaArcadeQA.jukebox()})''')
         self.page.locator('[data-start-dance]').click()
-        self.page.locator('[data-dance-mode="easy"]').click()
+        self.page.locator('[data-dance-mode="normal"]').click()
+        self.page.locator('[data-dance-stage="neon-first-light"]').click()
         self.page.wait_for_function('CodaArcadeQA.danceGame().stage.active')
         dancers = self.state()['stage']['dancers']
         self.assertFalse(self.page.evaluate('CodaArcadeQA.jukebox().playing'))

@@ -27,7 +27,7 @@ class DJUnlockTests(_world.WorldBrowserCase):
   self.load()
  def test_new_player_sees_three_free_tracks_and_four_clear_locked_requirements(self):
   before=self.totals();self.dj()
-  self.assertEqual(self.page.locator('[data-house-track]').count(),7)
+  self.assertEqual(self.page.locator('[data-house-track]').count(),17)
   for id in ['neon-afterhours','velvet-lounge','mirrorball-bounce']:
    self.assertFalse(self.button(id).is_disabled());self.assertNotIn('jukebox-track-locked',self.row(id).get_attribute('class'))
   for id,requirement in [('lanternwake-shanty','Catch 5 fish'),('starlight-waltz','level 4'),('first-steps','Earn First Steps'),('midnight-headliner','Earn DJ Coda’s Headliner')]:

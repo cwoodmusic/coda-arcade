@@ -76,6 +76,7 @@ test('a browser wallet looks up progression when granting rather than requiring 
  const sandbox={window:{}};vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../notes-shop.js'),'utf8'),sandbox);
  const disk=storage(),wallet=sandbox.window.CodaNotesShop.createWallet({storage:disk});levelProof(disk,60950);
  assert.equal(wallet.grantReward('level-prize:50',6000).ok,false);
+ vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../dance-campaign.js'),'utf8'),sandbox);
  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../player-progression.js'),'utf8'),sandbox);
  assert.equal(wallet.grantReward('level-prize:50',6000).ok,true);assert.equal(wallet.snapshot().balance,6150);
 });

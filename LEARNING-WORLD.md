@@ -104,3 +104,9 @@ The countdown starts at 10 seconds. Every correct pitch adds 3 seconds; incorrec
 Pitches 1–10 use natural notes. Pitches 11–20 introduce sharps and flats. Pitches 21–30 add key signatures. From pitch 31, natural signs can cancel key signatures. From pitch 41, turns contain two pitches; from pitch 51, they contain three. Each pitch is answered in order and earns its own three-second bonus. Both clefs use the fixed C4–B5 floor-piano range (bass-clef notes use ledger lines above the staff); grand staff is omitted. The target piano key is not highlighted.
 
 All melody, scale, and interval challenges use C4–B5. Frère Jacques is arranged one octave higher throughout so its closing low G remains below the opening C while staying on the keyboard. Written notation, demonstrations, guided targets, and memory pitches share that arrangement.
+
+### DJ Line Dance tours
+
+DJ Coda now offers Normal, Hard, and Extreme tours with ten stages each. Every stage is a fixed sixteen-bar song and dance. Score at least 80% of the points to pass each stage; finish all ten before the next tour unlocks. Perfect scores unlock the ten original songs in the jukebox. Passed stages offer **Watch dance** with no input or rewards. The musical backing includes a quiet voice playing the exact scored rhythm. The stages cover 4/4, 2/4, 3/4, 6/8, cut time, 5/4, 7/8, 9/8, and 12/8. See [the Line Dance guide](docs/dj-line-dance.md) for the song list, timings, achievements and quest links.
+
+Note Rush results now count toward new musician missions and Chopin friendship quests. Note Rush, melody and scale achievements appear in the existing achievement list. Use **Finish current Note Rush run** in its game-menu section to save a run without waiting out the timer.
