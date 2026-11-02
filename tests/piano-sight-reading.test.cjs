@@ -33,3 +33,16 @@ test('multi-pitch turns must be played in order and each correct pitch gets its 
  assert.equal(game.snapshot().score,3);assert.equal(game.snapshot().turns,1);
  const copy=game.snapshot();copy.turn.notes[0].midi=-1;assert.notEqual(game.snapshot().turn.notes[0].midi,-1);
 });
+
+test('targets use real floor keys after accidental and key-signature changes',()=>{
+ const {paintedFloorKeys}=require('../piano-lab.js');
+ const full=paintedFloorKeys().map(key=>60+key.offset);
+ assert.equal(Math.min(...full),60);assert.equal(Math.max(...full),83);
+ for(const playableMidis of [full,full.filter(midi=>[0,2,4,5,7,9,11].includes(midi%12))]){
+  const allowed=new Set(playableMidis);
+  for(const clef of ['treble','bass'])for(const difficulty of reading.LEVELS.map(level=>level.id)){
+   const game=reading.create({clef,difficulty,playableMidis,random:rng()});
+   for(let turn=0;turn<500;turn++)for(const note of game.snapshot().turn.notes){assert.ok(allowed.has(note.midi));assert.ok(note.midi>=60&&note.midi<=83);game.answer(note.midi);}
+  }
+ }
+});

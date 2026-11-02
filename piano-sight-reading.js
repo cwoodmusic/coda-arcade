@@ -5,14 +5,22 @@
  const LEVELS=Object.freeze([{id:'easy',name:'Easy · natural notes',count:1,accidentals:false,keys:0},{id:'medium',name:'Medium · sharps and flats',count:1,accidentals:true,keys:0},{id:'hard',name:'Hard · key signatures and pairs',count:2,accidentals:true,keys:2},{id:'expert',name:'Expert · three-pitch turns',count:3,accidentals:true,keys:4}].map(Object.freeze));
  function create(options={}){
   const random=options.random||Math.random,level=LEVELS.find(item=>item.id===options.difficulty)||LEVELS[0],clef=options.clef==='bass'?'bass':'treble',baseMidi=60;
+  const playable=new Set((options.playableMidis||Array.from({length:24},(_,i)=>60+i)).filter(midi=>Number.isInteger(midi)&&midi>=60&&midi<=83));
   let remaining=10,score=0,turns=0,mistakes=0,ended=false,turn;
   const pick=n=>Math.min(n-1,Math.max(0,Math.floor(random()*n)));
   function next(){
    const key=level.keys?(turns%2?1:-1)*(1+pick(level.keys)):0,keyLetters=(key<0?FLATS:SHARPS).slice(0,Math.abs(key)),notes=[],alterations=new Map();
    for(let i=0;i<level.count;i++){
-    // Natural positions stay inside the two-octave floor piano even after alteration.
-    const degree=1+pick(clef==='bass'?7:12),letter=LETTERS[degree%7],natural=baseMidi+12*Math.floor(degree/7)+NAT[degree%7],signature=keyLetters.includes(letter)?Math.sign(key):0;
-    const explicit=level.accidentals&&(turns+i)%3===0,alter=explicit?(signature?0:(turns+i)%2?1:-1):signature;
+    // Filter sounding pitches after applying signatures and explicit accidentals.
+    // The floor's actual key list is authoritative, including its two endpoints.
+    const candidates=[];
+    for(let degree=1;degree<=(clef==='bass'?7:12);degree++){
+     const letter=LETTERS[degree%7],natural=baseMidi+12*Math.floor(degree/7)+NAT[degree%7],signature=keyLetters.includes(letter)?Math.sign(key):0;
+     const explicit=level.accidentals&&(turns+i)%3===0,alter=explicit?(signature?0:(turns+i)%2?1:-1):signature;
+     if(playable.has(natural+alter))candidates.push({degree,letter,natural,signature,explicit,alter});
+    }
+    if(!candidates.length)throw Error('No playable Note Dash pitches for this keyboard.');
+    const {degree,letter,natural,signature,explicit,alter}=candidates[pick(candidates.length)];
     const diatonic=(baseMidi/12-1)*7+degree,previous=alterations.has(diatonic)?alterations.get(diatonic):signature;
     notes.push({midi:natural+alter,letter,diatonic,accidental:explicit||alter!==previous?(alter===0?'natural':alter>0?'sharp':'flat'):null,alter,done:false});alterations.set(diatonic,alter);
    }
@@ -41,7 +49,7 @@
   const left=120;
   for(const [i,note]of s.turn.notes.entries()){
    const position=note.diatonic-base,xx=left+i*90,yy=baseline-position*space/2;
-   if(i===s.turn.index){ctx.fillStyle='#206d78';ctx.beginPath();ctx.arc(xx,yy,10,0,Math.PI*2);ctx.fill();}
+   if(i===s.turn.index){ctx.fillStyle='#fff2a2';ctx.beginPath();ctx.moveTo(xx-4,27);ctx.lineTo(xx+4,27);ctx.lineTo(xx,33);ctx.closePath();ctx.fill();}
    ctx.fillStyle=note.done?'#9ae8b4':i===s.turn.index?'#fff2a2':'#dce8f7';ctx.strokeStyle=ctx.fillStyle;ctx.beginPath();
    for(let line=-2;line>=position;line-=2){ctx.moveTo(xx-11,baseline-line*space/2);ctx.lineTo(xx+11,baseline-line*space/2);}
    for(let line=10;line<=position;line+=2){ctx.moveTo(xx-11,baseline-line*space/2);ctx.lineTo(xx+11,baseline-line*space/2);}

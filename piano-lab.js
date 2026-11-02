@@ -256,7 +256,7 @@
   function startReading(){
    if(!win.CodaPianoSightReading)return;
    stopDemo();stopPlayback();releaseAll(true);clearChallengeState();
-   readingGame=win.CodaPianoSightReading.create({clef:el('pianoReadingClef').value,difficulty:el('pianoReadingDifficulty').value});challengeMode='reading';
+   readingGame=win.CodaPianoSightReading.create({clef:el('pianoReadingClef').value,difficulty:el('pianoReadingDifficulty').value,playableMidis:paintedKeys.map(key=>60+key.offset)});challengeMode='reading';
    octave=readingGame.snapshot().baseMidi/12-1;el('pianoOctave').value=String(octave);floorNote=null;drawKeys();syncFloorNote();readingLastTime=null;updateGameInstructions();
    dialogue('Read the note on my staff, walk onto that piano pitch, then '+(mobileLayout()?'tap Play note':'press E')+'. You start with 10 seconds. Every correct pitch adds 3 seconds! Read pairs and groups from left to right, one pitch at a time. The clock pauses while a menu is open.',[{label:'Let’s play',action:'play',run:returnToFloor}],'reading');
   }
