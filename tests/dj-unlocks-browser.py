@@ -11,7 +11,7 @@ _world=importlib.util.module_from_spec(_spec);_spec.loader.exec_module(_world)
 
 class DJUnlockTests(_world.WorldBrowserCase):
  def dj(self):
-  open_destination(self.page,'dj');self.page.wait_for_selector('[data-house-track="lanternwake-shanty"]')
+  open_destination(self.page,'dj');self.page.locator('[data-dj-action="music"]').click();self.page.wait_for_selector('[data-house-track="lanternwake-shanty"]')
  def state(self):return self.page.evaluate('CodaArcadeQA.jukebox()')
  def button(self,id):return self.page.locator('[data-jukebox-track="'+id+'"]')
  def row(self,id):return self.page.locator('[data-house-track="'+id+'"]')

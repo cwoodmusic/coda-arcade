@@ -14,6 +14,12 @@ Phones and tablets use the same page with touch movement, a compact menu, a foll
 
 Talking to Haydn opens four large choices: **Keep learning**, **Choose a lesson**, **Look something up**, and **My progress**. New learners see **Start learning** as the first choice. The lesson picker begins with **Note names → Note lengths → Time signatures**; **All lessons** includes the remaining categories and Haydn’s Final Exam. Cards show **New**, **In progress**, or **Finished** from saved progress. Continuing reopens an available unfinished section at its saved teaching card; advanced sections keep their existing prerequisites. Reference books have a searchable list and a **Reference books** back button. Haydn’s advice and music history remain under **Talk with Haydn**. Each activity separates a short explanation, a worked example, and one clear task. Visual hints, split-by-split prompts, and recipe slots guide the next action. Optional tapping and extra note choices stay behind expandable help. Reference books are labeled **Look something up**. Each lesson ends with a five-question quiz. Four correct answers pass; answers receive explanations and retries are unlimited. New lesson completion and its once-only 50 XP achievement require a saved passing quiz. Quiz attempts resume in `codaClassroomQuizzesV1`; **Quiz ready** appears in the profile after the guided steps. Existing completed lessons and rewards remain earned, and **Take the quiz** lets those students try the new check directly. Saved lesson progress and completion IDs are retained.
 
+DJ Coda opens four choices: **Dance with friends**, **Play music**, **My songs**, and **Music history**. Music starts only with **Play**; **Stop music** stays available on each DJ page. **My songs** holds local song files and saved Song Machine songs. Back or Escape returns to the DJ menu while a selected song keeps playing.
+
+Riff’s Notes Shop starts with **Browse the shop**, **Big goals**, **My Notes**, and **Wear my things**. Browsing shows categories before items, with exact prices and the extra Notes needed for unaffordable items. My Notes explains earning and the coin purse. Buying and wearing remain separate actions. Pip’s boutique groups appearance choices into **Clothes & shoes**, **Hair & colors**, **Hats & extras**, and **Pets & magic**. Trying on and switching menus keep a draft; **Save my look** applies it and **Cancel** keeps the saved look. Base looks remain under **More looks**.
+
+The Scholar opens **Turn in facts**, **My fact book**, **Take a quiz**, and **How to find facts**. Turn in facts opens the pouch; recording facts still requires the explicit hand-in button. Quiz eligibility and rewards use the existing recorded collections. Back and Escape move up one menu level before closing.
+
 Rooms use detailed pixel-art backgrounds, with live JavaScript characters, note displays, interactions, and lighting over the art. In the classroom, Escape steps from a lesson or submenu to the classroom menu, then to the room, then to the arcade; leaving a lesson stops its audio. Main-world movement pauses inside a room or full panel.
 
 On phones, the Piano Lab and cave use a closer following camera with pinch zoom and larger movement/action controls. Fishing has original background music and separate metronome and guide-note switches under **Audio**. Tap quarter notes and shorter notes; only half and whole notes need a hold. A release cue and short transition grace make the following note easier to play; rests stay silent. Blue bar lines mark the measures. An escaped fish disappears, and a new shadow may appear elsewhere after 24 seconds. The boat rocks and rows while exploring, respecting reduced motion and the effects preference. **Practice fishing** offers all three meters and five difficulty tiers through Legendary, continues endlessly, and gives no catches or rewards.
@@ -66,6 +72,8 @@ python3 tests/player-profile-browser.py
 python3 tests/reward-notifications-browser.py
 python3 tests/piano-lab-browser.py
 python3 tests/music-classroom-browser.py
+python3 tests/activity-menus-browser.py
+python3 tests/notes-shop-menus-browser.py
 python3 tests/classroom-menus-browser.py
 python3 tests/song-progression-browser.py
 python3 tests/clean-world-art.py

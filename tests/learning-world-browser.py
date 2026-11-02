@@ -4,6 +4,7 @@ The public origin is routed to this checkout in disposable Chromium profiles.
 A tiny cabinet fixture supplies authenticated completion events; game scoring
 and ordered-hit tracking have independent module tests.
 """
+from shop_menu_helpers import browse_shop
 import json
 import mimetypes
 from pathlib import Path
@@ -99,7 +100,7 @@ class LearningWorldTests(WorldBrowserCase):
             title=self.page.locator('#panelTitle').inner_text()
             self.assertIn('Notes Shop' if 'Riff' in person['name'] else 'Boutique',title)
             self.page.locator('#panelClose').click()
-        open_destination(self.page,'shop')
+        open_destination(self.page,'shop');browse_shop(self.page)
         self.page.locator('[data-shop-item="witch"] button').click()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),70)
         self.assertNotEqual(self.page.evaluate('CodaArcadeQA.characters().player.appearance.headwear'),'witch','Buying leaves the current outfit in place until Wear is chosen')
@@ -114,7 +115,7 @@ class LearningWorldTests(WorldBrowserCase):
         self.load();self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),70)
         self.assertIn('witch',self.page.evaluate('CodaArcadeQA.notes().owned'))
         self.assertEqual(self.page.evaluate('CodaArcadeQA.characters().player.appearance.headwear'),'witch')
-        open_destination(self.page,'shop')
+        open_destination(self.page,'shop');browse_shop(self.page)
         self.assertEqual(self.page.locator('[data-shop-item="witch"] button').inner_text(),'Wear this')
         self.page.get_by_role('button',name='Find the boutique',exact=True).click()
         self.assertFalse(self.page.locator('#panel').is_visible(),'The boutique directions remain available separately')
@@ -151,7 +152,7 @@ class LearningWorldTests(WorldBrowserCase):
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),256)
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),262)
         before=self.page.evaluate('CodaArcadeQA.progression().xp')
-        open_destination(self.page,'shop');self.page.locator('[data-shop-item="witch"] button').click()
+        open_destination(self.page,'shop');browse_shop(self.page);self.page.locator('[data-shop-item="witch"] button').click()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),before,'Currency spending gives no experience')
         self.page.locator('#panelClose').click()
         open_destination(self.page,'fame')

@@ -27,7 +27,9 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
 
     def chooser(self):
         open_destination(self.page, 'dj')
-        self.assertIn('Jukebox', self.page.locator('#panelTitle').inner_text())
+        self.assertIn('DJ Coda', self.page.locator('#panelTitle').inner_text())
+        if self.page.locator('[data-dj-action="home"]').is_visible():
+            self.page.locator('[data-dj-action="home"]').click()
         self.page.locator('[data-start-dance]').click()
         self.page.wait_for_function('CodaArcadeQA.danceGame().game.phase==="menu"')
         self.assertFalse(self.page.locator('#panel').is_visible())
@@ -278,6 +280,7 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
         self.assertTrue(self.state()['game']['watching']);self.assertEqual(self.state()['stage']['style'],'dance')
         self.page.keyboard.press('Escape');self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),xp)
         open_destination(self.page,'dj')
+        self.page.locator('[data-dj-action="music"]').click()
         play=self.page.locator('[data-jukebox-track="dance-neon-first-light"]');self.assertFalse(play.is_disabled());play.click()
         self.page.clock.run_for(80);self.assertEqual(self.page.evaluate('CodaArcadeQA.jukebox().title'),'Neon First Light')
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),xp)
@@ -285,10 +288,12 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
 
     def test_closing_restores_the_original_camera_player_npcs_and_looping_jukebox_track(self):
         open_destination(self.page, 'dj')
+        self.page.locator('[data-dj-action="music"]').click()
         self.page.locator('[data-jukebox-track="neon-afterhours"]').click()
         self.page.wait_for_function('CodaArcadeQA.jukebox().playing')
         before = self.page.evaluate('''()=>({position:CodaArcadeQA.position(),camera:CodaArcadeQA.camera(),
           npcs:CodaArcadeQA.characters().npcs,jukebox:CodaArcadeQA.jukebox()})''')
+        self.page.locator('[data-dj-action="home"]').click()
         self.page.locator('[data-start-dance]').click()
         self.page.locator('[data-dance-mode="normal"]').click()
         self.page.locator('[data-dance-stage="neon-first-light"]').click()

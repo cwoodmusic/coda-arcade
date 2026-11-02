@@ -5,6 +5,11 @@ The Scholar sits on the lounge couch. Walk to the couch and press **E** or use
 visitors. **Settings → Find the scholar** guides the player there; records and
 quizzes can only be opened while visiting the scholar.
 
+The first menu offers **Turn in facts**, **My fact book**, **Take a quiz**, and
+**How to find facts**. The pouch and book show current player progress. Back or
+Escape returns to the Scholar menu; Escape on the menu closes the conversation.
+Locked quizzes stay under **Quizzes to unlock** until their collections are recorded.
+
 ## Earn, learn, and deliver
 
 Each of the 18 characters has a 10-fact collection. Choose **Music history &
@@ -21,8 +26,8 @@ A completed quest unlocks one fact. The character's history prompt displays
 your pouch. Further clicks say there are no new facts rather than replaying
 old information. Complete another quest to earn the next fact.
 
-Bring carried facts to the scholar and choose **Give carried facts to the
-scholar**. The historian's record holds deposited facts. All remaining slots
+Bring carried facts to the scholar, choose **Turn in facts**, then **Give carried
+facts to the scholar**. The historian's record holds deposited facts. All remaining slots
 stay locked, including learned facts not yet handed in. Search includes only
 recorded text. The pouch and record are separate views at the scholar.
 

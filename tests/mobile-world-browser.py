@@ -1,4 +1,5 @@
 """Real phone touch, camera, pinch, room routing and saved-world checks."""
+from shop_menu_helpers import browse_shop
 import functools
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -347,7 +348,7 @@ class MobileWorldTests(unittest.TestCase):
         self.touches('touchEnd');self.assert_finger_stopped();self.assertEqual(self.touch()['held'],[])
 
     def test_touch_menu_purchases_and_text_entry_preserve_outfit_currency_and_position(self):
-        self.menu('shop');self.page.wait_for_function('!CodaArcadeQA.touch().visible')
+        self.menu('shop');self.page.wait_for_function('!CodaArcadeQA.touch().visible');browse_shop(self.page)
         self.page.locator('[data-shop-item="witch"] button').tap()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),70)
         self.assertNotEqual(self.page.evaluate('CodaArcadeQA.characters().player.appearance.headwear'),'witch')

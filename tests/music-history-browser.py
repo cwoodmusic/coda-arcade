@@ -30,7 +30,26 @@ class MusicHistoryBrowserTests(world.WorldBrowserCase):
         self.place(point['x'],point['y']);self.page.keyboard.press('e')
         self.page.locator('.music-history[open]').wait_for()
 
+    def scholar_page(self, action):
+        journal = self.page.locator('.music-history')
+        back = journal.locator('[data-scholar-back]')
+        if back.is_visible():
+            back.click()
+        journal.locator('[data-scholar-action="' + action + '"]').click()
+        return journal
+
     def talk_history(self,person='bach'):
+        # Let an invited musician walk through the front doorway before E;
+        # the doorway's exit intentionally takes priority over nearby people.
+        visitor = self.page.evaluate('id=>CodaArcadeQA.characters().npcs.find(p=>p.id===id)', person)
+        if visitor['hidden']:
+            self.assertTrue(self.page.evaluate('id=>CodaArcadeQA.findMusician(id)', person))
+        self.place(1180, 620)
+        self.page.wait_for_function('''id=>{
+          const person=CodaArcadeQA.characters().npcs.find(p=>p.id===id);
+          const exit=CodaArcadeQA.arcadeExit();
+          return person&&!person.hidden&&Math.hypot(person.x-exit.x,person.y-exit.y)>exit.radius+35;
+        }''', arg=person, timeout=30000)
         talk_to_musician(self.page,person)
         self.page.locator('[data-history-owner-prompt="'+person+'"]').click()
 
@@ -40,14 +59,20 @@ class MusicHistoryBrowserTests(world.WorldBrowserCase):
         self.assertTrue(self.page.evaluate('CodaArcadeQA.scholar().visible'))
         self.assertEqual(self.page.evaluate('CodaArcadeQA.scholar().activity'),'relaxing')
         self.scholar();journal=self.page.locator('.music-history')
-        journal.get_by_role('button',name='Historian’s record',exact=True).click()
+        self.scholar_page('record')
         self.assertIn('0 / 180',journal.inner_text());self.assertEqual(journal.locator('.history-fact.locked').count(),180)
         self.assertNotIn('born in Eisenach',journal.text_content())
         journal.get_by_label('Search recorded facts').fill('Eisenach');self.assertEqual(journal.locator('.history-fact').count(),0)
         journal.get_by_label('Search recorded facts').fill('');journal.get_by_label('Journal musician').select_option('bach');self.assertEqual(journal.locator('.history-fact.locked').count(),10)
-        journal.get_by_role('button',name='Music history quizzes',exact=True).click()
+        self.scholar_page('quizzes')
         self.assertTrue(journal.locator('[data-history-quiz="bach"] button').is_disabled())
-        self.close_history();open_settings(self.page)
+        self.scholar_page('help')
+        self.assertIn('friendship quest', journal.inner_text())
+        self.page.keyboard.press('Escape')
+        self.assertTrue(journal.locator('[data-scholar-action="pouch"]').is_visible())
+        self.page.keyboard.press('Escape')
+        self.assertFalse(journal.is_visible())
+        open_settings(self.page)
         self.assertEqual(self.page.locator('#worldMusicHistory').inner_text(),'Find the scholar')
 
     def test_spam_cannot_unlock_facts_but_real_quest_unlocks_one_then_scholar_rewards_it(self):
@@ -68,13 +93,20 @@ class MusicHistoryBrowserTests(world.WorldBrowserCase):
         self.assertEqual(self.page.evaluate('CodaArcadeQA.history().recordedCount'),0)
         self.close_history();self.page.locator('[data-history-owner-prompt="bach"]').click()
         self.assertIn('No new facts',journal.inner_text());self.assertEqual(journal.locator('[data-discovered-fact]').count(),0)
-        self.close_history();self.scholar();balance=self.page.evaluate('CodaArcadeQA.notes().balance')
+        self.close_history();balance=self.page.evaluate('CodaArcadeQA.notes().balance')
+        saved = self.page.evaluate('localStorage.getItem("codaMusicHistoryV1")')
+        self.scholar();self.scholar_page('pouch')
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'), balance)
+        self.assertEqual(self.page.evaluate('localStorage.getItem("codaMusicHistoryV1")'), saved)
+        self.assertEqual(self.page.evaluate('CodaArcadeQA.history().carriedIDs'), ['bach-01'])
         journal.get_by_role('button',name='Give carried facts to the scholar',exact=True).click()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),balance+50)
         self.assertEqual(self.page.evaluate('CodaArcadeQA.history().carriedIDs'),[])
-        journal.get_by_role('button',name='Historian’s record',exact=True).click();journal.get_by_label('Journal musician').select_option('bach')
+        self.scholar_page('record');journal.get_by_label('Journal musician').select_option('bach')
         self.assertEqual(journal.locator('.history-fact:not(.locked)').count(),1);self.assertEqual(journal.locator('.history-fact.locked').count(),9)
-        self.assertIn('born in Eisenach',journal.inner_text());self.close_history()
+        expected = self.page.evaluate('CodaMusicHistoryContent.resolvedFact(CodaDeveloperConsole.getMusicHistoryContent(), "bach-01").text')
+        self.assertEqual(journal.locator('[data-history-fact="bach-01"] p').inner_text(), expected)
+        self.close_history()
         self.page.reload();self.page.wait_for_function('window.CodaDeveloperConsole?.ready()');self.assertEqual(self.page.evaluate('CodaArcadeQA.history().recordedCount'),1)
 
     def test_progression_controls_use_temporary_player_and_quiz_requires_full_record(self):
@@ -88,9 +120,10 @@ class MusicHistoryBrowserTests(world.WorldBrowserCase):
         # The isolated player still uses the real pouch and scholar hand-in.
         for _ in range(9):pane.get_by_role('button',name='Add next fact to pouch',exact=True).click()
         self.page.keyboard.press('F2');self.scholar();journal=self.page.locator('.music-history')
+        self.scholar_page('pouch')
         journal.get_by_role('button',name='Give carried facts to the scholar',exact=True).click()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.history().people.find(p=>p.id==="bach").recordedCount'),9)
-        journal.get_by_role('button',name='Music history quizzes',exact=True).click()
+        self.scholar_page('quizzes')
         self.assertTrue(journal.locator('[data-history-quiz="bach"] button').is_disabled())
         self.assertFalse(self.page.evaluate('CodaArcadeQA.history().people.find(p=>p.id==="bach").quiz.eligible'))
         self.close_history();self.page.locator('#view').focus();self.page.keyboard.press('F2')
@@ -99,12 +132,15 @@ class MusicHistoryBrowserTests(world.WorldBrowserCase):
         self.assertEqual(self.page.evaluate('CodaArcadeQA.history().people.find(p=>p.id==="bach").recordedCount'),10)
         self.assertTrue(self.page.evaluate('CodaArcadeQA.history().people.find(p=>p.id==="bach").quiz.eligible'))
         self.page.keyboard.press('F2');self.scholar();journal=self.page.locator('.music-history')
-        journal.get_by_role('button',name='Music history quizzes',exact=True).click();journal.locator('[data-history-quiz="bach"] button').click()
+        self.scholar_page('quizzes');journal.locator('[data-history-quiz="bach"] button').click()
         self.assertEqual(journal.locator('[data-quiz-question]').count(),10)
         self.assertTrue(journal.get_by_role('button',name='Finish quiz',exact=True).is_disabled())
+        self.page.keyboard.press('Escape')
+        self.assertTrue(journal.locator('[data-history-quiz="bach"] button').is_visible())
+        journal.locator('[data-history-quiz="bach"] button').click()
         for field in journal.locator('[data-quiz-question]').all():
             identifier=field.get_attribute('data-quiz-question')
-            correct=self.page.evaluate('id=>{const q=CodaMusicHistoryQuizData.find(q=>q.id===id);return q.choices[q.answer]}',identifier)
+            correct=self.page.evaluate('id=>{const q=CodaMusicHistoryContent.resolvedQuiz(CodaDeveloperConsole.getMusicHistoryContent(),id);return q.choices[q.answer]}',identifier)
             field.get_by_role('radio',name=correct,exact=True).check()
         journal.get_by_role('button',name='Finish quiz',exact=True).click()
         self.assertIn('10 / 10',journal.inner_text());self.assertIn('Passed!',journal.inner_text())
@@ -116,10 +152,20 @@ class MusicHistoryBrowserTests(world.WorldBrowserCase):
         self.assertEqual(self.page.evaluate('localStorage.getItem("codaMusicHistoryV1")'),native)
 
     def test_phone_record_and_scholar_pouch_are_readable(self):
-        self.page.set_viewport_size({'width':390,'height':844});self.scholar();journal=self.page.locator('.music-history')
-        journal.get_by_role('button',name='Historian’s record',exact=True).click();journal.get_by_label('Journal musician').select_option('bach')
-        dimensions=journal.evaluate('(el)=>({width:el.clientWidth,scroll:el.scrollWidth,left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right})')
-        self.assertLessEqual(dimensions['scroll'],dimensions['width']+1);self.assertGreaterEqual(dimensions['left'],0);self.assertLessEqual(dimensions['right'],390)
-        self.page.screenshot(path='/tmp/coda-scholar-phone.png')
+        for width in (390, 320):
+            with self.subTest(width=width):
+                self.page.set_viewport_size({'width':width,'height':844})
+                self.scholar();journal=self.page.locator('.music-history')
+                for action in (None, 'pouch', 'record'):
+                    if action:
+                        self.scholar_page(action)
+                    if action == 'record':
+                        journal.get_by_label('Journal musician').select_option('bach')
+                    dimensions=journal.evaluate('(el)=>({width:el.clientWidth,scroll:el.scrollWidth,left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right})')
+                    self.assertLessEqual(dimensions['scroll'],dimensions['width']+1)
+                    self.assertGreaterEqual(dimensions['left'],0)
+                    self.assertLessEqual(dimensions['right'],width)
+                self.page.screenshot(path='/tmp/coda-scholar-phone-'+str(width)+'.png')
+                self.close_history()
 
 if __name__=='__main__':unittest.main(verbosity=2)

@@ -79,7 +79,7 @@ class DialogueTextTests(_world.WorldBrowserCase):
         journal.wait_for()
         self.page.evaluate("window.previousScholarLine=document.querySelector('.music-history [role=status]')")
         self.assertTrue(self.page.evaluate('CodaDialogueText.isRevealing(previousScholarLine)'))
-        journal.get_by_role('button', name='Historian’s record', exact=True).click()
+        journal.locator('[data-scholar-action="record"]').click()
         self.assertFalse(self.page.evaluate('CodaDialogueText.isRevealing(previousScholarLine)'))
         self.assertEqual(journal.locator('.history-fact.locked').count(), 180)
         self.assertEqual(journal.locator('.history-fact span[style]').count(), 0)

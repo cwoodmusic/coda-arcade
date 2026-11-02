@@ -74,7 +74,7 @@ class WorldNavigationTests(_world.WorldBrowserCase):
         self.assertIn(visitor['id'],self.page.evaluate('CodaArcadeQA.visitors().onsite'))
 
     def test_boutique_notes_shop_dj_and_hall_open_from_their_physical_interaction_points(self):
-        for destination,title in [('boutique','Boutique'),('shop','Notes Shop'),('dj','Jukebox'),('fame','Hall of Fame')]:
+        for destination,title in [('boutique','Boutique'),('shop','Notes Shop'),('dj','DJ Coda'),('fame','Hall of Fame')]:
             open_destination(self.page,destination)
             self.assertIn(title,self.page.locator('#panelTitle').inner_text())
             self.assertEqual(set(self.visible_header_buttons()),{'levelBtn','worldDeveloperBtn','musicBtn','worldMenuBtn'})
