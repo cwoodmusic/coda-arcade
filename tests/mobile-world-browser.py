@@ -375,7 +375,7 @@ class MobileWorldTests(unittest.TestCase):
         self.assertTrue(self.page.locator('#codaTouchControls [data-action="jump"]').is_hidden())
         self.page.locator('#classroomCanvas').focus();self.page.keyboard.down('w');self.page.wait_for_timeout(900);self.page.keyboard.up('w')
         self.page.keyboard.press('e');self.page.wait_for_function('!CodaArcadeQA.touch().visible')
-        self.page.locator('#classroomBrowseBooks').tap()
+        self.page.locator('[data-classroom-menu="reference"]').tap()
         self.page.locator('#classroomSearch').fill('interval');self.page.locator('[data-topic="intervals"]').tap()
         self.assertIn('Intervals',self.page.locator('#classroomBookTitle').inner_text())
         self.page.locator('#classroomClose').tap();self.page.wait_for_function('CodaArcadeQA.touch().context==="world"')

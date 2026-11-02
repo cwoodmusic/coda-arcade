@@ -1,4 +1,5 @@
 """The world trapdoor, real rhythm catches, and saved fishing rewards work together."""
+from classroom_menu_helpers import choose_classroom_lesson
 import importlib.util
 from pathlib import Path
 import sys
@@ -32,7 +33,7 @@ class FishingWorldTests(_world.WorldBrowserCase):
 
     def test_time_signature_lesson_awards_real_profile_xp_once(self):
         enter_room(self.page,'classroom')
-        self.page.locator('[data-start-lesson="time-signatures"]').click()
+        choose_classroom_lesson(self.page, 'time-signatures')
         steps=self.page.evaluate('CodaTimeSignatureLesson.STEPS')
         self.page.locator('[data-signature-answer="1"]').click()
         self.assertTrue(self.page.locator('#classroomBook [data-tutorial-next]').is_disabled())

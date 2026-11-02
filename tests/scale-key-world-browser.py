@@ -3,6 +3,7 @@
 All input uses the real room controls in disposable guest browser contexts.
 External accounts and services are blocked by the shared world fixture.
 """
+from classroom_menu_helpers import choose_classroom_lesson
 import importlib.util
 from pathlib import Path
 import sys
@@ -153,7 +154,7 @@ class ScaleKeyWorldTests(_world.WorldBrowserCase):
         self.page.mouse.click(point['x'],point['y'])
         self.page.wait_for_function('CodaArcadeQA.classroom().player.y<420')
         self.page.locator('#classroomCanvas').focus();self.page.keyboard.press('e')
-        self.page.locator('[data-start-lesson="major-minor-keys"]').click()
+        choose_classroom_lesson(self.page, 'major-minor-keys')
 
     def complete_key_steps(self):
         for index,answer in enumerate(KEY_ANSWERS):

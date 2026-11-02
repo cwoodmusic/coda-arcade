@@ -1,4 +1,5 @@
 """Student lessons, profile, and reward turn-ins in the assembled arcade world."""
+from classroom_menu_helpers import choose_classroom_lesson
 import importlib.util
 from pathlib import Path
 import sys
@@ -77,7 +78,7 @@ class StudentWorldTests(_world.WorldBrowserCase):
         self.page.locator('#levelBtn').click();self.assertEqual(self.page.locator('.profile-completed summary').inner_text(),'1 finished mission')
 
     def test_note_lesson_teaches_without_octave_numbers_and_updates_the_saved_profile(self):
-        enter_room(self.page,'classroom');self.page.locator('[data-start-lesson="note-naming"]').click()
+        enter_room(self.page,'classroom');choose_classroom_lesson(self.page, 'note-naming')
         self.assertEqual(self.page.locator('.lesson-key-name:visible').count(),0)
         self.page.get_by_label('Show note letters',exact=True).check()
         self.assertEqual(self.page.locator('.lesson-key-name:visible').count(),8)
@@ -105,7 +106,7 @@ class StudentWorldTests(_world.WorldBrowserCase):
         self.page.screenshot(path='/tmp/coda-student-profile-world-29.png')
         self.page.set_viewport_size({'width':1550,'height':1050});self.load()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),50);self.assertIsNone(self.notifications()['current'])
-        enter_room(self.page,'classroom');self.page.locator('[data-start-lesson="note-naming"]').click()
+        enter_room(self.page,'classroom');choose_classroom_lesson(self.page, 'note-naming')
         self.assertTrue(self.page.evaluate('CodaArcadeQA.tutorials().active.complete'))
         self.page.locator('[data-tutorial-replay]').click()
         for letter in ['C','F','D','A','E','F','G','A','B','C']:
@@ -115,7 +116,7 @@ class StudentWorldTests(_world.WorldBrowserCase):
         self.assertIsNone(self.notifications()['current'])
 
     def test_rhythm_tree_practice_rewards_only_a_correct_finished_lesson(self):
-        enter_room(self.page,'classroom');self.page.locator('[data-start-lesson="rhythm-tree"]').click()
+        enter_room(self.page,'classroom');choose_classroom_lesson(self.page, 'rhythm-tree')
         for _ in range(4):self.page.locator('[data-tree-split]').click()
         self.assertIn('16 sixteenth notes',self.page.locator('.lesson-tree-caption').inner_text())
         self.assertIn('four beats',self.page.locator('.lesson-tree-caption').inner_text())
