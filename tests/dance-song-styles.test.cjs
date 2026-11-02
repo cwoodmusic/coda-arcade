@@ -21,3 +21,23 @@ test('warm instruments sustain and percussive instruments decay, with acoustic g
  assert.notDeepEqual(audio.voiceProfile(2,'jazz'),audio.voiceProfile(2,'waltz'));
  assert.notDeepEqual(audio.voiceProfile(1,'march'),audio.voiceProfile(1,'jazz'));
 });
+
+test('Celtic jig uses modal strains and two compound pulses rather than chromatic loop pickups',()=>{
+ const stage=campaign.stageFor('electric-sway'),song=stage.composition;
+ assert.equal(song.meter,'6/8');
+ assert.deepEqual(song.tracks[0].notes.filter(n=>n.t<12).map(n=>n.t/4),[0,.5,1,1.5,2,2.5]);
+ const dorian=new Set([0,2,3,5,7,9,10]);
+ for(const note of song.tracks[0].notes)assert.ok(dorian.has((note.p-stage.tonic+120)%12));
+ assert.deepEqual(song.tracks[1].notes.filter(n=>n.t<12).map(n=>n.t/4),[0,1.5]);
+ assert.notDeepEqual(song.tracks[0].notes.filter(n=>n.t<48).map(n=>n.p),song.tracks[0].notes.filter(n=>n.t>=48&&n.t<96).map(n=>n.p));
+ assert.equal(song.tracks[0].notes.at(-1).p,song.tracks[0].notes[0].p);
+});
+
+test('brass march has trumpet fanfares, tuba beats and snare cadence rolls',()=>{
+ const stage=campaign.stageFor('midnight-march'),song=stage.composition;
+ assert.equal(song.meter,'2/2');
+ assert.deepEqual(song.tracks[1].notes.filter(n=>n.t<16).map(n=>n.t/4),[0,2]);
+ assert.ok(song.tracks[0].notes.some(n=>n.t===3),'Dotted fanfare pickup');
+ assert.ok(song.drums[1].notes.filter(n=>n.t>=48&&n.t<64).length>2,'Cadence snare roll');
+ assert.equal(song.tracks[0].notes.at(-1).p,song.tracks[0].notes[0].p);
+});

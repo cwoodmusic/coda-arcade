@@ -116,3 +116,14 @@ test('counting syllables follow simple, compound and cut-time beat units',()=>{
   assert.notDeepEqual(events.filter(e=>e.bar===0&&e.part==='melody').map(e=>e.midi),events.filter(e=>e.bar===8&&e.part==='melody').map(e=>e.midi));
  }
 });
+
+test('Reedwater names and running eighths follow duple reel or compound jig meter',()=>{
+ const fish={id:'reel-fixture',shape:'ordinary',rarity:'common'};
+ assert.equal(music.getThemeInfo(fish,'4/4').title,'Reedwater Reel');
+ assert.equal(music.getThemeInfo(fish,'6/8').title,'Reedwater Jig');
+ for(const [meter,count]of [['4/4',8],['2/2',8],['6/8',6]]){
+  const events=music.plan({...score(meter),fish},{fromBeat:0,toBeat:meter==='6/8'?3:4});
+  assert.deepEqual(events.filter(e=>e.part==='melody').map(e=>e.beat),Array.from({length:count},(_,i)=>i*.5));
+ }
+ assert.equal(music.getThemeInfo({id:'prism',shape:'round'},'4/4').title,'Prism Ripples');
+});

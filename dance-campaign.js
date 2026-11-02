@@ -10,8 +10,8 @@
   ['neon-first-light','Neon First Light','4/4',60,[0,2,1,3,2,0,1,2],'left up right down', [0,-4,3,-2]],
   ['double-bounce','Double Bounce','2/4',62,[0,1,3,2,0,3,1,2],'left right left down', [0,3,-2,5]],
   ['mirrorball-waltz','Mirrorball Waltz','3/4',65,[0,2,3,1,2,0,3,2],'up right down left up down', [0,-3,-5,2]],
-  ['electric-sway','Electric Sway','6/8',57,[0,1,2,3,2,1,0,2],'left up up right down down', [0,5,3,7]],
-  ['midnight-march','Midnight March','2/2',59,[3,2,0,1,3,0,2,1],'down up left right up down right left', [0,-4,-2,3]],
+  ['electric-sway','Electric Sway','6/8',57,[0,1,2,3,2,1,0,2],'left up up right down down', [0,-2,5,0]],
+  ['midnight-march','Midnight March','2/2',59,[3,2,0,1,3,0,2,1],'down up left right up down right left', [0,5,0,7]],
   ['five-star-strut','Five Star Strut','5/4',64,[0,2,4,1,3,2,0,3],'left up right down up right left down', [0,3,-2,-5]],
   ['seven-sparks','Seven Sparks','7/8',61,[2,0,1,3,4,2,1,0],'left right up down left up right', [0,5,-2,3]],
   ['triple-current','Triple Current','9/8',67,[0,3,2,1,4,2,3,0],'up up right down down left right left up', [0,-5,-3,2]],
@@ -22,14 +22,20 @@
   {id:'synthpop',label:'Synth-pop',sounds:[9,7,5,8],names:['Analog lead','Sub bass','Synth strings','Plucked answer'],qualities:[3,4,4,4]},
   {id:'funk',label:'Funk',sounds:[8,7,8,1],names:['Clavinet','Syncopated bass','Muted guitar','Horn answer'],qualities:[3,4,4,4]},
   {id:'waltz',label:'Ballroom waltz',sounds:[2,1,5,3],names:['Piano melody','Round bass','Waltz strings','Bell answer'],qualities:[4,3,4,3]},
-  {id:'jig',label:'Celtic jig',sounds:[6,8,4,8],names:['Wooden flute','Picked bass','Reed chords','String plucks'],qualities:[3,3,4,4]},
-  {id:'march',label:'Brass march',sounds:[1,1,1,6],names:['Trumpet call','Tuba','Brass section','Piccolo answer'],qualities:[3,4,4,4]},
+  {id:'jig',label:'Celtic jig',sounds:[6,8,8,5],names:['Tin whistle','Picked bass','Strummed strings','Fiddle answer'],qualities:[3,4,4,3]},
+  {id:'march',label:'Brass march',sounds:[1,1,1,6],names:['Trumpet call','Tuba','Brass section','Piccolo answer'],qualities:[4,4,4,4]},
   {id:'jazz',label:'Jazz in five',sounds:[2,1,2,3],names:['Electric piano','Walking bass','Seventh chords','Vibraphone answer'],qualities:[3,4,4,4]},
   {id:'latin',label:'Latin percussion',sounds:[3,8,8,3],names:['Marimba','Acoustic bass','Guitar offbeats','Mallet answer'],qualities:[3,3,4,4]},
   {id:'orchestral',label:'Orchestral',sounds:[5,1,5,8],names:['String melody','Low strings','Orchestral harmony','Harp'],qualities:[4,4,3,3]},
   {id:'blues',label:'Blues shuffle',sounds:[4,1,2,8],names:['Drawbar organ','Boogie bass','Piano backbeats','Guitar answer'],qualities:[4,4,4,4]},
   {id:'chiptune',label:'Chiptune',sounds:[0,1,0,0],names:['Pulse lead','Triangle bass','Pixel chords','Fast arpeggio'],qualities:[3,4,3,4]}
  ].map(style=>Object.freeze({...style,sounds:Object.freeze(style.sounds),names:Object.freeze(style.names),qualities:Object.freeze(style.qualities)})));
+ // Two modal jig strains and four trumpet calls, composed independently of chord arpeggios.
+ const JIG_STRAINS=[
+  [[0,2,3,7,5,3],[2,0,-2,0,3,7],[9,7,5,7,3,2],[0,3,2,0,-2,0]],
+  [[12,10,9,7,9,12],[10,9,7,5,7,10],[9,7,5,3,5,7],[5,3,2,0,-2,0]]
+ ];
+ const MARCH_CALLS=[[0,0,4,7,7,12],[9,5,4,2],[0,4,7,12,11,9],[7,4,2,0]];
  function composition(stage){
   const meter=METERS[stage.meter],style=stage.style,b=meter.barBeats;
   const tracks=style.sounds.map((sound,index)=>({id:index+1,name:style.names[index],sound,volume:[.30,.29,.10,.085][index],mute:false,notes:[]}));
@@ -43,8 +49,8 @@
     case 'synthpop':bass=[0,.75,2,2.75];chords=[.5,2.5];lead=[0,.5,1.5,2.5,3];arps=[1,3.5];kick=[0,1,2,3];snare=[1,3];hats=[.5,1.5,2.5,3.5];break;
     case 'funk':bass=[0,.75,1.5];chords=[.5,1.25];lead=[.25,.75,1.5];arps=[1.75];kick=[0,1.5];snare=[1];hats=[0,.5,1,1.5];bassLength=.3;chordLength=.18;break;
     case 'waltz':bass=[0];chords=[1,2];lead=bar%2?[0,1,2]:[0,1.5];arps=[2.5];kick=[0];snare=[1,2];hats=[];bassLength=1.4;chordLength=.8;break;
-    case 'jig':bass=[0,1.5];chords=[.5,2];lead=[0,.5,1,1.5,2,2.5];arps=[1,2.5];kick=[0];snare=[1.5];hats=[0,.5,1,1.5,2,2.5];chordLength=.36;break;
-    case 'march':bass=[0,2];chords=[1,3];lead=[0,1,2,3];arps=bar%2?[1.5,3.5]:[];kick=[0,2];snare=bar%4===3?[1,2.5,3,3.5]:[1,3];hats=[0,2];bassLength=1.2;chordLength=.75;break;
+    case 'jig':bass=[0,1.5];chords=[0,1.5];lead=[0,.5,1,1.5,2,2.5];arps=[1,2.5];kick=[0];snare=[1.5];hats=[0,.5,1,1.5,2,2.5];chordLength=.36;break;
+    case 'march':bass=[0,2];chords=[1,3];lead=bar%2?[0,1,2,3]:[0,.75,1,2,2.75,3];arps=bar%2?[1.5,3.5]:[];kick=[0,2];snare=bar%4===3?[1,2.5,3,3.5]:[1,3];hats=[0,2];bassLength=1.2;chordLength=.75;break;
     case 'jazz':bass=[0,1,2,3,4];chords=[.5,2.5];lead=[0,1.5,3.5];arps=bar%2?[2,4.5]:[4];kick=[0];snare=[2,4];hats=[0,1,1.5,2,3,3.5,4];bassLength=.8;chordLength=1.05;break;
     case 'latin':bass=[0,1,2.5];chords=[.5,1.75,3];lead=[0,.5,1.5,2,2.5,3];arps=[.75,2.75];kick=[0,1.5,2.5];snare=[0,.75,1.5,2.5,3];hats=[.5,1,2,3];bassLength=.5;chordLength=.22;break;
     case 'orchestral':bass=[0,3];chords=[0];lead=[0,1.5,3];arps=[.5,1,2,2.5,3.5,4];kick=bar%4===0?[0]:[];snare=[];hats=bar%4===3?[3]:[];bassLength=2.4;chordLength=4.3;break;
@@ -54,12 +60,13 @@
    if(sparse){bass=bass.slice(0,1);chords=chords.slice(0,1);lead=lead.slice(0,1);arps=[];kick=kick.slice(0,1);snare=[];hats=[];}
    bass.forEach((at,i)=>{const interval=style.id==='blues'?[0,7,9,10][i%4]:style.id==='jazz'?[0,third,7,9,10][(i+bar)%5]:i%2?7:0;add(tracks[1],bar,at,root-12+interval,bassLength);});
    for(const at of chords)for(const interval of style.id==='jazz'?[third,7,third===4?11:10]:[0,third,7])add(tracks[2],bar,at,root+interval,chordLength);
-   lead.forEach((at,i)=>{const motif=stage.hook[(bar%4*2+i+(section===1?3:0))%stage.hook.length],next=lead[i+1]??b,length=Math.min(next-at,style.id==='orchestral'?1.45:style.id==='funk'?.24:style.id==='waltz'?1.25:1)*.86;add(tracks[0],bar,at,root+12+palette[motif]+(section===3&&bar%2?12:0),length);});
+   lead.forEach((at,i)=>{const motif=stage.hook[(bar%4*2+i+(section===1?3:0))%stage.hook.length],next=lead[i+1]??b,length=Math.min(next-at,style.id==='orchestral'?1.45:style.id==='funk'?.24:style.id==='waltz'?1.25:1)*.86;add(tracks[0],bar,at,style.id==='jig'?stage.tonic+12+JIG_STRAINS[section%2][bar%4][i]:style.id==='march'?stage.tonic+12+MARCH_CALLS[(bar+ (section===1?2:0))%4][i]:root+12+palette[motif]+(section===3&&bar%2?12:0),length);});
    arps.forEach((at,i)=>add(tracks[3],bar,at,root+12+[0,third,7,12][(i+bar)%4],style.id==='orchestral'?.42:.18));
    kick.forEach(at=>add(drums[0],bar,at,45,.18));snare.forEach(at=>add(drums[1],bar,at,57,.12));hats.forEach(at=>add(drums[2],bar,at,88,.10));
    if(section===3&&bar%4===3&&style.id!=='orchestral')add(drums[1],bar,b-.25,57,.12);
   }
-  tracks[0].notes.at(-1).p=tracks[0].notes[0].p-1;
+  if(['jig','march'].includes(style.id))tracks[0].notes.at(-1).p=tracks[0].notes[0].p;
+  else tracks[0].notes.at(-1).p=tracks[0].notes[0].p-1;
   for(const track of [...tracks,...drums])track.notes.sort((a,b)=>a.t-b.t||a.p-b.p);
   return {bpm:80,bars:16,meter:stage.meter,root:0,scale:'chromatic',tracks,drums};
  }

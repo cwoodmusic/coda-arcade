@@ -48,7 +48,7 @@ test('every house track has a varied sixteen-bar form and a deliberate loop retu
    assert.ok(Number.isFinite(note.d)&&note.d>0&&note.t+note.d<=end+1e-8,record.id+' event tail fits the loop');
    assert.ok(Number.isInteger(note.p)&&note.p>=0&&note.p<=127);
   }
-  const main=song.tracks[0].notes;assert.equal(Math.abs(main.at(-1).p-main[0].p),1,record.id+' leading tone resolves into the first melody note');
+  const main=song.tracks[0].notes;assert.equal(Math.abs(main.at(-1).p-main[0].p),['jig','march'].includes(record.style)?0:1,record.id+' returns through its modal tonic or leading tone');
  }
 });
 

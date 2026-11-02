@@ -35,7 +35,7 @@
   arrangement('moon','Moonlit Drift','A minor',[
    ['Am',45,[60,64,69]],['Em',40,[59,64,67]],['Fmaj7',41,[57,60,64]],['Am',45,[57,60,64]]
   ],[[76,72],[71,67],[69,72],[76,69],[72,76],[67,71],[72,69],[64,69]]),
-  arrangement('prism','Prism Waltz','F major',[
+  arrangement('prism','Prism Ripples','F major',[
    ['F',41,[60,65,69]],['Dm',50,[62,65,69]],['Bb',46,[58,62,65]],['C',48,[60,64,67]]
   ],[[77,72],[74,69],[70,74],[76,72],[72,77],[69,74],[74,70],[67,72]],'triangle'),
   arrangement('ancient','The Ancient Current','E minor',[
@@ -48,10 +48,10 @@
   let hash=0;for(const letter of fish.id)hash=(Math.imul(hash,31)+letter.charCodeAt(0))>>>0;
   return{arrangement:ARRANGEMENTS[index],rotation:hash%8,transpose:[-2,0,2][Math.floor(hash/8)%3]};
  }
- function getThemeInfo(fish){
+ function getThemeInfo(fish,meter){
   if(!fish)return THEME;
   const {arrangement:theme,transpose}=encounterArrangement(fish);
-  return Object.freeze({...THEME,id:theme.id,title:theme.title,key:theme.key,transpose,progression:Object.freeze(theme.chords.map(chord=>chord.name))});
+  return Object.freeze({...THEME,id:theme.id,title:theme.id==='reed'&&meter==='6/8'?'Reedwater Jig':theme.title,key:theme.key,transpose,progression:Object.freeze(theme.chords.map(chord=>chord.name))});
  }
  const finite=(value,fallback)=>Number.isFinite(value)?value:fallback;
  const frequency=midi=>440*Math.pow(2,(midi-69)/12);
@@ -103,9 +103,9 @@
    for(const [index,offset] of subdivisions.entries())add(bar,'arpeggio','flow-'+index,offset,.3,chord.voices[(index+bar)%3]+12,.022,index%2?.7:1);
    // Each motif gets a question, an answer, then a higher response in bars
    // 9–12 and a resolving cadence in bar 16. Fast songs retain the melody.
-   const offsets=compound?(fast?[0,1.5,2.5]:[0,.5,1,1.5,2,2.5]):fast?[0,1,2,3]:[0,.5,1.5,2,2.5,3.5];
+   const offsets=theme.id==='reed'?(compound?[0,.5,1,1.5,2,2.5]:[0,.5,1,1.5,2,2.5,3,3.5]):compound?(fast?[0,1.5,2.5]:[0,.5,1,1.5,2,2.5]):fast?[0,1,2,3]:[0,.5,1.5,2,2.5,3.5];
    const lift=phrase>=8&&phrase<12?12:0;
-   const pitches=[melody[0],chord.voices[2]+12,melody[1],melody[1],chord.voices[1]+12,melody[0]];
+   const pitches=theme.id==='reed'?[melody[0],melody[1],chord.voices[0]+12,melody[0],melody[1],chord.voices[1]+12,melody[0],melody[1]]:[melody[0],chord.voices[2]+12,melody[1],melody[1],chord.voices[1]+12,melody[0]];
    for(const [index,offset] of offsets.entries()){
     const final=phrase===15&&index===offsets.length-1;
     const pitch=final?theme.chords[0].voices[0]+12:pitches[index]+lift;

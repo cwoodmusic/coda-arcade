@@ -15,7 +15,9 @@
    {partials:[['triangle',1,.75],['sine',2,.18]],attack:.003,hold:false,cutoff:3000},
    {partials:[['sawtooth',1,.35],['square',1,.15],['sine',1,.35]],attack:.018,hold:true,cutoff:2800}
   ];
-  if(style==='march'&&sound===1)return {partials:[['sawtooth',1,.3],['triangle',1,.65]],attack:.025,hold:true,cutoff:2000};
+  if(style==='march'&&sound===1)return {partials:[['sine',1,.48],['sine',2,.27],['sine',3,.18],['sawtooth',1,.12]],attack:.018,hold:true,cutoff:3600,sweep:1600};
+  if(style==='jig'&&sound===6)return {partials:[['sine',1,.82],['sine',2,.18],['sine',3,.05]],attack:.012,hold:true,cutoff:5200};
+  if(style==='jig'&&sound===5)return {partials:[['sawtooth',1,.32],['triangle',1,.5]],attack:.035,hold:true,cutoff:2200};
   if(style==='jazz'&&sound===2)return {partials:[['sine',1,.8],['sine',2.01,.17],['sine',4,.07]],attack:.006,hold:false,cutoff:6000};
   if(style==='latin'&&sound===3)return {partials:[['sine',1,.9],['sine',3.98,.18]],attack:.002,hold:false,cutoff:7000};
   if(style==='funk'&&sound===8)return {partials:[['sawtooth',1,.36],['triangle',1,.55]],attack:.002,hold:false,cutoff:1900,sweep:450};
@@ -48,7 +50,8 @@
   if(event.part==='tone')pitched(ctx,dest,440*2**((event.midi-69)/12),at,duration,event.volume*.18,voiceProfile(event.sound,style),remember);
   else if(event.part==='drum'){
    const row=event.track,v=event.volume,acoustic=['waltz','jig','march','jazz','orchestral','blues'].includes(style);
-   if(row===0){const timpani=style==='orchestral',conga=style==='latin',frequency=timpani?82:conga?190:acoustic?110:145,end=timpani?62:conga?125:45;
+   if(row===0&&style==='jig'){pitched(ctx,dest,95,at,.19,v*.32,{partials:[['sine',1,1],['sine',1.53,.18]],attack:.003,hold:false,cutoff:900},remember);noise(ctx,dest,at,.045,v*.06,1800,remember);}
+   else if(row===0){const timpani=style==='orchestral',conga=style==='latin',frequency=timpani?82:conga?190:acoustic?110:145,end=timpani?62:conga?125:45;
     pitched(ctx,dest,frequency,at,timpani?.42:conga?.13:style==='chiptune'?.09:.17,v*(acoustic?.34:.55),{partials:[['sine',1,1]],attack:.004,hold:false,cutoff:1200},remember,end);
    }else if(row===1&&style==='latin')pitched(ctx,dest,1150,at,.045,v*.5,{partials:[['sine',1,1],['triangle',1.4,.25]],attack:.002,hold:false,cutoff:6000},remember);
    else if(row===1){noise(ctx,dest,at,style==='jazz'||style==='waltz'?.20:style==='chiptune'?.045:.12,v*(acoustic?.25:.4),style==='jig'?3500:style==='chiptune'?4500:1200,remember);if(style==='march')pitched(ctx,dest,180,at,.075,v*.18,{partials:[['triangle',1,1]],attack:.002,hold:false,cutoff:1500},remember);}
