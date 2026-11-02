@@ -13,10 +13,10 @@
   Object.freeze({name:'G',bass:43,voices:Object.freeze([55,59,62])})
  ]);
  const MELODY=Object.freeze([[64,60],[62,57],[59,64],[62,59],[60,64],[57,55],[64,59],[57,62]].map(Object.freeze));
- const THEME=Object.freeze({title:'Lantern Lake',key:'A minor / C major',bars:8,credit:'Original Coda Arcade accompaniment',
+ const THEME=Object.freeze({title:'Lantern Lake',key:'A minor / C major',bars:16,credit:'Original Coda Arcade accompaniment',
   progression:Object.freeze(CHORDS.map(chord=>chord.name)),
   meterFeel:Object.freeze({'4/4':'Four quarter-note beats','6/8':'Two dotted-quarter beats, each divided into three','2/2':'Two half-note beats'})});
- // Original eight-bar arrangements. Encounter identity fixes the key, motif
+ // Original motifs develop across sixteen-bar arrangements. Encounter identity fixes the key, motif
  // and instruments before scheduling, so overlapping lookaheads agree.
  function arrangement(id,title,key,chords,melody,lead='sine'){
   return Object.freeze({id,title,key,lead,chords:Object.freeze(chords.map(([name,bass,voices])=>Object.freeze({name,bass,voices:Object.freeze(voices)}))),melody:Object.freeze(melody.map(Object.freeze))});
@@ -80,33 +80,37 @@
    const at=bar*meter.barBeats+offset;if(at<from-1e-9||at>=to-1e-9)return;
    const time=timeAtBeat(at),end=timeAtBeat(at+durationBeats);
    if(!Number.isFinite(time)||!Number.isFinite(end)||end<=time)return;
-   midi+=transpose;
+   if(part!=='drum')midi+=transpose;
    events.push(Object.freeze({id:'music:'+mode+':'+theme.id+':'+meter.id.replace('/','-')+':'+bar+':'+part+':'+slot,
     mode,meter:meter.id,bar,part,beat:at,durationBeats,time,durationSeconds:end-time,midi,frequency:frequency(midi),
-    volume:volume*accent*level*2.7,accent,theme:theme.id,type:part==='melody'?theme.lead:'triangle'}));
+    volume:volume*accent*level*2.7,accent,theme:theme.id,type:part==='melody'?theme.lead:part==='drum'?'sine':'triangle'}));
   }
   for(let bar=first;bar<=last;bar++){
    const chord=theme.chords[bar%theme.chords.length],melody=theme.melody[(bar+rotation)%theme.melody.length],pulse=meter.pulseBeats,second=meter.secondPulse;
-   if(meter.id==='6/8'){
-    // Two clear dotted-quarter pulses: bass on ONE / TWO, with two light
-    // plucked chord answers inside each pulse (ONE-la-li TWO-la-li).
-    for(let pulseIndex=0;pulseIndex<2;pulseIndex++){
-     const at=pulseIndex*1.5,accent=pulseIndex===0?1:.72;
-     add(bar,'bass',pulseIndex?'answer':'root',at,.85,chord.bass+(pulseIndex?7:0),.12,accent);
-     for(let subdivision=1;subdivision<=2;subdivision++)add(bar,'chord','sway-'+pulseIndex+'-'+subdivision,at+subdivision*.5,.34,chord.voices[(bar+subdivision-1)%chord.voices.length],.045,subdivision===1?.78:.65);
-     if(!fast)add(bar,'melody','sway-'+pulseIndex,at,.95,melody[pulseIndex],.07,pulseIndex?.72:.85);
-    }
-    continue;
+   const compound=meter.id==='6/8',phrase=bar%16;
+   // Strong first beat, quieter second pulse, and a short low drum thump.
+   // All parts use the same integrated clock, including tempo changes.
+   add(bar,'bass','root',0,pulse*.82,chord.bass,.14);
+   add(bar,'bass','answer',second,pulse*.68,chord.bass+7,.14,.72);
+   add(bar,'drum','down',0,.16,33,.08);
+   add(bar,'drum','answer',second,.12,33,.08,.6);
+   for(const [index,midi] of chord.voices.entries()){
+    add(bar,'chord','down-'+index,0,pulse*.92,midi,.03);
+    add(bar,'chord','answer-'+index,second,pulse*.72,midi,.03,.65);
    }
-   add(bar,'bass','root',0,Math.min(1.2,pulse*.72),chord.bass,.12);
-   chord.voices.forEach((midi,index)=>add(bar,'chord','down-'+index,0,pulse*(fast?.5:.78),midi,.035));
-   add(bar,'bass','answer',second,Math.min(1.1,pulse*.6),chord.bass+7,.12,.72);
-   if(fast){
-    add(bar,'melody','answer',meter.melody[1],Math.min(.55,pulse*.5),melody[1],.07,.72);
-   }else{
-    add(bar,'melody','question',meter.melody[0],Math.min(.6,pulse*.5),melody[0],.07,.78);
-    chord.voices.slice(1).forEach((midi,index)=>add(bar,'chord','answer-'+index,second,pulse*.55,midi,.035,.68));
-    add(bar,'melody','answer',meter.melody[1],Math.min(.55,pulse*.5),melody[1],.07,.72);
+   // Broken chords keep the backing moving without obscuring the lead.
+   const subdivisions=compound?[.5,1,2,2.5]:[.5,1.5,2.5,3.5];
+   for(const [index,offset] of subdivisions.entries())add(bar,'arpeggio','flow-'+index,offset,.3,chord.voices[(index+bar)%3]+12,.022,index%2?.7:1);
+   // Each motif gets a question, an answer, then a higher response in bars
+   // 9–12 and a resolving cadence in bar 16. Fast songs retain the melody.
+   const offsets=compound?(fast?[0,1.5,2.5]:[0,.5,1,1.5,2,2.5]):fast?[0,1,2,3]:[0,.5,1.5,2,2.5,3.5];
+   const lift=phrase>=8&&phrase<12?12:0;
+   const pitches=[melody[0],chord.voices[2]+12,melody[1],melody[1],chord.voices[1]+12,melody[0]];
+   for(const [index,offset] of offsets.entries()){
+    const final=phrase===15&&index===offsets.length-1;
+    const pitch=final?theme.chords[0].voices[0]+12:pitches[index]+lift;
+    const next=offsets[index+1]??meter.barBeats;
+    add(bar,'melody','phrase-'+index,offset,Math.max(.18,(next-offset)*.82),pitch,.08,index===0?1:.88);
    }
   }
   return Object.freeze(events.sort((a,b)=>a.time-b.time||a.id.localeCompare(b.id)));
