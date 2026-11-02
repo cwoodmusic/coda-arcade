@@ -4,7 +4,7 @@
  const NAT=[0,2,4,5,7,9,11],LETTERS='CDEFGAB',SHARPS='FCGDAEB',FLATS='BEADGCF';
  const LEVELS=Object.freeze([{id:'easy',name:'Easy · natural notes',count:1,accidentals:false,keys:0},{id:'medium',name:'Medium · sharps and flats',count:1,accidentals:true,keys:0},{id:'hard',name:'Hard · key signatures and pairs',count:2,accidentals:true,keys:2},{id:'expert',name:'Expert · three-pitch turns',count:3,accidentals:true,keys:4}].map(Object.freeze));
  function create(options={}){
-  const random=options.random||Math.random,level=LEVELS.find(item=>item.id===options.difficulty)||LEVELS[0],clef=options.clef==='bass'?'bass':'treble',baseMidi=clef==='bass'?48:60;
+  const random=options.random||Math.random,level=LEVELS.find(item=>item.id===options.difficulty)||LEVELS[0],clef=options.clef==='bass'?'bass':'treble',baseMidi=60;
   let remaining=10,score=0,turns=0,mistakes=0,ended=false,turn;
   const pick=n=>Math.min(n-1,Math.max(0,Math.floor(random()*n)));
   function next(){
@@ -34,8 +34,8 @@
   const s=options.score.reading,{x=0,y=0,width=428,height=120}=options;
   ctx.save();ctx.translate(x,y);ctx.scale(width/428,height/120);ctx.fillStyle='#102938';ctx.fillRect(0,0,428,120);ctx.strokeStyle='#86ecd9';ctx.strokeRect(1,1,426,118);
   ctx.fillStyle=s.remaining<=3?'#ffb9aa':'#fff2a2';ctx.font='bold 13px system-ui';ctx.textAlign='left';ctx.fillText('Chopin’s note dash',10,18);ctx.textAlign='right';ctx.fillText(s.remaining.toFixed(1)+'s · '+s.score+' correct',416,18);
-  const baseline=84,space=9,base=s.clef==='bass'?18:30,glyph=name=>({treble:'\ue050',bass:'\ue062',sharp:'\ue262',flat:'\ue260',natural:'\ue261',note:'\ue0a4'})[name];
-  ctx.strokeStyle='#86a5b8';ctx.beginPath();for(let i=0;i<5;i++){ctx.moveTo(12,baseline-i*space);ctx.lineTo(416,baseline-i*space);}ctx.stroke();ctx.textAlign='left';ctx.font='36px CodaBravura';ctx.fillStyle='#e7f6ff';ctx.fillText(glyph(s.clef),17,baseline-(s.clef==='bass'?3:1)*space);
+  const base=s.clef==='bass'?18:30,highest=Math.max(8,...s.turn.notes.map(note=>note.diatonic-base)),space=Math.min(9,112/(highest+4)),baseline=highest>10?96:84,glyph=name=>({treble:'\ue050',bass:'\ue062',sharp:'\ue262',flat:'\ue260',natural:'\ue261',note:'\ue0a4'})[name];
+  ctx.strokeStyle='#86a5b8';ctx.beginPath();for(let i=0;i<5;i++){ctx.moveTo(12,baseline-i*space);ctx.lineTo(416,baseline-i*space);}ctx.stroke();ctx.textAlign='left';ctx.font=(space*4)+'px CodaBravura';ctx.fillStyle='#e7f6ff';ctx.fillText(glyph(s.clef),17,baseline-(s.clef==='bass'?3:1)*space);
   const keyPositions=s.clef==='bass'?(s.turn.key>0?[6,3,7,4]:[2,5,1,4]):s.turn.key>0?[8,5,9,6]:[4,7,3,6];
   for(let i=0;i<Math.abs(s.turn.key);i++)ctx.fillText(glyph(s.turn.key>0?'sharp':'flat'),58+i*11,baseline-keyPositions[i]*space/2);
   const left=120;
@@ -45,8 +45,8 @@
    ctx.fillStyle=note.done?'#9ae8b4':i===s.turn.index?'#fff2a2':'#dce8f7';ctx.strokeStyle=ctx.fillStyle;ctx.beginPath();
    for(let line=-2;line>=position;line-=2){ctx.moveTo(xx-11,baseline-line*space/2);ctx.lineTo(xx+11,baseline-line*space/2);}
    for(let line=10;line<=position;line+=2){ctx.moveTo(xx-11,baseline-line*space/2);ctx.lineTo(xx+11,baseline-line*space/2);}
-   ctx.stroke();ctx.font='36px CodaBravura';ctx.fillText(glyph('note'),xx-6,yy);if(note.accidental)ctx.fillText(glyph(note.accidental),xx-26,yy);
-   ctx.beginPath();const down=position>=4;ctx.moveTo(xx+(down?-6:6),yy);ctx.lineTo(xx+(down?-6:6),yy+(down?24:-24));ctx.stroke();
+   ctx.stroke();ctx.font=(space*4)+'px CodaBravura';ctx.fillText(glyph('note'),xx-6,yy);if(note.accidental)ctx.fillText(glyph(note.accidental),xx-26,yy);
+   ctx.beginPath();const down=position>=4;ctx.moveTo(xx+(down?-6:6),yy);ctx.lineTo(xx+(down?-6:6),yy+(down?space*2.7:-space*2.7));ctx.stroke();
   }
   ctx.fillStyle='#c7dce7';ctx.font='10px system-ui';ctx.textAlign='left';ctx.fillText('Read left to right · stand on a key + E · +3s per correct pitch',10,113);ctx.restore();
  }

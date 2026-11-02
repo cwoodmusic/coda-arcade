@@ -10,10 +10,10 @@ test('all clefs and levels stay on the floor keyboard and use correctly spelled 
  for(const clef of ['bass','treble'])for(const level of reading.LEVELS){
   const game=reading.create({clef,difficulty:level.id,random:rng()}),accidentals=new Set(),keys=new Set();
   for(let turn=0;turn<50;turn++){
-   const s=game.snapshot();assert.equal(s.turn.notes.length,level.count);keys.add(s.turn.key);
+   const s=game.snapshot();assert.equal(s.baseMidi,60);assert.equal(s.turn.notes.length,level.count);keys.add(s.turn.key);
    const changes=new Map();
    for(const note of s.turn.notes){
-    assert.ok(note.midi>=s.baseMidi&&note.midi<s.baseMidi+24);
+    assert.ok(note.midi>=60&&note.midi<=83);
     const natural=[0,2,4,5,7,9,11]['CDEFGAB'.indexOf(note.letter)],octave=Math.floor(note.diatonic/7);assert.equal(note.midi,12*(octave+1)+natural+note.alter);
     const prior=changes.has(note.diatonic)?changes.get(note.diatonic):s.turn.keyLetters.includes(note.letter)?Math.sign(s.turn.key):0;
     const heard=note.accidental?({sharp:1,flat:-1,natural:0})[note.accidental]:prior;assert.equal(heard,note.alter);

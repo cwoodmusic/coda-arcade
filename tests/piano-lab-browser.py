@@ -114,12 +114,12 @@ class PianoLabTests(unittest.TestCase):
 
     def test_note_dash_bass_keys_multiple_pitches_and_mobile_play_control(self):
         self.start_reading('bass','hard')
-        state=self.state();self.assertEqual(state['octave'],3)
-        self.assertEqual(state['reading']['turn']['notes'][0]['midi'],49)
+        state=self.state();self.assertEqual(state['octave'],4)
+        self.assertEqual(state['reading']['turn']['notes'][0]['midi'],61)
         self.assertEqual(len(state['reading']['turn']['notes']),2)
         self.assertEqual(state['wallStaff']['reading']['clef'],'bass')
         self.assertEqual(state['reading']['turn']['key'],-1)
-        self.walk(166,420);self.assertEqual(self.state()['floorNote'],49)
+        self.walk(166,420);self.assertEqual(self.state()['floorNote'],61)
         self.page.evaluate("lab.control('e',true);lab.control('e',false)")
         self.assertEqual(self.state()['reading']['score'],1)
         self.assertEqual(self.state()['reading']['turn']['index'],1)
@@ -146,6 +146,22 @@ class PianoLabTests(unittest.TestCase):
         self.page.evaluate('lab.close();lab.open()')
         self.assertIsNone(self.state()['reading'])
         self.assertEqual(self.state()['challengeMode'],'free')
+
+    def test_all_melodies_scales_and_intervals_use_fixed_floor_range(self):
+        for lesson in self.page.evaluate('CodaPianoMelodies.LESSONS.map(l=>l.id)'):
+            self.choose_melody(lesson);state=self.state()
+            self.assertEqual(state['octave'],4)
+            self.assertTrue(all(60<=midi<=83 for midi in state['lessonPitches']),lesson)
+            self.assertEqual([event['midi'] for event in state['lessonScore'] if not event['rest']],state['lessonPitches'])
+        self.menu('games');scales=self.page.locator('#pianoScale option').evaluate_all('options=>options.map(o=>o.value)')
+        for scale in scales:
+            self.menu('games');self.page.locator('#pianoScale').select_option(scale);self.page.locator('#pianoStartScale').click();state=self.state()
+            self.assertEqual(state['octave'],4)
+            self.assertTrue(all(60<=midi<=83 for midi in state['lessonPitches']),scale)
+        self.menu('games');self.page.locator('#pianoFreePlay').click()
+        self.menu('settings');self.page.locator('#pianoOctave').select_option('3')
+        self.menu('games');self.page.locator('#pianoStartInterval').click()
+        self.assertEqual(self.state()['octave'],4)
 
     def test_optional_vibe_paints_native_room_then_glows_in_each_actors_scaled_context(self):
         self.page.evaluate('''()=>{window.vibeCalls=[];window.fixtureVibe={
