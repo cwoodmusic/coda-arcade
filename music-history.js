@@ -36,7 +36,7 @@
    if(state.hasNewFact&&!result?.fact){button('! Learn a new history fact',()=>learn(person.id));}
    const quest=state.quest;if(quest&&['available','active','blocked'].includes(quest.status)){
     const card=node('section');card.className='history-quest';card.dataset.historyQuest=quest.id;card.append(node('h3',quest.title),node('p',quest.goal));
-    if(quest.status==='active'){notice('Quest in progress · '+quest.progress+' / '+quest.target,card);button('Go to '+({pitch:'Pitch Race',triad:'Music Triad',rhythm:'Rhythm Room',piano:'Piano Lab',fishing:'Rhythm Fishing'}[quest.game]||quest.game),()=>{close();api.openGame?.(quest.game);},card);}
+    if(quest.status==='active'){notice('Quest in progress · '+quest.progress+' / '+quest.target,card);}
     else if(quest.status==='available')button('Accept friendship quest',()=>{const accepted=engine.acceptQuest(person.id);update();relationship(person,accepted);},card);
     else notice('Finish your current friendship quest before accepting another.',card);
     content.append(card);

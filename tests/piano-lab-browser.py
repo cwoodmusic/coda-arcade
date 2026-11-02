@@ -118,6 +118,29 @@ class PianoLabTests(unittest.TestCase):
         self.play_sequence([60,62,64])
         self.assertEqual(len(self.page.evaluate('challengeCompletions')),2,'Further notes cannot duplicate a finished attempt')
 
+    def test_reopening_canceled_challenge_is_freeplay_and_next_attempt_is_tracked(self):
+        self.choose_melody('mary');self.play_sequence([60+offset for offset in MARY[:4]])
+        previous=self.state()['challengeRun']['runId'];self.page.evaluate('lab.close();lab.open()')
+        self.assertEqual(self.state()['lessonStep'],0)
+        self.assertIsNone(self.state()['challengeRun']);self.assertEqual(self.state()['challengeMode'],'free')
+        self.choose_melody('mary');self.assertNotEqual(self.state()['challengeRun']['runId'],previous)
+        self.play_sequence([60+offset for offset in MARY])
+        self.assertEqual(len(self.page.evaluate('challengeCompletions')),1)
+        self.assertEqual(len(self.page.evaluate('rewards')),1)
+
+    def test_completed_challenge_exploring_returns_to_freeplay(self):
+        self.choose_melody('mary');self.play_sequence([60+offset for offset in MARY])
+        self.page.locator('[data-piano-dialogue-action="close"]').click()
+        self.assertEqual(self.state()['challengeMode'],'free')
+        self.assertIsNone(self.state()['lesson']);self.assertIsNone(self.state()['challengeRun'])
+        self.play_sequence([60,64,67]);self.assertEqual(len(self.page.evaluate('challengeCompletions')),1)
+
+    def test_interval_completion_offers_intervals_instead_of_melodies(self):
+        self.menu('games');self.page.locator('#pianoInterval').select_option('up-7');self.page.locator('#pianoStartInterval').click()
+        self.page.locator('[data-piano-dialogue-action="play"]').click();state=self.state();self.play_sequence([60+state['interval']['start'],60+state['interval']['target']])
+        self.assertTrue(self.page.locator('[data-piano-dialogue-action="intervals"]').is_visible())
+        self.assertEqual(self.page.locator('[data-piano-dialogue-action="melodies"]').count(),0)
+
     def test_memory_wrong_notes_keep_the_same_attempt_and_its_mistakes(self):
         self.choose_melody('mary');self.play_sequence([60+offset for offset in MARY])
         self.begin_memory();run=self.state()['challengeRun']['runId']

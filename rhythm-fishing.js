@@ -368,7 +368,7 @@
    if(isHome())editor?.afterScene(g,phase==='shore'?player.y:boat.y);if(travelUntil>clock&&!reduced()){g.fillStyle='rgba(3,8,20,'+Math.min(.7,(travelUntil-clock)*2)+')';g.fillRect(0,0,W,H);}if(!editor?.isEditing())caveCamera?.end(g);
   }
   function drawStaff(){
-   if(!sg)return;const measured=staff.getBoundingClientRect().width,width=Math.max(200,Math.round(measured)||1000),short=mobile()&&win.innerHeight<550&&win.innerWidth>win.innerHeight,height=short?110:mobile()?180:230;
+   if(!sg)return;const measured=staff.getBoundingClientRect().width,width=Math.max(200,Math.round(measured)||1000),short=mobile()&&win.innerHeight<550&&win.innerWidth>win.innerHeight,height=short?130:mobile()?200:230;
    if(staff.width!==width||staff.height!==height){staff.width=width;staff.height=height;}staff.style.height=height+'px';
    const lineY=short?62:mobile()?102:130,strike=Math.max(76,width*.18),fontSize=short?48:mobile()?62:74;
    sg.clearRect(0,0,width,height);const bg=sg.createLinearGradient(0,0,0,height);bg.addColorStop(0,'#17253b');bg.addColorStop(1,'#101a30');sg.fillStyle=bg;sg.fillRect(0,0,width,height);sg.strokeStyle='#8babc5';sg.lineWidth=2;sg.beginPath();sg.moveTo(20,lineY);sg.lineTo(width-16,lineY);sg.stroke();sg.fillStyle='#e7bd52';sg.fillRect(strike-2,15,4,height-40);sg.fillStyle='#ffe6a3';sg.font='bold '+(short?11:13)+'px system-ui';sg.textAlign='center';sg.fillText('TAP HERE',strike,height-9);
@@ -398,7 +398,13 @@
    for(const note of state.notes||[]){if(note.rest||!(note.requiresHold??note.duration>=2))continue;const x=xForBeat(note.onset),end=xForBeat(note.onset+note.duration);if(end<55||x>width)continue;const active=note.judgement==='holding',failed=note.judgement==='miss',color=failed?'#dc8198':active?'#a6f7cc':'#70bbcf';sg.fillStyle=failed?'#613746':active?'#285d59':'#25485d';sg.fillRect(x,lineY+10,Math.max(2,end-x),7);sg.fillStyle=color;if(active)sg.fillRect(Math.max(x,strike),lineY+11,Math.max(1,end-Math.max(x,strike)),5);else sg.fillRect(x,lineY+12,Math.max(2,end-x),3);sg.fillRect(end-1,lineY+7,2,13);holdTrails.push({id:note.id,x,end,beat:note.onset,endBeat:note.onset+note.duration,progress:note.holdProgress||0,active});}
    sg.fillStyle='#e7bd52';sg.fillRect(strike-2,15,4,height-40);
    const engraving=win.CodaRhythmBeaming.draw(sg,{notes:state.notes||[],meter:state.meter||meter,meterInfo:state.meterInfo,xForNote:note=>xForBeat(Number.isFinite(note.onset)?note.onset:Number.isFinite(note.beat)?note.beat:((note.time??note.at)-musicOrigin)/quarterSeconds),y:lineY,fontSize,left:55,right:width,height:height-22});
-   beamInfo={groups:engraving.groups.map(group=>({bar:group.bar,pulse:group.pulse,count:group.members.length,levels:group.members.map(member=>member.levels)})),drawnGroups:engraving.drawnGroups,drawnNotes:engraving.drawnNotes,strike,spacing,currentBeat,fontSize,lineY,barLines:visibleBars,barLineStyle,holdTrails};
+   const countings=[],countY=height-32,hasSixteenths=(state.notes||[]).some(note=>note.duration<=.25),step=hasSixteenths?.25:meter==='2/2'&&!(state.notes||[]).some(note=>note.duration<1)?1:.5;
+   // Counts scroll on the same beat coordinates as the noteheads, including rests.
+   sg.restore();sg.save();sg.beginPath();sg.rect(55,0,width-55,height-20);sg.clip();
+   sg.font='600 '+(short?10:12)+'px system-ui';sg.textAlign='center';
+   const first=Math.max(0,Math.floor((currentBeat-(strike-55)/spacing)/step)*step),last=currentBeat+(width-strike)/spacing;
+   for(let beat=first;beat<=last+1e-8;beat+=step){const x=xForBeat(beat);if(x<55||x>width-8)continue;const label=engine.countingAt(meter,beat),accent=/^[1-4]$/.test(label);sg.fillStyle=accent?'#ffe4a1':'#c6e7ef';sg.fillText(label,x,countY);countings.push({beat,x,label,accent});}
+   beamInfo={groups:engraving.groups.map(group=>({bar:group.bar,pulse:group.pulse,count:group.members.length,levels:group.members.map(member=>member.levels)})),drawnGroups:engraving.drawnGroups,drawnNotes:engraving.drawnNotes,strike,spacing,currentBeat,fontSize,lineY,barLines:visibleBars,barLineStyle,holdTrails,countings,countY};
    sg.restore();sg.fillStyle='#16273ce8';sg.fillRect(0,0,55,height-23);notation?.drawTimeSignature?.(sg,{x:28,y:lineY,meter,fontSize:short?43:52,color:'#cfdeec'});
   }
   function moveActors(dt){boatMoving=false;playerMoving=false;if(pendingTravel)return;if(pinchBlocked()){clearJoystick();return;}const actor=phase==='shore'?player:boat,before={x:actor.x,y:actor.y};let dx=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),dy=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);const touch=finger?.getState(),target=touch?.following?touch.target:null;let speedScale=1;

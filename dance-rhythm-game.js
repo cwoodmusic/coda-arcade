@@ -128,7 +128,7 @@
   }
   function draw(){
    if(!ctx||!state)return;const width=canvas.width,height=canvas.height,target=122,scale=mode==='hard'?82:90,beat=state.beat,y=86;
-   ctx.clearRect(0,0,width,height);ctx.fillStyle='#101a2ced';ctx.fillRect(0,0,width,height);
+   ctx.clearRect(0,0,width,height);ctx.fillStyle='rgba(10,21,36,.28)';ctx.fillRect(0,0,width,height);
    ctx.strokeStyle='#9bb1cb';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(73,y);ctx.lineTo(width-12,y);ctx.stroke();
    notation?.drawTimeSignature?.(ctx,{x:35,y:69,fontSize:52,meter:'4/4',color:'#f4e9d4'});
    const notes=(state.events||state.chart.events).map(note=>({...note,onset:note.beat,judgement:note.status==='hit'?'hit':['wrong','miss'].includes(note.status)?'miss':null}));

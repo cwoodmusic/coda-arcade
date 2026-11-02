@@ -93,3 +93,5 @@ python3 tests/music-notation-browser.py
 ```
 
 The browser tests use actual keyboard/touch input and a controlled browser clock. They cover catches and escapes, save retries, meter pulses, font rendering, boat collision, mobile input, audio cleanup, and moving the trapdoor in the production editor.
+
+Rhythm notation includes a scrolling counting row aligned with the notes. Compound 6/8 uses “1 la li 2 la li” and accompaniment grouped into two dotted-quarter pulses, with lighter eighth-note subdivisions.

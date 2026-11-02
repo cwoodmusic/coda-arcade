@@ -87,6 +87,17 @@
   }
   for(let bar=first;bar<=last;bar++){
    const chord=theme.chords[bar%theme.chords.length],melody=theme.melody[(bar+rotation)%theme.melody.length],pulse=meter.pulseBeats,second=meter.secondPulse;
+   if(meter.id==='6/8'){
+    // Two clear dotted-quarter pulses: bass on ONE / TWO, with two light
+    // plucked chord answers inside each pulse (ONE-la-li TWO-la-li).
+    for(let pulseIndex=0;pulseIndex<2;pulseIndex++){
+     const at=pulseIndex*1.5,accent=pulseIndex===0?1:.72;
+     add(bar,'bass',pulseIndex?'answer':'root',at,.85,chord.bass+(pulseIndex?7:0),.12,accent);
+     for(let subdivision=1;subdivision<=2;subdivision++)add(bar,'chord','sway-'+pulseIndex+'-'+subdivision,at+subdivision*.5,.34,chord.voices[(bar+subdivision-1)%chord.voices.length],.045,subdivision===1?.78:.65);
+     if(!fast)add(bar,'melody','sway-'+pulseIndex,at,.95,melody[pulseIndex],.07,pulseIndex?.72:.85);
+    }
+    continue;
+   }
    add(bar,'bass','root',0,Math.min(1.2,pulse*.72),chord.bass,.12);
    chord.voices.forEach((midi,index)=>add(bar,'chord','down-'+index,0,pulse*(fast?.5:.78),midi,.035));
    add(bar,'bass','answer',second,Math.min(1.1,pulse*.6),chord.bass+7,.12,.72);

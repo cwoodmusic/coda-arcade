@@ -5,11 +5,11 @@ const score=(meter='4/4')=>({meter,phase:'playing',beat:0,musicStart:10,secondsP
 test('each meter has its own musical pulse grouping and a softer answering accent',()=>{
  for(const [meter,barBeats,answer]of [['4/4',4,2],['6/8',3,1.5],['2/2',4,2]]){
   const events=music.plan(score(meter),{fromBeat:0,toBeat:barBeats}),bass=events.filter(e=>e.part==='bass');
-  assert.equal(events.length,9);assert.deepEqual(bass.map(e=>e.beat),[0,answer]);
+  assert.equal(events.length,meter==='6/8'?8:9);assert.deepEqual(bass.map(e=>e.beat),[0,answer]);
   assert.ok(bass[0].volume>bass[1].volume);assert.equal(bass[0].accent,1);assert.equal(bass[1].accent,.72);
   assert.ok(events.every(event=>event.beat>=0&&event.beat<barBeats));
   assert.ok(events.some(event=>event.part==='chord')&&events.some(event=>event.part==='melody'));
-  if(meter==='6/8')assert.deepEqual(events.filter(e=>e.part==='melody').map(e=>e.beat),[.5,2.5]);
+  if(meter==='6/8')assert.deepEqual(events.filter(e=>e.part==='melody').map(e=>e.beat),[0,1.5]);
  }
 });
 
@@ -88,4 +88,18 @@ test('music gain is audible with headroom and never changes the metronome clock'
  assert.ok(downbeat.reduce((sum,e)=>sum+e.volume,0)*.13<.1,'The mixed downbeat retains output headroom');
  assert.ok(events.filter(e=>e.part==='melody').every(e=>e.volume>.13),'The melody should be audible above its old .05 peak');
  assert.equal(events[0].time,state.musicStart);
+});
+
+test('six-eight accompaniment divides each dotted-quarter pulse into three eighths',()=>{
+ const events=music.plan(score('6/8'),{fromBeat:0,toBeat:3});
+ assert.deepEqual([...new Set(events.map(e=>e.beat))],[0,.5,1,1.5,2,2.5]);
+ assert.deepEqual(events.filter(e=>e.part==='bass').map(e=>e.beat),[0,1.5]);
+ assert.ok(events.filter(e=>e.part==='chord').every(e=>e.durationBeats<.5));
+});
+
+test('counting syllables follow simple, compound and cut-time beat units',()=>{
+ assert.deepEqual([0,.25,.5,.75,1].map(beat=>fishing.countingAt('4/4',beat)),['1','e','&','a','2']);
+ assert.deepEqual([0,.5,1,1.5,2,2.5,3].map(beat=>fishing.countingAt('6/8',beat)),['1','la','li','2','la','li','1']);
+ assert.deepEqual([0,1,2,3,4].map(beat=>fishing.countingAt('2/2',beat)),['1','&','2','&','1']);
+ assert.equal(fishing.countingAt('unknown',0),'');assert.equal(fishing.countingAt('6/8',-1),'');
 });

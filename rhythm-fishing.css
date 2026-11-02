@@ -78,7 +78,10 @@
  .fishing-challenge-panel{padding:8px}
  .fishing-challenge-heading{margin-bottom:3px}
  .fishing-staff-wrap{margin-top:4px}
- .fishing-staff-wrap canvas{height:85px!important;min-height:85px}
+ .fishing-staff-wrap{grid-column:1}
+ .fishing-staff-wrap canvas{height:130px!important;min-height:130px}
+ .fishing-rhythm-meta{grid-column:1}
+ .fishing-tap-button{grid-column:2;grid-row:4 / 6;align-self:stretch;margin-top:4px}
  .fishing-rhythm-meta{margin:2px 0 4px}
  .fishing-rhythm-feedback{margin-top:3px}
 }

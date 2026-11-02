@@ -65,9 +65,10 @@ class DanceFloorWorldTests(fixture.WorldBrowserCase):
             self.assertLessEqual(corner['y'], projection['viewport']['bottom'] + .5)
         self.assertGreaterEqual(projection['overlay']['left'], 0)
         self.assertLessEqual(projection['overlay']['right'], self.page.viewport_size['width'])
-        self.assertGreaterEqual(min(corner['y'] for corner in projection['corners']),
-                                projection['overlay']['bottom'] - .5,
-                                'The rhythm panel must leave the colored dance floor visible.')
+        alpha=self.page.locator('.dance-rhythm-game').evaluate("e=>Number(getComputedStyle(e).backgroundColor.match(/[\d.]+/g)[3])")
+        self.assertLessEqual(alpha,.4,'The score overlay must reveal dancers behind it')
+        self.assertLessEqual(self.page.locator('.dance-rhythm-staff').evaluate("c=>c.getContext('2d').getImageData(10,10,1,1).data[3]"),90)
+
 
     def assert_directional_pad(self):
         boxes=self.page.locator('[data-dance-arrow]').evaluate_all('''buttons=>Object.fromEntries(buttons.map(button=>{

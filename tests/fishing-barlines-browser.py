@@ -16,7 +16,13 @@ class FishingBarLineTests(_tempo._upgrade._fish._world.WorldBrowserCase):
     enter=_base.enter
     walk_to=_base.walk_to
     board=_base.board
-    start_exploring=_base.start_exploring
+    fishing_option=_base.fishing_option
+    fishing_action=_base.fishing_action
+    fishing_meter=_base.fishing_meter
+    def start_exploring(self,meter='4/4'):
+        self.enter()
+        self.assertEqual(self.state()['meter'],meter)
+        self.board()
     place_single_fish=_base.place_single_fish
     state=_base.state
     choose=_base.choose
@@ -189,7 +195,7 @@ class FishingBarLineTests(_tempo._upgrade._fish._world.WorldBrowserCase):
 
     def start_engraving_practice(self,meter,rarity):
         if not self.state()['open']:self.enter()
-        self.page.locator('#fishingPractice').click(force=True)
+        self.fishing_action('#fishingPractice')
         self.page.locator('input[name="fishingPracticeMeter"][value="'+meter+'"]').check(force=True)
         self.page.locator('input[name="fishingPracticeRarity"][value="'+rarity+'"]').check(force=True)
         self.page.locator('#fishingPracticeStart').click(force=True);self.page.clock.run_for(32)
@@ -197,6 +203,17 @@ class FishingBarLineTests(_tempo._upgrade._fish._world.WorldBrowserCase):
         self.assertTrue(state['challenge']['practice'])
         self.assertEqual(state['challenge']['meter'],meter)
         return state
+
+    def test_counts_scroll_with_notes_in_simple_compound_and_cut_time(self):
+        for meter in ['4/4','6/8','2/2']:
+            self.start_engraving_practice(meter,'rare');state=self.state();drawing=state['beaming'];counts=drawing['countings']
+            self.assertTrue(counts)
+            for item in counts:
+                self.assertAlmostEqual(item['x'],drawing['strike']+(item['beat']-drawing['currentBeat'])*drawing['spacing'])
+                self.assertEqual(item['label'],self.page.evaluate('([m,b])=>CodaRhythmFishing.countingAt(m,b)',[meter,item['beat']]))
+            self.assertLess(drawing['countY'],self.page.locator('#fishingRhythmCanvas').evaluate('c=>c.height'))
+            if meter=='6/8':self.assertTrue(any(item['label'] in ['la','li'] for item in counts))
+            self.page.locator('#fishingCancel').click(force=True);self.page.clock.run_for(32)
 
     def assert_glyph_clearance(self):
         state=self.state();drawing=state['beaming']

@@ -30,3 +30,5 @@ The pure chart/timing engine is `dance-rhythm-engine.js`. Actor staging is `danc
 The dance game has an original synthesized EDM backing with four-on-the-floor kick, clap, offbeat hi-hats, sub-bass, chord stabs, and a synth hook. A distinct metronome click marks every quarter-note beat, including the count-in, with a higher downbeat accent. **EDM music** and **Metronome click** can be muted independently. Both use the chart’s clock and tempo; exit, results, and backgrounding stop the audio.
 
 The default main-arcade music is a 16-bar club loop at 124 BPM. Four-bar phrases introduce variations, pare back the hook in the middle, and return with brighter synths and fills. Jukebox dance selections also retain their 16-bar arrangements with stronger drums. Dance-game rounds remain eight bars and use their own playable tempo.
+
+During count-in and play, the rhythm panel and staff are translucent and the camera frames the dancers behind the notation. Menus and results retain their solid backgrounds.

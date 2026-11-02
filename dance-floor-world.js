@@ -49,6 +49,7 @@
     if(!active||!stage.getState().active)return false;
     const panel=game.getBounds?.(),image=api.canvas?.getBoundingClientRect(),floor=win.CodaDanceFloorStage.FLOOR_BOUNDS;
     if(panel&&image?.height>0&&floor){
+     if(['countin','playing'].includes(game.getState().phase)){api.setCamera(fitCamera(viewport,{x:floor.x-20,y:floor.y-70,width:floor.width+40,height:floor.height+85}));return true;}
      const top=Math.max(viewport.top,(panel.bottom+8-image.top)*api.height/image.height),height=viewport.top+viewport.height-top;
      if(height>0){
       // Include room for heads and labels above the dance tiles, without

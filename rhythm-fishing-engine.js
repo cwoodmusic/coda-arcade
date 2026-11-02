@@ -14,6 +14,13 @@
   '2/2':Object.freeze({id:'2/2',timeSignature:'2/2',label:'Cut time',numerator:2,denominator:2,barBeats:4,pulseBeats:2,pulsesPerBar:2,pulseUnit:'half'})
  });
  const meterFor=value=>{let id=typeof value==='string'?value:value?.id;if(['cut','cut-time','cuttime'].includes(id))id='2/2';return Object.prototype.hasOwnProperty.call(METERS,id)?METERS[id]:null;};
+ function countingAt(meter,beat){
+  const id=meterFor(meter)?.id;if(!id||!Number.isFinite(beat)||beat<0)return '';
+  const tick=Math.round(beat*4);
+  if(id==='6/8')return ['1','&','la','&','li','&','2','&','la','&','li','&'][tick%12];
+  if(id==='2/2')return ['1','ta','e','ta','&','ta','a','ta','2','ta','e','ta','&','ta','a','ta'][tick%16];
+  return ['1','e','&','a','2','e','&','a','3','e','&','a','4','e','&','a'][tick%16];
+ }
  const RARITIES=Object.freeze([
   {id:'common',label:'Common',rank:0,weight:52,bpm:72,window:.22,missLoss:5,extraLoss:3,description:'Quarter notes, eighth-note pairs, and clear rests.'},
   {id:'uncommon',label:'Uncommon',rank:1,weight:28,bpm:76,window:.215,missLoss:5,extraLoss:3,description:'Eighth notes, longer notes, and eighth through whole-bar rests.'},
@@ -328,5 +335,5 @@
     notes:events.filter(event=>event.onset+event.duration>=beat-8&&event.onset<=beat+16).map(noteState),result:result?copy(result):null};}
   return {update,tap,press,release,releaseAllSources,getState,snapshot:getState,timeAtBeat,beatAtTime,tempoAtBeat,abort(){if(!finished)finish('escaped','aborted');return getState();}};
  }
- return Object.freeze({FISH,RARITIES,METERS,PATTERNS,TARGET_BARS,PERFECT_TARGET_BARS,chooseFish,availableFish,canFishInMeter,canFishInBiome,fishFor,rarityFor,meterFor,tempoMarking,createSession});
+ return Object.freeze({FISH,RARITIES,METERS,PATTERNS,TARGET_BARS,PERFECT_TARGET_BARS,chooseFish,availableFish,canFishInMeter,canFishInBiome,fishFor,rarityFor,meterFor,countingAt,tempoMarking,createSession});
 });

@@ -25,3 +25,8 @@
 .dance-floor-open>footer{visibility:hidden}
 
 .dance-rhythm-options{display:flex;flex-wrap:wrap;gap:8px 20px}.dance-rhythm-options label{min-height:44px;display:flex;align-items:center;gap:7px}
+
+/* Keep the real dance floor visible through the active score panel. */
+.dance-rhythm-game.is-playing{background:rgba(12,24,40,.34);box-shadow:0 8px 30px #050b2540}
+.dance-rhythm-game.is-playing .dance-rhythm-score{background:transparent;border-color:#a2d2e690}
+.dance-rhythm-game.is-playing .dance-rhythm-stats,.dance-rhythm-game.is-playing .dance-rhythm-feedback{color:#fff;text-shadow:0 1px 3px #000,0 0 5px #000}
