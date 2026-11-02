@@ -39,7 +39,7 @@ class ForegroundFloorCompatibilityTests(unittest.TestCase):
         self.assertEqual(self.page.evaluate('CodaArcadeQA.layerPixelOwner(750,570)'),-1)
         self.assertEqual(self.page.evaluate('CodaArcadeQA.layerPixelOwner(700,570)'),12,'Keep the historical stage wall outside the new selection in the foreground')
         self.assertEqual(self.page.evaluate('CodaArcadeQA.layerPixelOwner(600,570)'),26,'Keep the newly authored stage wall selection in the foreground')
-        self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getProject().strokes.slice(26).filter(stroke=>!CodaForegroundFloorCompat.isHistoricalWallStroke(stroke)).length'),7)
+        self.assertEqual(self.page.evaluate('CodaDeveloperConsole.getProject().strokes.slice(26).filter(stroke=>!CodaForegroundFloorCompat.isHistoricalWallStroke(stroke)).length'),10)
         expected=self.pixel(750,570)
         self.assertTrue(self.page.evaluate('CodaArcadeQA.place(750,610)'))
         self.frames()

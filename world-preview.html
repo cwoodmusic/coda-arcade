@@ -709,6 +709,13 @@ foregroundParts.push(...[{"name":"dance_north_wall_west","bounds":[321,472,127,6
 foregroundParts.push(...[{"name":"annotated_purple_1","bounds":[70,204,26,51],"sortY":971,"type":"marked-foreground","atlas":[6,528,26,51]},{"name":"annotated_purple_2","bounds":[444,251,47,40],"sortY":971,"type":"marked-foreground","atlas":[41,528,47,40]},{"name":"annotated_purple_3","bounds":[423,272,16,29],"sortY":971,"type":"marked-foreground","atlas":[97,528,16,29]},{"name":"annotated_purple_4","bounds":[259,454,65,32],"sortY":971,"type":"marked-foreground","atlas":[122,528,65,32]},{"name":"annotated_purple_5","bounds":[1535,472,14,21],"sortY":971,"type":"marked-foreground","atlas":[196,528,14,21]},{"name":"annotated_purple_6","bounds":[795,627,13,22],"sortY":971,"type":"marked-foreground","atlas":[219,528,13,22]},{"name":"annotated_purple_7","bounds":[699,782,46,39],"sortY":971,"type":"marked-foreground","atlas":[241,528,46,39]},{"name":"annotated_purple_8","bounds":[471,813,21,24],"sortY":971,"type":"marked-foreground","atlas":[296,528,21,24]}]);
 foregroundParts.push({name:"dance_passage_plant_leaves",bounds:[754,609,65,72],sortY:695,type:"pixel-accurate-leaf-occlusion",atlas:[370,530,65,72]}); // Only the green leaf silhouette from the approved art is elevated to the foreground.
 const legacyForegroundParts=foregroundParts.slice();
+// The lounge rug can overlap this wall's cap. Give the refreshed architecture
+// its own clean silhouette in both live rendering and foreground-paint sampling;
+// otherwise painting the wall samples the rug already drawn over the backdrop.
+// Its depth stays behind the boutique fixtures, which sit against this wall.
+foregroundParts.push({name:'lounge_southeast_wall',bounds:[360,271,323,151],
+ poly:[[364,271],[678,271],[682,275],[682,417],[678,421],[364,421],[360,417],[360,275]],
+ sortY:271,type:'wall',atlas:[360,271,323,151]});
 foregroundParts.push(...window.CodaWallFixtures.CATALOG);
 function sceneForegroundParts(){return refreshedEnvironment()?foregroundParts:legacyForegroundParts;}
 let depthDebug=false,foregroundEnabled=true;
