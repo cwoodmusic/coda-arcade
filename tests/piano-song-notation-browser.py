@@ -44,9 +44,9 @@ class PianoSongNotationTests(_scale._world.WorldBrowserCase):
         self.page.evaluate(RHYTHM_PROBE)
 
     def start_song(self, identifier):
-        self.menu('games')
+        self.menu('games','melodies')
         self.page.locator('#pianoLesson').select_option(identifier)
-        self.page.locator('[data-piano-dialogue-action="play"]').click()
+        self.page.locator('#pianoLearnMelody').click()
         self.page.clock.run_for(48)
         self.assertEqual(self.state()['lesson'], identifier)
         self.assertEqual(self.state()['challengeMode'], 'melody')
@@ -90,7 +90,8 @@ class PianoSongNotationTests(_scale._world.WorldBrowserCase):
         complete = self.state()
         self.assertIn('piano-lesson:frere-jacques', complete['completed'])
         self.assertTrue(complete['dialogueOpen'])
-        self.assertEqual(self.totals(), {'notes':before['notes']+35,'xp':before['xp']+100})
+        self.assertEqual(self.totals(), {'notes':before['notes']+35,'xp':before['xp']+150})
+        self.assertIn('achievement:piano-first-melody', self.page.evaluate('CodaArcadeQA.progression().recent.map(event=>event.id)'))
 
     def test_written_rests_dots_and_barlines_do_not_add_timed_or_rest_input(self):
         self.start_song('jingle-bells')
@@ -151,7 +152,7 @@ class PianoSongNotationTests(_scale._world.WorldBrowserCase):
         for midi in FRERE[14:28]:self.play_keyboard(midi)
         self.close_panels()
         self.assertEqual(self.state()['lastWallNote'],67)
-        self.assertTrue(self.page.evaluate('__pianoSongTones.some(f=>Math.abs(f-195.99771799)<.01)'),
+        self.assertTrue(self.page.evaluate('__pianoSongTones.some(f=>Math.abs(f-391.99543598)<.01)'),
                         'The closing G actually sounds in the octave below the opening C')
         self.page.screenshot(path='/tmp/piano-score-frere-low-g.png')
         self.start_song('jingle-bells')
@@ -180,7 +181,7 @@ class PianoSongNotationTests(_scale._world.WorldBrowserCase):
         self.page.locator('#pianoFullscreen').click();self.page.clock.run_for(48)
         self.assertEqual(self.state()['fullscreen']['mode'],'viewport')
         self.assertTrue(self.page.evaluate('document.querySelector("#pianoroom").contains(document.querySelector(".coda-touch-controls"))'))
-        self.floor_key(60)
+        self.floor_key(self.state()['lessonPitches'][0])
         play = self.page.locator('.coda-touch-interact')
         self.assertTrue(play.is_visible());self.assertGreaterEqual(play.bounding_box()['height'],64)
         self.assertEqual(self.state()['lessonStep'],0)

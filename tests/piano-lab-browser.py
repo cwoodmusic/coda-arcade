@@ -53,21 +53,22 @@ class PianoLabTests(unittest.TestCase):
     def state(self):
         return self.page.evaluate('lab.getState()')
 
-    def menu(self,view):
+    def menu(self,view,challenge=None):
         if self.page.locator('#pianoDialogueBackdrop').is_visible():self.page.locator('#pianoDialogueClose').click()
         if not self.state()['menuOpen']:self.page.locator('#pianoMenuButton').click()
         if self.state()['mobileView']!=view:self.page.locator(f'[data-piano-view="{view}"]').click()
-        if view=='games':
-            for section in self.page.locator('#pianoChallengePanel details').all():
-                if not section.evaluate('e=>e.open'):section.locator('summary').click()
+        if view=='games' and challenge:
+            card=self.page.locator(f'[data-piano-challenge="{challenge}"]')
+            if not card.is_visible():self.page.locator('#pianoChallengeBack').click()
+            card.click()
 
     def close_panels(self):
         if self.page.locator('#pianoDialogueBackdrop').is_visible():self.page.locator('#pianoDialogueClose').click()
         if self.state()['menuOpen']:self.page.locator('#pianoMenuClose').click()
 
     def choose_melody(self,identifier):
-        self.menu('games');self.page.locator('#pianoLesson').select_option(identifier)
-        self.page.locator('[data-piano-dialogue-action="play"]').click()
+        self.menu('games','melodies');self.page.locator('#pianoLesson').select_option(identifier)
+        self.page.locator('#pianoLearnMelody').click()
 
     def walk(self,x,y):
         self.close_panels()
@@ -82,8 +83,13 @@ class PianoLabTests(unittest.TestCase):
         self.page.locator(f'.piano-key[data-midi="{midi}"]').click()
 
     def begin_memory(self):
-        self.menu('games');self.page.locator('#pianoMemoryStart').click()
-        self.page.locator('[data-piano-dialogue-action="play"]').click()
+        state=self.state()
+        if state['challengeMode']=='scale':
+            self.menu('games','scales');self.page.locator('#pianoScale').select_option(state['scale'])
+            self.page.locator('#pianoScaleMemory').click()
+        else:
+            self.menu('games','melodies');self.page.locator('#pianoLesson').select_option(state['lesson'])
+            self.page.locator('#pianoMemoryStart').click()
 
     def play_sequence(self,midis):
         self.menu('keyboard')
@@ -101,15 +107,15 @@ class PianoLabTests(unittest.TestCase):
             for button in buttons.all():
                 self.assertTrue(button.is_visible());box=button.bounding_box();self.assertLessEqual(box['x']+box['width'],size['width'])
         self.page.locator('[data-piano-main="reading"]').click()
-        self.page.locator('[data-piano-dialogue-action="reading-treble"]').click()
-        self.page.locator('[data-piano-dialogue-action="play"]').click()
+        self.page.locator('#pianoReadingClef').select_option('treble')
+        self.page.locator('#pianoStartReading').click()
         self.assertEqual(self.state()['challengeMode'],'reading')
         self.page.locator('[data-piano-main="scales"]').click()
-        self.assertEqual(self.page.locator('[data-piano-scale]').count(),24)
-        self.page.locator('#pianoDialogueClose').click()
+        self.assertEqual(self.page.locator('#pianoScale option').count(),24)
+        self.close_panels()
         self.page.locator('[data-piano-main="melodies"]').click()
-        self.assertGreaterEqual(self.page.locator('[data-piano-melody]').count(),9)
-        self.page.locator('#pianoDialogueClose').click()
+        self.assertGreaterEqual(self.page.locator('[data-piano-song]').count(),9)
+        self.close_panels()
         self.menu('games');self.page.locator('#pianoTalkChopin').click()
         self.assertEqual(self.page.locator('#pianoDialogueText').inner_text(),self.page.evaluate("CodaMusicianQuotes.line('chopin')"))
         self.assertTrue(self.page.locator('[data-piano-dialogue-action="advice"]').is_visible())
@@ -117,12 +123,12 @@ class PianoLabTests(unittest.TestCase):
         self.assertTrue(self.page.evaluate('window.historyOpened'))
 
     def start_reading(self,clef='treble'):
-        self.menu('games')
+        self.menu('games','reading')
         self.page.locator('#pianoReadingClef').select_option(clef)
         self.page.evaluate('Math.random=()=>0')
         self.page.locator('#pianoStartReading').click()
-        self.assertEqual(self.state()['reading']['remaining'],10)
-        self.page.locator('[data-piano-dialogue-action="play"]').click()
+        self.assertAlmostEqual(self.state()['reading']['remaining'],10,delta=.15)
+        self.assertFalse(self.state()['menuOpen'])
 
     def test_note_dash_requires_e_on_floor_and_awards_three_seconds(self):
         self.start_reading()
@@ -176,7 +182,7 @@ class PianoLabTests(unittest.TestCase):
         self.start_reading();self.walk(209,530)
         for _ in range(10):self.page.keyboard.press('e')
         self.assertEqual(self.state()['reading']['score'],10)
-        self.menu('games');self.page.locator('#pianoFinishReading').click()
+        self.menu('games','reading');self.page.locator('#pianoFinishReading').click()
         event=self.page.evaluate('challengeCompletions.at(-1)')
         self.assertEqual(event['kind'],'reading');self.assertEqual(event['correct'],10)
         self.assertEqual(event['clef'],'treble');self.assertTrue(event['complete'])
@@ -190,14 +196,14 @@ class PianoLabTests(unittest.TestCase):
             self.assertEqual(state['octave'],4)
             self.assertTrue(all(60<=midi<=83 for midi in state['lessonPitches']),lesson)
             self.assertEqual([event['midi'] for event in state['lessonScore'] if not event['rest']],state['lessonPitches'])
-        self.menu('games');scales=self.page.locator('#pianoScale option').evaluate_all('options=>options.map(o=>o.value)')
+        self.menu('games','scales');scales=self.page.locator('#pianoScale option').evaluate_all('options=>options.map(o=>o.value)')
         for scale in scales:
-            self.menu('games');self.page.locator('#pianoScale').select_option(scale);self.page.locator('#pianoStartScale').click();state=self.state()
+            self.menu('games','scales');self.page.locator('#pianoScale').select_option(scale);self.page.locator('#pianoStartScale').click();state=self.state()
             self.assertEqual(state['octave'],4)
             self.assertTrue(all(60<=midi<=83 for midi in state['lessonPitches']),scale)
         self.menu('games');self.page.locator('#pianoFreePlay').click()
         self.menu('settings');self.page.locator('#pianoOctave').select_option('3')
-        self.menu('games');self.page.locator('#pianoStartInterval').click()
+        self.menu('games','intervals');self.page.locator('#pianoStartInterval').click()
         self.assertEqual(self.state()['octave'],4)
 
     def test_optional_vibe_paints_native_room_then_glows_in_each_actors_scaled_context(self):
@@ -250,8 +256,8 @@ class PianoLabTests(unittest.TestCase):
         self.play_sequence([60,64,67]);self.assertEqual(len(self.page.evaluate('challengeCompletions')),1)
 
     def test_interval_completion_offers_intervals_instead_of_melodies(self):
-        self.menu('games');self.page.locator('#pianoInterval').select_option('up-7');self.page.locator('#pianoStartInterval').click()
-        self.page.locator('[data-piano-dialogue-action="play"]').click();state=self.state();self.play_sequence([60+state['interval']['start'],60+state['interval']['target']])
+        self.menu('games','intervals');self.page.locator('#pianoInterval').select_option('up-7');self.page.locator('#pianoStartInterval').click()
+        state=self.state();self.play_sequence([60+state['interval']['start'],60+state['interval']['target']])
         self.assertTrue(self.page.locator('[data-piano-dialogue-action="intervals"]').is_visible())
         self.assertEqual(self.page.locator('[data-piano-dialogue-action="melodies"]').count(),0)
 
@@ -271,13 +277,18 @@ class PianoLabTests(unittest.TestCase):
     def test_demonstration_freeplay_and_cancel_do_not_create_completed_challenge_events(self):
         self.play_sequence([60,64,67]);self.assertEqual(self.page.evaluate('challengeStarts'),[])
         self.page.clock.install();self.page.clock.pause_at(self.page.evaluate('Date.now()/1000')+5)
-        self.menu('games');self.page.locator('#pianoLesson').select_option('hot-cross-buns')
-        run=self.state()['challengeRun']['runId'];self.page.locator('[data-piano-dialogue-action="listen"]').click()
-        demo_ms=self.page.evaluate('''()=>{const state=lab.getState(),tune=CodaPianoMelodies.lessonFor(state.lesson);return Math.ceil(Math.max(...state.lessonScore.map(event=>event.onset+event.beats))*60000/(tune.quarterBpm||100))+200;}''')
+        self.menu('games','melodies');self.page.locator('#pianoLesson').select_option('hot-cross-buns')
+        self.page.locator('#pianoListenMelody').click()
+        demo_ms=self.page.evaluate("""()=>{const tune=CodaPianoMelodies.lessonFor('hot-cross-buns');return Math.ceil(Math.max(...tune.events.map(event=>event.onset+event.beats))*60000/(tune.quarterBpm||100))+200;}""")
         self.page.clock.run_for(demo_ms)
-        self.assertEqual(len(self.page.evaluate('challengeStarts')),1,'Hearing a demonstration must not create another attempt')
-        self.assertEqual(self.state()['challengeRun']['runId'],run)
+        self.assertEqual(self.page.evaluate('challengeStarts'),[],'Previewing must not create an attempt')
+        self.assertIsNone(self.state()['challengeRun'])
         self.assertEqual(self.page.evaluate('challengeCompletions'),[])
+        self.page.locator('#pianoLearnMelody').click();run=self.state()['challengeRun']['runId']
+        self.menu('games','melodies');self.page.locator('#pianoListenMelody').click()
+        self.page.clock.run_for(demo_ms)
+        self.assertEqual(len(self.page.evaluate('challengeStarts')),1,'Hearing a preview must not restart an active attempt')
+        self.assertEqual(self.state()['challengeRun']['runId'],run)
         self.page.evaluate('lab.close();lab.open()')
         self.assertIsNone(self.state()['challengeRun'])
         self.play_sequence(self.state()['lessonPitches'])
@@ -285,12 +296,12 @@ class PianoLabTests(unittest.TestCase):
 
     def test_scale_and_interval_events_include_the_challenge_type_and_mistakes(self):
         for scale,kind,offsets in [('c-major','major',[0,2,4,5,7,9,11,12]),('a-minor','minor',[9,11,12,14,16,17,19,21])]:
-            self.menu('games');self.page.locator('#pianoScale').select_option(scale);self.page.locator('#pianoStartScale').click()
-            self.page.locator('[data-piano-dialogue-action="play"]').click();self.play_sequence([60+offset for offset in offsets+list(reversed(offsets[:-1]))])
+            self.menu('games','scales');self.page.locator('#pianoScale').select_option(scale);self.page.locator('#pianoStartScale').click()
+            self.play_sequence([60+offset for offset in offsets+list(reversed(offsets[:-1]))])
             event=self.page.evaluate('challengeCompletions.at(-1)')
             self.assertEqual((event['kind'],event['scaleType'],event['lessonId'],event['mistakes']),('scale',kind,scale,0))
-        self.menu('games');self.page.locator('#pianoInterval').select_option('up-4');self.page.locator('#pianoStartInterval').click()
-        self.page.locator('[data-piano-dialogue-action="play"]').click();self.play_sequence([61,60,64])
+        self.menu('games','intervals');self.page.locator('#pianoInterval').select_option('up-4');self.page.locator('#pianoStartInterval').click()
+        self.play_sequence([61,60,64])
         event=self.page.evaluate('challengeCompletions.at(-1)')
         self.assertEqual((event['kind'],event['lessonId'],event['mistakes']),('interval','up-4',1))
 
@@ -310,7 +321,7 @@ class PianoLabTests(unittest.TestCase):
         self.assertFalse(self.page.locator('.piano-mobile-nav').is_visible())
         self.menu('games')
         options=self.page.locator('#pianoLesson option').all_text_contents()
-        self.assertGreaterEqual(len(options)-1,9)
+        self.assertGreaterEqual(len(options),9)
         self.assertTrue(any('Mary' in value for value in options))
         self.assertTrue(any('Ode to Joy' in value for value in options))
         self.page.locator('#pianoTalkChopin').click()
@@ -318,17 +329,16 @@ class PianoLabTests(unittest.TestCase):
         self.assertIsNone(self.state()['lesson'],'Talking must offer a choice rather than auto-start Twinkle')
         self.assertTrue(self.page.locator('#pianoDialogueText').is_visible())
         self.page.locator('[data-piano-dialogue-action="melodies"]').click()
-        self.assertGreaterEqual(self.page.locator('[data-piano-melody]').count(),9)
-        self.page.locator('[data-piano-melody="mary"]').click()
-        self.page.locator('[data-piano-dialogue-action="play"]').click()
+        self.assertGreaterEqual(self.page.locator('[data-piano-song]').count(),9)
+        self.page.locator('[data-piano-song="mary"]').click()
+        self.page.locator('#pianoLearnMelody').click()
         self.assertEqual(self.state()['lesson'],'mary')
         self.assertFalse(self.state()['dialogueOpen']);self.assertFalse(self.state()['menuOpen'])
         self.assertEqual(self.state()['lessonStep'],0)
 
     def test_memory_requires_learning_hides_hints_and_rewards_only_once_across_visits(self):
-        self.menu('games');self.page.locator('#pianoLesson').select_option('mary')
-        self.page.locator('[data-piano-dialogue-action="play"]').click()
-        self.menu('games');self.assertTrue(self.page.locator('#pianoMemoryStart').is_disabled())
+        self.choose_melody('mary')
+        self.menu('games','melodies');self.assertTrue(self.page.locator('#pianoMemoryStart').is_disabled())
         for offset in MARY:self.play(60+offset)
         self.assertEqual(self.page.evaluate('rewards'),[{'id':'piano-lesson:mary','amount':35}])
         self.assertTrue(self.page.locator('[data-piano-dialogue-action="memory"]').is_visible())
@@ -371,21 +381,18 @@ class PianoLabTests(unittest.TestCase):
 
     def test_hearing_a_demonstration_never_plays_the_challenge_for_you(self):
         self.page.clock.install();self.page.clock.pause_at(self.page.evaluate('Date.now()/1000')+5)
-        self.menu('games');self.page.locator('#pianoLesson').select_option('hot-cross-buns')
-        self.page.locator('[data-piano-dialogue-action="listen"]').click()
+        self.choose_melody('hot-cross-buns')
+        self.menu('games','melodies');self.page.locator('#pianoListenMelody').click()
         self.assertTrue(self.state()['listening']);self.assertEqual(self.state()['lessonStep'],0)
-        # Use the actual arrangement length and demonstration tempo. A longer
-        # written note must finish sounding before checking that the lesson
-        # still waits for the student's first pitch.
-        demo_ms=self.page.evaluate('''()=>{
+        demo_ms=self.page.evaluate("""()=>{
           const state=lab.getState(),tune=CodaPianoMelodies.lessonFor(state.lesson),
             endBeat=Math.max(0,...state.lessonScore.map(event=>event.onset+event.beats));
           return Math.ceil(endBeat*60000/(tune.quarterBpm||100))+200;
-        }''')
+        }""")
         self.page.clock.run_for(demo_ms)
         self.assertFalse(self.state()['listening']);self.assertEqual(self.state()['lessonStep'],0)
         self.assertEqual(self.page.evaluate('rewards'),[]);self.assertEqual(self.state()['held'],[])
-        self.page.locator('[data-piano-dialogue-action="play"]').click()
+        self.page.locator('#pianoMenuClose').click()
         self.assertFalse(self.state()['dialogueOpen']);self.assertEqual(self.state()['lessonStep'],0)
 
     def test_recording_playback_never_completes_a_challenge(self):
@@ -437,7 +444,7 @@ class PianoLabTests(unittest.TestCase):
         self.play(72)
         self.assertEqual(self.state()['lastWallNote'],72,'The real sounding pitch keeps its internal range')
         self.assertEqual(self.page.locator('#pianoWallNote').inner_text(),'Back wall: C')
-        self.menu('games');self.page.locator('#pianoInterval').select_option('down-4')
+        self.menu('games','intervals');self.page.locator('#pianoInterval').select_option('down-4')
         self.page.locator('#pianoStartInterval').click()
         if self.page.locator('[data-piano-dialogue-action="play"]').is_visible():self.page.locator('[data-piano-dialogue-action="play"]').click()
         self.assertIn('higher C',self.page.locator('#pianoIntervalPrompt').inner_text())
@@ -474,14 +481,14 @@ class PianoLabTests(unittest.TestCase):
         for offset in TWINKLE[2:]: self.play(60+offset)
         self.assertEqual(self.state()['lessonStep'],len(TWINKLE))
         self.assertEqual(self.page.evaluate('rewards'),[{'id':'piano-lesson:twinkle','amount':35}])
-        self.menu('games');self.page.locator('#pianoLessonRestart').click()
+        self.menu('games','melodies');self.page.locator('#pianoLessonRestart').click()
         if self.page.locator('[data-piano-dialogue-action="play"]').is_visible():self.page.locator('[data-piano-dialogue-action="play"]').click()
         for offset in TWINKLE: self.play(60+offset)
         self.assertEqual(len(self.page.evaluate('rewards')),1)
 
     def test_interval_game_checks_start_before_target_for_both_directions(self):
         for challenge,start,target in [('up-7',60,67),('down-4',72,68)]:
-            self.menu('games');self.page.locator('#pianoInterval').select_option(challenge)
+            self.menu('games','intervals');self.page.locator('#pianoInterval').select_option(challenge)
             self.page.locator('#pianoStartInterval').click()
             if self.page.locator('[data-piano-dialogue-action="play"]').is_visible():self.page.locator('[data-piano-dialogue-action="play"]').click()
             self.play(target); self.assertEqual(self.state()['intervalStep'],0)

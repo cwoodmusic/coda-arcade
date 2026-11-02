@@ -165,9 +165,9 @@ class LearningWorldTests(WorldBrowserCase):
         def complete_interval():
             enter_room(self.page,'piano')
             self.page.locator('#pianoMenuButton').click()
+            self.page.locator('[data-piano-challenge="intervals"]').click()
             self.page.locator('#pianoInterval').select_option('up-7')
             self.page.locator('#pianoStartInterval').click()
-            self.page.locator('[data-piano-dialogue-action="play"]').click()
             self.page.locator('#pianoMenuButton').click()
             self.page.locator('[data-piano-view="keyboard"]').click()
             for note in [60,67]:self.page.locator(f'.piano-key[data-midi="{note}"]').click()

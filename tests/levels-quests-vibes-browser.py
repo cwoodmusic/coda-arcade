@@ -97,7 +97,8 @@ class LevelsQuestsVibesTests(_world.WorldBrowserCase):
         self.assertEqual(self.page.locator('.musician-mission-card[data-selected="true"]').get_attribute('data-mission-id'),'nina-piano-melody')
         enter_room(self.page,'piano')
         self.page.locator('#pianoMenuButton').click();self.page.locator('[data-piano-view="games"]').click()
-        self.page.locator('#pianoLesson').select_option('mary');self.page.locator('[data-piano-dialogue-action="play"]').click()
+        self.page.locator('[data-piano-challenge="melodies"]').click()
+        self.page.locator('#pianoLesson').select_option('mary');self.page.locator('#pianoLearnMelody').click()
         if not self.page.evaluate('CodaArcadeQA.piano().menuOpen'):self.page.locator('#pianoMenuButton').click()
         self.page.locator('[data-piano-view="keyboard"]').click()
         self.page.evaluate('''offsets=>{for(const offset of offsets){
