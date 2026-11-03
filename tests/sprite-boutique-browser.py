@@ -3,6 +3,7 @@
 Starts a temporary server and uses disposable Chromium profiles. Requires the
 environment's Python Playwright package and Chromium; no external service access.
 """
+from settings_menu_helpers import settings_page
 from boutique_menu_helpers import browse_boutique, boutique_field, boutique_presets
 import functools
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -44,7 +45,7 @@ class SpriteBoutiqueTests(unittest.TestCase):
         self.page.on('response',lambda response:self.local_failures.append(response.url) if response.status>=400 and '127.0.0.1' in response.url and not response.url.endswith('favicon.ico') else None)
         self.load()
         # The shipped FX switch keeps expensive room lights out of visual checks.
-        open_settings(self.page)
+        settings_page(self.page, 'screen')
         for _ in range(3):
             if self.page.locator('#fxBtn').inner_text().endswith('Off'):
                 break

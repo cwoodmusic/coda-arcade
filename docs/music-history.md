@@ -2,7 +2,7 @@
 
 The Scholar sits on the lounge couch. Walk to the couch and press **E** or use
 **Interact** on mobile. This is a fixed character, outside the six rotating
-visitors. **Settings → Find the scholar** guides the player there; records and
+visitors. **Settings → Help & updates → Find the scholar** guides the player there; records and
 quizzes can only be opened while visiting the scholar.
 
 The first menu offers **Turn in facts**, **My fact book**, **Take a quiz**, and

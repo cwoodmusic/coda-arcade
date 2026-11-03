@@ -1,3 +1,4 @@
+from profile_menu_helpers import show_profile_page
 """Exercise the assembled rooms, purchases, mission bridge, levels and records.
 
 The public origin is routed to this checkout in disposable Chromium profiles.
@@ -145,6 +146,7 @@ class LearningWorldTests(WorldBrowserCase):
         self.page.locator('#returnworld').click()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),162)
         self.page.locator('#levelBtn').click()
+        show_profile_page(self.page, 'missions')
         self.assertIn('Return to',self.page.locator('.profile-missions').inner_text())
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),166,'A completed mission pays only after returning to its giver')
         self.page.locator('#panelClose').click();self.open_bach_mission()

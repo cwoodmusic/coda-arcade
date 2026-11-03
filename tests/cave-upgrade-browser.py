@@ -1,10 +1,11 @@
 """Exercise live cave movement, effects, ladder exits, and beamed fishing music."""
+from settings_menu_helpers import settings_page
 import importlib.util
 import math
 from pathlib import Path
 import sys
 import unittest
-from world_navigation_helpers import enter_room
+from world_navigation_helpers import enter_room, close_settings
 
 sys.dont_write_bytecode=True
 _spec=importlib.util.spec_from_file_location('fishing_world_browser',Path(__file__).with_name('fishing-world-browser.py'))
@@ -38,10 +39,10 @@ class CaveUpgradeTests(_fish._world.WorldBrowserCase):
         opened=False
         for _ in range(3):
             if self.page.locator('#fxBtn').inner_text().endswith(label):break
-            if not self.page.locator('#fxBtn').is_visible():self.page.locator('#worldMenuBtn').click();opened=True
+            if not self.page.locator('#fxBtn').is_visible():settings_page(self.page, 'screen');opened=True
             self.page.locator('#fxBtn').click();self.page.clock.run_for(32)
         self.assertTrue(self.page.locator('#fxBtn').inner_text().endswith(label))
-        if opened:self.page.keyboard.press('Escape');self.page.clock.run_for(32)
+        if opened:close_settings(self.page);self.page.clock.run_for(32)
 
     def test_enlarged_stone_landing_gates_the_boat_and_leads_to_a_working_ladder(self):
         self.enter();outside=self.page.evaluate('CodaArcadeQA.position()')

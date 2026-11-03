@@ -2,6 +2,7 @@
 
 Requires the environment's Python Playwright package and Chromium. No npm setup.
 """
+from settings_menu_helpers import settings_page
 import base64
 import functools
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -64,7 +65,7 @@ class WorldEditorTests(unittest.TestCase):
             raise AssertionError({'errors':self.errors,'failures':self.local_failures,'initialization':self.page.evaluate('({developer:typeof CodaDeveloperConsole,qa:typeof CodaArcadeQA,renderer:typeof createCodaCharacterRenderer})')}) from error
         self.page.wait_for_function('window.CodaArcadeQA?.foregroundPixelAlpha("dance_right_couch",625,650)!==null')
         # Use the shipped FX control to keep pixel assertions and CI timing stable.
-        open_settings(self.page);self.page.locator('#fxBtn').click()
+        settings_page(self.page, 'screen');self.page.locator('#fxBtn').click()
         self.page.locator('#fxBtn').click();close_settings(self.page)
         self.page.keyboard.press('F2')
 
@@ -281,7 +282,7 @@ class WorldEditorTests(unittest.TestCase):
         self.assertGreater(sum(a!=b for a,b in zip(before,after)),500,'Moving a disco ball must clear its original sphere')
         self.page.locator('#devDiscoRays').check()
         # Exercise the actual transformed light/sphere renderers at the shipped Lite setting.
-        open_settings(self.page);self.page.locator('#fxBtn').click();self.page.locator('#fxBtn').click();close_settings(self.page)
+        settings_page(self.page, 'screen');self.page.locator('#fxBtn').click();self.page.locator('#fxBtn').click();close_settings(self.page)
         self.page.wait_for_timeout(150)
         self.page.locator('#assetVisible').uncheck()
         state=self.page.evaluate('CodaArcadeQA.worldObjects().find(o=>o.name==="disco_ball_dance")')

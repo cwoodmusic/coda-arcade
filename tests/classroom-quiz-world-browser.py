@@ -1,3 +1,4 @@
+from profile_menu_helpers import show_profile_page
 """End quizzes gate new lesson rewards while preserving old classroom progress."""
 from classroom_menu_helpers import choose_classroom_lesson
 import importlib.util
@@ -76,6 +77,7 @@ class ClassroomQuizWorldTests(_world.WorldBrowserCase):
         self.ready_quiz('note-naming');self.assertEqual(self.xp(),0)
         self.assertNotIn('note-naming',self.state()['completed'])
         self.page.locator('#classroomClose').click();self.page.locator('#levelBtn').click()
+        show_profile_page(self.page, 'learning')
         profile=self.page.locator('.profile-lessons').inner_text()
         self.assertIn('Note naming · Quiz ready',profile)
         self.assertNotIn('Note naming · Finished',profile)

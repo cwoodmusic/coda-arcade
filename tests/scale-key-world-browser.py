@@ -1,3 +1,4 @@
+from profile_menu_helpers import show_profile_page
 """Scale memory rewards and key lessons in the assembled, profile-aware arcade.
 
 All input uses the real room controls in disposable guest browser contexts.
@@ -180,6 +181,7 @@ class ScaleKeyWorldTests(_world.WorldBrowserCase):
         self.complete_key_steps();answer_quiz(self.page,'major-minor-keys')
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),50)
         self.load();self.page.locator('#levelBtn').click()
+        show_profile_page(self.page, 'learning')
         self.assertEqual(self.page.locator('.profile-lessons p').count(),6)
         self.assertIn('Major & minor keys',self.page.locator('.profile-lessons').inner_text())
         self.assertEqual(self.page.locator('.profile-lesson-done').count(),1)

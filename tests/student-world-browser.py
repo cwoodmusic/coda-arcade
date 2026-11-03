@@ -1,3 +1,4 @@
+from profile_menu_helpers import show_profile_page
 """Student lessons, profile, and reward turn-ins in the assembled arcade world."""
 from classroom_menu_helpers import choose_classroom_lesson
 import importlib.util
@@ -75,7 +76,7 @@ class StudentWorldTests(_world.WorldBrowserCase):
         self.load();self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),256)
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),262)
         self.assertIsNone(self.notifications()['current'])
-        self.page.locator('#levelBtn').click();self.assertEqual(self.page.locator('.profile-completed summary').inner_text(),'1 finished mission')
+        self.page.locator('#levelBtn').click();show_profile_page(self.page, 'missions');self.assertEqual(self.page.locator('.profile-completed summary').inner_text(),'1 finished mission')
 
     def test_note_lesson_teaches_without_octave_numbers_and_updates_the_saved_profile(self):
         enter_room(self.page,'classroom');choose_classroom_lesson(self.page, 'note-naming')
@@ -98,7 +99,9 @@ class StudentWorldTests(_world.WorldBrowserCase):
         self.page.keyboard.press('Escape');self.page.locator('#levelBtn').click()
         self.assertEqual(self.page.locator('.profile-level').inner_text(),'Level 1')
         self.assertEqual(self.page.locator('.profile-xp-to-go').inner_text(),'30 XP to go!')
+        show_profile_page(self.page, 'prizes')
         self.assertEqual(self.page.locator('.profile-prize strong').all_inner_texts(),['Pocket watch chain','Crystal Harp'])
+        show_profile_page(self.page, 'learning')
         self.assertIn('Note naming · Finished',self.page.locator('.profile-lessons').inner_text())
         self.assertEqual(self.page.evaluate('CodaArcadeQA.profile().notes'),150,'Learning rewards XP without silently changing the Notes balance')
         self.page.set_viewport_size({'width':390,'height':844})
@@ -138,6 +141,7 @@ class StudentWorldTests(_world.WorldBrowserCase):
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),50)
         self.assertIn('rhythm tree',self.reveal_notification('achievement')['title'])
         self.page.keyboard.press('Escape');self.page.locator('#levelBtn').click()
+        show_profile_page(self.page, 'learning')
         self.assertIn('The rhythm tree · Finished',self.page.locator('.profile-lessons').inner_text())
 
 if __name__=='__main__':unittest.main(verbosity=2)

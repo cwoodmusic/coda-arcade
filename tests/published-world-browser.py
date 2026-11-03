@@ -3,6 +3,7 @@
 Runs against disposable browser contexts and the checked-in project export.
 No account credentials, external services, or existing browser saves are used.
 """
+from settings_menu_helpers import settings_page
 import copy
 import functools
 import hashlib
@@ -326,7 +327,7 @@ class PublishedWorldTests(unittest.TestCase):
                     self.page.locator(selector).click()
             self.page.mouse.move(1500,900)
         def set_fx(label):
-            self.page.locator('#worldMenuBtn').click()
+            settings_page(self.page, 'screen')
             for _ in range(3):
                 if self.page.locator('#fxBtn').inner_text().endswith(label):break
                 self.page.locator('#fxBtn').click()

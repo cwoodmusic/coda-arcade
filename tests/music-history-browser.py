@@ -1,4 +1,5 @@
 """Real relationship quest, carried discovery, scholar hand-in, records and quizzes."""
+from settings_menu_helpers import settings_page
 import importlib.util
 from pathlib import Path
 import sys
@@ -72,7 +73,7 @@ class MusicHistoryBrowserTests(world.WorldBrowserCase):
         self.assertTrue(journal.locator('[data-scholar-action="pouch"]').is_visible())
         self.page.keyboard.press('Escape')
         self.assertFalse(journal.is_visible())
-        open_settings(self.page)
+        settings_page(self.page, 'help')
         self.assertEqual(self.page.locator('#worldMusicHistory').inner_text(),'Find the scholar')
 
     def test_spam_cannot_unlock_facts_but_real_quest_unlocks_one_then_scholar_rewards_it(self):

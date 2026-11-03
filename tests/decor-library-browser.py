@@ -1,4 +1,5 @@
 """Placeable decor stays in the library; the editable DJ rig lights the live world."""
+from settings_menu_helpers import settings_page
 import copy
 import functools
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -115,7 +116,7 @@ class DecorLibraryBrowserTests(unittest.TestCase):
         return self.page.evaluate('id=>CodaArcadeQA.floodLights().rigs.find(rig=>rig.id===id)', rig_id)
 
     def quality(self, target):
-        open_settings(self.page)
+        settings_page(self.page, 'screen')
         for _ in range(3):
             if self.page.locator('#fxBtn').inner_text().endswith(target.capitalize()):
                 break

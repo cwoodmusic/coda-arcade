@@ -34,8 +34,8 @@ the preview is reloaded; it does not copy authentication into the test player
 or require new cookies.
 
 A saved profile opens through a brief loading screen. Profile choices live in
-**Settings → Profile options**, or **Profile → Classroom profile**.
-Choose **Log out** in Settings or the profile options to save progress, end the
+**Settings → My player → Profile options**, or **Profile → Classroom profile**.
+Choose **Log out** in **Settings → My player** or the profile options to save progress, end the
 student/teacher session, and return to the title screen. If saving cannot finish,
 the game keeps your profile open and offers another try.
 
@@ -44,7 +44,7 @@ arcade and respects the device's reduced-motion setting. The title screen loads
 existing arcade artwork without starting gameplay, music, or Firebase SDKs.
 
 Conversations use larger text and reveal each line letter by letter. Choose
-**Settings → Text speed** (Slow, Normal, Fast, or Instant); the same preference
+**Settings → Sound & reading → Text speed** (Slow, Normal, Fast, or Instant); the same preference
 is available in room menus and saves on this device. Click the dialogue to show
 the full line immediately. In arcade conversations, press **E** once to reveal
 the line and again to close; **Escape** always closes. Reduced motion defaults
@@ -58,7 +58,7 @@ projects keep their previous art; export a backup and choose **Project → Reset
 project** to adopt the refreshed environment. See [Environment artwork](ENVIRONMENT-ART.md).
 
 The original arcade remains available at `classic-arcade.html`, linked from the
-title screen. In the connected world's **Settings**, **Title screen** returns
+title screen. In the connected world's **Settings → My player**, **Title screen** returns
 to the front door. Direct world links and existing picture-card links still work.
 The main game's internal filename is still `world-preview.html`; it serves the
 main Coda Arcade, not a separate preview build.
@@ -72,7 +72,7 @@ Disco-ball rays and small reflection trails circle using elapsed time, so their
 motion stays visible when rendering slows down. Motion Off keeps them still;
 FX Off disables them.
 
-Press **P** to open **Play notes**, or use **Settings → Play notes**. Jot down
+Press **P** to open **Play notes**, or use **Settings → Help & updates → Play notes**. Jot down
 bugs and future ideas; notes autosave in this browser and can be copied or
 downloaded. The pad also has a **Changelog** tab. Notes stay local to the active
 player and are never included in classroom cloud saves. Developer test notes

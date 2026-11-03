@@ -5,7 +5,7 @@ import sys
 import unittest
 
 sys.dont_write_bytecode = True
-from world_navigation_helpers import enter_room, talk_to_musician
+from world_navigation_helpers import close_settings, enter_room, talk_to_musician
 
 _spec = importlib.util.spec_from_file_location('dialogue_world', Path(__file__).with_name('learning-world-browser.py'))
 _world = importlib.util.module_from_spec(_spec)
@@ -44,8 +44,9 @@ class DialogueTextTests(_world.WorldBrowserCase):
 
     def test_speed_saves_and_room_menus_share_the_preference(self):
         self.page.locator('#worldMenuBtn').click()
+        self.page.locator('[data-settings-action="reading"]').click()
         self.page.locator('#worldMenu').get_by_label('Dialogue text speed').select_option('instant')
-        self.page.keyboard.press('Escape')
+        close_settings(self.page)
         self.page.reload()
         self.page.wait_for_function('window.CodaDeveloperConsole?.ready()')
         self.assertEqual(self.page.evaluate('CodaDialogueText.getSpeed()'), 'instant')
@@ -68,6 +69,7 @@ class DialogueTextTests(_world.WorldBrowserCase):
         self.assertFalse(self.revealing('#fishingCaptainWords'))
         self.page.keyboard.press('Escape')
         self.page.locator('#worldMenuBtn').click()
+        self.page.locator('[data-settings-action="reading"]').click()
         self.assertEqual(self.page.locator('#worldMenu').get_by_label('Dialogue text speed').input_value(), 'slow')
 
     def test_scholar_speaks_but_record_stays_instant_and_changing_pages_cancels_speech(self):

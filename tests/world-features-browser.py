@@ -3,6 +3,7 @@
 Uses disposable Chromium profiles and the connected world's real published
 layout. No login, network service, or existing browser save is required.
 """
+from settings_menu_helpers import settings_page
 from shop_menu_helpers import browse_shop
 from boutique_menu_helpers import browse_boutique
 import functools
@@ -88,7 +89,7 @@ class WorldFeatureTests(unittest.TestCase):
         }''', [x,y])
 
     def quality(self, name):
-        open_settings(self.page)
+        settings_page(self.page, 'screen')
         for _ in range(3):
             if self.page.evaluate('CodaArcadeQA.atmosphere().quality') == name:
                 close_settings(self.page);self.frames(); return

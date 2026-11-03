@@ -1,4 +1,5 @@
 """Rug copies stay editable; mirroring and rotation affect rendered asset pixels."""
+from settings_menu_helpers import settings_page
 import copy
 import functools
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -68,7 +69,7 @@ class RugsAssetTransformsTests(unittest.TestCase):
                      if response.status >= 400 and '127.0.0.1' in response.url and not response.url.endswith('favicon.ico') else None)
         self.page.goto(self.url, wait_until='domcontentloaded')
         self.ready()
-        open_settings(self.page)
+        settings_page(self.page, 'screen')
         for _ in range(3):
             if self.page.locator('#fxBtn').inner_text().endswith('Off'):
                 break

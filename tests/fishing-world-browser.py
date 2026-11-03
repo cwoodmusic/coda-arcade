@@ -1,3 +1,4 @@
+from profile_menu_helpers import show_profile_page
 """The world trapdoor, real rhythm catches, and saved fishing rewards work together."""
 from classroom_menu_helpers import choose_classroom_lesson
 import importlib.util
@@ -53,6 +54,7 @@ class FishingWorldTests(_world.WorldBrowserCase):
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),50)
         self.assertEqual(self.page.evaluate('CodaArcadeQA.notes().balance'),150)
         self.page.locator('#classroomClose').click();self.page.locator('#levelBtn').click()
+        show_profile_page(self.page, 'learning')
         self.assertIn('Time signatures · Finished',self.page.locator('.profile-lessons').inner_text())
         self.load()
         self.assertEqual(self.page.evaluate('CodaArcadeQA.progression().xp'),50)

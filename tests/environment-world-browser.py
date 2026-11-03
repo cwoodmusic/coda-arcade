@@ -1,4 +1,5 @@
 """Published authored world: portable pixels, placements and save precedence."""
+from settings_menu_helpers import settings_page
 import copy
 import base64
 import hashlib
@@ -166,7 +167,7 @@ class EnvironmentWorldTests(unittest.TestCase):
           };
         })()''')
         self.load();self.page.evaluate('environmentImageDraws=[]')
-        self.page.locator('#worldMenuBtn').click()
+        settings_page(self.page, 'screen')
         for _ in range(3):
             if self.page.locator('#fxBtn').inner_text().endswith('Full'):break
             self.page.locator('#fxBtn').click()
@@ -211,7 +212,7 @@ window.createCodaDeveloperConsole=api=>{const instance=originalEnvironmentConsol
                          'A copied region at the old couch location must use clean carpet, not the old baked couch')
 
     def test_speaker_effect_emitters_follow_asset_geometry_opacity_and_visibility(self):
-        self.load();self.page.locator('#worldMenuBtn').click()
+        self.load();settings_page(self.page, 'screen')
         for _ in range(3):
             if self.page.locator('#fxBtn').inner_text().endswith('Full'):break
             self.page.locator('#fxBtn').click()

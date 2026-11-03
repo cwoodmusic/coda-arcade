@@ -1,4 +1,5 @@
 """Real phone touch, camera, pinch, room routing and saved-world checks."""
+from settings_menu_helpers import settings_page
 from shop_menu_helpers import browse_shop
 import functools
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -311,7 +312,7 @@ class MobileWorldTests(unittest.TestCase):
         self.assertIsNone(self.page.evaluate('CodaArcadeQA.characters().player.destination'))
         self.assertEqual(self.touch()['held'],[]);self.assert_avatar_visible()
         self.load();self.assertEqual(self.page.evaluate('CodaArcadeQA.camera().targetZoom'),final_zoom)
-        self.page.locator('#worldMenuBtn').tap()
+        settings_page(self.page, 'screen')
         self.assertTrue(self.page.locator('#mobilePinchHint').is_visible())
         self.assertIn('pinch two fingers to zoom',self.page.locator('#mobilePinchHint').inner_text())
 

@@ -1,4 +1,5 @@
 """The shared order controls follow the selected prop or live NPC sprite."""
+from settings_menu_helpers import settings_page
 import functools
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
@@ -49,7 +50,7 @@ class SelectedOrderBrowserTests(unittest.TestCase):
         self.page.on('pageerror', lambda error: self.errors.append(str(error)))
         self.page.goto(self.url, wait_until='domcontentloaded')
         self.ready()
-        open_settings(self.page)
+        settings_page(self.page, 'screen')
         self.page.locator('#fxBtn').click()
         self.page.locator('#fxBtn').click()
         close_settings(self.page)

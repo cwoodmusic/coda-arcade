@@ -3,6 +3,7 @@
 Runs the production editor in disposable Chromium profiles. All image sources
 and game files are local; external services and classroom accounts are blocked.
 """
+from settings_menu_helpers import settings_page
 import copy
 import functools
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -621,7 +622,7 @@ class ArtworkEditorBrowserTests(unittest.TestCase):
         self.assertEqual(baseline, [[18, 52, 86, 255]] * 25)
 
         def set_fx(label):
-            self.page.locator('#worldMenuBtn').click()
+            settings_page(self.page, 'screen')
             for _ in range(3):
                 if self.page.locator('#fxBtn').inner_text().endswith(label):
                     break
