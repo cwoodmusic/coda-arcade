@@ -158,6 +158,96 @@ function developerRules(){
  }};
 }
 
+// Google Classroom identifiers stay in an exact-owner private index. Imported
+// profiles still use the existing alias/pass/progress contract. The reverse
+// index prevents two students from concurrently claiming the same profile.
+function classroomDeliveryRules(teacher,key,course){
+ const profile=profileNode(course+'.child("classId").val()','newData.child("profileId").val()');
+ const state='newData.child("state").val()',oldState='data.child("state").val()';
+ const sameAttempt='newData.child("attemptId").val() === data.child("attemptId").val()';
+ const newAttempt='newData.child("attemptId").val() !== data.child("attemptId").val()';
+ const oldLease='data.child("leaseUntil").val()',lease='newData.child("leaseUntil").val()';
+ const postedNoop=join([oldState+' === "posted"',state+' === "posted"',sameAttempt,
+  'newData.child("materialId").val() === data.child("materialId").val()',lease+' === '+oldLease,
+  'newData.child("updatedAt").val() === data.child("updatedAt").val()']);
+ const transitions=[
+  join(['!data.exists()',state+' === "claimed"']),
+  join(['!data.exists()',state+' === "posted"',lease+' === 0']),
+  join([oldState+' === "claimed"',state+' === "claimed"','(('+sameAttempt+' && '+oldLease+' > now) || ('+newAttempt+' && '+oldLease+' <= now))']),
+  join([oldState+' === "claimed"',state+' === "sending"',sameAttempt,oldLease+' > now']),
+  join([oldState+' === "claimed"',state+' === "posted"',sameAttempt]),
+  join([oldState+' === "sending"',sameAttempt,'('+state+' === "posted" || '+state+' === "uncertain" || '+state+' === "failed")']),
+  join([oldState+' === "uncertain"',sameAttempt,'('+state+' === "posted" || '+state+' === "uncertain")']),
+  join([oldState+' === "failed"','(('+state+' === "claimed" && '+newAttempt+') || ('+state+' === "posted" && '+sameAttempt+'))']),
+  postedNoop
+ ];
+ return {'.validate':objectCondition,$googleStudentId:{'.validate':matches('$googleStudentId',key),$passHash:closed({
+  '.write':join([teacher,'newData.exists()']),
+  '.validate':join([matches('$passHash',HASH_PATTERN),
+   'newData.hasChildren(["profileId","attemptId","state","leaseUntil","createdAt","updatedAt"])',
+   'newData.child("profileId").val() === '+course+'.child("students").child($googleStudentId).child("profileId").val()',
+   course+'.child("profileLinks").child(newData.child("profileId").val()).val() === $googleStudentId',
+   profile+'.child("meta/passHash").val() === $passHash',
+   rootAt('classroomV1/passes')+'.child($passHash).child("classId").val() === '+course+'.child("classId").val()',
+   rootAt('classroomV1/passes')+'.child($passHash).child("profileId").val() === newData.child("profileId").val()',
+   '!data.exists() || newData.child("profileId").val() === data.child("profileId").val()',
+   '('+transitions.map(value=>'('+value+')').join(' || ')+')',
+   '('+state+' === "claimed" || '+state+' === "sending" ? '+lease+' > now : true)',
+   '('+state+' === "posted" ? newData.child("materialId").exists() : !newData.child("materialId").exists())']),
+  profileId:{'.validate':string('newData',8,64,ID_PATTERN)},
+  attemptId:{'.validate':string('newData',32,32,'^[a-f0-9]{32}$')},
+  state:{'.validate':string('newData',6,9,'^(claimed|sending|posted|uncertain|failed)$')},
+  leaseUntil:{'.validate':integer('newData',0,'now + 120000')},
+  createdAt:createdAt(),
+  updatedAt:{'.validate':join([integer('newData',0,'now'),'!data.exists() || newData.val() >= data.val()'])},
+  materialId:{'.validate':string('newData',1,128,key)}
+ })}};
+}
+
+function classroomImportRules(){
+ const teacher=join([admin,'auth.uid === $teacherUid']);
+ const key='^[A-Za-z0-9_-]{1,128}$';
+ const oldCourse=rootAt('classroomV1/classroomImports')+'.child($teacherUid).child($courseId)';
+ const oldProfile=profileNode(oldCourse+'.child("classId").val()','data.child("profileId").val()');
+ const pendingCourse='newData.parent().parent()';
+ const pendingSpace=pendingCourse+'.parent().parent().parent()';
+ const pendingClass=pendingSpace+'.child("classes").child('+pendingCourse+'.child("classId").val())';
+ const target=pendingClass+'.child("profiles").child(newData.child("profileId").val())';
+ const directory=pendingSpace+'.child("directory").child('+pendingCourse+'.child("classId").val()).child("profiles").child(newData.child("profileId").val())';
+ const pendingCourseClass='newData.parent().parent().parent().child("classes").child(newData.child("classId").val())';
+ const pendingCourseDirectory='newData.parent().parent().parent().child("directory").child(newData.child("classId").val())';
+ const oldClaim=pendingCourse+'.child("students").child(data.val()).child("profileId").val()';
+ return {'.read':false,'.write':false,$teacherUid:{
+  '.read':teacher,'.write':false,
+  $courseId:closed({
+   // This parent grant covers only initial creation. Existing courses can be
+   // extended solely through the individually guarded leaves below.
+   '.write':join([teacher,'!data.exists()','newData.exists()']),
+   '.validate':join([matches('$teacherUid',key),matches('$courseId',key),'newData.hasChildren(["classId","createdAt","updatedAt"])',
+    pendingCourseClass+'.child("meta").exists()',pendingCourseDirectory+'.child("meta").exists()']),
+   classId:{'.validate':join([string('newData',8,64,ID_PATTERN),'!data.exists() || newData.val() === data.val()'])},
+   createdAt:createdAt(),
+   updatedAt:{'.write':join([teacher,'data.parent().exists()','newData.exists()']),
+    '.validate':join([integer('newData',0,'now'),'!data.exists() || newData.val() >= data.val()'])},
+   students:{'.validate':objectCondition,$googleStudentId:closed({
+    '.write':join([teacher,'data.parent().parent().exists()','newData.exists()',
+     '(!data.exists() || !'+oldProfile+'.child("meta").exists())']),
+    '.validate':join([matches('$googleStudentId',key),'newData.hasChildren(["profileId","createdAt"])',
+     target+'.child("meta").exists()',target+'.child("state").exists()',directory+'.exists()',
+     pendingCourse+'.child("profileLinks").child(newData.child("profileId").val()).val() === $googleStudentId']),
+    profileId:{'.validate':string('newData',8,64,ID_PATTERN)},createdAt:createdAt(false)
+   })},
+   profileLinks:{'.validate':objectCondition,$profileId:{
+    '.write':join([teacher,'data.parent().parent().exists()','newData.exists()',
+     '(!data.exists() || '+oldClaim+' !== $profileId)']),
+    '.validate':join([matches('$profileId',ID_PATTERN),string('newData',1,128,key),
+     pendingCourse+'.child("students").child(newData.val()).child("profileId").val() === $profileId'])
+   }},
+   deliveries:classroomDeliveryRules(teacher,key,oldCourse)
+  })
+ }};
+}
+
 function buildClassroomRules(schema){
  const student=validStudent(),lease=profileNode('$classId','$profileId')+'.child("lease")';
  const teacher=join([admin,'auth.uid === $uid']);
@@ -229,6 +319,7 @@ function buildClassroomRules(schema){
    passHash:{'.validate':string('newData',64,64,HASH_PATTERN)},createdAt:createdAt(false)})},
   hallOfFame:hallRules(),
   developerAccess:developerRules(),
+  classroomImports:classroomImportRules(),
   $other:{'.validate':false}
  };
  return {rules:{classroomV1:namespace}};
@@ -237,17 +328,20 @@ function buildClassroomRules(schema){
 function renderClassroomRules(schema){return JSON.stringify(buildClassroomRules(schema),null,2)+'\n';}
 function renderHallRules(){return JSON.stringify({hallOfFame:hallRules()},null,2)+'\n';}
 function renderDeveloperRules(){return JSON.stringify({developerAccess:developerRules()},null,2)+'\n';}
+function renderClassroomImportRules(){return JSON.stringify({classroomImports:classroomImportRules()},null,2)+'\n';}
 function run(argv){
  if(argv.length>1||argv.length===1&&argv[0]!=='--check')throw Error('Usage: node tools/build-classroom-rules.cjs [--check]');
  const {SCHEMA}=require('../classroom-profile-data.js'),target=path.join(__dirname,'../classroom-database.rules.json'),text=renderClassroomRules(SCHEMA);
  const hallTarget=path.join(__dirname,'../docs/HALL-OF-FAME-RULES.json'),hallText=renderHallRules();
  const developerTarget=path.join(__dirname,'../docs/DEVELOPER-ACCESS-RULES.json'),developerText=renderDeveloperRules();
+ const importTarget=path.join(__dirname,'../docs/GOOGLE-CLASSROOM-IMPORT-RULES.json'),importText=renderClassroomImportRules();
  if(argv[0]==='--check'){
   if(!fs.existsSync(target)||fs.readFileSync(target,'utf8')!==text)throw Error('classroom-database.rules.json is out of date. Regenerate it from the canonical schema.');
   if(!fs.existsSync(hallTarget)||fs.readFileSync(hallTarget,'utf8')!==hallText)throw Error('docs/HALL-OF-FAME-RULES.json is out of date. Regenerate the rules.');
   if(!fs.existsSync(developerTarget)||fs.readFileSync(developerTarget,'utf8')!==developerText)throw Error('docs/DEVELOPER-ACCESS-RULES.json is out of date. Regenerate the rules.');
+  if(!fs.existsSync(importTarget)||fs.readFileSync(importTarget,'utf8')!==importText)throw Error('docs/GOOGLE-CLASSROOM-IMPORT-RULES.json is out of date. Regenerate the rules.');
   process.stdout.write('Classroom rules match the canonical DTO schema.\n');
- }else{fs.writeFileSync(target,text);fs.writeFileSync(hallTarget,hallText);fs.writeFileSync(developerTarget,developerText);process.stdout.write('Generated classroom-database.rules.json ('+Buffer.byteLength(text)+' bytes) and the Hall/developer fragments. No deployment performed.\n');}
+ }else{fs.writeFileSync(target,text);fs.writeFileSync(hallTarget,hallText);fs.writeFileSync(developerTarget,developerText);fs.writeFileSync(importTarget,importText);process.stdout.write('Generated classroom-database.rules.json ('+Buffer.byteLength(text)+' bytes) and the Hall/developer/import fragments. No deployment performed.\n');}
 }
 if(require.main===module)try{run(process.argv.slice(2));}catch(error){process.stderr.write(error.message+'\n');process.exitCode=1;}
-module.exports={arrayIndexRegex,convertSchema,buildClassroomRules,renderClassroomRules,renderHallRules,renderDeveloperRules,run};
+module.exports={arrayIndexRegex,convertSchema,buildClassroomRules,renderClassroomRules,renderHallRules,renderDeveloperRules,renderClassroomImportRules,run};
